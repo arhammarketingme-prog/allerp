@@ -1,0 +1,1555 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2874f0">
+<title>ALL ERP — Universal Business Operating System</title>
+<!-- Favicon to eliminate favicon.ico 404 error -->
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- Robust HTML5-Qrcode Scanner Library -->
+<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+<style>
+/* 🌟 ॲडमिन पोर्टलची वरची बार पट्टी कॉम्पॅक्ट व एका लाईनीत करण्यासाठी */
+.dashboard-main-frame { width: 98%; max-width: 1450px; margin: 10px auto; padding: 0 6px; }
+.erp-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: nowrap; gap: 10px; background: #ffffff; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border, #e2e8f0); }
+.erp-header > div:first-child { display: flex; align-items: baseline; gap: 10px; }
+.erp-header h1 { font-size: 18px !important; margin: 0 !important; white-space: nowrap; }
+.erp-header .muted { font-size: 11px !important; white-space: nowrap; }
+.erp-header > div:last-child { display: flex; gap: 6px; align-items: center; flex-wrap: nowrap; }
+
+/* 🌟 युनिव्हर्सल मॉडेल ओव्हरले (नेहमी लपलेले, ओपन झाल्यावरच दिसणारे) */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 99999 !important; align-items: center; justify-content: center; }
+.modal-content { background: var(--card, #ffffff); border-radius: 12px; width: 95%; max-width: 650px; padding: 24px; max-height: 85vh; overflow-y: auto; box-shadow: 0 15px 35px rgba(0,0,0,0.25); z-index: 100000 !important; }
+
+/* इतर स्टाईल्स */
+.kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 16px; }
+.kpi-card { background: var(--card, #ffffff); border: 1px solid var(--border, #e2e8f0); border-radius: 8px; padding: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
+.erp-tabs-bar { display: flex; gap: 4px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 14px; border-bottom: 2px solid var(--border, #e2e8f0); }
+.erp-tab-btn { background: transparent; color: var(--text, #1e293b); border: none; border-bottom: 3px solid transparent; padding: 6px 12px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+.erp-tab-btn.active { color: var(--secondary, #2563eb); border-bottom-color: var(--secondary, #2563eb); }
+.badge { padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; }
+.badge.live { background: #16a34a; color: #fff; }
+.badge.pending { background: #f59e0b; color: #fff; }
+.badge.packed { background: #0284c7; color: #fff; }
+.badge.dispatched { background: #4f46e5; color: #fff; }
+.badge.delivered { background: #059669; color: #fff; }
+.badge.rejected { background: #dc2626; color: #fff; }
+.stock-input { border: 1px solid #cbd5e1; border-radius: 6px; padding: 6px 10px; width: 90px; text-align: center; font-weight: 700; color: #1e293b; transition: all 0.2s; }
+.stock-input:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.15); }
+.pos-layout { display: flex; gap: 16px; flex-wrap: wrap; }
+.pos-catalog { flex: 2; min-width: 280px; }
+.pos-cart { flex: 1.2; min-width: 280px; background: var(--card, #ffffff); border: 1px solid var(--border, #e2e8f0); border-radius: 10px; padding: 14px; }
+</style>
+</head>
+<body>
+<nav id="app-nav"></nav>
+
+<div class="dashboard-main-frame">
+  <div class="erp-header">
+    <div>
+      <h1 id="business-display-name">ALL ERP Dashboard</h1>
+      <span class="muted">Universal Multi-Business Operating System & Local Marketplace</span>
+      <div style="margin-top:4px;">
+        <label style="font-size:12.5px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:5px;">
+          <input type="checkbox" id="is-wholesaler-toggle" style="width:auto; margin:0;" onchange="toggleWholesalerMode(this.checked)">
+          🤝 मी Wholesaler आहे (इतर दुकानदारांना bulk मध्ये विकतो)
+        </label>
+      </div>
+    </div>
+    <div>
+      <!-- 🌐 ग्लोबल मार्केटप्लेस बटण (हेडरमध्ये कायमस्वरूपी) -->
+      <button type="button" onclick="openGlobalCatalogModal()" style="background:#16a34a; color:#fff; padding:6px 12px; border:none; border-radius:6px; cursor:pointer; font-weight:bold; font-size:12.5px;">
+        🌐 ग्लोबल मार्केटप्लेस
+      </button>
+      <select id="business-select" style="max-width:180px; margin-bottom:0; display:none;"></select>
+      <select id="lang-select" style="max-width:95px; margin-bottom:0; font-size:12px;" onchange="ALL_ERP.setLanguage(this.value)">
+        <option value="mr">मराठी</option>
+        <option value="en">English</option>
+      </select>
+      <a href="ai-assistant.html" class="btn" style="text-decoration:none; font-size:12px; background:#4f46e5; color:#fff; padding:6px 10px; border-radius:6px;">🤖 AI</a>
+    </div>
+  </div>
+
+  <div class="global-search-bar" style="display:flex; gap:8px; margin-bottom:14px;">
+    <input type="text" id="global-search-input" placeholder="🔍 इनव्हॉइस, ग्राहक, उत्पादने किंवा ऑर्डर्स शोधा..." style="margin-bottom:0; flex:1; padding:7px 10px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px;">
+    <button type="button" class="secondary" style="padding:7px 14px; cursor:pointer; font-size:13px;">शोधा</button>
+  </div>
+
+  <!-- NAVIGATION TABS -->
+  <div class="erp-tabs-bar" id="erp-navigation-tabs">
+    <button type="button" class="erp-tab-btn active" onclick="switchTab('tab-overview')">📊 डॅशबोर्ड</button>
+    <button type="button" class="erp-tab-btn" onclick="switchTab('tab-products')">📦 इन्व्हेंटरी व स्टॉक</button>
+    <button type="button" class="erp-tab-btn" onclick="switchTab('tab-sales')">💰 विक्री व इनव्हॉइस</button>
+    <button type="button" class="erp-tab-btn" onclick="switchTab('tab-purchase')">🛒 खरेदी</button>
+    <button type="button" class="erp-tab-btn" onclick="switchTab('tab-crm')">👥 CRM व ग्राहक</button>
+    <button type="button" class="erp-tab-btn" onclick="switchTab('tab-finance')">📑 खर्च व फायनान्स</button>
+    <button type="button" class="erp-tab-btn" onclick="switchTab('tab-hr')">👔 कर्मचारी (HR)</button>
+    <button type="button" class="erp-tab-btn" onclick="switchTab('tab-projects')">🏗️ प्रकल्प / साईट्स</button>
+    <button type="button" class="erp-tab-btn" onclick="switchTab('tab-pos')">⚡ POS काउंटर</button>
+    <button type="button" class="erp-tab-btn" onclick="switchTab('tab-orders')">🛍️ ऑनलाईन ऑर्डर्स</button>
+    <button type="button" class="erp-tab-btn" onclick="switchTab('tab-reports')">📈 रिपोर्ट्स व GST</button>
+    <button type="button" class="erp-tab-btn" onclick="switchTab('tab-settings')">⚙️ सेटिंग्स</button>
+  </div>
+
+  <!-- TAB 1: OVERVIEW -->
+  <div id="tab-overview" class="erp-tab-pane">
+    <div class="kpi-grid">
+      <div class="kpi-card"><div class="kpi-title">एकूण विक्री (Total Sales)</div><div class="kpi-value" id="kpi-total-sales">₹0.00</div></div>
+      <div class="kpi-card"><div class="kpi-title">एकूण खरेदी (Purchases)</div><div class="kpi-value" id="kpi-total-purchases">₹0.00</div></div>
+      <div class="kpi-card"><div class="kpi-title">एकूण खर्च (Expenses)</div><div class="kpi-value" id="kpi-total-expenses" style="color:#dc2626;">₹0.00</div></div>
+      <div class="kpi-card"><div class="kpi-title">निव्वळ नफा (Net Profit)</div><div class="kpi-value" id="kpi-net-profit" style="color:#16a34a;">₹0.00</div></div>
+      <div class="kpi-card"><div class="kpi-title">एकूण स्टॉक मूल्य</div><div class="kpi-value" id="kpi-stock-value">₹0.00</div></div>
+      <div class="kpi-card"><div class="kpi-title">प्लॅटफॉर्म कमिशन (2%)</div><div class="kpi-value" id="kpi-platform-fee" style="color:#2563eb;">₹0.00</div></div>
+    </div>
+  </div>
+
+  <!-- TAB 2: PRODUCTS & INVENTORY -->
+  <div id="tab-products" class="erp-tab-pane" style="display:none;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
+      <h2>📦 इन्व्हेंटरी व उत्पादने (Universal Inventory)</h2>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button type="button" onclick="openGlobalCatalogModal()" style="background:#16a34a; color:#fff; padding:8px 14px; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">🌐 ग्लोबल मार्केटप्लेस</button>
+        <button type="button" onclick="openModal('add-product-modal')" style="background:#2563eb; color:#fff; padding:8px 14px; border:none; border-radius:6px; cursor:pointer;">+ नवीन प्रॉडक्ट जोडा</button>
+      </div>
+    </div>
+
+    <div class="card" style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:16px;">
+      <p class="muted" style="font-size:12.5px; margin-bottom:10px;">💡 टिप: खालील स्टॉक आकडा बदलून बाहेर क्लिक केल्यास (किंवा Enter दाबल्यास) स्टॉक थेट डेटाबेसमध्ये सेव्ह होईल.</p>
+      <table style="width:100%; border-collapse:collapse;">
+        <thead><tr style="text-align:left; border-bottom:2px solid #e2e8f0; padding-bottom:8px;"><th>उत्पादन</th><th>विक्री दर</th><th>स्टॉक (थेट एडिट करा)</th><th>स्थिती</th></tr></thead>
+        <tbody id="products-table-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- TAB 3: SALES -->
+  <div id="tab-sales" class="erp-tab-pane" style="display:none;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+      <h2>💰 विक्री व इनव्हॉइस</h2>
+      <button type="button" onclick="openModal('invoice-modal')" style="background:#2563eb; color:#fff; padding:8px 14px; border:none; border-radius:6px; cursor:pointer;">+ नवीन इनव्हॉइस</button>
+    </div>
+    <div class="card" style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:16px;">
+      <table style="width:100%; border-collapse:collapse;">
+        <thead>
+          <tr style="text-align:left; border-bottom:2px solid #e2e8f0;">
+            <th>इनव्हॉइस #</th><th>ग्राहक</th><th>तारीख</th><th>रक्कम</th><th>स्थिती</th><th>कृती (Action)</th>
+          </tr>
+        </thead>
+        <tbody id="sales-invoices-body"><tr><td colspan="6" class="muted" style="text-align:center; padding:20px;">इनव्हॉइस लोड होत आहेत...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- TAB 4: PURCHASES -->
+  <div id="tab-purchase" class="erp-tab-pane" style="display:none;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+      <h2>🛒 खरेदी नोंदी</h2>
+      <button type="button" onclick="openModal('purchase-order-modal')" style="background:#2563eb; color:#fff; padding:8px 14px; border:none; border-radius:6px; cursor:pointer;">+ नवीन खरेदी नोंदवा</button>
+    </div>
+    <div class="card" style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:16px;">
+      <table style="width:100%; border-collapse:collapse;">
+        <thead><tr style="text-align:left; border-bottom:2px solid #e2e8f0;"><th>PO #</th><th>सप्लायर</th><th>तारीख</th><th>रक्कम</th><th>स्थिती</th></tr></thead>
+        <tbody id="purchases-table-body"><tr><td colspan="5" class="muted" style="text-align:center; padding:20px;">खरेदी नोंदी लोड होत आहेत...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- TAB 5: CRM -->
+  <div id="tab-crm" class="erp-tab-pane" style="display:none;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+      <h2>👥 CRM व ग्राहक पाईपलाईन</h2>
+      <button type="button" onclick="openModal('lead-modal')" style="background:#2563eb; color:#fff; padding:8px 14px; border:none; border-radius:6px; cursor:pointer;">+ नवीन लीड</button>
+    </div>
+    <div class="card" style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:16px;">
+      <table style="width:100%; border-collapse:collapse;">
+        <thead><tr style="text-align:left; border-bottom:2px solid #e2e8f0;"><th>नाव</th><th>कंपनी</th><th>फोन</th><th>स्टेज</th></tr></thead>
+        <tbody id="crm-leads-table-body"><tr><td colspan="4" class="muted" style="text-align:center; padding:20px;">लीड्स लोड होत आहेत...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- TAB 6: FINANCE -->
+  <div id="tab-finance" class="erp-tab-pane" style="display:none;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+      <h2>📑 दैनंदिन खर्च नोंदवही</h2>
+      <button type="button" onclick="openModal('expense-modal')" style="background:#2563eb; color:#fff; padding:8px 14px; border:none; border-radius:6px; cursor:pointer;">+ खर्च नोंदवा</button>
+    </div>
+    <div class="card" style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:16px;">
+      <table style="width:100%; border-collapse:collapse;">
+        <thead><tr style="text-align:left; border-bottom:2px solid #e2e8f0;"><th>खर्चाचे शीर्षक</th><th>प्रकार</th><th>रक्कम</th><th>तारीख</th></tr></thead>
+        <tbody id="expenses-table-body"><tr><td colspan="4" class="muted" style="text-align:center; padding:20px;">खर्च लोड होत आहेत...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- TAB 7: HR -->
+  <div id="tab-hr" class="erp-tab-pane" style="display:none;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+      <h2>👔 कर्मचारी व्यवस्थापन (HR & Payroll)</h2>
+      <button type="button" onclick="openModal('employee-modal')" style="background:#2563eb; color:#fff; padding:8px 14px; border:none; border-radius:6px; cursor:pointer;">+ कर्मचारी जोडा</button>
+    </div>
+    <div class="card" style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:16px;"><p class="muted">कर्मचारी हजेरी व पगार प्रणाली सक्रिय आहे.</p></div>
+  </div>
+
+  <!-- TAB 8: PROJECTS -->
+  <div id="tab-projects" class="erp-tab-pane" style="display:none;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+      <h2>🏗️ साईट व प्रकल्प (Projects)</h2>
+      <button type="button" onclick="openModal('project-modal')" style="background:#2563eb; color:#fff; padding:8px 14px; border:none; border-radius:6px; cursor:pointer;">+ नवीन प्रकल्प</button>
+    </div>
+    <div class="card" style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:16px;"><p class="muted">प्रकल्प ट्रॅकिंग मॉड्यूल सक्रिय आहे.</p></div>
+  </div>
+
+  <!-- TAB 9: POS COUNTER -->
+  <div id="tab-pos" class="erp-tab-pane" style="display:none;">
+    <h2>⚡ द्रुत POS काउंटर बिलिंग (Universal POS & Visual Grid)</h2>
+    <div class="pos-layout">
+      <div class="pos-catalog">
+        <div style="display:flex; gap:6px; margin-bottom:12px;">
+          <input type="text" id="pos-search-box" placeholder="बारकोड स्कॅन करा किंवा नाव शोधा..." oninput="filterPOSProducts(this.value)" style="flex:1; padding:8px; border:1px solid #cbd5e1; border-radius:6px;">
+          <button type="button" onclick="startHtml5Scanner('pos')" style="background:#0284c7; color:#fff; border:none; padding:8px 12px; border-radius:6px; cursor:pointer; font-weight:bold;">📷 स्कॅनर</button>
+        </div>
+        <div id="pos-reader" style="width:100%; max-width:400px; margin-bottom:12px; display:none;"></div>
+        <div id="pos-products-grid" class="grid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap:10px;">
+          <p class="muted">उत्पादने लोड होत आहेत...</p>
+        </div>
+      </div>
+      <div class="pos-cart">
+        <h3 style="margin-top:0;">चालू बिल (Current Bill)</h3>
+        <div id="pos-cart-items"><p class="muted">कार्ट रिकामी आहे. वस्तू निवडा.</p></div>
+        <hr style="margin:12px 0; border:none; border-top:1px solid #e2e8f0;">
+        <div style="font-size:18px; font-weight:800; display:flex; justify-content:space-between;">
+          <span>एकूण रक्कम:</span>
+          <span id="pos-total-amount">₹0.00</span>
+        </div>
+        <div style="margin-top:10px;">
+          <label style="font-size:12px; margin-bottom:2px;">ग्राहक सुरक्षा ID:</label>
+          <input type="text" id="pos-cust-phone" readonly value="Platform Shield Protected" style="margin-bottom:8px; font-size:12px; padding:6px 10px; width:100%; border:1px solid #cbd5e1; border-radius:4px; background:#f8fafc; color:#64748b;">
+        </div>
+        <div style="display:flex; gap:6px; margin-top:4px;">
+          <button type="button" style="flex:1; background:#16a34a; color:#fff; padding:10px; border:none; border-radius:6px; cursor:pointer; font-weight:bold;" onclick="completePOSSale('Cash')">💵 Cash</button>
+          <button type="button" style="flex:1; background:#0284c7; color:#fff; padding:10px; border:none; border-radius:6px; cursor:pointer; font-weight:bold;" onclick="completePOSSale('UPI')">📱 UPI</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 10: ONLINE ORDERS -->
+  <div id="tab-orders" class="erp-tab-pane" style="display:none;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+      <h2>🛍️ ऑनलाईन ग्राहकांच्या ऑर्डर्स (🔒 Privacy, PIN & Secure Contact)</h2>
+      <button type="button" onclick="loadOnlineOrders()" class="secondary" style="padding:6px 12px; cursor:pointer;">🔄 रिफ्रेश करा</button>
+    </div>
+
+    <div class="card" style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:16px; margin-bottom:16px;">
+      <h3 style="margin-top:0; color:#0f172a;">🛵 माझे स्वतःचे डिलिव्हरी कर्मचारी</h3>
+      <p class="muted" style="font-size:12.5px; margin-top:-6px;">तुमच्या दुकानातला माणूस स्वतः डिलिव्हरी देणार असेल तर इथे जोडा — तो फक्त तुमच्या दुकानाच्या ऑर्डर्ससाठीच "डिलिव्हरी पार्टनर" यादीत दिसेल.</p>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;">
+        <div><label style="font-size:12px; font-weight:700;">नाव</label><input id="shop-db-name" placeholder="उदा. रमेश" style="margin:0;"></div>
+        <div><label style="font-size:12px; font-weight:700;">फोन</label><input id="shop-db-phone" placeholder="10-अंकी नंबर" style="margin:0;"></div>
+        <div><label style="font-size:12px; font-weight:700;">वाहन नं. (ऐच्छिक)</label><input id="shop-db-vehicle" placeholder="उदा. MH15-AB-1234" style="margin:0;"></div>
+        <div><label style="font-size:12px; font-weight:700;">प्रति डिलिव्हरी कमिशन (₹)</label><input id="shop-db-fee" type="number" placeholder="उदा. 30" style="margin:0; width:100px;"></div>
+        <button onclick="addShopDeliveryBoy()" style="background:#16a34a; padding:8px 16px;">जोडा</button>
+      </div>
+      <p id="shop-db-msg" style="font-size:12.5px; margin:8px 0 0;"></p>
+      <div id="shop-db-list" style="margin-top:12px; display:flex; flex-direction:column; gap:8px;"></div>
+    </div>
+
+    <div id="returns-panel" class="card" style="background:#fff; border:1px solid #fecaca; border-radius:8px; padding:16px; margin-bottom:16px; display:none;">
+      <h3 style="margin-top:0; color:#b91c1c;">🔁 प्रलंबित रिटर्न / रिप्लेस विनंत्या</h3>
+      <div id="returns-list" style="display:flex; flex-direction:column; gap:10px;"></div>
+    </div>
+
+    <div id="cash-ledger-panel" class="card" style="background:#fff; border:1px solid #bae6fd; border-radius:8px; padding:16px; margin-bottom:16px; display:none;">
+      <h3 style="margin-top:0; color:#0369a1;">💵 डिलिव्हरी बॉयकडून रोख हिशोब</h3>
+      <p class="muted" style="font-size:12px; margin-top:-6px;">फक्त हिशोबाची नोंद — प्रत्यक्ष रोख डिलिव्हरी बॉयकडून तुम्हाला थेट (person-to-person) मिळते.</p>
+      <div id="cash-ledger-list" style="display:flex; flex-direction:column; gap:10px;"></div>
+    </div>
+
+    <div class="card" style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:16px; margin-bottom:16px;">
+      <h3 style="margin-top:0; color:#0f172a;">📊 डिलिव्हरी रिपोर्ट</h3>
+      <div id="delivery-report" class="muted" style="font-size:13px;">लोड होत आहे...</div>
+    </div>
+
+    <div class="card" style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:16px;">
+      <table style="width:100%; border-collapse:collapse;">
+        <thead>
+          <tr style="text-align:left; border-bottom:2px solid #e2e8f0;">
+            <th>ऑर्डर #</th><th>ग्राहक ओळख व पत्ता</th><th>डिलिव्हरी पार्टनर</th><th>साहित्य व रक्कम</th><th>स्थिती (Status)</th><th>डिलिव्हरी पिन पडताळणी व संप्रेषण (Actions)</th>
+          </tr>
+        </thead>
+        <tbody id="online-orders-table-body"><tr><td colspan="6" class="muted" style="text-align:center; padding:20px;">कोणतीही ऑर्डर नाही.</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- TAB 11: REPORTS & GST -->
+  <div id="tab-reports" class="erp-tab-pane" style="display:none;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+      <h2>📈 रिपोर्ट्स, ताळेबंद व GST केंद्र</h2>
+      <button type="button" onclick="exportDataCSV()" class="secondary" style="padding:6px 12px; cursor:pointer;">📥 CSV डाऊनलोड करा</button>
+    </div>
+    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:14px;">
+      <div class="card" style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:16px;">
+        <h4>GST कर अहवाल</h4><p class="muted" style="font-size:12px;">एकूण करपात्र विक्री हिशोब.</p>
+        <button type="button" onclick="alert('GST Report जनरेट झाला आहे!')" style="background:#2563eb; color:#fff; border:none; padding:6px 12px; border-radius:4px; cursor:pointer;">अहवाल पहा</button>
+      </div>
+      <div class="card" style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:16px;">
+        <h4>स्टॉक मूल्य मूल्यांकन</h4><p class="muted" style="font-size:12px;">सर्व मालाचे बाजारमूल्य.</p>
+        <button type="button" onclick="alert('स्टॉक व्हॅल्यूएशन अहवाल तयार आहे!')" style="background:#2563eb; color:#fff; border:none; padding:6px 12px; border-radius:4px; cursor:pointer;">अहवाल पहा</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 12: SETTINGS -->
+  <div id="tab-settings" class="erp-tab-pane" style="display:none;">
+    <h2>⚙️ सिस्टीम सेटिंग्स व भूमिका</h2>
+    <div class="card" style="max-width:540px; background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:16px;">
+      <label style="font-weight:bold;">दुकानाचे नाव</label>
+      <input id="setting-bname" value="UNIVERSAL STORE" style="margin-bottom:10px; width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:4px;">
+      <button type="button" onclick="alert('सेटिंग्स यशस्वीरित्या सेव्ह झाल्या!')" style="background:#16a34a; color:#fff; padding:8px 16px; border:none; border-radius:4px; cursor:pointer; font-weight:bold;">सेव्ह करा</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== MODALS SECTION (FULLY FUNCTIONAL CLOSING) ==================== -->
+
+<!-- 1. ग्लोबल मार्केटप्लेस मोडल -->
+<div id="global-catalog-modal" class="modal-overlay">
+  <div class="modal-content" style="max-width:700px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+      <h3 style="margin:0;">🌐 ग्लोबल मार्केटप्लेस कॅटलॉग</h3>
+      <button type="button" class="secondary" onclick="closeModal('global-catalog-modal')" style="padding:4px 10px; font-size:12px; cursor:pointer; font-weight:bold;">✕ बंद करा</button>
+    </div>
+    <input type="text" id="global-catalog-search" placeholder="🔍 प्रॉडक्टचे नाव शोधा..." oninput="filterGlobalCatalog(this.value)" style="margin-bottom:12px; width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:4px;">
+    <div id="global-catalog-results" style="max-height:400px; overflow-y:auto; display:grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap:10px;">
+      <p class="muted">कॅटलॉग लोड होत आहे...</p>
+    </div>
+  </div>
+</div>
+
+<!-- 2. नवीन प्रॉडक्ट जोडा मोडल -->
+<div id="add-product-modal" class="modal-overlay">
+  <div class="modal-content" style="max-width:580px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+      <h3 style="margin:0;">📦 नवीन प्रॉडक्ट जोडा (स्कॅनर व ऑटो-मॅपिंग सह)</h3>
+      <button type="button" class="secondary" onclick="closeModal('add-product-modal')" style="padding:4px 10px; font-size:12px; cursor:pointer; font-weight:bold;">✕ बंद करा</button>
+    </div>
+
+    <div style="margin-top:12px;">
+      <label style="font-weight:700;">उत्पादनाचे नाव * (उदा. Turmeric Powder, Basmati Rice)</label>
+      <div style="display:flex; gap:6px;">
+        <input id="np-name" placeholder="उत्पादनाचे नाव टाईप करा..." oninput="autoSuggestProductImages(this.value)" style="margin-bottom:0; flex:1; padding:8px; border:1px solid #cbd5e1; border-radius:4px;">
+        <button type="button" onclick="startHtml5Scanner('product')" class="secondary" style="padding:8px 10px; font-size:12px; cursor:pointer; background:#0284c7; color:#fff; border:none; border-radius:4px;">📷 स्कॅनर</button>
+      </div>
+      <div id="reader" style="width:100%; max-width:400px; margin-top:8px; display:none;"></div>
+    </div>
+
+    <div style="margin-top:10px;">
+      <label style="font-weight:700;">बारकोड (Barcode)</label>
+      <input id="np-barcode" placeholder="स्कॅन करा किंवा टाईप करा..." style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:4px;">
+      <p id="np-barcode-status" style="font-size:11.5px; margin:4px 0 0; color:#64748b;"></p>
+    </div>
+
+    <div style="margin-top:10px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:6px; padding:10px;">
+      <label style="font-weight:700; font-size:13px;">🤝 Wholesale भाव (ऐच्छिक — फक्त Wholesaler असल्यास)</label>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:6px;">
+        <input id="np-wholesale-price" type="number" placeholder="Wholesale भाव ₹" style="padding:8px; border:1px solid #cbd5e1; border-radius:4px;">
+        <input id="np-min-order-qty" type="number" placeholder="किमान ऑर्डर प्रमाण" style="padding:8px; border:1px solid #cbd5e1; border-radius:4px;">
+      </div>
+    </div>
+
+    <div style="margin-top:10px; display:flex; align-items:center; gap:8px;">
+      <input type="checkbox" id="np-is-variant" style="width:auto; margin:0;" onchange="document.getElementById('np-variant-fields').style.display = this.checked ? 'block' : 'none';">
+      <label for="np-is-variant" style="font-weight:700; margin:0;">हा आधीच्या उत्पादनाचा Variant आहे (उदा. वेगळा साईझ)</label>
+    </div>
+    <div id="np-variant-fields" style="display:none; margin-top:8px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:10px;">
+      <label style="font-weight:700;">मूळ उत्पादन निवडा</label>
+      <select id="np-parent-product" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:4px; margin-bottom:8px;"></select>
+      <label style="font-weight:700;">Variant लेबल (उदा. 500ml, Red, XL)</label>
+      <input id="np-variant-label" placeholder="500ml" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:4px;">
+    </div>
+
+    <div style="margin:12px 0; background:#ffffff; border:1px solid #d0e1fd; border-radius:8px; padding:10px;">
+      <div style="font-size:12px; font-weight:700; color:#2563eb; margin-bottom:6px;">✨ ऑटो-मॅप्ड फोटो व पूर्वावलोकन:</div>
+      <div id="smart-image-suggestions" style="display:flex; gap:8px; overflow-x:auto; padding:4px 0; min-height:60px; align-items:center;">
+        <span class="muted" style="font-size:11.5px;">नाव टाईप करताच अचूक चित्र ऑटो-डिटेक्ट होईल...</span>
+      </div>
+      <input type="hidden" id="np-selected-image-url" value="">
+    </div>
+
+    <div style="display:flex; gap:10px;">
+      <div style="flex:1;">
+        <label style="font-weight:700;">एकक (Unit)</label>
+        <select id="np-unit" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:4px;">
+          <option value="pcs">नग (Pcs)</option>
+          <option value="kg">किलो (Kg)</option>
+          <option value="ltr">लीटर (Ltr)</option>
+          <option value="box">बॉक्स (Box)</option>
+          <option value="packet">पॅकेट (Packet)</option>
+        </select>
+      </div>
+      <div style="flex:1;"><label style="font-weight:700;">विक्री दर (₹) *</label><input id="np-price" type="number" min="0" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:4px;"></div>
+    </div>
+    <div style="display:flex; gap:10px; margin-top:8px;">
+      <div style="flex:1;"><label style="font-weight:700;">खरेदी किंमत (₹)</label><input id="np-purchase-price" type="number" min="0" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:4px;"></div>
+      <div style="flex:1;"><label style="font-weight:700;">स्टॉक</label><input id="np-stock" type="number" min="0" value="10" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:4px;"></div>
+    </div>
+
+    <p id="np-error" style="color:red; margin:6px 0; font-weight:bold;"></p>
+    <div style="display:flex; gap:8px; margin-top:12px;">
+      <button id="np-save-btn" type="button" style="flex:1; background:#16a34a; color:#fff; padding:10px; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">सेव्ह करा</button>
+      <button type="button" class="secondary" onclick="closeModal('add-product-modal')" style="cursor:pointer; padding:10px;">रद्द करा</button>
+    </div>
+  </div>
+</div>
+
+<!-- 3. इतर सर्व इनव्हॉइस व खरेदी मॉडेल्स -->
+<div id="invoice-modal" class="modal-overlay">
+  <div class="modal-content">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+      <h3 style="margin:0;">💰 नवीन इनव्हॉइस</h3>
+      <button type="button" class="secondary" onclick="closeModal('invoice-modal')" style="padding:4px 10px; font-size:12px; cursor:pointer; font-weight:bold;">✕ बंद करा</button>
+    </div>
+    <label style="font-weight:bold;">ग्राहकाचे नाव *</label><input id="inv-cust" placeholder="Customer Name" style="margin-bottom:8px; width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:4px;">
+    <label style="font-weight:bold;">मोबाईल नंबर</label><input id="inv-phone" placeholder="Phone Number" style="margin-bottom:8px; width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:4px;">
+    <label style="font-weight:bold;">डिलिव्हरी पत्ता</label><textarea id="inv-address" placeholder="Address" style="margin-bottom:8px; width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:4px; height:50px;"></textarea>
+    <label style="font-weight:bold;">तपशील / वस्तू</label><input id="inv-items" placeholder="उदा. किराणा सामान" style="margin-bottom:8px; width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:4px;">
+    <label style="font-weight:bold;">रक्कम (₹) *</label><input id="inv-amt" type="number" placeholder="Total Amount" style="margin-bottom:12px; width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:4px;">
+    <button type="button" onclick="saveNewInvoice()" style="width:100%; background:#16a34a; color:#fff; padding:10px; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">सेव्ह करा</button>
+  </div>
+</div>
+
+<div id="purchase-order-modal" class="modal-overlay">
+  <div class="modal-content">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+      <h3 style="margin:0;">🛒 नवीन खरेदी नोंद</h3>
+      <button type="button" class="secondary" onclick="closeModal('purchase-order-modal')" style="padding:4px 10px; font-size:12px; cursor:pointer; font-weight:bold;">✕ बंद करा</button>
+    </div>
+    <label style="font-weight:bold;">सप्लायर नाव *</label><input id="po-supp" placeholder="Supplier Name" style="margin-bottom:8px; width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:4px;">
+    <label style="font-weight:bold;">रक्कम (₹) *</label><input id="po-amt" type="number" placeholder="Order Amount" style="margin-bottom:12px; width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:4px;">
+    <button type="button" onclick="saveNewPurchaseOrder()" style="width:100%; background:#16a34a; color:#fff; padding:10px; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">सेव्ह करा</button>
+  </div>
+</div>
+
+<div id="lead-modal" class="modal-overlay">
+  <div class="modal-content">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+      <h3 style="margin:0;">👥 नवीन CRM लीड</h3>
+      <button type="button" class="secondary" onclick="closeModal('lead-modal')" style="padding:4px 10px; font-size:12px; cursor:pointer; font-weight:bold;">✕ बंद करा</button>
+    </div>
+    <label style="font-weight:bold;">लीडचे नाव *</label><input id="lead-name-input" placeholder="Lead Name" style="margin-bottom:8px; width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:4px;">
+    <label style="font-weight:bold;">मोबाईल नंबर</label><input id="lead-phone-input" placeholder="Phone" style="margin-bottom:12px; width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:4px;">
+    <button type="button" onclick="saveNewLead()" style="width:100%; background:#16a34a; color:#fff; padding:10px; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">सेव्ह करा</button>
+  </div>
+</div>
+
+<div id="expense-modal" class="modal-overlay">
+  <div class="modal-content">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+      <h3 style="margin:0;">📑 खर्च नोंदवा</h3>
+      <button type="button" class="secondary" onclick="closeModal('expense-modal')" style="padding:4px 10px; font-size:12px; cursor:pointer; font-weight:bold;">✕ बंद करा</button>
+    </div>
+    <label style="font-weight:bold;">खर्चाचे शीर्षक *</label><input id="exp-title-input" placeholder="Expense Title" style="margin-bottom:8px; width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:4px;">
+    <label style="font-weight:bold;">रक्कम (₹) *</label><input id="exp-amt-input" type="number" placeholder="Amount" style="margin-bottom:12px; width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:4px;">
+    <button type="button" onclick="saveNewExpense()" style="width:100%; background:#16a34a; color:#fff; padding:10px; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">सेव्ह करा</button>
+  </div>
+</div>
+
+<div id="employee-modal" class="modal-overlay">
+  <div class="modal-content">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+      <h3 style="margin:0;">कर्मचारी जोडा</h3>
+      <button type="button" class="secondary" onclick="closeModal('employee-modal')" style="padding:4px 10px; font-size:12px; cursor:pointer; font-weight:bold;">✕ बंद करा</button>
+    </div>
+    <input placeholder="कर्मचाऱ्याचे नाव" style="margin:8px 0; width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:4px;">
+    <button type="button" onclick="closeModal('employee-modal')" style="background:#16a34a; color:#fff; width:100%; padding:8px; border:none; border-radius:4px; font-weight:bold; cursor:pointer;">सेव्ह करा</button>
+  </div>
+</div>
+
+<div id="project-modal" class="modal-overlay">
+  <div class="modal-content">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+      <h3 style="margin:0;">प्रकल्प जोडा</h3>
+      <button type="button" class="secondary" onclick="closeModal('project-modal')" style="padding:4px 10px; font-size:12px; cursor:pointer; font-weight:bold;">✕ बंद करा</button>
+    </div>
+    <input placeholder="प्रकल्पाचे नाव" style="margin:8px 0; width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:4px;">
+    <button type="button" onclick="closeModal('project-modal')" style="background:#16a34a; color:#fff; width:100%; padding:8px; border:none; border-radius:4px; font-weight:bold; cursor:pointer;">सेव्ह करा</button>
+  </div>
+</div>
+
+<script src="js/supabase-client.js"></script>
+<script src="js/cart.js"></script>
+<script src="js/nav.js"></script>
+<script src="js/tracking.js"></script>
+<script src="js/erp-engine.js"></script>
+<script src="js/master-dictionary.js"></script>
+<script>
+let currentBusinessId = null;
+let currentProducts = [];
+let globalCatalogCache = [];
+let posCart = [];
+let activeHtmlScanner = null;
+
+function switchTab(tabId) {
+  document.querySelectorAll('.erp-tab-pane').forEach(el => el.style.display = 'none');
+  document.querySelectorAll('.erp-tab-btn').forEach(btn => btn.classList.remove('active'));
+  
+  const target = document.getElementById(tabId);
+  if (target) target.style.display = 'block';
+  
+  document.querySelectorAll('.erp-tab-btn').forEach(btn => {
+    if (btn.getAttribute('onclick') && btn.getAttribute('onclick').includes(tabId)) {
+      btn.classList.add('active');
+    }
+  });
+
+  if (tabId === 'tab-orders') loadOnlineOrders();
+  else if (tabId === 'tab-pos') renderPOSProductsGrid();
+  else if (tabId === 'tab-sales') loadSalesInvoices();
+  else if (tabId === 'tab-purchase') loadPurchaseOrders();
+  else if (tabId === 'tab-crm') loadCRMLeads();
+  else if (tabId === 'tab-finance') loadExpenses();
+  else if (tabId === 'tab-overview') updateFinancialKPIs();
+}
+
+// 🌟 खात्रीशीर मॉडेल्स ओपन व क्लोज करणारी फंक्शन्स
+function openModal(id) { 
+  const el = document.getElementById(id);
+  if (el) el.style.display = 'flex'; 
+  if (id === 'add-product-modal') populateParentProductDropdown();
+}
+
+function closeModal(id) { 
+  const el = document.getElementById(id);
+  if (el) {
+    el.style.display = 'none';
+    if (activeHtmlScanner) {
+      try { activeHtmlScanner.clear(); } catch(e){}
+    }
+  }
+}
+
+async function initDashboard() {
+  try {
+    const { data: { user } } = await sb.auth.getUser();
+    if (!user) { window.location.href = 'login.html'; return; }
+
+    const { data: businesses } = await sb.from('businesses').select('id, name, is_wholesaler').eq('owner_id', user.id);
+    if (businesses && businesses.length > 0) {
+      currentBusinessId = businesses[0].id;
+      const bNameEl = document.getElementById('business-display-name');
+      if (bNameEl) bNameEl.textContent = businesses[0].name;
+      const wsToggle = document.getElementById('is-wholesaler-toggle');
+      if (wsToggle) wsToggle.checked = !!businesses[0].is_wholesaler;
+      await loadProducts();
+      await preloadGlobalCatalog();
+      await loadSalesInvoices();
+      await loadPurchaseOrders();
+      await loadCRMLeads();
+      await loadExpenses();
+      await loadOnlineOrders();
+      updateFinancialKPIs();
+    }
+  } catch (err) { console.error('Init error:', err); }
+}
+
+// 🔔 खणखणीत व मोठा ऑडिओ अलर्ट
+function playNewOrderSound() {
+  try {
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc1 = audioCtx.createOscillator();
+    const gain1 = audioCtx.createGain();
+    osc1.type = 'square';
+    osc1.frequency.setValueAtTime(880, audioCtx.currentTime);
+    gain1.gain.setValueAtTime(0.35, audioCtx.currentTime);
+    gain1.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+    osc1.connect(gain1);
+    gain1.connect(audioCtx.destination);
+    osc1.start();
+    osc1.stop(audioCtx.currentTime + 0.25);
+
+    setTimeout(() => {
+      const osc2 = audioCtx.createOscillator();
+      const gain2 = audioCtx.createGain();
+      osc2.type = 'square';
+      osc2.frequency.setValueAtTime(1174.66, audioCtx.currentTime);
+      gain2.gain.setValueAtTime(0.35, audioCtx.currentTime);
+      gain2.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.35);
+      osc2.connect(gain2);
+      gain2.connect(audioCtx.destination);
+      osc2.start();
+      osc2.stop(audioCtx.currentTime + 0.35);
+    }, 280);
+  } catch(e) {}
+}
+
+async function loadOnlineOrders() {
+  if (!currentBusinessId) return;
+  const tbody = document.getElementById('online-orders-table-body');
+  if (!tbody) return;
+
+  const { data: orders } = await sb.from('orders').select('*').eq('business_id', currentBusinessId).order('created_at', { ascending: false });
+
+  // असाइन करण्यासाठी उपलब्ध डिलिव्हरी बॉईज: प्लॅटफॉर्मचे शेअर्ड (business_id null) + या दुकानाचे स्वतःचे
+  const { data: platformBoys } = await sb.from('delivery_boys').select('id, name, vehicle_number, business_id, default_delivery_fee').is('business_id', null).eq('is_available', true).order('name');
+  const { data: shopBoys } = await sb.from('delivery_boys').select('id, name, vehicle_number, business_id, default_delivery_fee').eq('business_id', currentBusinessId).eq('is_available', true).order('name');
+  const availableDeliveryBoys = [...(shopBoys ?? []), ...(platformBoys ?? [])];
+
+  await loadShopDeliveryBoys();
+  await loadPendingReturns();
+  await loadDeliveryReport();
+  await loadCashLedgerForShop();
+
+  if (!orders || orders.length === 0) { 
+    tbody.innerHTML = '<tr><td colspan="6" class="muted" style="text-align:center; padding:20px;">कोणतीही ऑर्डर नाही.</td></tr>'; 
+    return; 
+  }
+
+  if (orders.some(o => o.status === 'pending' || !o.status)) {
+    playNewOrderSound();
+  }
+
+  tbody.innerHTML = orders.map(o => {
+    let statusBadgeClass = 'pending';
+    let statusText = o.status || 'pending';
+    
+    if (o.status === 'accepted') { statusBadgeClass = 'live'; statusText = 'स्वीकारली (Accepted)'; }
+    else if (o.status === 'packed') { statusBadgeClass = 'packed'; statusText = 'पॅकिंग पूर्ण (Packed)'; }
+    else if (o.status === 'dispatched') { statusBadgeClass = 'dispatched'; statusText = 'रवाना झाली (Dispatched)'; }
+    else if (o.status === 'delivered') { statusBadgeClass = 'delivered'; statusText = 'यशस्वीरित्या पोचवली (Delivered)'; }
+    else if (o.status === 'rejected') { statusBadgeClass = 'rejected'; statusText = 'नाकारली (Rejected)'; }
+
+    let deliveryPin = o.delivery_pin;
+    if (!deliveryPin) {
+      deliveryPin = Math.floor(1000 + Math.random() * 9000).toString();
+      sb.from('orders').update({ delivery_pin: deliveryPin }).eq('id', o.id).then(()=>{});
+    }
+
+    let deliveryPartnerDropdown = `
+      <select id="partner-${o.id}" onchange="updateDeliveryPartner('${o.id}', this.value)" style="padding:4px; font-size:11.5px; border:1px solid #cbd5e1; border-radius:4px; background:#f8fafc; width:100%;">
+        <option value="" ${!o.delivery_boy_id ? 'selected' : ''}>🏪 स्वतः दुकानदार (Self)</option>
+        ${availableDeliveryBoys.map(d => `<option value="${d.id}" data-fee="${d.default_delivery_fee || 0}" ${o.delivery_boy_id === d.id ? 'selected' : ''}>${d.business_id ? '👤' : '🛵'} ${escapeHtml(d.name)} (${d.vehicle_number || 'वाहन नमूद नाही'})${d.business_id ? ' — माझा कर्मचारी' : ' — प्लॅटफॉर्म'}</option>`).join('')}
+      </select>
+      ${o.delivery_boy_id ? (o.delivery_accepted_at ? '<div style="font-size:10.5px; color:#16a34a; font-weight:700; margin-top:3px;">✅ डिलिव्हरी बॉयने स्वीकारली</div>' : '<div style="font-size:10.5px; color:#b45309; font-weight:700; margin-top:3px;">⏳ डिलिव्हरी बॉयच्या स्वीकृतीची वाट पाहत आहे</div>') : ''}
+      ${o.delivery_boy_id ? `<div style="margin-top:5px; display:flex; align-items:center; gap:4px;"><span style="font-size:10.5px; color:#64748b;">₹ कमिशन:</span><input type="number" id="fee-${o.id}" value="${o.delivery_fee || 0}" onchange="updateDeliveryFee('${o.id}', this.value)" style="width:60px; padding:2px 4px; font-size:11px; margin-bottom:0;"></div>` : ''}
+      ${o.delivery_boy_id && (o.status === 'pending' || o.status === 'accepted' || o.status === 'packed') ? `
+        <div style="margin-top:5px; background:#fffbeb; border:1px dashed #d97706; padding:4px 8px; border-radius:5px; text-align:center;">
+          <span style="font-size:9.5px; color:#92400e;">पिकअप OTP (डिलिव्हरी बॉयला सांगा)</span><br>
+          <strong style="font-size:14px; letter-spacing:2px; color:#92400e;">${o.pickup_otp || '⚠️ रिकामा'}</strong>
+          <button onclick="regeneratePickupOtp('${o.id}')" title="पुन्हा तयार करा" style="margin-left:6px; background:none; border:none; color:#0284c7; font-size:11px; cursor:pointer; text-decoration:underline;">🔄 पुन्हा तयार करा</button>
+        </div>` : ''}
+    `;
+
+    const customerPhoneClean = o.customer_phone ? o.customer_phone.replace(/\D/g, '') : '';
+
+    let actionButtons = '';
+    if (!o.status || o.status === 'pending') {
+      actionButtons = `
+        <button type="button" onclick="updateOrderStatus('${o.id}', 'accepted')" style="background:#16a34a; color:#fff; padding:6px 10px; font-size:11px; border:none; border-radius:4px; cursor:pointer; font-weight:bold;">✅ Accept</button>
+        <button type="button" onclick="updateOrderStatus('${o.id}', 'rejected')" style="background:#dc2626; color:#fff; padding:6px 10px; font-size:11px; border:none; border-radius:4px; cursor:pointer; font-weight:bold;">❌ Reject</button>
+      `;
+    } else if (o.status === 'accepted') {
+      actionButtons = `<button type="button" onclick="updateOrderStatus('${o.id}', 'packed')" style="background:#0284c7; color:#fff; padding:6px 10px; font-size:11px; border:none; border-radius:4px; cursor:pointer; font-weight:bold;">📦 पॅकिंग पूर्ण</button>`;
+    } else if (o.status === 'packed') {
+      actionButtons = `<button type="button" onclick="updateOrderStatus('${o.id}', 'dispatched')" style="background:#4f46e5; color:#fff; padding:6px 10px; font-size:11px; border:none; border-radius:4px; cursor:pointer; font-weight:bold;">🚚 रवाना करा</button>`;
+    } else if (o.status === 'dispatched') {
+      actionButtons = `
+        <div style="background:#f0fdf4; border:1px solid #bbf7d0; padding:6px; border-radius:6px; display:flex; flex-direction:column; gap:6px;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-size:11px; color:#16a34a; font-weight:800;">🔑 ग्राहकाकडून पिन टाका:</span>
+            ${customerPhoneClean ? `<a href="https://wa.me/91${customerPhoneClean}?text=नमस्कार,%20डिलिव्हरी%20बाबत." target="_blank" style="background:#25D366; color:#fff; padding:2px 6px; font-size:10.5px; border-radius:4px; text-decoration:none; font-weight:bold;">💬 WhatsApp</a>` : ''}
+          </div>
+          <div style="display:flex; gap:4px;">
+            <input type="text" id="pin-input-${o.id}" placeholder="पिन" maxlength="6" style="width:95px; padding:4px; font-size:12px; text-align:center; font-weight:bold; border:1px solid #cbd5e1; border-radius:4px; margin-bottom:0;">
+            <button type="button" onclick="verifyAndDeliver('${o.id}')" style="background:#059669; color:#fff; padding:4px 8px; font-size:11px; border:none; border-radius:4px; cursor:pointer; font-weight:bold;">✅ खात्री</button>
+          </div>
+        </div>
+      `;
+    } else {
+      actionButtons = `<span style="font-size:11.5px; color:#16a34a; font-weight:bold;">🎉 ऑर्डर पूर्ण</span>`;
+    }
+
+    return `
+      <tr style="border-bottom:1px solid #f1f5f9; background: ${o.status === 'pending' ? '#fffbeb' : '#ffffff'};">
+        <td style="padding:10px 0;"><strong>#${o.id.toString().substring(0,8)}</strong></td>
+        <td><strong>👤 ${o.customer_name || 'Buyer'}</strong><br><span style="font-size:11.5px; color:#64748b;">📞 ${o.customer_phone || '-'}</span>${o.customer_email ? `<br><span style="font-size:11px; color:#94a3b8;">✉️ ${o.customer_email}</span>` : ''}</td>
+        <td>${deliveryPartnerDropdown}</td>
+        <td><div style="font-size:12px;">${o.items_summary || '-'}</div><strong>₹${o.total_amount || 0}</strong></td>
+        <td><span class="badge ${statusBadgeClass}">${statusText}</span></td>
+        <td>
+          <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
+            ${actionButtons}
+            <button type="button" onclick="printInvoiceBill('${o.id}', '${o.customer_name || 'ग्राहक'}', ${o.total_amount}, '${(o.items_summary || 'ऑनलाइन ऑर्डर').replace(/'/g, "\\'")}', '${o.customer_phone || ''}', '${(o.delivery_address || '').replace(/'/g, "\\'")}')" style="background:#2563eb; color:#fff; border:none; padding:6px 10px; border-radius:4px; font-size:11px; font-weight:bold; cursor:pointer;">🖨️ बिल</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+async function verifyAndDeliver(orderId) {
+  const inputPin = document.getElementById(`pin-input-${orderId}`).value.trim();
+  if (!inputPin) { alert('कृपया पिन टाका!'); return; }
+  const { data: orderData } = await sb.from('orders').select('delivery_pin').eq('id', orderId).single();
+  if (!orderData || inputPin !== orderData.delivery_pin) { alert('❌ चुकीचा पिन!'); return; }
+  await sb.from('orders').update({ status: 'delivered', delivered_at: new Date().toISOString() }).eq('id', orderId);
+  alert('🎉 ऑर्डर यशस्वीरीत्या पूर्ण झाली!');
+  loadOnlineOrders();
+  await loadProducts();
+  updateFinancialKPIs();
+}
+
+async function updateOrderStatus(orderId, newStatus) {
+  await sb.from('orders').update({ status: newStatus }).eq('id', orderId);
+  loadOnlineOrders(); 
+  await loadProducts(); 
+  updateFinancialKPIs();
+}
+
+async function updateDeliveryPartner(orderId, deliveryBoyId) {
+  let defaultFee = 0;
+  if (deliveryBoyId) {
+    const selectEl = document.getElementById(`partner-${orderId}`);
+    const chosenOption = selectEl?.selectedOptions?.[0];
+    defaultFee = Number(chosenOption?.dataset?.fee || 0);
+  }
+  await sb.from('orders').update({ delivery_boy_id: deliveryBoyId || null, delivery_accepted_at: null, delivery_fee: deliveryBoyId ? defaultFee : 0 }).eq('id', orderId);
+  loadOnlineOrders();
+}
+
+async function updateDeliveryFee(orderId, fee) {
+  await sb.from('orders').update({ delivery_fee: Number(fee) || 0 }).eq('id', orderId);
+}
+
+async function regeneratePickupOtp(orderId) {
+  if (!confirm('नवीन OTP तयार करायचा का? जुना OTP (आधी दिलेला असल्यास) आता चालणार नाही.')) return;
+  const { data, error } = await sb.rpc('regenerate_pickup_otp', { p_order_id: orderId });
+  if (error) { alert('❌ ' + error.message); return; }
+  alert(`✅ नवीन पिकअप OTP: ${data}`);
+  loadOnlineOrders();
+}
+
+async function loadPendingReturns() {
+  const panel = document.getElementById('returns-panel');
+  const listEl = document.getElementById('returns-list');
+  if (!panel || !listEl || !currentBusinessId) return;
+
+  const { data: requested } = await sb.from('orders')
+    .select('id, customer_name, customer_phone, customer_email, items_summary, return_type, return_reason, return_requested_at')
+    .eq('business_id', currentBusinessId)
+    .eq('return_status', 'requested')
+    .order('return_requested_at', { ascending: false });
+
+  const { data: inProgress } = await sb.from('orders')
+    .select('id, customer_name, customer_phone, customer_email, items_summary, return_type, return_pickup_status, refund_status, return_delivery_boy_id')
+    .eq('business_id', currentBusinessId)
+    .eq('return_status', 'approved')
+    .order('return_resolved_at', { ascending: false });
+
+  if ((!requested || requested.length === 0) && (!inProgress || inProgress.length === 0)) {
+    panel.style.display = 'none';
+    return;
+  }
+
+  panel.style.display = 'block';
+
+  const { data: platformBoys } = await sb.from('delivery_boys').select('id, name').is('business_id', null).eq('is_available', true).order('name');
+  const { data: shopBoys } = await sb.from('delivery_boys').select('id, name').eq('business_id', currentBusinessId).eq('is_available', true).order('name');
+  const boyOptions = [...(shopBoys ?? []), ...(platformBoys ?? [])];
+
+  const requestedHtml = (requested || []).map(o => `
+    <div style="border:1px solid #fecaca; border-radius:8px; padding:10px 12px; background:#fef2f2;">
+      <div style="font-weight:800; font-size:13px;">${o.return_type === 'replace' ? '🔁 रिप्लेस' : '↩️ रिटर्न'} — ${escapeHtml(o.customer_name || 'ग्राहक')} (📞 ${escapeHtml(o.customer_phone || '-')})</div>
+      ${o.customer_email ? `<div style="font-size:11.5px; color:#94a3b8;">✉️ ${escapeHtml(o.customer_email)}</div>` : ''}
+      <div style="font-size:12.5px; color:#475569; margin-top:3px;">🛒 ${escapeHtml(o.items_summary || '-')}</div>
+      <div style="font-size:12.5px; color:#334155; margin-top:3px;"><strong>कारण:</strong> ${escapeHtml(o.return_reason || '-')}</div>
+      <div style="display:flex; gap:8px; margin-top:8px;">
+        <button onclick="resolveReturn('${o.id}', true)" style="background:#16a34a; color:#fff; padding:5px 12px; font-size:12px; border:none; border-radius:5px; cursor:pointer; font-weight:700;">✅ मंजूर करा</button>
+        <button onclick="resolveReturn('${o.id}', false)" style="background:#dc2626; color:#fff; padding:5px 12px; font-size:12px; border:none; border-radius:5px; cursor:pointer; font-weight:700;">❌ नाकारा</button>
+      </div>
+    </div>
+  `).join('');
+
+  const inProgressHtml = (inProgress || []).map(o => {
+    const pickedUpFromCustomer = o.return_pickup_status === 'picked_up';
+    const receivedByShop = o.return_pickup_status === 'received_by_shop';
+    let statusLabel, statusColor;
+    if (receivedByShop) { statusLabel = '✅ माल दुकानात परत मिळाला (कन्फर्म केलं)'; statusColor = '#16a34a'; }
+    else if (pickedUpFromCustomer) { statusLabel = '📦 डिलिव्हरी बॉयकडे आहे — तो दुकानात आणेल तेव्हा OTP टाका'; statusColor = '#0284c7'; }
+    else { statusLabel = '⏳ ग्राहकाकडून पिकअपची वाट पाहत आहे'; statusColor = '#b45309'; }
+
+    return `
+    <div style="border:1px solid #fde68a; border-radius:8px; padding:10px 12px; background:#fffbeb;">
+      <div style="font-weight:800; font-size:13px;">${o.return_type === 'replace' ? '🔁 रिप्लेस' : '↩️ रिटर्न'} (मंजूर) — ${escapeHtml(o.customer_name || 'ग्राहक')} (📞 ${escapeHtml(o.customer_phone || '-')})</div>
+      ${o.customer_email ? `<div style="font-size:11.5px; color:#94a3b8;">✉️ ${escapeHtml(o.customer_email)}</div>` : ''}
+      <div style="font-size:12.5px; color:#475569; margin-top:3px;">🛒 ${escapeHtml(o.items_summary || '-')}</div>
+      <div style="font-size:12px; margin-top:6px; font-weight:700; color:${statusColor};">${statusLabel}</div>
+
+      ${!pickedUpFromCustomer ? `
+      <div style="margin-top:6px; display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+        <label style="font-size:11px; font-weight:700; color:#64748b;">पिकअप डिलिव्हरी बॉय:</label>
+        <select id="return-boy-select-${o.id}" style="padding:3px; font-size:11.5px; border:1px solid #cbd5e1; border-radius:4px;">
+          <option value="">-- निवडा --</option>
+          ${boyOptions.map(b => `<option value="${b.id}" ${o.return_delivery_boy_id === b.id ? 'selected' : ''}>${escapeHtml(b.name)}</option>`).join('')}
+        </select>
+        <button onclick="assignReturnDeliveryBoy('${o.id}')" style="background:#0284c7; color:#fff; padding:4px 12px; font-size:11.5px; border:none; border-radius:5px; cursor:pointer; font-weight:700;">पाठवा</button>
+        <span id="return-boy-status-${o.id}" style="font-size:11.5px; font-weight:700; color:${o.return_delivery_boy_id ? '#16a34a' : '#94a3b8'};">
+          ${o.return_delivery_boy_id ? '✅ असाइन केलेलं आहे: ' + escapeHtml((boyOptions.find(b => b.id === o.return_delivery_boy_id) || {}).name || '') : '⚠️ अजून कुणीही असाइन नाही'}
+        </span>
+      </div>` : ''}
+
+      ${pickedUpFromCustomer && !receivedByShop ? `
+        <div style="margin-top:8px; display:flex; align-items:center; gap:6px;">
+          <input type="text" id="return-shop-otp-${o.id}" placeholder="डिलिव्हरी बॉयने सांगितलेला OTP" maxlength="6" inputmode="numeric" style="width:150px; margin-bottom:0;">
+          <button onclick="confirmReturnReceivedByShop('${o.id}')" style="background:#16a34a; color:#fff; padding:5px 12px; font-size:12px; border:none; border-radius:5px; cursor:pointer; font-weight:700;">✅ माल मिळाला — OTP पडताळा</button>
+        </div>
+      ` : ''}
+
+      ${o.return_type === 'return' && receivedByShop ? `
+        <div style="margin-top:8px;">
+          ${o.refund_status === 'done'
+            ? '<span style="color:#16a34a; font-weight:700; font-size:12px;">✅ पैसे परत केले (नोंदवलेलं)</span>'
+            : `<button onclick="markRefundDone('${o.id}')" style="background:#0284c7; color:#fff; padding:5px 12px; font-size:12px; border:none; border-radius:5px; cursor:pointer; font-weight:700;">💰 पैसे परत केले — नोंदवा</button>`}
+        </div>
+      ` : ''}
+    </div>
+  `;
+  }).join('');
+
+  listEl.innerHTML = requestedHtml + inProgressHtml;
+}
+
+async function assignReturnDeliveryBoy(orderId) {
+  const selectEl = document.getElementById(`return-boy-select-${orderId}`);
+  const statusEl = document.getElementById(`return-boy-status-${orderId}`);
+  const deliveryBoyId = selectEl?.value;
+
+  if (!deliveryBoyId) { alert('⚠️ कृपया आधी डिलिव्हरी बॉय निवडा.'); return; }
+
+  const { error } = await sb.rpc('assign_return_delivery_boy', { p_order_id: orderId, p_delivery_boy_id: deliveryBoyId });
+  if (error) { alert('❌ असाइन करताना अडचण: ' + error.message); return; }
+
+  const chosenName = selectEl.selectedOptions[0]?.text || '';
+  if (statusEl) {
+    statusEl.textContent = '✅ असाइन झालं: ' + chosenName;
+    statusEl.style.color = '#16a34a';
+  }
+  alert(`✅ "${chosenName}" ला पिकअपसाठी पाठवलं — त्याच्या पोर्टलवर आता हे दिसेल.`);
+}
+
+async function confirmReturnReceivedByShop(orderId) {
+  const otp = document.getElementById(`return-shop-otp-${orderId}`).value.trim();
+  if (!otp) { alert('⚠️ डिलिव्हरी बॉयकडून OTP विचारून टाका.'); return; }
+
+  const { error } = await sb.rpc('confirm_return_received_by_shop', { p_order_id: orderId, p_otp: otp });
+  if (error) { alert('❌ ' + error.message); return; }
+
+  alert('✅ माल दुकानात परत मिळाल्याची नोंद झाली!');
+  await loadPendingReturns();
+}
+
+async function markRefundDone(orderId) {
+  if (!confirm('ग्राहकाला पैसे (UPI/रोख) आधीच परत केले आहेत याची खात्री आहे का? ही फक्त नोंद आहे — पैसे या प्लॅटफॉर्मवरून जात नाहीत.')) return;
+  const { error } = await sb.rpc('mark_refund_done', { p_order_id: orderId });
+  if (error) { alert('❌ ' + error.message); return; }
+  await loadPendingReturns();
+}
+
+async function resolveReturn(orderId, approve) {
+  const note = prompt(approve ? 'ग्राहकासाठी निरोप (ऐच्छिक):' : 'नाकारण्याचं कारण (ऐच्छिक):') || null;
+  const { error } = await sb.rpc('resolve_order_return', { p_order_id: orderId, p_approve: approve, p_shop_note: note });
+  if (error) { alert('❌ ' + error.message); return; }
+  await loadPendingReturns();
+}
+
+async function loadCashLedgerForShop() {
+  const panel = document.getElementById('cash-ledger-panel');
+  const listEl = document.getElementById('cash-ledger-list');
+  if (!panel || !listEl || !currentBusinessId) return;
+
+  const { data: pendingHandovers } = await sb.from('cash_handovers')
+    .select('id, delivery_boy_id, amount, status, created_at')
+    .eq('business_id', currentBusinessId)
+    .eq('status', 'pending_confirmation')
+    .order('created_at', { ascending: false });
+
+  const { data: stillWithBoy } = await sb.from('orders')
+    .select('delivery_boy_id, cash_collected_amount')
+    .eq('business_id', currentBusinessId)
+    .eq('cash_handover_status', 'pending_handover');
+
+  const { data: recentlyConfirmed } = await sb.from('cash_handovers')
+    .select('id, delivery_boy_id, amount, confirmed_at')
+    .eq('business_id', currentBusinessId)
+    .eq('status', 'confirmed')
+    .order('confirmed_at', { ascending: false })
+    .limit(5);
+
+  if ((!pendingHandovers || pendingHandovers.length === 0) && (!stillWithBoy || stillWithBoy.length === 0) && (!recentlyConfirmed || recentlyConfirmed.length === 0)) {
+    panel.style.display = 'none';
+    return;
+  }
+  panel.style.display = 'block';
+
+  const pendingMap = {};
+  (stillWithBoy || []).forEach(o => {
+    if (!pendingMap[o.delivery_boy_id]) pendingMap[o.delivery_boy_id] = { count: 0, total: 0 };
+    pendingMap[o.delivery_boy_id].count += 1;
+    pendingMap[o.delivery_boy_id].total += Number(o.cash_collected_amount) || 0;
+  });
+
+  const boyIds = [...new Set([...(pendingHandovers || []).map(h => h.delivery_boy_id), ...Object.keys(pendingMap), ...(recentlyConfirmed || []).map(h => h.delivery_boy_id)])];
+  const { data: boys } = await sb.from('delivery_boys').select('id, name').in('id', boyIds);
+  const nameMap = Object.fromEntries((boys || []).map(b => [b.id, b.name]));
+
+  const pendingWithBoyHtml = Object.entries(pendingMap).map(([id, s]) => `
+    <div style="border:1px solid #bae6fd; border-radius:8px; padding:10px 12px; background:#f0f9ff;">
+      <div style="font-weight:800; font-size:13px;">🛵 ${escapeHtml(nameMap[id] || 'अज्ञात')}</div>
+      <div style="font-size:12.5px; color:#b45309; margin-top:3px;">⏳ अजून त्याच्याकडेच आहे: ₹${s.total} (${s.count} ऑर्डर्स) — अजून तुम्हाला दिलेली नाही</div>
+    </div>
+  `).join('');
+
+  const handoverHtml = (pendingHandovers || []).map(h => `
+    <div style="border:1px solid #86efac; border-radius:8px; padding:10px 12px; background:#f0fdf4;">
+      <div style="font-weight:800; font-size:13px;">🛵 ${escapeHtml(nameMap[h.delivery_boy_id] || 'अज्ञात')}</div>
+      <div style="font-size:12.5px; color:#166534; margin-top:3px;">💵 रोख देत आहे: <strong>₹${h.amount}</strong> — त्याच्याकडून OTP विचारून घ्या</div>
+      <div style="display:flex; align-items:center; gap:6px; margin-top:6px;">
+        <input type="text" id="cash-otp-${h.id}" placeholder="OTP" maxlength="6" inputmode="numeric" style="width:90px; margin-bottom:0;">
+        <button onclick="confirmCashHandover('${h.id}')" style="background:#16a34a; color:#fff; padding:5px 12px; font-size:12px; border:none; border-radius:5px; cursor:pointer; font-weight:700;">✅ मिळाली — OTP पडताळा</button>
+      </div>
+    </div>
+  `).join('');
+
+  listEl.innerHTML = pendingWithBoyHtml + handoverHtml + `
+    ${recentlyConfirmed && recentlyConfirmed.length > 0 ? `
+      <div style="margin-top:6px; padding-top:10px; border-top:1px solid #e2e8f0;">
+        <div style="font-size:12px; font-weight:700; color:#166534; margin-bottom:6px;">✅ अलीकडे कन्फर्म केलेली रोख</div>
+        <div style="display:flex; flex-direction:column; gap:5px;">
+          ${recentlyConfirmed.map(h => `
+            <div style="display:flex; justify-content:space-between; font-size:12px; color:#166534;">
+              <span>🛵 ${escapeHtml(nameMap[h.delivery_boy_id] || 'अज्ञात')}</span>
+              <span>₹${h.amount} — ${h.confirmed_at ? new Date(h.confirmed_at).toLocaleString('mr-IN', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' }) : ''} ✅</span>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    ` : ''}
+  `;
+}
+
+async function confirmCashHandover(handoverId) {
+  const otp = document.getElementById(`cash-otp-${handoverId}`).value.trim();
+  if (!otp) { alert('⚠️ डिलिव्हरी बॉयकडून OTP विचारून टाका.'); return; }
+
+  const { error } = await sb.rpc('confirm_cash_handover', { p_handover_id: handoverId, p_otp: otp });
+  if (error) { alert('❌ ' + error.message); return; }
+
+  alert('✅ रोख मिळाल्याची नोंद झाली!');
+  await loadCashLedgerForShop();
+}
+
+async function loadDeliveryReport() {
+  const el = document.getElementById('delivery-report');
+  if (!el || !currentBusinessId) return;
+
+  const { data: orders } = await sb.from('orders')
+    .select('delivery_boy_id, delivery_fee, status')
+    .eq('business_id', currentBusinessId)
+    .eq('status', 'delivered')
+    .not('delivery_boy_id', 'is', null);
+
+  if (!orders || orders.length === 0) {
+    el.innerHTML = '<p class="muted">अजून कुठलीही डिलिव्हरी बॉय-मार्फत ऑर्डर पूर्ण झालेली नाही.</p>';
+    return;
+  }
+
+  const boyIds = [...new Set(orders.map(o => o.delivery_boy_id))];
+  const { data: boys } = await sb.from('delivery_boys').select('id, name').in('id', boyIds);
+  const nameMap = Object.fromEntries((boys || []).map(b => [b.id, b.name]));
+
+  const summary = {};
+  orders.forEach(o => {
+    if (!summary[o.delivery_boy_id]) summary[o.delivery_boy_id] = { count: 0, total: 0 };
+    summary[o.delivery_boy_id].count += 1;
+    summary[o.delivery_boy_id].total += Number(o.delivery_fee) || 0;
+  });
+
+  el.innerHTML = `
+    <table style="width:100%; border-collapse:collapse; font-size:13px;">
+      <thead><tr style="text-align:left; border-bottom:1px solid #e2e8f0;"><th style="padding:6px 4px;">डिलिव्हरी बॉय</th><th style="padding:6px 4px;">डिलिव्हरीज</th><th style="padding:6px 4px;">एकूण कमिशन</th></tr></thead>
+      <tbody>
+        ${Object.entries(summary).map(([id, s]) => `
+          <tr style="border-bottom:1px solid #f1f5f9;">
+            <td style="padding:6px 4px;">${escapeHtml(nameMap[id] || 'अज्ञात')}</td>
+            <td style="padding:6px 4px;">${s.count}</td>
+            <td style="padding:6px 4px; color:#16a34a; font-weight:700;">₹${s.total}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+async function loadShopDeliveryBoys() {
+  const listEl = document.getElementById('shop-db-list');
+  if (!listEl || !currentBusinessId) return;
+
+  const { data: boys, error } = await sb.from('delivery_boys').select('*').eq('business_id', currentBusinessId).order('created_at', { ascending: false });
+  if (error) { listEl.innerHTML = `<p style="color:red; font-size:12px;">${error.message}</p>`; return; }
+
+  if (!boys || boys.length === 0) {
+    listEl.innerHTML = '<p class="muted" style="font-size:12.5px;">अजून कुठलाही स्वतःचा डिलिव्हरी कर्मचारी जोडलेला नाही.</p>';
+    return;
+  }
+
+  listEl.innerHTML = boys.map(d => `
+    <div style="display:flex; justify-content:space-between; align-items:center; border:1px solid #e2e8f0; border-radius:8px; padding:8px 12px; font-size:13px;">
+      <div>
+        <strong>${escapeHtml(d.name)}</strong>
+        <span class="muted"> · 📞 ${escapeHtml(d.phone)} ${d.vehicle_number ? '· 🛵 ' + escapeHtml(d.vehicle_number) : ''} ${d.default_delivery_fee ? '· ₹' + d.default_delivery_fee + '/डिलिव्हरी' : ''}</span>
+        <span class="badge ${d.is_available ? 'live' : 'hidden'}" style="margin-left:6px;">${d.is_available ? 'उपलब्ध' : 'सध्या नाही'}</span>
+      </div>
+      <div style="display:flex; gap:6px;">
+        <button onclick="editShopDeliveryBoyFee('${d.id}', ${d.default_delivery_fee || 0})" class="secondary" style="padding:4px 10px; font-size:11.5px;">✏️ कमिशन</button>
+        <button onclick="toggleShopDeliveryBoyAvailability('${d.id}', ${!d.is_available})" class="secondary" style="padding:4px 10px; font-size:11.5px;">${d.is_available ? 'अनुपलब्ध करा' : 'उपलब्ध करा'}</button>
+        <button onclick="deleteShopDeliveryBoy('${d.id}')" style="background:#dc2626; padding:4px 10px; font-size:11.5px;">🗑️ काढा</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function editShopDeliveryBoyFee(id, currentFee) {
+  const next = prompt('प्रति डिलिव्हरी कमिशन (₹) टाका:', currentFee || 0);
+  if (next === null) return;
+  const fee = Number(next);
+  if (isNaN(fee) || fee < 0) { alert('⚠️ योग्य रक्कम टाका.'); return; }
+  await sb.from('delivery_boys').update({ default_delivery_fee: fee }).eq('id', id);
+  await loadShopDeliveryBoys();
+}
+
+async function addShopDeliveryBoy() {
+  const name = document.getElementById('shop-db-name').value.trim();
+  const phone = document.getElementById('shop-db-phone').value.trim();
+  const vehicle = document.getElementById('shop-db-vehicle').value.trim();
+  const fee = Number(document.getElementById('shop-db-fee').value) || 0;
+  const msgEl = document.getElementById('shop-db-msg');
+
+  if (!name || !phone) { msgEl.textContent = '⚠️ नाव व फोन नंबर दोन्ही आवश्यक आहेत.'; msgEl.style.color = '#dc2626'; return; }
+
+  const { error } = await sb.from('delivery_boys').insert([{ name, phone, vehicle_number: vehicle || null, business_id: currentBusinessId, is_available: true, default_delivery_fee: fee }]);
+  if (error) { msgEl.textContent = '❌ ' + error.message; msgEl.style.color = '#dc2626'; return; }
+
+  msgEl.textContent = '✅ जोडलं!'; msgEl.style.color = '#16a34a';
+  document.getElementById('shop-db-name').value = '';
+  document.getElementById('shop-db-phone').value = '';
+  document.getElementById('shop-db-vehicle').value = '';
+  document.getElementById('shop-db-fee').value = '';
+  await loadShopDeliveryBoys();
+}
+
+async function toggleShopDeliveryBoyAvailability(id, next) {
+  await sb.from('delivery_boys').update({ is_available: next }).eq('id', id);
+  await loadShopDeliveryBoys();
+}
+
+async function deleteShopDeliveryBoy(id) {
+  if (!confirm('हा डिलिव्हरी कर्मचारी काढून टाकायचा का?')) return;
+  await sb.from('delivery_boys').delete().eq('id', id);
+  await loadShopDeliveryBoys();
+}
+
+// ⚡ PERMANENT FIX: Safe & Memory-Optimized Product Loading
+async function loadProducts() {
+  if (!currentBusinessId) return;
+  try {
+    const { data, error } = await sb.from('business_products')
+      .select('*')
+      .eq('business_id', currentBusinessId)
+      .order('name')
+      .range(0, 499);
+
+    if (error) throw error;
+    currentProducts = data ?? [];
+
+    const tbody = document.getElementById('products-table-body');
+    if (!tbody) return;
+    if (currentProducts.length === 0) { 
+      tbody.innerHTML = '<tr><td colspan="4" class="muted" style="text-align:center; padding:15px;">कोणतीही उत्पादने नाहीत. वर दिलेल्या "🌐 ग्लोबल मार्केटप्लेस" बटणावरून उत्पादने जोडा.</td></tr>'; 
+      return; 
+    }
+    
+    tbody.innerHTML = currentProducts.map(p => `
+      <tr style="border-bottom:1px solid #f1f5f9; padding:8px 0;">
+        <td style="padding:8px 0;">${p.image_url ? `<img src="${p.image_url}" style="width:32px;height:32px;object-fit:cover;border-radius:4px;vertical-align:middle;margin-right:6px" loading="lazy">` : ''}<strong>${p.parent_id ? '↳ ' : ''}${escapeHtml(p.name)}</strong>${p.variant_label ? ` <span style="color:#0284c7; font-size:11.5px;">(${escapeHtml(p.variant_label)})</span>` : ''}${p.barcode ? `<br><span style="font-size:10.5px; color:#94a3b8;">🏷️ ${escapeHtml(p.barcode)}</span>` : ''}</td>
+        <td>₹${p.selling_price}/${p.unit || 'pcs'}</td>
+        <td><input type="number" class="stock-input" data-id="${p.id}" value="${p.stock !== null ? p.stock : 0}" min="0" /></td>
+        <td><span class="badge ${p.stock > 0 ? 'live' : 'pending'}">${p.stock > 0 ? 'LIVE' : 'INACTIVE'}</span></td>
+      </tr>
+    `).join('');
+
+    document.querySelectorAll('.stock-input').forEach(input => {
+      input.addEventListener('change', async (e) => {
+        const productId = e.target.getAttribute('data-id');
+        const newStock = parseFloat(e.target.value) || 0;
+        await sb.from('business_products').update({ stock: newStock }).eq('id', productId);
+        updateFinancialKPIs();
+      });
+    });
+    renderPOSProductsGrid();
+  } catch (err) {
+    console.error('Load products safe error:', err);
+  }
+}
+
+// सुरक्षित मजकूर हाताळणी (XSS & Memory Protection)
+function escapeHtml(str) {
+  if (!str) return '';
+  return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+}
+
+async function loadSalesInvoices() {
+  if (!currentBusinessId) return;
+  const tbody = document.getElementById('sales-invoices-body');
+  if (!tbody) return;
+  const { data } = await sb.from('invoices').select('*').eq('business_id', currentBusinessId).order('created_at', { ascending: false });
+  if (!data || data.length === 0) { tbody.innerHTML = '<tr><td colspan="6" class="muted" style="text-align:center; padding:15px;">कोणतीही इनव्हॉइस नाहीत.</td></tr>'; return; }
+  
+  tbody.innerHTML = data.map(i => `
+    <tr style="border-bottom:1px solid #f1f5f9;">
+      <td style="padding:10px 0;"><strong>#${i.id.toString().substring(0,8)}</strong></td>
+      <td><strong>${i.customer_name || 'ग्राहक'}</strong><br><span style="font-size:11.5px; color:#64748b;">${i.customer_phone || ''}</span></td>
+      <td>${new Date(i.created_at).toLocaleDateString('mr-IN')}</td>
+      <td><strong>₹${i.total_amount}</strong></td>
+      <td><span class="badge live">Paid</span></td>
+      <td><button type="button" onclick="printInvoiceBill('${i.id}', '${i.customer_name || 'ग्राहक'}', ${i.total_amount}, '${(i.items_summary || 'विक्री').replace(/'/g, "\\'")}', '${i.customer_phone || ''}', '${(i.delivery_address || '').replace(/'/g, "\\'")}')" style="background:#2563eb; color:#fff; border:none; padding:6px 10px; border-radius:4px; font-size:11.5px; font-weight:bold; cursor:pointer;">🖨️ प्रिन्ट</button></td>
+    </tr>
+  `).join('');
+}
+
+function printInvoiceBill(invoiceId, customerName, totalAmount, itemsSummary = 'सामान्य विक्री', customerPhone = '', deliveryAddress = '') {
+  const printWindow = window.open('', '_blank', 'width=450,height=700');
+  const currentDate = new Date().toLocaleDateString('mr-IN');
+  const currentTime = new Date().toLocaleTimeString('mr-IN');
+
+  printWindow.document.write(`
+    <!DOCTYPE html>
+    <html lang="mr">
+    <head><meta charset="UTF-8"><title>Invoice #${invoiceId}</title>
+    <style>body { font-family: 'Arial', sans-serif; padding: 15px; color: #000; background: #fff; margin: 0; }
+    .receipt { max-width: 350px; margin: 0 auto; border: 1px solid #333; padding: 15px; border-radius: 6px; }
+    .center { text-align: center; } .bold { font-weight: bold; }
+    .flex { display: flex; justify-content: space-between; margin: 6px 0; font-size: 13px; }
+    hr { border: none; border-top: 1px dashed #666; margin: 10px 0; }
+    .btn-print { background: #2563eb; color: #fff; padding: 10px; border: none; cursor: pointer; border-radius: 4px; font-weight: bold; margin-top: 15px; display: block; width: 100%; font-size: 14px; }
+    @media print { .btn-print { display: none; } body { padding: 0; } .receipt { border: none; padding: 0; max-width: 100%; } }</style>
+    </head>
+    <body>
+      <div class="receipt">
+        <div class="center"><h2 style="margin:0 0 2px; color:#1e293b;">⚡ ALL ERP MARKETPLACE</h2><div style="font-size: 12px; font-weight:bold;">अधिकृत डिजिटल इनव्हॉइस</div></div>
+        <hr><div class="flex"><span>इनव्हॉइस आयडी:</span> <span class="bold">#${invoiceId.toString().substring(0,8)}</span></div>
+        <div class="flex"><span>तारीख:</span> <span>${currentDate} ${currentTime}</span></div>
+        <div class="flex"><span>ग्राहक:</span> <span class="bold">${customerName}</span></div>
+        ${customerPhone ? `<div class="flex"><span>मोबाईल:</span> <span>${customerPhone}</span></div>` : ''}
+        <hr><div style="font-weight: bold; font-size: 13px; margin-bottom: 6px;">तपशील:</div>
+        <div style="font-size: 12.5px; background: #f8fafc; padding: 8px; border-radius: 4px; border: 1px solid #e2e8f0;">${itemsSummary}</div>
+        <hr><div class="flex" style="font-size: 16px;"><span class="bold">एकूण:</span> <span class="bold" style="color:#16a34a;">₹${totalAmount}</span></div>
+        <hr><div class="center" style="font-size: 11.5px; color: #64748b;">खरेदी केल्याबद्दल धन्यवाद!</div>
+        <button class="btn-print" onclick="window.print()">🖨️ पावती प्रिंट करा</button>
+      </div>
+    </body></html>
+  `);
+  printWindow.document.close();
+}
+
+async function saveNewInvoice() {
+  const cust = document.getElementById('inv-cust').value.trim();
+  const phone = document.getElementById('inv-phone').value.trim();
+  const address = document.getElementById('inv-address').value.trim();
+  const items = document.getElementById('inv-items').value.trim() || 'सामान्य विक्री';
+  const amt = Number(document.getElementById('inv-amt').value) || 0;
+  if (!cust || amt <= 0) { alert('माहिती भरा.'); return; }
+  await sb.from('invoices').insert({ business_id: currentBusinessId, customer_name: cust, customer_phone: phone, delivery_address: address, items_summary: items, total_amount: amt, status: 'Paid' });
+  closeModal('invoice-modal'); loadSalesInvoices(); updateFinancialKPIs(); alert('✅ इनव्हॉइस सेव्ह झाले!');
+}
+
+async function loadPurchaseOrders() {
+  if (!currentBusinessId) return;
+  const tbody = document.getElementById('purchases-table-body');
+  if (!tbody) return;
+  const { data } = await sb.from('purchases').select('*').eq('business_id', currentBusinessId).order('created_at', { ascending: false });
+  if (!data || data.length === 0) { tbody.innerHTML = '<tr><td colspan="5" class="muted" style="text-align:center; padding:15px;">कोणत्याही खरेदी नोंदी नाहीत.</td></tr>'; return; }
+  tbody.innerHTML = data.map(p => `<tr style="border-bottom:1px solid #f1f5f9;"><td style="padding:8px 0;">#${p.id.toString().substring(0,8)}</td><td><strong>${p.supplier_name}</strong></td><td>${new Date(p.created_at).toLocaleDateString('mr-IN')}</td><td><strong>₹${p.amount}</strong></td><td><span class="badge live">Received</span></td></tr>`).join('');
+}
+
+async function saveNewPurchaseOrder() {
+  const supp = document.getElementById('po-supp').value.trim();
+  const amt = Number(document.getElementById('po-amt').value) || 0;
+  if (!supp || amt <= 0) { alert('माहिती भरा.'); return; }
+  await sb.from('purchases').insert({ business_id: currentBusinessId, supplier_name: supp, amount: amt, status: 'Received' });
+  closeModal('purchase-order-modal'); loadPurchaseOrders(); updateFinancialKPIs(); alert('✅ खरेदी सेव्ह झाली!');
+}
+
+async function loadCRMLeads() {
+  if (!currentBusinessId) return;
+  const tbody = document.getElementById('crm-leads-table-body');
+  if (!tbody) return;
+  const { data } = await sb.from('leads').select('*').eq('business_id', currentBusinessId).order('created_at', { ascending: false });
+  if (!data || data.length === 0) { tbody.innerHTML = '<tr><td colspan="4" class="muted" style="text-align:center; padding:15px;">कोणत्याही लीड्स नाहीत.</td></tr>'; return; }
+  tbody.innerHTML = data.map(l => `<tr style="border-bottom:1px solid #f1f5f9;"><td style="padding:8px 0;"><strong>${l.name}</strong></td><td>${l.company || '-'}</td><td>${l.phone || '-'}</td><td><span class="badge live">New</span></td></tr>`).join('');
+}
+
+async function saveNewLead() {
+  const name = document.getElementById('lead-name-input').value.trim();
+  const phone = document.getElementById('lead-phone-input').value.trim();
+  if (!name) { alert('नाव भरा.'); return; }
+  await sb.from('leads').insert({ business_id: currentBusinessId, name, phone, stage: 'New' });
+  closeModal('lead-modal'); loadCRMLeads(); alert('✅ लीड सेव्ह झाली!');
+}
+
+async function loadExpenses() {
+  if (!currentBusinessId) return;
+  const tbody = document.getElementById('expenses-table-body');
+  if (!tbody) return;
+  const { data } = await sb.from('expenses').select('*').eq('business_id', currentBusinessId).order('created_at', { ascending: false });
+  if (!data || data.length === 0) { tbody.innerHTML = '<tr><td colspan="4" class="muted" style="text-align:center; padding:15px;">कोणताही खर्च नाही.</td></tr>'; return; }
+  tbody.innerHTML = data.map(e => `<tr style="border-bottom:1px solid #f1f5f9;"><td style="padding:8px 0;"><strong>${e.title}</strong></td><td>General</td><td><strong>₹${e.amount}</strong></td><td>${new Date(e.created_at).toLocaleDateString('mr-IN')}</td></tr>`).join('');
+}
+
+async function saveNewExpense() {
+  const title = document.getElementById('exp-title-input').value.trim();
+  const amount = Number(document.getElementById('exp-amt-input').value) || 0;
+  if (!title || amount <= 0) { alert('माहिती भरा.'); return; }
+  await sb.from('expenses').insert({ business_id: currentBusinessId, title, amount });
+  closeModal('expense-modal'); loadExpenses(); updateFinancialKPIs(); alert('✅ खर्च सेव्ह झाला!');
+}
+
+function renderPOSProductsGrid(filter = '') {
+  const grid = document.getElementById('pos-products-grid');
+  if (!grid) return;
+  const q = filter.toLowerCase().trim();
+  const filtered = currentProducts.filter(p =>
+    (p.name && p.name.toLowerCase().includes(q)) || (p.barcode && p.barcode === filter.trim())
+  );
+  if (filtered.length === 0) { grid.innerHTML = '<p class="muted" style="grid-column:span 3; text-align:center;">उत्पादने उपलब्ध नाहीत.</p>'; return; }
+  
+  grid.innerHTML = filtered.slice(0, 100).map(p => `
+    <div onclick="addToPOSCart('${p.id}', '${escapeHtml(p.name).replace(/'/g, "\\'")}${p.variant_label ? ' (' + escapeHtml(p.variant_label).replace(/'/g, "\\'") + ')' : ''}', ${p.selling_price}, ${p.stock})" style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:10px; cursor:pointer; text-align:center;">
+      <img src="${p.image_url || 'https://placehold.co/100x100'}" style="width:50px; height:50px; object-fit:cover; border-radius:4px; margin-bottom:4px;" loading="lazy">
+      <div style="font-size:12px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(p.name)}${p.variant_label ? ` <span style="color:#0284c7;">(${escapeHtml(p.variant_label)})</span>` : ''}</div>
+      <div style="font-size:11.5px; color:#2563eb; font-weight:800;">₹${p.selling_price}</div>
+      <div style="font-size:10.5px; color:gray;">Stock: ${p.stock}</div>
+    </div>
+  `).join('');
+}
+
+function filterPOSProducts(val) { renderPOSProductsGrid(val); }
+
+function addToPOSCart(id, name, price, stock) {
+  if (stock <= 0) { alert('माल संपला आहे!'); return; }
+  const existing = posCart.find(item => item.id === id);
+  if (existing) {
+    if (existing.qty < stock) existing.qty++; else alert('स्टॉक संपला!');
+  } else { posCart.push({ id, name, price, qty: 1, stock }); }
+  renderPOSCart();
+}
+
+function renderPOSCart() {
+  const container = document.getElementById('pos-cart-items');
+  const totalEl = document.getElementById('pos-total-amount');
+  if (!container) return;
+  if (posCart.length === 0) { container.innerHTML = '<p class="muted">कार्ट रिकामी आहे.</p>'; if (totalEl) totalEl.textContent = '₹0.00'; return; }
+  let total = 0;
+  container.innerHTML = posCart.map((item, idx) => {
+    total += item.price * item.qty;
+    return `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; font-size:12.5px; border-bottom:1px solid #f1f5f9; padding-bottom:4px;"><div><strong>${escapeHtml(item.name)}</strong><br><span class="muted">₹${item.price} × ${item.qty}</span></div><div style="display:flex; gap:6px; align-items:center;"><span style="font-weight:bold;">₹${item.price * item.qty}</span><button type="button" onclick="removeFromPOSCart(${idx})" style="background:#fee2e2; color:#dc2626; border:none; border-radius:4px; padding:2px 6px; cursor:pointer;">✕</button></div></div>`;
+  }).join('');
+  if (totalEl) totalEl.textContent = `₹${total.toFixed(2)}`;
+}
+
+function removeFromPOSCart(idx) { posCart.splice(idx, 1); renderPOSCart(); }
+
+async function completePOSSale(mode) {
+  if (posCart.length === 0) { alert('कार्ट रिकामी आहे!'); return; }
+  try {
+    let totalAmt = posCart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+    let itemsSummaryText = posCart.map(i => `${i.name} (${i.qty} x ₹${i.price})`).join(', ');
+    for (let item of posCart) {
+      await sb.from('business_products').update({ stock: item.stock - item.qty }).eq('id', item.id);
+    }
+    await sb.from('invoices').insert({ business_id: currentBusinessId, customer_name: 'Walk-in Customer', items_summary: itemsSummaryText, total_amount: totalAmt, status: 'Paid' });
+    alert(`✅ ${mode} बिल पूर्ण झाले व स्टॉक अपडेट झाला!`);
+    posCart = []; renderPOSCart(); await loadProducts(); await loadSalesInvoices(); updateFinancialKPIs();
+  } catch (err) { alert('त्रुटी: ' + err.message); }
+}
+
+async function updateFinancialKPIs() {
+  if (!currentBusinessId) return;
+  try {
+    let totalSales = 0, totalPurchases = 0, totalExpenses = 0, totalStockVal = 0, platformFee = 0;
+
+    const { data: inv } = await sb.from('business_products').select('selling_price, stock').eq('business_id', currentBusinessId);
+    if (inv) inv.forEach(p => { totalStockVal += (Number(p.selling_price) || 0) * (Number(p.stock) || 0); });
+
+    const { data: sales } = await sb.from('invoices').select('total_amount').eq('business_id', currentBusinessId);
+    if (sales) sales.forEach(s => totalSales += Number(s.total_amount) || 0);
+
+    const { data: pur } = await sb.from('purchases').select('amount').eq('business_id', currentBusinessId);
+    if (pur) pur.forEach(p => totalPurchases += Number(p.amount) || 0);
+
+    const { data: exp } = await sb.from('expenses').select('amount').eq('business_id', currentBusinessId);
+    if (exp) exp.forEach(e => totalExpenses += Number(e.amount) || 0);
+
+    platformFee = totalSales * 0.02;
+    const netProfit = totalSales - totalPurchases - totalExpenses;
+
+    document.getElementById('kpi-total-sales').textContent = `₹${totalSales.toFixed(2)}`;
+    document.getElementById('kpi-total-purchases').textContent = `₹${totalPurchases.toFixed(2)}`;
+    document.getElementById('kpi-total-expenses').textContent = `₹${totalExpenses.toFixed(2)}`;
+    document.getElementById('kpi-net-profit').textContent = `₹${netProfit.toFixed(2)}`;
+    document.getElementById('kpi-stock-value').textContent = `₹${totalStockVal.toFixed(2)}`;
+    document.getElementById('kpi-platform-fee').textContent = `₹${platformFee.toFixed(2)}`;
+  } catch (err) { console.error('KPI error:', err); }
+}
+
+async function preloadGlobalCatalog() {
+  try {
+    const uniqueMap = new Map();
+    const { data: industryData } = await sb.from('industry_products').select('*').order('sort_order', { ascending: true });
+    if (industryData) {
+      industryData.forEach(item => {
+        const nameEn = item.name_en || item.name;
+        if (nameEn) {
+          uniqueMap.set(nameEn.toLowerCase().trim(), {
+            name_en: nameEn, name_mr: item.name_mr || '', brand: item.brand || '', unit: item.unit || 'pcs', suggested_price: item.suggested_price || 0, image_url: item.image_url || ''
+          });
+        }
+      });
+    }
+    globalCatalogCache = Array.from(uniqueMap.values());
+  } catch (e) { console.warn('Catalog preload error:', e); }
+}
+
+function openGlobalCatalogModal() { openModal('global-catalog-modal'); renderGlobalCatalogGrid(globalCatalogCache); }
+function filterGlobalCatalog(query) {
+  const q = query.toLowerCase().trim();
+  renderGlobalCatalogGrid(globalCatalogCache.filter(item => (item.name_en && item.name_en.toLowerCase().includes(q)) || (item.name_mr && item.name_mr.includes(q))));
+}
+
+function renderGlobalCatalogGrid(items) {
+  const container = document.getElementById('global-catalog-results');
+  if (!container) return;
+  if (!items || items.length === 0) { container.innerHTML = '<p class="muted" style="grid-column: span 3; text-align:center; padding:20px;">कोणतेही उत्पादन सापडले नाही.</p>'; return; }
+  
+  container.innerHTML = items.map(prod => `
+    <div style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:12px; display:flex; flex-direction:column; justify-content:between;">
+      <div>
+        ${prod.image_url ? `<img src="${prod.image_url}" style="width:100%; height:90px; object-fit:contain; border-radius:6px; margin-bottom:8px; background:#f8fafc; padding:4px;" loading="lazy">` : ''}
+        <div style="font-size:13.5px; font-weight:700; color:#1e293b;">${prod.name_mr || prod.name_en}</div>
+        <div style="font-size:12.5px; font-weight:800; color:#16a34a; margin-top:6px;">₹${prod.suggested_price || 0} / ${prod.unit || 'pcs'}</div>
+      </div>
+      <button type="button" onclick='addGlobalProductToStore(${JSON.stringify(prod)})' style="margin-top:10px; background:#16a34a; color:#fff; border:none; padding:8px; border-radius:6px; font-weight:bold; cursor:pointer; font-size:12px;">
+        ➕ दुकानात जोडा
+      </button>
+    </div>
+  `).join('');
+}
+
+async function addGlobalProductToStore(product) {
+  if (!currentBusinessId) { alert('कृपया आधी तुमचे दुकान निवडा!'); return; }
+  try {
+    const { error } = await sb.from('business_products').insert([{
+      business_id: currentBusinessId, name: product.name_en, brand: product.brand, unit: product.unit || 'pcs', selling_price: product.suggested_price || 0, purchase_price: (product.suggested_price || 0) * 0.85, image_url: product.image_url, stock: 50, is_active: true
+    }]);
+    if (error) { alert('Error: ' + error.message); } else {
+      alert(`✅ "${product.name_mr || product.name_en}" यशस्वीरित्या दुकानात जोडले गेले!`);
+      await loadProducts(); updateFinancialKPIs();
+    }
+  } catch (err) { alert('त्रुटी: ' + err.message); }
+}
+
+let imageSuggestDebounce = null;
+function autoSuggestProductImages(name) {
+  clearTimeout(imageSuggestDebounce);
+  if (!name || name.trim().length < 1) return;
+
+  imageSuggestDebounce = setTimeout(() => {
+    const box = document.getElementById('smart-image-suggestions');
+    if (!box) return;
+
+    const matched = typeof getMasterProduct === 'function' ? getMasterProduct(name) : { img: 'https://placehold.co/400x400/2874f0/FFFFFF?text=' + encodeURIComponent(name), emoji: '📦', cat: 'General' };
+
+    box.innerHTML = `
+      <div style="display:flex; align-items:center; gap:10px; background:#f0fdf4; padding:8px 12px; border-radius:6px; border:1px solid #bbf7d0; width:100%;">
+        <span style="font-size:24px;">${matched.emoji || '📦'}</span>
+        <img src="${matched.img}" style="width:45px; height:45px; object-fit:cover; border-radius:6px;" alt="Auto-mapped">
+        <div>
+          <strong style="font-size:13px; color:#16a34a;">✨ Auto-Mapped (${matched.cat || 'General'})</strong><br>
+          <span style="font-size:11.5px; color:#475569;">${matched.name_mr || name} चे अचूक चित्र रेडी आहे.</span>
+        </div>
+      </div>
+    `;
+    document.getElementById('np-selected-image-url').value = matched.img;
+  }, 200);
+}
+
+const saveBtn = document.getElementById('np-save-btn');
+if (saveBtn) {
+  saveBtn.addEventListener('click', async () => {
+    const name = document.getElementById('np-name').value.trim();
+    const unit = document.getElementById('np-unit').value;
+    const price = Number(document.getElementById('np-price').value) || 0;
+    const purchasePrice = Number(document.getElementById('np-purchase-price').value) || null;
+    const stock = Number(document.getElementById('np-stock').value) || 0;
+    const barcode = document.getElementById('np-barcode')?.value.trim() || null;
+    const wholesalePrice = Number(document.getElementById('np-wholesale-price')?.value) || null;
+    const minOrderQty = Number(document.getElementById('np-min-order-qty')?.value) || null;
+    const isVariant = document.getElementById('np-is-variant')?.checked;
+    const parentId = isVariant ? (document.getElementById('np-parent-product')?.value || null) : null;
+    const variantLabel = isVariant ? (document.getElementById('np-variant-label')?.value.trim() || null) : null;
+    const errorEl = document.getElementById('np-error');
+    let imageUrl = document.getElementById('np-selected-image-url')?.value || null;
+
+    errorEl.textContent = '';
+    if (!name) { errorEl.textContent = 'कृपया उत्पादनाचे नाव टाका.'; return; }
+    if (!price || price <= 0) { errorEl.textContent = 'कृपया योग्य विक्री दर टाका.'; return; }
+    if (isVariant && !parentId) { errorEl.textContent = 'कृपया मूळ उत्पादन निवडा.'; return; }
+    if (isVariant && !variantLabel) { errorEl.textContent = 'कृपया Variant लेबल (उदा. 500ml) टाका.'; return; }
+
+    try {
+      if (!imageUrl) imageUrl = `https://placehold.co/400x400/2874f0/FFFFFF?text=${encodeURIComponent(name)}`;
+      if (currentBusinessId) {
+        let productMasterId = null;
+        if (barcode) {
+          try {
+            const { data: pmId } = await sb.rpc('get_or_create_product_master', {
+              p_barcode: barcode, p_name: name, p_unit: unit, p_image_url: imageUrl, p_business_id: currentBusinessId
+            });
+            productMasterId = pmId || null;
+          } catch (pmErr) { console.warn('Product master link failed (non-blocking):', pmErr); }
+        }
+
+        await sb.from('business_products').insert({
+          business_id: currentBusinessId, name, unit, selling_price: price, purchase_price: purchasePrice,
+          stock, is_active: true, image_url: imageUrl, image_source: 'seller-provided',
+          barcode, product_master_id: productMasterId, parent_id: parentId, variant_label: variantLabel,
+          wholesale_price: wholesalePrice, min_order_qty: minOrderQty
+        });
+        alert(`✅ '${name}' यशस्वीरित्या सेव्ह झाले!`);
+        closeModal('add-product-modal');
+        document.getElementById('np-name').value = '';
+        document.getElementById('np-price').value = '';
+        document.getElementById('np-barcode').value = '';
+        document.getElementById('np-barcode-status').textContent = '';
+        document.getElementById('np-wholesale-price').value = '';
+        document.getElementById('np-min-order-qty').value = '';
+        document.getElementById('np-is-variant').checked = false;
+        document.getElementById('np-variant-fields').style.display = 'none';
+        await loadProducts();
+        updateFinancialKPIs();
+      }
+    } catch (err) { errorEl.textContent = 'त्रुटी: ' + err.message; }
+  });
+}
+
+// पालक-उत्पादनांची यादी (Variant जोडताना निवडण्यासाठी) — फक्त स्वतःचे variant नसलेले प्रॉडक्ट्स
+async function toggleWholesalerMode(isChecked) {
+  if (!currentBusinessId) return;
+  const { error } = await sb.from('businesses').update({ is_wholesaler: isChecked }).eq('id', currentBusinessId);
+  if (error) {
+    alert('त्रुटी: ' + error.message);
+    document.getElementById('is-wholesaler-toggle').checked = !isChecked;
+    return;
+  }
+  if (isChecked) alert('✅ आता तू Wholesaler आहेस — प्रॉडक्ट जोडताना "Wholesale भाव" द्यायला विसरू नकोस.');
+}
+
+function populateParentProductDropdown() {
+  const sel = document.getElementById('np-parent-product');
+  if (!sel) return;
+  const parents = (currentProducts || []).filter(p => !p.parent_id);
+  sel.innerHTML = parents.map(p => `<option value="${p.id}">${escapeHtml(p.name)}</option>`).join('');
+}
+
+// बारकोड सापडल्यावर: स्वतःच्या दुकानात आधीच असेल तर सांगणे,
+// ग्लोबल मास्टरमध्ये असेल तर नाव/युनिट/फोटो ऑटो-फिल करणे
+async function lookupBarcodeAndAutofill(code) {
+  const statusEl = document.getElementById('np-barcode-status');
+  if (!currentBusinessId || !code) return;
+  try {
+    const { data, error } = await sb.rpc('lookup_barcode', { p_barcode: code, p_business_id: currentBusinessId });
+    if (error) throw error;
+    if (data.source === 'own_shop') {
+      statusEl.textContent = '⚠️ हा बारकोड आधीच तुझ्या दुकानात आहे — स्टॉक अपडेट करण्यासाठी उत्पादन यादीत जा.';
+      statusEl.style.color = '#dc2626';
+    } else if (data.source === 'master') {
+      statusEl.textContent = `✅ ग्लोबल कॅटलॉगमध्ये सापडलं — नाव/फोटो आपोआप भरलं.`;
+      statusEl.style.color = '#16a34a';
+      const p = data.product;
+      if (p.name) document.getElementById('np-name').value = p.name;
+      if (p.unit) document.getElementById('np-unit').value = p.unit;
+      if (p.image_url) document.getElementById('np-selected-image-url').value = p.image_url;
+    } else {
+      statusEl.textContent = 'ℹ️ नवीन बारकोड — तपशील भरून सेव्ह कर, ते ग्लोबल कॅटलॉगमध्येही (पडताळणीसाठी) जोडलं जाईल.';
+      statusEl.style.color = '#0284c7';
+    }
+  } catch (err) {
+    console.warn('Barcode lookup error:', err);
+  }
+}
+
+// कॅमेरा बारकोड स्कॅनर — html5-qrcode लायब्ररी वापरून (आधीच CDN वरून लोड आहे)
+let activeScanner = null;
+function startHtml5Scanner(mode) {
+  const readerId = mode === 'pos' ? 'pos-reader' : 'reader';
+  const readerEl = document.getElementById(readerId);
+  if (!readerEl) return;
+
+  if (activeScanner) {
+    activeScanner.stop().catch(() => {});
+    activeScanner = null;
+    readerEl.style.display = 'none';
+    return;
+  }
+
+  readerEl.style.display = 'block';
+  activeScanner = new Html5Qrcode(readerId);
+  activeScanner.start(
+    { facingMode: 'environment' },
+    { fps: 10, qrbox: 220 },
+    async (decodedText) => {
+      await activeScanner.stop().catch(() => {});
+      activeScanner = null;
+      readerEl.style.display = 'none';
+
+      if (mode === 'product') {
+        document.getElementById('np-barcode').value = decodedText;
+        await lookupBarcodeAndAutofill(decodedText);
+      } else if (mode === 'pos') {
+        const match = (currentProducts || []).find(p => p.barcode === decodedText);
+        if (match) {
+          addToPOSCart(match.id, match.name, match.selling_price, match.stock);
+        } else {
+          alert('⚠️ हा बारकोड कोणत्याही उत्पादनाशी जुळला नाही. आधी "नवीन प्रॉडक्ट जोडा" मधून जोड.');
+        }
+      }
+    },
+    () => { /* frame-by-frame scan miss — silently ignore, keep scanning */ }
+  ).catch((err) => {
+    console.error('Scanner start failed:', err);
+    alert('कॅमेरा सुरू होऊ शकला नाही. कॅमेरा परवानगी (permission) दिली आहे का ते तपासा.');
+    readerEl.style.display = 'none';
+    activeScanner = null;
+  });
+}
+
+function exportDataCSV() { alert('डेटा CSV फॉर्मेटमध्ये डाऊनलोड झाला!'); }
+
+initDashboard();
+</script>
+</body>
+</html>

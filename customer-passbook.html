@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2874f0">
+<title>Digital Khata & Passbook — ALL ERP</title>
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+.passbook-hero {
+  background: linear-gradient(135deg, #065f46, #059669);
+  color: #fff;
+  border-radius: 12px;
+  padding: 36px 24px;
+  margin-bottom: 20px;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(5,150,105,0.15);
+}
+.balance-card {
+  background: #ffffff;
+  border: 2px solid #059669;
+  border-radius: 12px;
+  padding: 24px;
+  text-align: center;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 12px rgba(5,150,105,0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.balance-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(5,150,105,0.15);
+}
+.card {
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+  padding: 20px;
+}
+</style>
+</head>
+<body>
+<nav id="app-nav"></nav>
+
+<main class="container page-ad-frame">
+  <!-- 1. TOP AD SLOT -->
+  <div id="ad-slot-pass-top" class="ad-slot-banner"></div>
+
+  <div class="center-with-side-ads">
+    <!-- 2. LEFT SIDE AD SLOT -->
+    <aside class="ad-side-column">
+      <div class="ad-side-card">
+        <div class="side-ad-title">Sponsored</div>
+        <div id="ad-slot-pass-left"></div>
+      </div>
+    </aside>
+
+    <!-- CENTER CONTENT -->
+    <div class="main-center-content">
+      <div class="passbook-hero">
+        <div style="font-size:12px; font-weight:800; letter-spacing:1px; color:#ffe500; margin-bottom:8px;">📒 DIGITAL LEDGER & KHATA</div>
+        <h1 style="margin:0 0 8px 0; font-size:28px;">डिजिटल खाता व उधारी लेजर</h1>
+        <p style="margin:0 auto; max-width:600px; font-size:14px; color:#d1fae5;">स्थानिक दुकानांमधील तुमचे सर्व उधारी व्यवहार, पावत्या आणि डिजिटल खाती एकाच सुरक्षित ठिकाणी पहा.</p>
+      </div>
+
+      <div class="balance-card">
+        <div class="muted" style="font-size:13px; font-weight:700;">एकूण बकाया / येणे बाकी (Total Balance)</div>
+        <div style="font-size:32px; font-weight:800; color:#059669; margin:8px 0;" id="total-balance-display">₹0.00</div>
+        <div style="font-size:12.5px; color:#64748b;">सर्व स्थानिक दुकानांचे हिसाब खाती सुरक्षित आहेत.</div>
+      </div>
+
+      <div class="card">
+        <h3 style="margin-top:0; font-size:18px; color:#1e293b;">📜 अलीकडील व्यवहारांची यादी (Recent Khata Transactions)</h3>
+        <div id="transactions-list" style="margin-top:12px;">
+          <p class="muted" style="text-align:center; padding:20px;">कोणतेही उधारी व्यवहार सापडले नाहीत.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. RIGHT SIDE AD SLOT -->
+    <aside class="ad-side-column">
+      <div class="ad-side-card">
+        <div class="side-ad-title">Featured</div>
+        <div id="ad-slot-pass-right"></div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- 4. BOTTOM AD SLOT -->
+  <div id="ad-slot-pass-bottom" class="ad-slot-banner" style="margin-top:20px"></div>
+</main>
+
+<script src="js/supabase-client.js"></script>
+<script src="js/cart.js"></script>
+<script src="js/nav.js"></script>
+<script src="js/ads.js"></script>
+<script>
+// 🖨️ इनव्हॉइस बिल प्रिंट/शेअर करण्याचे पावती युटिलिटी फंक्शन
+function printCustomerBill(invoiceId, totalAmount, itemsSummary, orderDate) {
+  const printWindow = window.open('', '_blank', 'width=400,height=600');
+  printWindow.document.write(`
+    <!DOCTYPE html>
+    <html lang="mr">
+    <head>
+      <meta charset="UTF-8">
+      <title>Invoice #${invoiceId}</title>
+      <style>
+        body { font-family: 'Courier New', Courier, monospace; padding: 15px; color: #000; background: #fff; margin: 0; }
+        .receipt { max-width: 320px; margin: 0 auto; border: 1px dashed #333; padding: 15px; }
+        .center { text-align: center; }
+        .bold { font-weight: bold; }
+        .flex { display: flex; justify-content: space-between; margin: 4px 0; font-size: 13px; }
+        hr { border: none; border-top: 1px dashed #333; margin: 8px 0; }
+        .btn-print { background: #059669; color: #fff; padding: 10px; border: none; cursor: pointer; border-radius: 4px; font-weight: bold; margin-top: 15px; display: block; width: 100%; font-size: 14px; }
+        @media print {
+          .btn-print { display: none; }
+          body { padding: 0; }
+          .receipt { border: none; padding: 0; }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="receipt">
+        <div class="center">
+          <h3 style="margin:0 0 4px;">⚡ ALL ERP MARKETPLACE</h3>
+          <div style="font-size: 11px; color: #555;">डिजिटल पासबुक व इनव्हॉइस पावती</div>
+        </div>
+        <hr>
+        <div class="flex"><span>ऑर्डर आयडी:</span> <span class="bold">#${invoiceId.toString().substring(0,8)}</span></div>
+        <div class="flex"><span>तारीख:</span> <span>${orderDate}</span></div>
+        <hr>
+        <div style="font-weight: bold; font-size: 12px; margin-bottom: 4px;">तपशील:</div>
+        <div style="font-size: 12px; margin-bottom: 8px; background: #f9f9f9; padding: 6px; border-radius: 4px;">${itemsSummary || 'स्थानिक खरेदी'}</div>
+        <hr>
+        <div class="flex" style="font-size: 15px;"><span class="bold">एकूण रक्कम:</span> <span class="bold">₹${totalAmount}</span></div>
+        <hr>
+        <div class="center" style="font-size: 11px; margin-top: 10px;">
+          खरेदी केल्याबद्दल धन्यवाद!<br>
+          (Secure Digital Khata Passbook)
+        </div>
+        <button class="btn-print" onclick="window.print()">🖨️ पावती प्रिंट / सेव्ह करा</button>
+      </div>
+    </body>
+    </html>
+  `);
+  printWindow.document.close();
+}
+
+async function initPassbook() {
+  try {
+    const { data: { user } } = await sb.auth.getUser();
+    if (!user) {
+      document.getElementById('transactions-list').innerHTML = '<p class="muted" style="text-align:center; padding:20px;">कृपया खाते पाहण्यासाठी आधी <a href="login.html" style="color:#2563eb; font-weight:700;">Log In (लॉगिन)</a> करा.</p>';
+      return;
+    }
+
+    const { data: orders, error } = await sb
+      .from('orders')
+      .select('*')
+      .eq('customer_user_id', user.id)
+      .order('created_at', { ascending: false });
+
+    if (error || !orders || orders.length === 0) {
+      document.getElementById('transactions-list').innerHTML = '<p class="muted" style="text-align:center; padding:20px;">तुमची कोणतीही अलीकडील उधारी किंवा व्यवहाराची नोंद नाही.</p>';
+      return;
+    }
+
+    let totalDue = 0;
+    orders.forEach(o => {
+      totalDue += Number(o.total_amount) || 0;
+    });
+
+    document.getElementById('total-balance-display').textContent = `₹${totalDue.toFixed(2)}`;
+
+    const listEl = document.getElementById('transactions-list');
+    listEl.innerHTML = orders.map(o => {
+      const formattedDate = new Date(o.created_at).toLocaleDateString('mr-IN');
+      const itemsSummary = o.items_summary || 'स्थानिक खरेदी';
+      const safeSummary = itemsSummary.replace(/'/g, "\\'");
+
+      return `
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #f1f5f9; padding:12px 0; flex-wrap:wrap; gap:10px;">
+          <div>
+            <strong>ऑर्डर #${o.id.toString().substring(0,8)}</strong><br>
+            <span class="muted" style="font-size:12px;">📅 ${formattedDate} · स्थिती: <span style="color:#059669; font-weight:700;">${o.status || 'Completed'}</span></span>
+            <div style="font-size:11.5px; color:#475569; margin-top:2px;">${itemsSummary}</div>
+          </div>
+          <div style="display:flex; align-items:center; gap:12px;">
+            <div style="text-align:right;">
+              <div style="font-weight:800; font-size:15px; color:#0f172a;">₹${o.total_amount || 0}</div>
+              <span style="font-size:11px; background:#d1fae5; color:#065f46; padding:2px 6px; border-radius:4px; font-weight:700;">${o.payment_method || 'Paid'}</span>
+            </div>
+            <button type="button" onclick="printCustomerBill('${o.id}', ${o.total_amount || 0}, '${safeSummary}', '${formattedDate}')" style="background:#059669; color:#fff; border:none; padding:6px 12px; border-radius:6px; font-weight:bold; font-size:12px; cursor:pointer;">
+              🖨️ बिल पहा / प्रिन्ट
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+  } catch (err) {
+    console.error('Passbook load error:', err);
+  }
+}
+
+initPassbook();
+
+renderMultiAdSlots([
+  { id: 'ad-slot-pass-top', placement: 'top' },
+  { id: 'ad-slot-pass-left', placement: 'left' },
+  { id: 'ad-slot-pass-right', placement: 'right' },
+  { id: 'ad-slot-pass-bottom', placement: 'bottom' }
+]);
+</script>
+</body>
+</html>

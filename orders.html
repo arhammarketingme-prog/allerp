@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2874f0">
+<title>My Orders & Tracking — ALL ERP</title>
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+.orders-hero {
+  background: linear-gradient(135deg, #1e3a8a, #2563eb);
+  color: #fff;
+  border-radius: 12px;
+  padding: 36px 24px;
+  margin-bottom: 20px;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(37,99,235,0.15);
+}
+.order-card-item {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.order-card-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.06);
+}
+.badge { padding: 4px 10px; border-radius: 4px; font-size: 11.5px; font-weight: 700; display: inline-block; }
+.badge.pending { background: #f59e0b; color: #fff; }
+.badge.accepted { background: #16a34a; color: #fff; }
+.badge.packed { background: #0284c7; color: #fff; }
+.badge.dispatched { background: #4f46e5; color: #fff; }
+.badge.delivered { background: #059669; color: #fff; }
+.badge.rejected { background: #dc2626; color: #fff; }
+
+/* 📊 ट्रॅकिंग टाईमलाईन डिझाइन (Tracking Timeline CSS) */
+.tracking-timeline {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px dashed #cbd5e1;
+  position: relative;
+  gap: 5px;
+}
+.tracking-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  position: relative;
+  text-align: center;
+}
+.tracking-dot {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #e2e8f0;
+  color: #64748b;
+  font-size: 11px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+  z-index: 2;
+  transition: all 0.3s ease;
+}
+.tracking-step.done .tracking-dot {
+  background: #16a34a;
+  color: #fff;
+}
+.tracking-step.current .tracking-dot {
+  background: #2563eb;
+  color: #fff;
+  box-shadow: 0 0 0 4px rgba(37,99,235,0.2);
+}
+.tracking-step.rejected .tracking-dot, .tracking-step.cancelled .tracking-dot {
+  background: #dc2626;
+  color: #fff;
+}
+.tracking-label {
+  font-size: 10.5px;
+  color: #64748b;
+  font-weight: 600;
+}
+.tracking-step.done .tracking-label, .tracking-step.current .tracking-label {
+  color: #1e293b;
+  font-weight: 700;
+}
+</style>
+</head>
+<body>
+<nav id="app-nav"></nav>
+
+<main class="container page-ad-frame">
+  <!-- 1. TOP AD SLOT -->
+  <div id="ad-slot-ord-top" class="ad-slot-banner"></div>
+
+  <div class="center-with-side-ads">
+    <!-- 2. LEFT SIDE AD SLOT -->
+    <aside class="ad-side-column">
+      <div class="ad-side-card">
+        <div class="side-ad-title">Sponsored</div>
+        <div id="ad-slot-ord-left"></div>
+      </div>
+    </aside>
+
+    <!-- CENTER CONTENT -->
+    <div class="main-center-content">
+      <div class="orders-hero">
+        <div style="font-size:12px; font-weight:800; letter-spacing:1px; color:#ffe500; margin-bottom:8px;">📦 ORDER MANAGEMENT & TRACKING</div>
+        <h1 style="margin:0 0 8px 0; font-size:28px;">माझ्या ऑर्डर्स (My Orders)</h1>
+        <p style="margin:0 auto; max-width:600px; font-size:14px; color:#cbd5e1;">स्थानिक दुकानांमधून केलेल्या सर्व खरेदी आणि होम डिलिव्हरी ऑर्डर्सची लाईव्ह स्थिती तपासा.</p>
+      </div>
+
+      <div class="card" style="background:#ffffff; border-radius:12px; border:1px solid #e2e8f0; padding:20px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <h3 style="margin-top:0; font-size:18px; color:#1e293b;">🛒 तुमच्या ऑर्डर्सची यादी</h3>
+          <button type="button" onclick="initOrders()" class="secondary" style="padding:6px 12px; font-size:12.5px; cursor:pointer;">🔄 रिफ्रेश करा</button>
+        </div>
+        <div id="orders-list" style="margin-top:12px;">
+          <p class="muted" style="text-align:center; padding:30px;">ऑर्डर्स लोड होत आहेत...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. RIGHT SIDE AD SLOT -->
+    <aside class="ad-side-column">
+      <div class="ad-side-card">
+        <div class="side-ad-title">Featured</div>
+        <div id="ad-slot-ord-right"></div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- 4. BOTTOM AD SLOT -->
+  <div id="ad-slot-ord-bottom" class="ad-slot-banner" style="margin-top:20px"></div>
+</main>
+
+<script src="js/supabase-client.js"></script>
+<script src="js/cart.js"></script>
+<script src="js/nav.js"></script>
+<script src="js/ads.js"></script>
+<script>
+// 🖨️ ग्राहकासाठी इनव्हॉइस बिल प्रिंट/शेअर करण्याचे पावती युटिलिटी फंक्शन
+function printCustomerBill(invoiceId, totalAmount, itemsSummary, orderDate) {
+  const printWindow = window.open('', '_blank', 'width=400,height=600');
+  printWindow.document.write(`
+    <!DOCTYPE html>
+    <html lang="mr">
+    <head>
+      <meta charset="UTF-8">
+      <title>Invoice #${invoiceId}</title>
+      <style>
+        body { font-family: 'Courier New', Courier, monospace; padding: 15px; color: #000; background: #fff; margin: 0; }
+        .receipt { max-width: 320px; margin: 0 auto; border: 1px dashed #333; padding: 15px; }
+        .center { text-align: center; }
+        .bold { font-weight: bold; }
+        .flex { display: flex; justify-content: space-between; margin: 4px 0; font-size: 13px; }
+        hr { border: none; border-top: 1px dashed #333; margin: 8px 0; }
+        .btn-print { background: #2563eb; color: #fff; padding: 10px; border: none; cursor: pointer; border-radius: 4px; font-weight: bold; margin-top: 15px; display: block; width: 100%; font-size: 14px; }
+        @media print {
+          .btn-print { display: none; }
+          body { padding: 0; }
+          .receipt { border: none; padding: 0; }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="receipt">
+        <div class="center">
+          <h3 style="margin:0 0 4px;">⚡ ALL ERP MARKETPLACE</h3>
+          <div style="font-size: 11px; color: #555;">अधिकृत डिजिटल इनव्हॉइस पावती</div>
+        </div>
+        <hr>
+        <div class="flex"><span>ऑर्डर आयडी:</span> <span class="bold">#${invoiceId.toString().substring(0,8)}</span></div>
+        <div class="flex"><span>तारीख:</span> <span>${orderDate}</span></div>
+        <hr>
+        <div style="font-weight: bold; font-size: 12px; margin-bottom: 4px;">तपशील:</div>
+        <div style="font-size: 12px; margin-bottom: 8px; background: #f9f9f9; padding: 6px; border-radius: 4px;">${itemsSummary || 'स्थानिक खरेदी'}</div>
+        <hr>
+        <div class="flex" style="font-size: 15px;"><span class="bold">एकूण रक्कम:</span> <span class="bold">₹${totalAmount}</span></div>
+        <hr>
+        <div class="center" style="font-size: 11px; margin-top: 10px;">
+          खरेदी केल्याबद्दल धन्यवाद!<br>
+          (Secure Marketplace Generated Bill)
+        </div>
+        <button class="btn-print" onclick="window.print()">🖨️ पावती प्रिंट / सेव्ह करा</button>
+      </div>
+    </body>
+    </html>
+  `);
+  printWindow.document.close();
+}
+
+// 📊 ट्रॅकिंग टाईमलाईन जनरेट करणारे फंक्शन
+function renderTrackingTimeline(status) {
+  const steps = ['pending', 'accepted', 'packed', 'dispatched', 'delivered'];
+  const labels = { 
+    pending: 'Placed', 
+    accepted: 'Accepted', 
+    packed: 'Packed', 
+    dispatched: 'Dispatched', 
+    delivered: 'Delivered' 
+  };
+
+  if (status === 'rejected' || status === 'cancelled') {
+    return `
+      <div class="tracking-timeline">
+        <div class="tracking-step done"><div class="tracking-dot">✓</div><div class="tracking-label">Placed</div></div>
+        <div class="tracking-step ${status}"><div class="tracking-dot">✕</div><div class="tracking-label">${status === 'rejected' ? 'Rejected' : 'Cancelled'}</div></div>
+      </div>
+    `;
+  }
+
+  const currentIndex = steps.indexOf(status);
+
+  return `
+    <div class="tracking-timeline">
+      ${steps.map((s, i) => {
+        let cls = '';
+        if (i < currentIndex) cls = 'done';
+        else if (i === currentIndex) cls = 'current';
+        const icon = i < currentIndex ? '✓' : (i + 1);
+        return `
+          <div class="tracking-step ${cls}">
+            <div class="tracking-dot">${icon}</div>
+            <div class="tracking-label">${labels[s]}</div>
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
+}
+
+async function initOrders() {
+  try {
+    const { data: { user } } = await sb.auth.getUser();
+    if (!user) {
+      document.getElementById('orders-list').innerHTML = '<p class="muted" style="text-align:center; padding:20px;">ऑर्डर्स पाहण्यासाठी कृपया आधी <a href="login.html" style="color:#2563eb; font-weight:700;">Log In (लॉगिन)</a> करा.</p>';
+      return;
+    }
+
+    const { data: orders, error } = await sb
+      .from('orders')
+      .select('*, delivered_at, return_status, return_type, return_reason, return_shop_note, return_pin, return_pickup_status, return_delivery_boy_id, refund_status')
+      .eq('customer_user_id', user.id)
+      .order('created_at', { ascending: false });
+
+    const listEl = document.getElementById('orders-list');
+
+    if (error || !orders || orders.length === 0) {
+      listEl.innerHTML = '<p class="muted" style="text-align:center; padding:30px;">कोणतीही ऑर्डर सापडली नाही. कृपया <a href="index.html" style="color:#2563eb; font-weight:700;">मार्केटप्लेसवर</a> खरेदी करा.</p>';
+      return;
+    }
+
+    listEl.innerHTML = orders.map(o => {
+      let statusClass = 'pending';
+      let statusText = 'प्रक्रिया सुरू आहे (Pending)';
+      let currentOrderStatus = o.status || 'pending';
+
+      if (currentOrderStatus === 'accepted') {
+        statusClass = 'accepted';
+        statusText = 'दुकानदाराने स्वीकारली (Accepted)';
+      } else if (currentOrderStatus === 'packed') {
+        statusClass = 'packed';
+        statusText = '📦 पॅकिंग पूर्ण झाले (Packed)';
+      } else if (currentOrderStatus === 'dispatched') {
+        statusClass = 'dispatched';
+        statusText = '🚚 डिलिव्हरीसाठी रवाना (Dispatched)';
+      } else if (currentOrderStatus === 'delivered') {
+        statusClass = 'delivered';
+        statusText = '🎉 यशस्वीरित्या पोचवली (Delivered)';
+      } else if (currentOrderStatus === 'rejected') {
+        statusClass = 'rejected';
+        statusText = '❌ दुकानदाराने नाकारली (Rejected)';
+      }
+      
+      // 🔑 ग्राहकासाठी सिक्रेट डिलिव्हरी पिन बॉक्स
+      let pinDisplayHtml = '';
+      if (currentOrderStatus !== 'delivered' && currentOrderStatus !== 'rejected' && currentOrderStatus !== 'cancelled') {
+        const pinVal = o.delivery_pin || '----';
+        pinDisplayHtml = `
+          <div style="margin-top:8px; background:#eff6ff; border:1px solid #bfdbfe; padding:6px 12px; border-radius:6px; display:inline-block;">
+            <span style="font-size:12px; font-weight:800; color:#1e40af;">🔑 डिलिव्हरी पिन (OTP):</span> 
+            <span style="font-size:15px; font-weight:900; color:#2563eb; letter-spacing:2px; margin-left:4px;">${pinVal}</span>
+            <div style="font-size:10.5px; color:#64748b; margin-top:1px;">डिलिव्हरीच्या वेळी हा पिन डिलिव्हरी बॉयला सांगा.</div>
+          </div>
+        `;
+      }
+
+      // 🔁 रिटर्न / रिप्लेस पर्याय (फक्त delivered ऑर्डरवर, 7 दिवसांच्या आत)
+      let returnSectionHtml = '';
+      if (currentOrderStatus === 'delivered') {
+        const deliveredAt = o.delivered_at ? new Date(o.delivered_at) : null;
+        const withinWindow = !deliveredAt || (Date.now() - deliveredAt.getTime()) < 7 * 24 * 60 * 60 * 1000;
+
+        if (!o.return_status) {
+          returnSectionHtml = withinWindow
+            ? `<div style="margin-top:10px;">
+                 <button type="button" onclick="openReturnDialog('${o.id}')" style="background:#fff; border:1px solid #dc2626; color:#dc2626; padding:6px 12px; border-radius:6px; font-size:12px; font-weight:700; cursor:pointer;">🔁 रिटर्न / रिप्लेस मागवा</button>
+               </div>`
+            : `<div style="margin-top:8px; font-size:11.5px; color:#94a3b8;">रिटर्न/रिप्लेस विंडो (7 दिवस) संपली आहे.</div>`;
+        } else {
+          const statusLabels = { requested: '⏳ मागणी पाठवली — दुकानदाराच्या प्रतिसादाची वाट पाहत आहे', approved: '✅ मंजूर झाली', rejected: '❌ नाकारली गेली', completed: '✔️ प्रक्रिया पूर्ण झाली' };
+          let extraNote = '';
+          if (o.return_status === 'approved') {
+            if (o.return_pickup_status === 'picked_up') {
+              extraNote = o.return_type === 'return'
+                ? (o.refund_status === 'done' ? '<div style="margin-top:3px; color:#16a34a; font-weight:700;">💰 पैसे परत केले गेले आहेत</div>' : '<div style="margin-top:3px; color:#b45309;">💰 वस्तू परत घेतली — पैसे परत करण्याची प्रक्रिया सुरू आहे</div>')
+                : '<div style="margin-top:3px; color:#16a34a; font-weight:700;">✅ बदलून नवीन वस्तू दिली गेली</div>';
+            } else {
+              extraNote = o.return_delivery_boy_id
+                ? '<div style="margin-top:3px; color:#b45309;">🛵 डिलिव्हरी बॉय वस्तू घ्यायला येणार आहे — घरी उपलब्ध राहा व त्याला पिन द्या</div>'
+                : '<div style="margin-top:3px; color:#94a3b8;">⏳ दुकानदार लवकरच डिलिव्हरी बॉय ठरवेल — नंतर इथे पिन दिसेल</div>';
+            }
+          }
+          returnSectionHtml = `
+            <div style="margin-top:10px; background:#fef2f2; border:1px solid #fecaca; padding:8px 12px; border-radius:6px; font-size:12px;">
+              <strong>${o.return_type === 'replace' ? '🔁 रिप्लेस' : '↩️ रिटर्न'} विनंती:</strong> ${statusLabels[o.return_status] || o.return_status}
+              ${o.return_shop_note ? `<div style="margin-top:3px; color:#64748b;">दुकानदाराचा निरोप: ${o.return_shop_note}</div>` : ''}
+              ${extraNote}
+              ${o.return_status === 'approved' && o.return_pickup_status !== 'picked_up' ? `
+                <div style="margin-top:6px; background:#fff; border:1px dashed #dc2626; padding:6px 10px; border-radius:5px; text-align:center;">
+                  <span style="font-size:11px; color:#64748b;">पिकअप पिन</span><br>
+                  <strong style="font-size:18px; letter-spacing:3px; color:#dc2626;">${o.return_pin || '⚠️ रिकामा'}</strong><br>
+                  <button type="button" onclick="regenerateReturnPin('${o.id}')" style="margin-top:4px; background:none; border:none; color:#0284c7; font-size:11px; cursor:pointer; text-decoration:underline;">🔄 पिन दिसत नाहीये? पुन्हा तयार करा</button>
+                </div>` : ''}
+            </div>`;
+        }
+      }
+
+      const formattedDate = new Date(o.created_at).toLocaleString('mr-IN');
+      const itemsSummary = o.items_summary || 'स्थानिक खरेदी ऑर्डर';
+      const safeSummary = itemsSummary.replace(/'/g, "\\'");
+
+      return `
+        <div class="order-card-item">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:10px;">
+            <div>
+              <div style="font-size:13px; color:#2563eb; font-weight:800;">ऑर्डर #${o.id.toString().substring(0,8)}</div>
+              <div style="font-size:14px; font-weight:700; color:#1e293b; margin-top:2px;">${itemsSummary}</div>
+              <div style="font-size:12px; color:#64748b; margin-top:4px;">📍 पत्ता: ${o.delivery_address || 'पत्ता उपलब्ध नाही'}</div>
+              <div style="font-size:12px; color:#64748b; margin-top:2px;">📅 तारीख: ${formattedDate}</div>
+              ${o.delivery_partner ? `<div style="font-size:12px; color:#0284c7; font-weight:bold; margin-top:3px;">🛵 डिलिव्हरी पार्टनर: ${o.delivery_partner}</div>` : ''}
+              
+              <!-- 🔑 सिक्रेट पिन बॉक्स -->
+              ${pinDisplayHtml}
+
+              <!-- 🔁 रिटर्न / रिप्लेस -->
+              ${returnSectionHtml}
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:16px; font-weight:800; color:#0f172a;">₹${o.total_amount || 0}</div>
+              <div style="margin-top:6px;"><span class="badge ${statusClass}">${statusText}</span></div>
+              <div style="font-size:11px; color:#16a34a; font-weight:700; margin-top:4px;">💳 ${o.payment_method || 'Online / COD'}</div>
+              
+              <!-- 🖨️ बिल पहा / प्रिन्ट बटण -->
+              <div style="margin-top:8px;">
+                <button type="button" onclick="printCustomerBill('${o.id}', ${o.total_amount || 0}, '${safeSummary}', '${formattedDate}')" style="background:#2563eb; color:#fff; border:none; padding:5px 10px; border-radius:6px; font-weight:bold; font-size:11.5px; cursor:pointer;">
+                  🖨️ बिल पहा / प्रिन्ट
+                </button>
+              </div>
+            </div>
+          </div>
+          <!-- 📊 व्हिज्युअल ट्रॅकिंग टाईमलाईन -->
+          ${renderTrackingTimeline(currentOrderStatus)}
+        </div>
+      `;
+    }).join('');
+
+  } catch (err) {
+    console.error('Orders load error:', err);
+    document.getElementById('orders-list').innerHTML = '<p class="error-text" style="text-align:center; padding:20px;">ऑर्डर्स लोड करताना त्रुटी आली.</p>';
+  }
+}
+
+initOrders();
+
+async function openReturnDialog(orderId) {
+  const type = confirm('पैसे परत (Return) हवेत का?\n\n"OK" = Return (पैसे परत)\n"Cancel" = Replace (वस्तू बदलून हवी)') ? 'return' : 'replace';
+  const reason = prompt('कारण थोडक्यात सांगा (उदा. वस्तू खराब आली, चुकीची वस्तू आली इ.):');
+  if (!reason || !reason.trim()) { alert('⚠️ कारण टाकणं आवश्यक आहे.'); return; }
+
+  const { error } = await sb.rpc('request_order_return', { p_order_id: orderId, p_type: type, p_reason: reason.trim() });
+  if (error) { alert('❌ ' + error.message); return; }
+
+  alert('✅ तुमची विनंती दुकानदाराकडे पाठवली गेली आहे.');
+  initOrders();
+}
+
+async function regenerateReturnPin(orderId) {
+  const { data, error } = await sb.rpc('regenerate_return_pin', { p_order_id: orderId });
+  if (error) { alert('❌ ' + error.message); return; }
+  alert(`✅ नवीन पिन: ${data}`);
+  initOrders();
+}
+
+renderMultiAdSlots([
+  { id: 'ad-slot-ord-top', placement: 'top' },
+  { id: 'ad-slot-ord-left', placement: 'left' },
+  { id: 'ad-slot-ord-right', placement: 'right' },
+  { id: 'ad-slot-ord-bottom', placement: 'bottom' }
+]);
+</script>
+</body>
+</html>

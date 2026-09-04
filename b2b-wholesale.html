@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2874f0">
+<title>B2B Wholesale — ALL ERP</title>
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+.wh-card { background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:16px; cursor:pointer; transition:box-shadow .2s; }
+.wh-card:hover { box-shadow:0 6px 16px rgba(0,0,0,.08); }
+.wh-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:16px; }
+.wh-product-row { display:flex; align-items:center; justify-content:space-between; padding:10px; border-bottom:1px solid #f1f5f9; gap:10px; }
+</style>
+</head>
+<body>
+<nav id="app-nav"></nav>
+
+<main class="container" style="padding:16px;">
+  <div id="wh-list-view">
+    <h1 style="font-size:22px; margin-bottom:4px;">🏭 B2B Wholesale नेटवर्क</h1>
+    <p class="muted" style="margin-top:0;">होलसेलर दुकानांकडून थेट bulk दरात खरेदी करा — तुझ्याच व्यवसायासाठी.</p>
+    <div id="wholesalers-grid" class="wh-grid" style="margin-top:16px;"><p class="muted">लोड होत आहे...</p></div>
+  </div>
+
+  <div id="wh-detail-view" style="display:none;">
+    <button class="secondary" onclick="showListView()" style="margin-bottom:12px; padding:6px 12px; border-radius:6px; cursor:pointer;">← मागे</button>
+    <h2 id="wh-detail-name" style="margin:0 0 4px;"></h2>
+    <p class="muted" id="wh-detail-city" style="margin-top:0;"></p>
+    <div id="wh-products-list" style="background:#fff; border:1px solid #e2e8f0; border-radius:10px; margin-top:14px;"></div>
+    <div style="margin-top:16px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px; padding:14px;">
+      <h3 style="margin:0 0 8px; font-size:16px;">🧾 तुझी B2B ऑर्डर</h3>
+      <div id="wh-cart-summary"><p class="muted">अजून काहीही निवडलेलं नाही.</p></div>
+      <p id="wh-order-error" style="color:red; font-size:13px; margin:8px 0 0;"></p>
+      <button id="wh-place-order-btn" style="margin-top:10px; background:#16a34a; color:#fff; border:none; padding:10px 18px; border-radius:8px; font-weight:700; cursor:pointer;">Bulk ऑर्डर सबमिट करा</button>
+    </div>
+  </div>
+</main>
+
+<script src="js/supabase-client.js"></script>
+<script src="js/cart.js"></script>
+<script src="js/nav.js"></script>
+<script>
+let currentUser = null;
+let myBusinessId = null;
+let activeWholesalerId = null;
+let wh2bCart = {}; // { business_product_id: { name, unit, wholesale_price, min_order_qty, stock, quantity } }
+
+async function initB2BWholesalePage() {
+  const { data: { user } } = await sb.auth.getUser();
+  currentUser = user;
+  if (!user) {
+    document.getElementById('wholesalers-grid').innerHTML = '<p class="muted">कृपया आधी <a href="login.html">लॉगिन</a> कर.</p>';
+    return;
+  }
+
+  const { data: myBiz } = await sb.from('businesses').select('id').eq('owner_id', user.id).limit(1).maybeSingle();
+  if (!myBiz) {
+    document.getElementById('wholesalers-grid').innerHTML = '<p class="muted">B2B खरेदीसाठी आधी तुझा स्वतःचा व्यवसाय <a href="create-business.html">इथे नोंदणी</a> कर.</p>';
+    return;
+  }
+  myBusinessId = myBiz.id;
+
+  await loadWholesalers();
+}
+
+async function loadWholesalers() {
+  const grid = document.getElementById('wholesalers-grid');
+  const { data, error } = await sb.from('businesses')
+    .select('id, name, city, logo_url')
+    .eq('is_wholesaler', true)
+    .eq('is_verified', true)
+    .neq('id', myBusinessId || '00000000-0000-0000-0000-000000000000');
+
+  if (error) { grid.innerHTML = `<p style="color:red;">त्रुटी: ${error.message}</p>`; return; }
+  if (!data || data.length === 0) {
+    grid.innerHTML = '<p class="muted">सध्या कुठलाही होलसेलर नोंदणीकृत नाही.</p>';
+    return;
+  }
+
+  grid.innerHTML = data.map(w => `
+    <div class="wh-card" onclick="openWholesaler('${w.id}', '${escapeHtmlWH(w.name).replace(/'/g, "\\'")}', '${escapeHtmlWH(w.city || '')}')">
+      ${w.logo_url ? `<img src="${w.logo_url}" style="width:48px;height:48px;border-radius:8px;object-fit:cover;margin-bottom:8px;" loading="lazy">` : ''}
+      <h3 style="margin:0 0 4px; font-size:16px;">${escapeHtmlWH(w.name)}</h3>
+      <p class="muted" style="margin:0; font-size:13px;">${escapeHtmlWH(w.city || '')}</p>
+    </div>
+  `).join('');
+}
+
+function escapeHtmlWH(str) {
+  if (!str) return '';
+  return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+async function openWholesaler(id, name, city) {
+  activeWholesalerId = id;
+  wh2bCart = {};
+  document.getElementById('wh-list-view').style.display = 'none';
+  document.getElementById('wh-detail-view').style.display = 'block';
+  document.getElementById('wh-detail-name').textContent = name;
+  document.getElementById('wh-detail-city').textContent = city;
+
+  const { data, error } = await sb.from('business_products')
+    .select('id, name, unit, wholesale_price, min_order_qty, stock, image_url')
+    .eq('business_id', id)
+    .eq('is_active', true)
+    .not('wholesale_price', 'is', null)
+    .order('name');
+
+  const listEl = document.getElementById('wh-products-list');
+  if (error) { listEl.innerHTML = `<p style="color:red; padding:12px;">त्रुटी: ${error.message}</p>`; return; }
+  if (!data || data.length === 0) {
+    listEl.innerHTML = '<p class="muted" style="padding:12px;">या होलसेलरने अजून कुठलेही wholesale भाव सेट केलेले नाहीत.</p>';
+    return;
+  }
+
+  listEl.innerHTML = data.map(p => `
+    <div class="wh-product-row">
+      <div style="display:flex; align-items:center; gap:10px;">
+        ${p.image_url ? `<img src="${p.image_url}" style="width:36px;height:36px;object-fit:cover;border-radius:4px;" loading="lazy">` : ''}
+        <div>
+          <strong>${escapeHtmlWH(p.name)}</strong><br>
+          <span class="muted" style="font-size:12px;">₹${p.wholesale_price}/${escapeHtmlWH(p.unit)} · किमान ${p.min_order_qty || 1} · स्टॉक: ${p.stock}</span>
+        </div>
+      </div>
+      <input type="number" min="0" placeholder="प्रमाण" style="width:80px; padding:6px; border:1px solid #cbd5e1; border-radius:4px;"
+        onchange="updateWHCartQty('${p.id}', '${escapeHtmlWH(p.name).replace(/'/g, "\\'")}', '${p.unit}', ${p.wholesale_price}, ${p.min_order_qty || 1}, ${p.stock}, this.value)">
+    </div>
+  `).join('');
+}
+
+function updateWHCartQty(id, name, unit, price, minQty, stock, qtyStr) {
+  const qty = Number(qtyStr);
+  if (!qty || qty <= 0) { delete wh2bCart[id]; renderWHCartSummary(); return; }
+  wh2bCart[id] = { name, unit, wholesale_price: price, min_order_qty: minQty, stock, quantity: qty };
+  renderWHCartSummary();
+}
+
+function renderWHCartSummary() {
+  const items = Object.entries(wh2bCart);
+  const box = document.getElementById('wh-cart-summary');
+  if (items.length === 0) { box.innerHTML = '<p class="muted">अजून काहीही निवडलेलं नाही.</p>'; return; }
+
+  let total = 0;
+  box.innerHTML = '<ul style="margin:0; padding-left:18px;">' + items.map(([id, it]) => {
+    total += it.wholesale_price * it.quantity;
+    return `<li>${escapeHtmlWH(it.name)} × ${it.quantity} ${escapeHtmlWH(it.unit)} = ₹${(it.wholesale_price * it.quantity).toFixed(2)}</li>`;
+  }).join('') + `</ul><p style="font-weight:800; margin-top:8px;">एकूण: ₹${total.toFixed(2)}</p>`;
+}
+
+function showListView() {
+  document.getElementById('wh-detail-view').style.display = 'none';
+  document.getElementById('wh-list-view').style.display = 'block';
+}
+
+document.getElementById('wh-place-order-btn').addEventListener('click', async () => {
+  const btn = document.getElementById('wh-place-order-btn');
+  const errorEl = document.getElementById('wh-order-error');
+  errorEl.textContent = '';
+
+  const items = Object.entries(wh2bCart).map(([id, it]) => ({ business_product_id: id, quantity: it.quantity }));
+  if (items.length === 0) { errorEl.textContent = 'कृपया किमान एक उत्पादन निवड.'; return; }
+
+  btn.disabled = true;
+  btn.textContent = '⏳ पाठवत आहे...';
+
+  const { data, error } = await sb.rpc('place_b2b_order', {
+    p_wholesaler_business_id: activeWholesalerId,
+    p_buyer_business_id: myBusinessId,
+    p_items: items
+  });
+
+  btn.disabled = false;
+  btn.textContent = 'Bulk ऑर्डर सबमिट करा';
+
+  if (error) { errorEl.textContent = error.message; return; }
+
+  alert('✅ B2B ऑर्डर यशस्वीरित्या नोंदवली गेली!');
+  wh2bCart = {};
+  showListView();
+});
+
+initB2BWholesalePage();
+</script>
+</body>
+</html>

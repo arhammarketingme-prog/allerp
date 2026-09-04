@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2874f0">
+<title>Delivery & Logistics Hub — ALL ERP</title>
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  .delivery-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin-bottom: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+  .badge-platform { background: #fef3c7; color: #d97706; padding: 3px 8px; border-radius: 10px; font-size: 11px; font-weight: 700; }
+</style>
+</head>
+<body>
+<nav id="app-nav"></nav>
+
+<main class="container" style="max-width: 1000px; margin-top: 20px;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <div>
+      <h2 style="margin: 0; font-size: 22px; color: #1e293b;">🛵 Delivery & Logistics Hub</h2>
+      <p style="margin: 4px 0 0 0; font-size: 13px; color: #64748b;">Manage platform-assigned dispatches, pickups, and live deliveries.</p>
+    </div>
+    <button onclick="loadPlatformDeliveries()" class="secondary" style="font-size: 12px; padding: 6px 12px;">🔄 Refresh Hub</button>
+  </div>
+
+  <div id="delivery-container">
+    <p style="text-align: center; color: #64748b; padding: 40px;">Loading delivery dispatches...</p>
+  </div>
+</main>
+
+<script src="js/supabase-client.js"></script>
+<script src="js/cart.js"></script>
+<script src="js/nav.js"></script>
+<script>
+async function loadPlatformDeliveries() {
+  const container = document.getElementById('delivery-container');
+
+  // फक्त ज्या ऑर्डर्ससाठी 'platform_delivery' निवडली आहे त्या फेच करा
+  const { data: orders, error } = await sb
+    .from('orders')
+    .select('id, total_amount, status, fulfillment_mode, created_at, businesses(name, city)')
+    .eq('fulfillment_mode', 'platform_delivery')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    container.innerHTML = `<p style="color:red;">Error loading dispatches: ${error.message}</p>`;
+    return;
+  }
+
+  if (!orders || orders.length === 0) {
+    container.innerHTML = '<div class="card" style="text-align:center; padding:30px; color:#64748b;">No platform delivery dispatches pending right now.</div>';
+    return;
+  }
+
+  container.innerHTML = orders.map(ord => `
+    <div class="delivery-card">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px;">
+        <div>
+          <span class="badge-platform">Platform Delivery</span>
+          <span style="font-size: 12px; font-weight: 700; color: #64748b; margin-left: 8px;">Order: ${ord.id.slice(0, 8)}...</span>
+          <div style="font-size: 15px; font-weight: 800; color: #0f172a; margin-top: 4px;">🏪 Store: ${ord.businesses?.name || 'Local Store'} (${ord.businesses?.city || 'Koregaon'})</div>
+        </div>
+        <div style="text-align: right;">
+          <div style="font-size: 16px; font-weight: 800; color: #16a34a;">₹${ord.total_amount}</div>
+          <span style="font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 700;">Status: ${ord.status}</span>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 12px; align-items: center; margin-top: 12px; flex-wrap: wrap;">
+        <div style="flex: 1; min-width: 200px;">
+          <label style="font-size: 11px; font-weight: 700; color: #64748b; display: block; margin-bottom: 4px;">Update Delivery Status:</label>
+          <select id="delivery-status-${ord.id}" style="margin-bottom:0; font-size:12px;">
+            <option value="pending" ${ord.status === 'pending' ? 'selected' : ''}>Pending Pickup</option>
+            <option value="packed" ${ord.status === 'packed' ? 'selected' : ''}>Packed & Ready</option>
+            <option value="out_for_delivery" ${ord.status === 'out_for_delivery' ? 'selected' : ''}>🛵 Out for Delivery</option>
+            <option value="delivered" ${ord.status === 'delivered' ? 'selected' : ''}>✅ Delivered Successfully</option>
+          </select>
+        </div>
+        <div>
+          <button onclick="updateDeliveryStatus('${ord.id}')" class="btn" style="font-size: 12px; padding: 8px 16px; margin-top: 18px;">Update Status</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function updateDeliveryStatus(orderId) {
+  const newStatus = document.getElementById(`delivery-status-${orderId}`).value;
+  const { error } = await sb.from('orders').update({ status: newStatus }).eq('id', orderId);
+  if (error) {
+    alert('Failed to update status: ' + error.message);
+  } else {
+    alert('Delivery status updated successfully!');
+    loadPlatformDeliveries();
+  }
+}
+
+document.addEventListener('DOMContentLoaded', loadPlatformDeliveries);
+</script>
+</body>
+</html>

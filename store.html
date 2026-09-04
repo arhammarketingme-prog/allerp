@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2874f0">
+<title>Store — Business Super Platform</title>
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+<nav id="app-nav"></nav>
+
+<main class="container page-ad-frame">
+  <!-- 1. TOP AD -->
+  <div id="ad-slot-store-top" class="ad-slot-banner" style="display:none"></div>
+
+  <div id="store-info"><p class="muted">Loading...</p></div>
+
+  <div class="center-with-side-ads">
+    <!-- 2. LEFT SIDE AD -->
+    <aside class="ad-side-column">
+      <div class="ad-side-card">
+        <div class="side-ad-title">Sponsored</div>
+        <div id="ad-slot-store-left"></div>
+      </div>
+    </aside>
+
+    <div class="main-center-content">
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:10px; flex-wrap:wrap;">
+        <h2 style="margin:0;">Products</h2>
+        <input type="text" id="store-search" placeholder="🔍 प्रॉडक्ट शोधा..." style="max-width:220px; margin-bottom:0;" oninput="renderProducts()">
+      </div>
+      <div id="store-products" class="grid"></div>
+    </div>
+
+    <!-- 3. RIGHT SIDE AD -->
+    <aside class="ad-side-column">
+      <div class="ad-side-card">
+        <div class="side-ad-title">Featured</div>
+        <div id="ad-slot-store-right"></div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- 4. BOTTOM AD -->
+  <div id="ad-slot-store-bottom" class="ad-slot-banner" style="display:none; margin-top:20px"></div>
+</main>
+
+<script src="js/supabase-client.js"></script>
+<script src="js/cart.js"></script>
+<script src="js/nav.js"></script>
+<script src="js/ads.js"></script>
+<script src="js/master-dictionary.js"></script>
+<script>
+const params = new URLSearchParams(window.location.search);
+const slug = params.get('slug');
+let businessData = null;
+
+async function loadStore() {
+  if (!slug) {
+    document.getElementById('store-info').innerHTML = '<p class="error-text">Store not found.</p>';
+    return;
+  }
+
+  const { data: business } = await sb
+    .from('businesses')
+    .select('id, name, about, city, contact_phone')
+    .eq('slug', slug)
+    .single();
+
+  if (!business) {
+    document.getElementById('store-info').innerHTML = '<p class="error-text">Store not found.</p>';
+    return;
+  }
+  businessData = business;
+
+  document.getElementById('store-info').innerHTML = `
+    <div class="card">
+      <h1 style="margin:0">${business.name}</h1>
+      ${business.city ? `<p class="muted">${business.city}</p>` : ''}
+      ${business.about ? `<p>${business.about}</p>` : ''}
+      ${business.contact_phone ? `<p>📞 ${business.contact_phone}</p>` : ''}
+    </div>
+  `;
+
+  const { data: products } = await sb
+    .from('business_products')
+    .select('id, name, selling_price, purchase_price, unit, image_url, stock')
+    .eq('business_id', business.id)
+    .eq('marketplace_visible', true)
+    .order('name');
+
+  allStoreProducts = products ?? [];
+  renderProducts();
+}
+
+let allStoreProducts = [];
+
+function renderProducts() {
+  const q = (document.getElementById('store-search')?.value || '').trim().toLowerCase();
+  // 🌐 बहुभाषिक/समानार्थी सर्च — "halad" टाईप केलं तरी "हळद" उत्पादनंही सापडतील
+  const synonyms = q && typeof getSearchSynonyms === 'function' ? getSearchSynonyms(q) : (q ? [q] : []);
+  const products = q
+    ? allStoreProducts.filter(p => {
+        const nameLower = p.name.toLowerCase();
+        return synonyms.some(s => nameLower.includes(s)) || nameLower.includes(q);
+      })
+    : allStoreProducts;
+
+  const container = document.getElementById('store-products');
+  if (products.length === 0) {
+    container.innerHTML = '<p class="muted" style="grid-column:1/-1; text-align:center; padding:30px;">कोणतेही प्रॉडक्ट सापडले नाहीत.</p>';
+    return;
+  }
+
+  container.innerHTML = products.map(p => {
+    // MRP (purchase_price) विक्री किंमतीपेक्षा जास्त असेल तरच स्ट्राईकथ्रू + सूट % दाखवा
+    const hasDiscount = p.purchase_price && Number(p.purchase_price) > Number(p.selling_price);
+    const discountPct = hasDiscount ? Math.round((1 - p.selling_price / p.purchase_price) * 100) : 0;
+    const lowStock = p.stock > 0 && p.stock <= 5;
+
+    return `
+    <div class="card">
+      <div class="card-img-wrapper">
+        ${p.image_url ? `<img src="${p.image_url}" alt="${escapeHtmlStore(p.name)}" loading="lazy">` : '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#cbd5e1;font-size:28px;">📦</div>'}
+      </div>
+      <div class="product-title">${escapeHtmlStore(p.name)}</div>
+      <div class="product-seller">${businessData?.name || ''}</div>
+      <div class="price-row">
+        <span class="selling-price">₹${Number(p.selling_price).toLocaleString('en-IN')}</span>
+        ${hasDiscount ? `<span class="original-price">₹${Number(p.purchase_price).toLocaleString('en-IN')}</span><span class="discount-badge">${discountPct}% off</span>` : ''}
+      </div>
+      <div style="font-size:11.5px; color:#64748b; margin-bottom:6px;">प्रति ${p.unit}${lowStock ? ` · <span style="color:#dc2626; font-weight:700;">फक्त ${p.stock} शिल्लक!</span>` : ''}</div>
+      <button class="add-cart-btn" data-id="${p.id}" data-name="${escapeHtmlStore(p.name)}" data-price="${p.selling_price}">
+        🛒 Add to Cart
+      </button>
+      <a href="product.html?name=${encodeURIComponent(p.name)}" style="display:block; margin-top:6px; font-size:12.5px; text-align:center;">View details & reviews →</a>
+    </div>
+  `;
+  }).join('');
+
+  container.querySelectorAll('.add-cart-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const target = e.currentTarget;
+      addToCart({
+        business_product_id: target.dataset.id,
+        name: target.dataset.name,
+        business_id: businessData.id,
+        business_name: businessData.name,
+        price: Number(target.dataset.price),
+        quantity: 1
+      });
+      renderNav();
+      target.textContent = '✓ Added';
+      setTimeout(() => { target.textContent = '🛒 Add to Cart'; }, 1200);
+    });
+  });
+}
+
+function escapeHtmlStore(str) {
+  const div = document.createElement('div');
+  div.textContent = str ?? '';
+  return div.innerHTML;
+}
+
+loadStore();
+
+// Render 4-side distinct ads on store page
+renderMultiAdSlots([
+  { id: 'ad-slot-store-top', placement: 'top' },
+  { id: 'ad-slot-store-left', placement: 'left' },
+  { id: 'ad-slot-store-right', placement: 'right' },
+  { id: 'ad-slot-store-bottom', placement: 'bottom' }
+]);
+</script>
+</body>
+</html>

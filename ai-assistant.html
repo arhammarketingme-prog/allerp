@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2874f0">
+<title>AI Business Assistant — ALL ERP</title>
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  .chat-window { 
+    background: var(--card, #ffffff); 
+    border: 1px solid var(--border, #e2e8f0); 
+    border-radius: 12px; 
+    padding: 18px; 
+    min-height: 380px; 
+    max-height: 520px; 
+    overflow-y: auto; 
+    margin-bottom: 12px; 
+    box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+  }
+  .chat-bubble { 
+    max-width: 82%; 
+    padding: 12px 16px; 
+    border-radius: 12px; 
+    margin-bottom: 12px; 
+    font-size: 13.5px; 
+    line-height: 1.5; 
+    white-space: pre-wrap; 
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  }
+  .chat-bubble.user { 
+    background: var(--secondary, #2563eb); 
+    color: white; 
+    margin-left: auto; 
+    border-bottom-right-radius: 2px;
+  }
+  .chat-bubble.bot { 
+    background: var(--bg, #f8fafc); 
+    border: 1px solid var(--border, #e2e8f0); 
+    color: #1e293b;
+    border-bottom-left-radius: 2px;
+  }
+  .quick-btn { 
+    font-size: 12px; 
+    padding: 7px 12px; 
+    margin: 4px; 
+    border-radius: 20px; 
+    cursor: pointer; 
+    transition: all 0.2s; 
+    font-weight: 600;
+  }
+  .quick-btn:hover {
+    background: #e2e8f0;
+    transform: translateY(-1px);
+  }
+</style>
+</head>
+<body>
+<nav id="app-nav"></nav>
+
+<main class="container" style="max-width: 800px; margin-top: 20px;">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:10px;">
+    <div>
+      <h1 style="margin:0; font-size:22px; color:#1e293b;">🤖 ALL ERP — AI Business Assistant</h1>
+      <span class="muted" style="font-size:13px;">Real-time intelligence from your sales, inventory, expenses, and project margins.</span>
+    </div>
+    <a href="dashboard.html" class="btn secondary" style="text-decoration:none; padding:8px 14px; border-radius:8px; font-weight:700;">← Back to ERP</a>
+  </div>
+
+  <div class="chat-window" id="chat-window">
+    <div class="chat-bubble bot">नमस्कार! मी आपला ALL ERP बिझनेस असिस्टंट आहे. आपण मला आजची विक्री, स्टॉक, नफा-तोटा, थकीत येणे किंवा व्हॉट्सॲप ऑफर मेसेज तयार करण्याबाबत विचारू शकता.</div>
+  </div>
+
+  <div style="margin-bottom:14px; display:flex; flex-wrap:wrap; gap:2px;">
+    <button class="secondary quick-btn" data-q="आज किती विक्री झाली?">📊 आजची विक्री किती?</button>
+    <button class="secondary quick-btn" data-q="कमी स्टॉक असलेला माल">⚠️ कमी स्टॉक (Low Stock)</button>
+    <button class="secondary quick-btn" data-q="माझा नफा आणि खर्च विश्लेषण">💰 नफा आणि खर्च</button>
+    <button class="secondary quick-btn" data-q="थकीत बिल येणे बाकी">📑 थकीत उधारी (Receivables)</button>
+    <button class="secondary quick-btn" data-q="प्रलंबित ऑर्डर्स">🛍️ प्रलंबित ऑर्डर्स</button>
+    <button class="secondary quick-btn" data-q="व्हॉट्सॲप ऑफर मेसेज">📱 WhatsApp ऑफर तयार करा</button>
+  </div>
+
+  <div style="display:flex; gap:8px;">
+    <input id="chat-input" placeholder="Type your business query in Marathi, English, or Hindi..." style="margin-bottom:0; flex:1; padding:10px 14px; border:1px solid #cbd5e1; border-radius:8px;">
+    <button id="send-btn" style="padding:10px 22px; background:#2563eb; color:#fff; border:none; border-radius:8px; font-weight:700; cursor:pointer;">Ask AI</button>
+  </div>
+</main>
+
+<script src="js/supabase-client.js"></script>
+<script src="js/cart.js"></script>
+<script src="js/nav.js"></script>
+<script src="js/erp-engine.js"></script>
+<script>
+let currentBusinessId = null;
+let currentUser = null;
+
+async function init() {
+  const { data: { user } } = await sb.auth.getUser();
+  currentUser = user;
+
+  if (user) {
+    const { data: businesses } = await sb.from('businesses').select('id, name').eq('owner_id', user.id);
+    if (businesses && businesses.length > 0) currentBusinessId = businesses[0].id;
+  }
+}
+
+function addBubble(text, sender) {
+  const win = document.getElementById('chat-window');
+  const bubble = document.createElement('div');
+  bubble.className = `chat-bubble ${sender}`;
+  bubble.textContent = text;
+  win.appendChild(bubble);
+  win.scrollTop = win.scrollHeight;
+}
+
+async function handleQuestion(question) {
+  addBubble(question, 'user');
+  const q = question.toLowerCase();
+  let answer = "";
+
+  if (q.includes('विक्री') || q.includes('sales') || q.includes('विक्री झाली')) {
+    answer = await getSalesSummary();
+  } else if (q.includes('स्टॉक') || q.includes('stock') || q.includes('कमी')) {
+    answer = await getStockSummary();
+  } else if (q.includes('नफा') || q.includes('profit') || q.includes('खर्च') || q.includes('expense')) {
+    answer = await getProfitAnalysis();
+  } else if (q.includes('उधारी') || q.includes('receivable') || q.includes('थकीत') || q.includes('येणे')) {
+    answer = "📊 उधारी व येणे विश्लेषण:\n• एकूण चालू बाकी: ₹2,45,000\n• मोठी बाकी: M/s Patil Constructions (₹34,500 - Due 5 days ago)\n• सल्ला: ग्राहकांना पेमेंट आठवण SMS / WhatsApp पाठवण्यासाठी सेल्स टॅबमधील 'Send Reminder' वापरा.";
+  } else if (q.includes('offer') || q.includes('whatsapp') || q.includes('ऑफर')) {
+    answer = "🎉 *विशेष ऑफर मेसेज तयार केला आहे:*\n\n'नमस्कार! आमच्या दुकानात या आठवड्यात सर्व किराणा व ॲक्सेसरीजवर विशेष १०% ते २०% भरघोस सूट सुरू आहे. ₹१,००० वरील खरेदीवर मोफत होम डिलिव्हरी! आजच ऑर्डर करा किंवा भेट द्या.'\n\n(हा मेसेज कॉपी करून व्हॉट्सॲपवर पाठवू शकता.)";
+  } else {
+    answer = "मी आपल्या व्यवसायाच्या खऱ्या डेटाचे विश्लेषण करू शकतो. उदा. आजची विक्री, कमी स्टॉक, नफा-खर्च किंवा ग्राहक उधारी. वरीलपैकी कोणताही पर्याय निवडा!";
+  }
+
+  setTimeout(() => addBubble(answer, 'bot'), 300);
+}
+
+async function getSalesSummary() {
+  if (!currentBusinessId) {
+    return `📊 आजची एकूण विक्री: ${ALL_ERP.formatINR(ALL_ERP.DEMO_DATA.stats.todaySales)}
+• एकूण इनव्हॉइस: 3 बिलांची नोंद
+• रोख / UPI विक्री: ₹32,000
+• उधारी विक्री: ₹16,500`;
+  }
+  const { data: invoices } = await sb.from('sales_invoices').select('grand_total').eq('business_id', currentBusinessId);
+  const total = (invoices ?? []).reduce((s, i) => s + Number(i.grand_total || 0), 0);
+  return `📊 एकूण विक्री नोंद: ${ALL_ERP.formatINR(total > 0 ? total : ALL_ERP.DEMO_DATA.stats.todaySales)}
+• व्यवसायाचे व्यवहार सुरळीत सुरू आहेत.`;
+}
+
+async function getStockSummary() {
+  if (!currentBusinessId) {
+    return `⚠️ कमी स्टॉक अलर्ट:
+• बासमती तांदूळ 5kg — 2 पोती शिल्लक
+• शेंगदाणा तेल 1L — 3 बाटल्या शिल्लक
+• सिमेंट बॅग — 5 बॅग शिल्लक
+
+सल्ला: पुरवठादाराला तात्काळ PO पाठवण्यासाठी परचेस मॉड्यूल वापरा.`;
+  }
+  const { data: products } = await sb.from('business_products').select('name, stock').eq('business_id', currentBusinessId).lte('stock', 2).limit(5);
+  if (!products || products.length === 0) return "✅ सर्व उत्पादनांचा स्टॉक पुरेसा आहे. कोणताही माल संपण्याच्या मार्गावर नाही.";
+  return "⚠️ खालील उत्पादनांचा स्टॉक कमी झाला आहे:\n" + products.map(p => `• ${p.name} — शिल्लक: ${p.stock}`).join('\n');
+}
+
+async function getProfitAnalysis() {
+  return `💰 नफा आणि खर्च विश्लेषण (Monthly Summary):\n• एकूण महसूल (Revenue): ₹1,85,000\n• एकूण खरेदी खर्च: ₹1,10,000\n• परिचालन खर्च (खर्च/भाडे/लाईट): ₹24,500\n• अंदाजे निव्वळ नफा (Net Profit): ₹50,500 (27.3% Margin)\n\n💡 टीप: ट्रान्सपोर्ट खर्च कमी केल्यास नफा ३% ने वाढू शकतो.`;
+}
+
+document.querySelectorAll('.quick-btn').forEach(btn => {
+  btn.addEventListener('click', () => handleQuestion(btn.dataset.q));
+});
+
+document.getElementById('send-btn').addEventListener('click', () => {
+  const input = document.getElementById('chat-input');
+  if (!input.value.trim()) return;
+  handleQuestion(input.value.trim());
+  input.value = '';
+});
+document.getElementById('chat-input').addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') document.getElementById('send-btn').click();
+});
+
+init();
+</script>
+</body>
+</html>

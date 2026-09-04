@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2874f0">
+<title>ALL ERP — Smart Local Marketplace & Super Platform</title>
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+/* 🌟 प्रगत फिनिशिंग व युजर एक्सपिरियन्स CSS */
+.card { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+.card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.08); }
+.search-clear-btn { position: absolute; right: 40px; top: 50%; transform: translateY(-50%); background: transparent; border: none; font-size: 16px; cursor: pointer; color: #94a3b8; display: none; }
+.search-clear-btn:hover { color: #ef4444; }
+.skeleton-loader { background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%); background-size: 200% 100%; animation: loading 1.5s infinite; border-radius: 8px; height: 220px; }
+@keyframes loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+/* 📱 शॉर्ट्स / प्रॉडक्ट रील्स सेक्शन डिझाईन */
+.reels-carousel-container { display: flex; gap: 12px; overflow-x: auto; padding: 6px 0 10px 0; scrollbar-width: none; }
+.reel-card { flex: 0 0 130px; height: 180px; border-radius: 10px; overflow: hidden; position: relative; background: #000; box-shadow: 0 4px 10px rgba(0,0,0,0.15); cursor: pointer; border: 2px solid rgba(255,255,255,0.2); }
+
+/* 🌟 अचूक स्टिकी रचना: नेव्ह बारची उंची गृहीत धरून 'Mega Deals' पट्टी बरोबर नेव्ह बारच्या खाली येऊन लॉक होईल */
+.sticky-marketplace-header {
+  position: sticky;
+  top: 52px; /* नेव्ह बारच्या खाली अचूक थांबण्यासाठीचे मार्जिन */
+  background: var(--card, #ffffff);
+  z-index: 900;
+  padding-top: 6px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+}
+
+/* 🌙 डार्क मोड सपोर्ट */
+body.dark-mode { background: #0f172a; color: #f8fafc; }
+body.dark-mode .card, body.dark-mode .ad-side-card { background: #1e293b; border-color: #334155; color: #f8fafc; }
+body.dark-mode .sticky-marketplace-header { background: #0f172a; border-color: #334155; }
+body.dark-mode input, body.dark-mode select { background: #1e293b; color: #fff; border-color: #475569; }
+</style>
+</head>
+<body>
+<nav id="app-nav"></nav>
+
+<main class="container page-ad-frame">
+  <!-- 1. TOP AD SLOT -->
+  <div id="ad-slot-top" class="ad-slot-banner"></div>
+
+  <div class="center-with-side-ads">
+    <!-- 2. LEFT SIDE AD SLOT -->
+    <aside class="ad-side-column" id="left-sidebar-wrapper">
+      <div class="ad-side-card">
+        <div class="side-ad-title">Sponsored</div>
+        <div id="ad-slot-left"></div>
+      </div>
+    </aside>
+
+    <!-- CENTER MAIN CONTENT -->
+    <main class="main-center-content">
+      
+      <!-- 🌟 स्टोरीज आणि रील्स (हे भाग आधी स्क्रोल होऊन निघून जातील) -->
+      <div id="scrollable-top-intro">
+        <!-- लोकल स्टोरीज -->
+        <div id="story-ads-container" style="margin-bottom: 4px;"></div>
+
+        <!-- प्रॉडक्ट रील्स व शॉर्ट्स व्हिडिओ सेक्शन -->
+        <div style="margin: 4px 0 8px 0;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2px;">
+            <h3 style="font-size:13.5px; font-weight:800; margin:0; color:var(--text,#1e293b);">🔥 Trending Product Reels</h3>
+            <span style="font-size:11px; color:#2563eb; font-weight:700;">Swipe ➔</span>
+          </div>
+          <div class="reels-carousel-container" id="product-reels-strip">
+            <div class="reel-card" style="background:#1e293b; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#fff; padding:6px; text-align:center;">
+              <span style="font-size:24px; margin-bottom:2px;">⚡</span>
+              <span style="font-size:11px; font-weight:700;">मॅगी स्पेशल रील</span>
+            </div>
+            <div class="reel-card" style="background:#1e293b; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#fff; padding:6px; text-align:center;">
+              <span style="font-size:24px; margin-bottom:2px;">🧈</span>
+              <span style="font-size:11px; font-weight:700;">अमूल बटर ऑफर</span>
+            </div>
+          </div>
+        </div>
+
+        <div id="category-row" class="category-row"></div>
+      </div>
+
+      <!-- 🌟 स्टिकी पॅनल: जेव्हा स्क्रोल कराल, तेव्हा कॅटेगरीज सरकत वर येणार आणि ही 'Mega Deals' पट्टी बरोबर नेव्ह बारच्या खाली येऊन लॉक होईल -->
+      <div class="sticky-marketplace-header">
+        <!-- FLASH DEALS COUNTDOWN STRIP -->
+        <div id="flash-deal-banner" style="background:linear-gradient(90deg, #ff416c, #ff4b2b); color:#fff; border-radius:6px; padding:6px 10px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px; box-shadow:0 2px 6px rgba(255,75,43,0.25);">
+          <div style="display:flex; align-items:center; gap:4px; font-weight:800; font-size:12px;">
+            <span>⚡ Mega Deals:</span>
+            <span style="background:rgba(0,0,0,0.25); padding:2px 4px; border-radius:4px; font-size:10.5px;">Local Shops</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:4px; font-size:11px; font-weight:700;">
+            <span>Ends in:</span>
+            <span id="deal-timer" style="background:#000; color:#ffe500; padding:2px 4px; border-radius:4px; font-family:monospace;">04:16:33</span>
+          </div>
+        </div>
+
+        <!-- सर्च बॉक्स व फिल्टर्स -->
+        <div class="search-filter-row" style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:6px; align-items:center;">
+          <div style="display:flex; flex:2; min-width:180px; position:relative;">
+            <input id="search-box" placeholder="🔍 Search products (e.g. Parle-G, Rice, Sugar)..." style="margin-bottom:0; padding-right:60px; padding-top:6px; padding-bottom:6px; font-size:12.5px;">
+            <button type="button" id="search-clear-btn" class="search-clear-btn" onclick="clearSearchBox()" title="Clear">✕</button>
+            <button type="button" id="voice-search-btn" onclick="startMarketplaceVoiceSearch()" title="Voice Search" style="position:absolute; right:3px; top:3px; bottom:3px; padding:0 8px; background:#f0f5ff; color:#2874f0; border:1px solid #d0e1fd; border-radius:4px; font-size:14px; cursor:pointer;">🎤</button>
+          </div>
+          <select id="type-filter" style="flex:1; min-width:120px; margin-bottom:0; padding:6px; font-size:12.5px;">
+            <option value="">All Business Types</option>
+          </select>
+          <select id="sort-select" style="flex:1; min-width:120px; margin-bottom:0; padding:6px; font-size:12.5px;">
+            <option value="newest">Newest</option>
+            <option value="price_asc">Price: Low to High</option>
+            <option value="price_desc">Price: High to Low</option>
+          </select>
+          <button type="button" onclick="toggleDarkMode()" title="Toggle Dark/Light Mode" style="background:#334155; color:#fff; border:none; padding:6px 10px; border-radius:6px; font-weight:700; cursor:pointer; font-size:12px;">🌓</button>
+        </div>
+      </div>
+
+      <!-- खालील प्रॉडक्ट्स ग्रिड -->
+      <div id="products" class="grid" style="margin-top: 12px;">
+        <div class="skeleton-loader"></div>
+        <div class="skeleton-loader"></div>
+        <div class="skeleton-loader"></div>
+        <div class="skeleton-loader"></div>
+      </div>
+    </main>
+
+    <!-- 3. RIGHT SIDE AD SLOT -->
+    <aside class="ad-side-column" id="right-sidebar-wrapper">
+      <div class="ad-side-card">
+        <div class="side-ad-title">Featured</div>
+        <div id="ad-slot-right"></div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- 4. BOTTOM AD SLOT -->
+  <div id="ad-slot-bottom" class="ad-slot-banner" style="margin-top:20px"></div>
+
+  <!-- FOOTER -->
+  <footer style="margin-top: 48px; background: #172337; color: #878787; font-size: 12px; border-radius: 8px 8px 0 0; overflow: hidden;">
+    <div style="background: #2874f0; padding: 10px; text-align: center;">
+      <a href="#" onclick="window.scrollTo({top:0, behavior:'smooth'}); return false;" style="color:#ffffff; text-decoration:none; font-size:13px; font-weight:700;">▲ Back to top</a>
+    </div>
+
+    <div style="padding: 36px 24px 24px; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 24px; max-width: 1280px; margin: 0 auto; text-align: left; line-height: 1.8;">
+      <div>
+        <h4 style="color:#878787; margin:0 0 10px 0; font-size:12px; text-transform:uppercase; font-weight:700;">ABOUT</h4>
+        <ul style="list-style:none; padding:0; margin:0;">
+          <li><a href="contact.html" style="color:#fff; text-decoration:none;">Contact Us</a></li>
+          <li><a href="about.html" style="color:#fff; text-decoration:none;">About Aapla Bazaar</a></li>
+          <li><a href="b2b-collective.html" style="color:#fff; text-decoration:none;">Community Group Buying</a></li>
+          <li><a href="b2b-wholesale.html" style="color:#fff; text-decoration:none;">B2B Wholesale Hub</a></li>
+          <li><a href="app-store.html" style="color:#fff; text-decoration:none;">Business App Store</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 style="color:#878787; margin:0 0 10px 0; font-size:12px; text-transform:uppercase; font-weight:700;">HELP</h4>
+        <ul style="list-style:none; padding:0; margin:0;">
+          <li><a href="customer-passbook.html" style="color:#fff; text-decoration:none;">Payments & Khata</a></li>
+          <li><a href="orders.html" style="color:#fff; text-decoration:none;">Shipping & Tracking</a></li>
+          <li><a href="contact.html" style="color:#fff; text-decoration:none;">Cancellation & Returns</a></li>
+          <li><a href="contact.html" style="color:#fff; text-decoration:none;">FAQ & Help Center</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 style="color:#878787; margin:0 0 10px 0; font-size:12px; text-transform:uppercase; font-weight:700;">CONSUMER POLICY</h4>
+        <ul style="list-style:none; padding:0; margin:0;">
+          <li><a href="terms.html" style="color:#fff; text-decoration:none;">Terms Of Use</a></li>
+          <li><a href="privacy-policy.html" style="color:#fff; text-decoration:none;">Privacy Policy</a></li>
+        </ul>
+      </div>
+      <div style="border-left: 1px solid #454d5e; padding-left: 16px;">
+        <h4 style="color:#878787; margin:0 0 10px 0; font-size:12px; text-transform:uppercase; font-weight:700;">PARTNER & SELL</h4>
+        <ul style="list-style:none; padding:0; margin:0;">
+          <li><a href="create-business.html" style="color:#ffe500; font-weight:700; text-decoration:none;">🏪 Become a Seller (0% Fee)</a></li>
+          <li><a href="advertiser.html" style="color:#ffe500; font-weight:700; text-decoration:none;">📢 Advertise with Us (₹99)</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+</main>
+
+<script src="js/supabase-client.js"></script>
+<script src="js/cart.js"></script>
+<script src="js/nav.js"></script>
+<script src="js/ads.js"></script>
+<script src="js/referral.js"></script>
+<script src="js/master-dictionary.js"></script>
+<script>
+let wishlistIds = new Set();
+
+async function loadWishlist() {
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user) return;
+  const { data } = await sb.from('wishlists').select('business_product_id').eq('user_id', user.id);
+  wishlistIds = new Set((data ?? []).map(w => w.business_product_id));
+}
+
+async function toggleWishlist(businessProductId, btn) {
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user) { window.location.href = 'login.html'; return; }
+
+  if (wishlistIds.has(businessProductId)) {
+    await sb.from('wishlists').delete().eq('user_id', user.id).eq('business_product_id', businessProductId);
+    wishlistIds.delete(businessProductId);
+    btn.textContent = '♡';
+  } else {
+    await sb.from('wishlists').insert({ user_id: user.id, business_product_id: businessProductId });
+    wishlistIds.add(businessProductId);
+    btn.textContent = '♥';
+  }
+}
+
+function renderStoryAds() {
+  const container = document.getElementById('story-ads-container');
+  if (!container) return;
+
+  const sampleStories = [
+    { title: 'किराणा सेल', bg: 'linear-gradient(135deg, #2563eb, #1e3a8a)', emoji: '🛒' },
+    { title: 'हार्डवेअर', bg: 'linear-gradient(135deg, #ea580c, #c2410c)', emoji: '🔩' },
+    { title: 'कपडे डिस्काउंट', bg: 'linear-gradient(135deg, #db2777, #9d174d)', emoji: '👕' },
+    { title: 'रेस्टॉरंट', bg: 'linear-gradient(135deg, #16a34a, #15803d)', emoji: '🍽️' },
+    { title: 'मेडिकल ऑफर', bg: 'linear-gradient(135deg, #9333ea, #7e22ce)', emoji: '💊' }
+  ];
+
+  container.innerHTML = `
+    <div style="display:flex; gap:12px; overflow-x:auto; padding:4px 2px 6px 2px; scrollbar-width:none; align-items:center;">
+      ${sampleStories.map(s => `
+        <a href="advertiser.html" style="text-decoration:none; text-align:center; flex-shrink:0; display:flex; flex-direction:column; align-items:center;">
+          <div style="width:50px; height:50px; border-radius:50%; background:${s.bg}; display:flex; align-items:center; justify-content:center; font-size:20px; box-shadow:0 3px 8px rgba(0,0,0,0.15); border:2px solid #ffffff;">
+            ${s.emoji}
+          </div>
+          <div style="font-size:11px; font-weight:700; color:var(--text, #334155); margin-top:3px; max-width:65px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${s.title}</div>
+        </a>
+      `).join('')}
+    </div>
+  `;
+}
+
+function toggleDarkMode() {
+  const isDark = document.body.classList.toggle('dark-mode');
+  localStorage.setItem('allerp_theme', isDark ? 'dark' : 'light');
+}
+if (localStorage.getItem('allerp_theme') === 'dark') {
+  document.body.classList.add('dark-mode');
+}
+
+async function loadBusinessTypes() {
+  const { data } = await sb.from('business_types').select('slug, name_en').eq('is_active', true).order('sort_order');
+  const select = document.getElementById('type-filter');
+  select.innerHTML = '<option value="">All Business Types</option>' +
+    (data ?? []).map(t => `<option value="${t.slug}">${t.name_en}</option>`).join('');
+
+  const catIcons = {
+    'grocery': '🛒', 'electronics': '🎧', 'clothing': '👗', 'hardware': '🔩',
+    'restaurant': '🍽️', 'medical-store': '💊', 'contractor': '🏗️', 'furniture': '🛋️',
+    'mobile-shop': '📱', 'real-estate': '🏠', 'services': '💼', 'bakery': '🍞', 'manufacturing': '🏭'
+  };
+
+  const row = document.getElementById('category-row');
+  row.innerHTML = (data ?? []).map(t => {
+    const icon = catIcons[t.slug] || '🏷️';
+    return `
+      <a href="#" class="meesho-cat-card" data-slug="${t.slug}">
+        <div class="meesho-cat-avatar">${icon}</div>
+        <span class="meesho-cat-name">${t.name_en}</span>
+      </a>
+    `;
+  }).join('');
+  row.querySelectorAll('.meesho-cat-card').forEach(chip => {
+    chip.addEventListener('click', (e) => {
+      e.preventDefault();
+      document.getElementById('type-filter').value = chip.dataset.slug || chip.closest('.meesho-cat-card')?.dataset.slug;
+      loadProducts();
+      window.scrollTo({ top: document.getElementById('products').offsetTop - 140, behavior: 'smooth' });
+    });
+  });
+}
+
+function clearSearchBox() {
+  const box = document.getElementById('search-box');
+  box.value = '';
+  document.getElementById('search-clear-btn').style.display = 'none';
+  loadProducts();
+}
+
+function startMarketplaceVoiceSearch() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    alert('Voice search is not supported in your browser.');
+    return;
+  }
+  const micBtn = document.getElementById('voice-search-btn');
+  const searchInput = document.getElementById('search-box');
+  
+  const recognition = new SpeechRecognition();
+  recognition.lang = 'en-IN';
+  recognition.interimResults = false;
+
+  micBtn.textContent = '🔴';
+  micBtn.style.background = '#fee2e2';
+
+  recognition.onresult = function(event) {
+    let transcript = event.results[0][0].transcript.trim();
+    searchInput.value = transcript;
+    document.getElementById('search-clear-btn').style.display = 'block';
+    loadProducts();
+    micBtn.textContent = '🎤';
+    micBtn.style.background = '#f0f5ff';
+  };
+  recognition.onerror = () => { micBtn.textContent = '🎤'; micBtn.style.background = '#f0f5ff'; };
+  recognition.onend = () => { micBtn.textContent = '🎤'; micBtn.style.background = '#f0f5ff'; };
+  recognition.start();
+}
+
+async function loadProducts() {
+  const container = document.getElementById('products');
+  const rawSearchTerm = document.getElementById('search-box').value.trim();
+  const typeSlug = document.getElementById('type-filter').value;
+  const sortMode = document.getElementById('sort-select').value;
+
+  let query = sb
+    .from('business_products')
+    .select('id, name, selling_price, unit, image_url, business_id, businesses!inner(name, slug, city, business_type_id, business_types!inner(slug))')
+    .eq('marketplace_visible', true)
+    .limit(300);
+
+  if (rawSearchTerm) {
+    // 🌐 बहुभाषिक/समानार्थी सर्च — "halad" टाईप केलं तरी "हळद"/"turmeric"
+    // नावाची उत्पादनंही सापडतील (js/master-dictionary.js वापरून)
+    const synonyms = (typeof getSearchSynonyms === 'function')
+      ? getSearchSynonyms(rawSearchTerm)
+      : [rawSearchTerm];
+    // Supabase .or() फिल्टरमध्ये कॉमा/कंस चालत नाहीत — असे शब्द वगळणे
+    const safeSynonyms = synonyms.filter(s => s && !/[,()]/.test(s));
+    const orConditions = (safeSynonyms.length ? safeSynonyms : [rawSearchTerm])
+      .map(s => `name.ilike.%${s}%`).join(',');
+    query = query.or(orConditions);
+  }
+
+  if (typeSlug) query = query.eq('businesses.business_types.slug', typeSlug);
+
+  if (sortMode === 'price_asc') query = query.order('selling_price', { ascending: true });
+  else if (sortMode === 'price_desc') query = query.order('selling_price', { ascending: false });
+  else query = query.order('created_at', { ascending: false });
+
+  const { data, error } = await query;
+
+  if (error) {
+    container.innerHTML = `<p class="error-text">${error.message}</p>`;
+    return;
+  }
+  if (!data || data.length === 0) {
+    container.innerHTML = '<p class="muted" style="grid-column: 1/-1; text-align:center; padding:30px;">No products found. Try a different search or filter.</p>';
+    return;
+  }
+
+  const groups = {};
+  const order = [];
+  data.forEach(p => {
+    const key = p.name.trim().toLowerCase();
+    if (!groups[key]) {
+      groups[key] = { name: p.name, image_url: p.image_url, unit: p.unit, offers: [] };
+      order.push(key);
+    }
+    groups[key].offers.push(p);
+    if (!groups[key].image_url && p.image_url) groups[key].image_url = p.image_url;
+  });
+
+  let renderedCards = [];
+
+  order.forEach((key, index) => {
+    const g = groups[key];
+    const prices = g.offers.map(o => o.selling_price);
+    const minPrice = Math.min(...prices);
+    const originalPrice = Math.round(minPrice * 1.25);
+    const sellerCount = g.offers.length;
+    const repProduct = g.offers[0];
+    const repProductId = repProduct.id;
+    const isWishlisted = wishlistIds.has(repProductId);
+    const fallbackImg = `https://placehold.co/400x400/2874f0/FFFFFF?text=${encodeURIComponent(g.name)}`;
+    const shopName = repProduct.businesses?.name || 'Local Store';
+    const shopCity = repProduct.businesses?.city || 'Nearby';
+    const encodedMapsQuery = encodeURIComponent(`${shopName} ${shopCity}`);
+
+    renderedCards.push(`
+      <div class="card">
+        <div class="card-img-wrapper">
+          <img src="${g.image_url || fallbackImg}" alt="${g.name}" loading="lazy">
+          <button class="wishlist-btn" data-id="${repProductId}" aria-label="Wishlist">
+            ${isWishlisted ? '♥' : '♡'}
+          </button>
+        </div>
+        
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+          <span class="meesho-mall-badge">Mall</span>
+          <a href="https://www.google.com/maps/search/?api=1&query=${encodedMapsQuery}" target="_blank" style="font-size:11px; color:#2563eb; text-decoration:none; font-weight:700;">
+            📍 Google Maps ↗
+          </a>
+        </div>
+
+        <h3 class="product-title" title="${g.name}">${g.name}</h3>
+        <div class="product-seller">🏪 ${shopName} · ${shopCity}</div>
+        
+        <div class="price-row">
+          <span class="selling-price">₹${minPrice}</span>
+          <span class="original-price">₹${originalPrice}</span>
+          <span class="discount-badge">20% off</span>
+        </div>
+
+        <div style="display:flex; align-items:center; gap:6px; font-size:11px; margin-bottom:6px;">
+          <span class="rating-badge">4.2 ★</span>
+          <span class="muted">(Verified Local)</span>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:6px; margin-top:auto;">
+          <a class="btn" style="width:100%; font-size:12px;" href="product.html?name=${encodeURIComponent(g.name)}">
+            ${sellerCount > 1 ? '🔍 Compare ' + sellerCount + ' Shops' : 'View Details'}
+          </a>
+        </div>
+      </div>
+    `);
+
+    if ((index + 1) % 4 === 0) {
+      const adIndex = Math.floor(index / 4) % (activeAdsList.length || 1);
+      const activeAd = activeAdsList[adIndex] || {
+        media_url: 'https://placehold.co/400x300/f59e0b/FFFFFF?text=%F0%9F%93%A2+Sponsored+Ad',
+        target_url: 'advertiser.html',
+        company_name: 'Local Business Ad'
+      };
+
+      renderedCards.push(`
+        <div class="card in-grid-sponsored-card" style="background:#ffffff; border:2px solid #2563eb; box-shadow:0 4px 12px rgba(37,99,235,0.15); padding:10px;">
+          <div class="in-grid-ad-box" style="position:relative; width:100%; height:190px; border-radius:6px; overflow:hidden; background:#f1f5f9; display:flex; align-items:center; justify-content:center; margin-bottom:8px;">
+            <a href="${activeAd.target_url}" target="_blank" rel="noopener" style="display:block; width:100%; height:100%;">
+              <img src="${activeAd.media_url}" alt="Live Sponsored Ad" style="width:100%; height:100%; object-fit:contain; background:#ffffff;">
+            </a>
+            <span style="position:absolute; top:6px; left:6px; background:#2563eb; color:#fff; font-size:10px; font-weight:800; padding:2px 8px; border-radius:4px;">📢 SPONSORED</span>
+          </div>
+          <h3 class="product-title" style="color:#1e40af; font-size:13.5px; font-weight:700;">${activeAd.campaigns?.name || activeAd.company_name}</h3>
+          <p class="product-seller" style="color:#16a34a; font-weight:700;">⭐ Verified Promotion</p>
+          <a href="${activeAd.target_url}" target="_blank" class="btn" style="background:#2563eb; color:#fff; font-size:12.5px; width:100%; margin-top:auto; font-weight:800; padding:8px 10px;">
+            👉 View Offer / Buy
+          </a>
+        </div>
+      `);
+    }
+  });
+
+  container.innerHTML = renderedCards.join('');
+
+  container.querySelectorAll('.wishlist-btn').forEach(btn => {
+    btn.addEventListener('click', () => toggleWishlist(btn.dataset.id, btn));
+  });
+}
+
+const searchBoxEl = document.getElementById('search-box');
+searchBoxEl.addEventListener('input', () => {
+  const clearBtn = document.getElementById('search-clear-btn');
+  clearBtn.style.display = searchBoxEl.value.trim() ? 'block' : 'none';
+
+  clearTimeout(window._searchTimer);
+  window._searchTimer = setTimeout(loadProducts, 300);
+});
+
+document.getElementById('type-filter').addEventListener('change', loadProducts);
+document.getElementById('sort-select').addEventListener('change', loadProducts);
+
+function startDealTimer() {
+  let secondsLeft = 15502;
+  const timerEl = document.getElementById('deal-timer');
+  if (!timerEl) return;
+  setInterval(() => {
+    if (secondsLeft <= 0) secondsLeft = 28800;
+    secondsLeft--;
+    const hrs = String(Math.floor(secondsLeft / 3600)).padStart(2, '0');
+    const mins = String(Math.floor((secondsLeft % 3600) / 60)).padStart(2, '0');
+    const secs = String(secondsLeft % 60).padStart(2, '0');
+    timerEl.textContent = `${hrs}:${mins}:${secs}`;
+  }, 1000);
+}
+
+(async () => {
+  renderStoryAds();
+  await loadWishlist();
+  await loadBusinessTypes();
+  if (typeof fetchEligibleAds === 'function') await fetchEligibleAds();
+  await loadProducts();
+  startDealTimer();
+  renderMultiAdSlots([
+    { id: 'ad-slot-top', placement: 'top' },
+    { id: 'ad-slot-left', placement: 'left' },
+    { id: 'ad-slot-right', placement: 'right' },
+    { id: 'ad-slot-bottom', placement: 'bottom' }
+  ]);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2874f0">
+<title>Product — Business Super Platform</title>
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  /* 🌟 प्रगत कॉर्पोरेट फिनिशिंग व ॲनिमेशन्स */
+  .card { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+  .card:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.06); }
+  .add-cart-btn { transition: background 0.2s, color 0.2s; }
+  .add-cart-btn:hover { background: var(--secondary); color: #fff; }
+  .direct-buy-btn { transition: opacity 0.2s, transform 0.1s; }
+  .direct-buy-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+  #gallery-main-hero { transition: opacity 0.15s ease-in-out; }
+</style>
+</head>
+<body>
+<nav id="app-nav"></nav>
+
+<main class="container">
+  <div id="product-header"><p class="muted">Loading...</p></div>
+
+  <h2>Available Offers & Rate Comparison (दुकाननिहाय दर तुलना)</h2>
+  <div id="offers-list"></div>
+
+  <h2>Ratings &amp; Reviews</h2>
+  <div id="rating-summary" class="muted" style="margin-bottom:10px"></div>
+  <div id="review-form-box" class="card" style="max-width:480px"></div>
+  <div id="reviews-list" style="margin-top:12px"></div>
+
+  <h2>You May Also Like</h2>
+  <div id="related-products" class="grid"></div>
+</main>
+
+<!-- Direct Checkout Modal (Buy Now साठी) -->
+<div id="checkout-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; justify-content:center; align-items:center;">
+  <div style="background:#fff; padding:24px; border-radius:10px; width:90%; max-width:400px; box-shadow:0 4px 15px rgba(0,0,0,0.2); position:relative;">
+    <h3 style="margin-top:0; font-size:18px; color:#212121;">थेट खरेदी करा (Instant Buy Now)</h3>
+    <p id="modal-product-info" class="muted" style="font-size:13px; margin-bottom:14px;"></p>
+    
+    <form id="directCheckoutForm" onsubmit="submitDirectOrder(event)">
+      <div style="margin-bottom:12px;">
+        <label style="display:block; font-size:13px; font-weight:700; margin-bottom:4px;">पूर्ण नाव:</label>
+        <input type="text" id="custName" required placeholder="तुमचे नाव टाका" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px; box-sizing:border-box;">
+      </div>
+      <div style="margin-bottom:12px;">
+        <label style="display:block; font-size:13px; font-weight:700; margin-bottom:4px;">मोबाईल नंबर:</label>
+        <input type="tel" id="custPhone" required placeholder="१० अंकी मोबाईल नंबर" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px; box-sizing:border-box;">
+      </div>
+      <div style="margin-bottom:16px;">
+        <label style="display:block; font-size:13px; font-weight:700; margin-bottom:4px;">डिलिव्हरी पत्ता:</label>
+        <textarea id="custAddress" required placeholder="घरचा पत्ता, परिसर, शहर" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px; height:60px; box-sizing:border-box;"></textarea>
+      </div>
+      <div style="display:flex; gap:10px;">
+        <button type="button" onclick="closeCheckoutModal()" style="flex:1; padding:10px; background:#e2e8f0; border:none; border-radius:4px; font-weight:700; cursor:pointer;">रद्द करा</button>
+        <button type="submit" style="flex:2; padding:10px; background:#ff9900; color:#fff; border:none; border-radius:4px; font-weight:700; cursor:pointer;">ऑर्डर कन्फर्म करा</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="js/supabase-client.js"></script>
+<script src="js/cart.js"></script>
+<script src="js/nav.js"></script>
+<script>
+const params = new URLSearchParams(window.location.search);
+const productName = params.get('name');
+let currentOffers = [];
+let currentUser = null;
+let selectedOfferForCheckout = null;
+
+async function loadOffers() {
+  if (!productName) {
+    document.getElementById('product-header').innerHTML = '<p class="error-text">Product not specified.</p>';
+    return;
+  }
+
+  const { data: { user } } = await sb.auth.getUser();
+  currentUser = user;
+
+  const { data: offers, error } = await sb
+    .from('business_products')
+    .select('id, name, selling_price, unit, image_url, business_id, businesses(name, slug, city, business_type_id)')
+    .ilike('name', productName)
+    .eq('marketplace_visible', true)
+    .order('selling_price', { ascending: true });
+
+  if (error || !offers || offers.length === 0) {
+    document.getElementById('product-header').innerHTML = '<p class="error-text">No sellers currently have this product available.</p>';
+    return;
+  }
+
+  currentOffers = offers;
+
+  let isWishlisted = false;
+  if (user) {
+    const { data: wl } = await sb.from('wishlists').select('id').eq('user_id', user.id).eq('business_product_id', offers[0].id).maybeSingle();
+    isWishlisted = !!wl;
+  }
+
+  const mainImage = offers.find(o => o.image_url)?.image_url || `https://placehold.co/500x500/2874f0/FFFFFF?text=${encodeURIComponent(offers[0].name)}`;
+  
+  const angleImages = [
+    { url: mainImage, label: 'Main Angle' },
+    { url: `https://placehold.co/500x500/ff6b35/FFFFFF?text=${encodeURIComponent(offers[0].name + ' (Back/Spec)')}`, label: 'Details' },
+    { url: `https://placehold.co/500x500/16a34a/FFFFFF?text=${encodeURIComponent(offers[0].name + ' (Verified)')}`, label: 'Local Store' }
+  ];
+
+  document.getElementById('product-header').innerHTML = `
+    <div class="card" style="padding:16px; margin-bottom:16px;">
+      <div style="display:flex; gap:20px; flex-wrap:wrap;">
+        
+        <!-- Multi-Angle Image Gallery -->
+        <div style="flex:1; min-width:260px; max-width:420px; text-align:center;">
+          <div style="position:relative; width:100%; padding-top:95%; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; overflow:hidden;">
+            <img id="gallery-main-hero" src="${mainImage}" alt="${offers[0].name}" style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:contain; padding:10px;">
+            <button id="wishlist-toggle" style="position:absolute; top:10px; right:10px; background:rgba(255,255,255,0.9); border:1px solid var(--border); border-radius:50%; width:38px; height:38px; padding:0; color:#e0245e; font-size:18px; cursor:pointer; box-shadow:0 2px 6px rgba(0,0,0,0.1);">
+              ${isWishlisted ? '♥' : '♡'}
+            </button>
+          </div>
+
+          <div style="display:flex; gap:8px; justify-content:center; margin-top:10px;">
+            ${angleImages.map((imgObj, i) => `
+              <div onclick="switchHeroImage('${imgObj.url}', this)" style="cursor:pointer; width:54px; height:54px; border:2px solid ${i === 0 ? 'var(--secondary)' : '#e2e8f0'}; border-radius:6px; overflow:hidden; background:#fff; padding:2px;">
+                <img src="${imgObj.url}" alt="${imgObj.label}" style="width:100%; height:100%; object-fit:contain;">
+              </div>
+            `).join('')}
+          </div>
+        </div>
+
+        <!-- Product Details & Rate Comparison Notice -->
+        <div style="flex:1.4; min-width:280px; display:flex; flex-direction:column; justify-content:space-between;">
+          <div>
+            <div style="display:inline-flex; align-items:center; gap:6px; background:#f0f5ff; color:var(--secondary); padding:4px 10px; border-radius:20px; font-size:12px; font-weight:700; margin-bottom:8px;">
+              ✓ 100% Original & Verified Local Shop
+            </div>
+            <h1 style="margin:0 0 6px; font-size:22px; line-height:1.3;">${offers[0].name}</h1>
+            <div class="muted" style="font-size:13px; margin-bottom:12px;">
+              उपलब्धता: <strong>${offers.length} स्थानिक दुकानांमध्ये उपलब्ध (खाली दर तुलना पहा)</strong>
+            </div>
+
+            <div style="background:#f8fafc; border-radius:8px; padding:12px; margin-bottom:14px;">
+              <div style="font-size:12px; color:var(--muted); text-transform:uppercase; font-weight:700;">किमान किंमत (Best Price):</div>
+              <div style="display:flex; align-items:baseline; gap:10px; margin-top:4px;">
+                <span style="font-size:26px; font-weight:800; color:#212121;">₹${offers[0].selling_price}</span>
+                <span style="font-size:15px; color:var(--muted); text-decoration:line-through;">₹${Math.round(offers[0].selling_price * 1.25)}</span>
+                <span style="font-size:13px; color:#16a34a; font-weight:700;">20% बचत</span>
+                <span class="muted" style="font-size:13px;">/ ${offers[0].unit}</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="background:#e8f4fd; border:1px solid #bde0fe; padding:10px; border-radius:6px; font-size:13px; color:#0353a4;">
+            💡 प्रत्येक दुकानाच्या बाजूला नगसंख्या (Quantity) निवडून <strong>Add to Cart</strong> करा किंवा थेट <strong>Buy Now</strong> दाबा.
+          </div>
+        </div>
+
+      </div>
+    </div>
+  `;
+
+  document.getElementById('wishlist-toggle').addEventListener('click', async (e) => {
+    if (!currentUser) { window.location.href = 'login.html'; return; }
+    const btn = e.target;
+    const isLiked = btn.textContent.trim() === '♥';
+    if (isLiked) {
+      await sb.from('wishlists').delete().eq('user_id', currentUser.id).eq('business_product_id', offers[0].id);
+      btn.textContent = '♡';
+    } else {
+      await sb.from('wishlists').insert({ user_id: currentUser.id, business_product_id: offers[0].id });
+      btn.textContent = '♥';
+    }
+  });
+
+  const list = document.getElementById('offers-list');
+  list.innerHTML = offers.map((o, i) => `
+    <div class="card" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:10px;">
+      <div>
+        <strong>${o.businesses?.name ?? 'Unknown Seller'}</strong> ${i === 0 ? '<span class="badge live" style="background:#2874f0; color:#fff; padding:2px 6px; border-radius:4px; font-size:11px;">Best Price</span>' : ''}
+        <div class="muted" style="font-size:13px">📍 ${o.businesses?.city ?? ''}</div>
+        <div style="font-weight:700; font-size:16px; color:#212121; margin-top:4px;">₹${o.selling_price} <span style="font-size:12px; font-weight:normal;" class="muted">/ ${o.unit}</span></div>
+      </div>
+
+      <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+        <div style="display:flex; align-items:center; border:1px solid #cbd5e1; border-radius:4px; background:#fff;">
+          <button type="button" onclick="updateQty('${o.id}', -1)" style="padding:4px 10px; background:#f1f5f9; border:none; cursor:pointer; font-weight:bold;">-</button>
+          <span id="qty-${o.id}" style="padding:0 12px; font-weight:700; font-size:14px;">1</span>
+          <button type="button" onclick="updateQty('${o.id}', 1)" style="padding:4px 10px; background:#f1f5f9; border:none; cursor:pointer; font-weight:bold;">+</button>
+        </div>
+
+        <button class="add-cart-btn" data-id="${o.id}" data-name="${o.name}" data-bizid="${o.business_id}" data-bizname="${o.businesses?.name ?? ''}" data-price="${o.selling_price}" style="padding:8px 14px; font-size:13px; background:#f0f5ff; color:var(--secondary); border:1px solid var(--secondary); border-radius:4px; font-weight:700; cursor:pointer;">
+          Add to Cart
+        </button>
+
+        <button class="direct-buy-btn" data-index="${i}" style="padding:8px 14px; font-size:13px; background:#ff9900; color:#fff; border:none; border-radius:4px; font-weight:700; cursor:pointer;">
+          Buy Now
+        </button>
+      </div>
+    </div>
+  `).join('');
+
+  window.updateQty = function(id, change) {
+    const qtySpan = document.getElementById(`qty-${id}`);
+    let currentQty = parseInt(qtySpan.textContent) || 1;
+    currentQty += change;
+    if (currentQty < 1) currentQty = 1;
+    qtySpan.textContent = currentQty;
+  };
+
+  list.querySelectorAll('.add-cart-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const id = e.target.dataset.id;
+      const qty = parseInt(document.getElementById(`qty-${id}`).textContent) || 1;
+      
+      addToCart({
+        business_product_id: id,
+        name: e.target.dataset.name,
+        business_id: e.target.dataset.bizid,
+        business_name: e.target.dataset.bizname,
+        price: Number(e.target.dataset.price),
+        quantity: qty
+      });
+      renderNav();
+      e.target.textContent = `Added (${qty}) ✓`;
+      setTimeout(() => { e.target.textContent = 'Add to Cart'; }, 1500);
+    });
+  });
+
+  list.querySelectorAll('.direct-buy-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const index = e.target.dataset.index;
+      selectedOfferForCheckout = currentOffers[index];
+      openCheckoutModal(selectedOfferForCheckout);
+    });
+  });
+
+  loadReviews();
+  loadRelated(offers[0].businesses?.business_type_id, offers[0].name);
+}
+
+function openCheckoutModal(offer) {
+  const modalInfo = document.getElementById('modal-product-info');
+  modalInfo.innerHTML = `प्रॉडक्ट: <strong>${offer.name}</strong><br>दुकान: <strong>${offer.businesses?.name}</strong><br>किंमत: <strong>₹${offer.selling_price} / ${offer.unit}</strong>`;
+  document.getElementById('checkout-modal').style.display = 'flex';
+}
+
+function closeCheckoutModal() {
+  document.getElementById('checkout-modal').style.display = 'none';
+}
+
+async function submitDirectOrder(event) {
+  event.preventDefault();
+  if (!selectedOfferForCheckout) return;
+
+  const name = document.getElementById('custName').value.trim();
+  const phone = document.getElementById('custPhone').value.trim();
+  const address = document.getElementById('custAddress').value.trim();
+
+  // ⚠️ किंमत क्लायंटवर ट्रस्ट करत नाही — place_direct_order() तुमच्या खऱ्या
+  // live orders स्कीमाशी जुळणारं RPC आहे; सर्व्हरवर खरी selling_price वाचतं
+  // व स्टॉक लॉक करून तपासतं.
+  const { data: { user: currentUser } } = await sb.auth.getUser();
+
+  const { data, error } = await sb.rpc('place_direct_order', {
+    p_business_id: selectedOfferForCheckout.business_id,
+    p_customer_name: name,
+    p_customer_phone: phone,
+    p_delivery_address: address,
+    p_pincode: null,
+    p_payment_method: 'Online / Cash on Delivery',
+    p_items: [{
+      business_product_id: selectedOfferForCheckout.business_product_id || selectedOfferForCheckout.id,
+      quantity: 1
+    }],
+    p_fulfillment_mode: 'self_delivery',
+    p_customer_email: currentUser?.email || null
+  });
+
+  if (error) {
+    console.error('Order save error:', error.message);
+    alert('ऑर्डर सेव्ह करताना अडचण आली: ' + error.message);
+    return;
+  }
+
+  closeCheckoutModal();
+
+  const pinText = data?.delivery_pin ? `\n\n🔑 तुमचा डिलिव्हरी पिन (OTP): ${data.delivery_pin}` : '';
+
+  alert(`🎉 तुमची ऑर्डर यशस्वीरित्या नोंदवली गेली आहे!${pinText}\n\nआता ही ऑर्डर तुमच्या 'माझ्या ऑर्डर्स' (Orders) पेजवर दिसेल.`);
+  window.location.href = 'orders.html';
+}
+
+async function loadReviews() {
+  const productIds = currentOffers.map(o => o.id);
+  const { data: reviews } = await sb
+    .from('reviews')
+    .select('id, rating, comment, created_at, business_product_id, reviewer_user_id')
+    .in('business_product_id', productIds)
+    .order('created_at', { ascending: false });
+
+  const summaryEl = document.getElementById('rating-summary');
+  const listEl = document.getElementById('reviews-list');
+
+  if (!reviews || reviews.length === 0) {
+    summaryEl.textContent = 'No reviews yet — be the first to review this product.';
+    listEl.innerHTML = '';
+  } else {
+    const avg = (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1);
+    summaryEl.innerHTML = `⭐ ${avg} / 5 · ${reviews.length} review${reviews.length > 1 ? 's' : ''}`;
+    listEl.innerHTML = reviews.map(r => `
+      <div class="card">
+        <div>${'⭐'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</div>
+        ${r.comment ? `<p style="margin:6px 0 0">${r.comment}</p>` : ''}
+        <div class="muted" style="font-size:12px; margin-top:4px">${new Date(r.created_at).toLocaleDateString('en-IN')}</div>
+      </div>
+    `).join('');
+  }
+
+  const formBox = document.getElementById('review-form-box');
+  if (!currentUser) {
+    formBox.innerHTML = `<p class="muted">Please <a href="login.html">log in</a> to write a review.</p>`;
+    return;
+  }
+
+  const firstOfferForCheck = currentOffers[0];
+  const existingReview = (reviews || []).find(r =>
+    r.business_product_id === firstOfferForCheck.id && r.reviewer_user_id === currentUser.id
+  );
+
+  formBox.innerHTML = `
+    <h3 style="margin-top:0">${existingReview ? 'Update Your Review' : 'Write a Review'}</h3>
+    <label>Rating</label>
+    <select id="review-rating">
+      <option value="5">⭐⭐⭐⭐⭐ Excellent</option>
+      <option value="4">⭐⭐⭐⭐ Good</option>
+      <option value="3">⭐⭐⭐ Average</option>
+      <option value="2">⭐⭐ Poor</option>
+      <option value="1">⭐ Very Poor</option>
+    </select>
+    <label>Comment (optional)</label>
+    <input id="review-comment" placeholder="Share your experience...">
+    <p id="review-error" class="error-text"></p>
+    <button id="submit-review-btn">${existingReview ? 'Update Review' : 'Submit Review'}</button>
+  `;
+
+  if (existingReview) {
+    document.getElementById('review-rating').value = String(existingReview.rating);
+    document.getElementById('review-comment').value = existingReview.comment || '';
+  }
+
+  document.getElementById('submit-review-btn').addEventListener('click', async () => {
+    const rating = Number(document.getElementById('review-rating').value);
+    const comment = document.getElementById('review-comment').value.trim() || null;
+    const errorEl = document.getElementById('review-error');
+    const firstOffer = currentOffers[0];
+
+    // 🛡️ एकाच युजरचा एकाच प्रॉडक्टवर एकच रिव्ह्यू राहील — आधीचा असेल तर अपडेट,
+    // नसेल तर नवीन (business_product_id + reviewer_user_id वरच्या unique
+    // constraint शी जुळणारा upsert)
+    const { error } = await sb.from('reviews').upsert({
+      id: existingReview?.id,
+      business_id: firstOffer.business_id,
+      business_product_id: firstOffer.id,
+      reviewer_user_id: currentUser.id,
+      rating,
+      comment
+    }, { onConflict: 'business_product_id,reviewer_user_id' });
+
+    if (error) {
+      errorEl.textContent = error.message;
+      return;
+    }
+    await loadReviews();
+  });
+}
+
+async function loadRelated(businessTypeId, excludeName) {
+  const container = document.getElementById('related-products');
+  if (!businessTypeId) { container.innerHTML = ''; return; }
+
+  const { data } = await sb
+    .from('business_products')
+    .select('id, name, selling_price, unit, image_url, businesses!inner(business_type_id)')
+    .eq('marketplace_visible', true)
+    .eq('businesses.business_type_id', businessTypeId)
+    .neq('name', excludeName)
+    .limit(8);
+
+  if (!data || data.length === 0) { container.innerHTML = '<p class="muted">No related products found.</p>'; return; }
+
+  const seen = new Set();
+  const uniq = [];
+  for (const p of data) {
+    const key = p.name.trim().toLowerCase();
+    if (!seen.has(key)) { seen.add(key); uniq.push(p); }
+    if (uniq.length >= 4) break;
+  }
+
+  container.innerHTML = uniq.map(p => `
+    <div class="card">
+      ${p.image_url ? `<img src="${p.image_url}" alt="${p.name}">` : ''}
+      <h3 style="font-size:14px; margin:8px 0 2px">${p.name}</h3>
+      <div style="font-weight:700">₹${p.selling_price} / ${p.unit}</div>
+      <a class="btn" style="margin-top:8px; font-size:13px; padding:6px 10px" href="product.html?name=${encodeURIComponent(p.name)}">View</a>
+    </div>
+  `).join('');
+}
+
+function switchHeroImage(url, el) {
+  const main = document.getElementById('gallery-main-hero');
+  if (main) {
+    main.style.opacity = '0.3';
+    main.src = url;
+    setTimeout(() => { main.style.opacity = '1'; }, 150);
+  }
+  document.querySelectorAll('#product-header div div div div').forEach(d => {
+    if (d.style) d.style.borderColor = '#e2e8f0';
+  });
+  if (el) el.style.borderColor = 'var(--secondary)';
+}
+
+loadOffers();
+</script>
+</body>
+</html>

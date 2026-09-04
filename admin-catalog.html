@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2874f0">
+<title>Catalog Import — Admin</title>
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+<style>
+  .card { border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.04); border: 1px solid #e2e8f0; background: #ffffff; padding: 20px; margin-bottom: 16px; }
+  table th, table td { padding: 10px 12px; text-align: left; }
+</style>
+</head>
+<body>
+<nav id="app-nav"></nav>
+
+<main class="container" style="max-width: 1000px; margin-top: 20px;">
+  <div id="not-authorized" style="display:none; text-align:center; padding:40px;">
+    <h1>⛔ Access Denied</h1>
+    <p class="muted">This page is for admins only.</p>
+  </div>
+
+  <div id="admin-body" style="display:none">
+    <h1>Catalog Import</h1>
+    <p class="muted"><a href="admin.html" style="color:#2563eb; font-weight:700; text-decoration:none;">← Back to Admin Portal</a></p>
+
+    <div class="card">
+      <h3 style="margin-top:0">1. Add a New Business Type</h3>
+      <p class="muted" style="font-size:13px">Skip this if the vertical already exists in the dropdown below.</p>
+      
+      <label style="font-size:12.5px; font-weight:700; display:block; margin-bottom:4px;">Name (English)</label>
+      <input id="bt-name-en" placeholder="e.g. Bakery" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; box-sizing:border-box; margin-bottom:10px;">
+      
+      <label style="font-size:12.5px; font-weight:700; display:block; margin-bottom:4px;">Name (Marathi, optional)</label>
+      <input id="bt-name-mr" placeholder="e.g. बेकरी" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; box-sizing:border-box; margin-bottom:10px;">
+      
+      <label style="font-size:12.5px; font-weight:700; display:block; margin-bottom:4px;">Category (optional)</label>
+      <input id="bt-category" placeholder="e.g. food, retail, services" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; box-sizing:border-box; margin-bottom:10px;">
+      
+      <p id="bt-error" class="error-text" style="color:#dc2626; font-size:12px; margin-bottom:8px;"></p>
+      <button id="bt-save-btn" style="padding:9px 16px; background:#2563eb; color:#fff; border:none; border-radius:6px; font-weight:700; cursor:pointer;">Add Business Type</button>
+    </div>
+
+    <div class="card">
+      <h3 style="margin-top:0">2. Bulk Import Starter Products (CSV)</h3>
+      
+      <label style="font-size:12.5px; font-weight:700; display:block; margin-bottom:4px;">Business Type</label>
+      <select id="import-type-select" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; box-sizing:border-box; margin-bottom:12px; background:#fff;"></select>
+
+      <label style="font-size:12.5px; font-weight:700; display:block; margin-bottom:4px;">CSV File</label>
+      <input type="file" id="csv-file" accept=".csv" style="margin-bottom:8px;">
+      
+      <p class="muted" style="font-size:12px; line-height:1.4; margin-bottom:12px;">
+        Required columns: <code>name_en</code>, <code>unit</code>, <code>price</code>.<br>
+        Optional: <code>name_mr</code>, <code>image_url</code>.<br>
+        <a href="#" id="download-template" style="color:#2563eb; font-weight:700;">Download a template CSV</a>.<br>
+        Importing again with the same product names updates them instead of duplicating (safe to re-run).
+      </p>
+
+      <div id="csv-preview"></div>
+      <p id="import-error" class="error-text" style="color:#dc2626; font-size:12px; margin-bottom:8px;"></p>
+      <button id="import-btn" disabled style="padding:9px 16px; background:#16a34a; color:#fff; border:none; border-radius:6px; font-weight:700; cursor:pointer;">Import Products</button>
+    </div>
+
+    <div class="card">
+      <h3 style="margin-top:0">Current Catalog Sizes</h3>
+      <div id="catalog-stats"><p class="muted">Loading...</p></div>
+    </div>
+  </div>
+</main>
+
+<script src="js/supabase-client.js"></script>
+<script src="js/cart.js"></script>
+<script src="js/nav.js"></script>
+<script>
+let parsedRows = [];
+let businessTypes = [];
+
+async function init() {
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user) { window.location.href = 'login.html'; return; }
+
+  const { data: profile } = await sb.from('users').select('is_admin').eq('id', user.id).single();
+  if (!profile || !profile.is_admin) {
+    document.getElementById('not-authorized').style.display = 'block';
+    return;
+  }
+
+  document.getElementById('admin-body').style.display = 'block';
+  await loadBusinessTypes();
+  await loadCatalogStats();
+}
+
+async function loadBusinessTypes() {
+  const { data } = await sb.from('business_types').select('id, slug, name_en').order('sort_order');
+  businessTypes = data ?? [];
+  const select = document.getElementById('import-type-select');
+  select.innerHTML = businessTypes.map(t => `<option value="${t.id}">${t.name_en}</option>`).join('');
+}
+
+document.getElementById('bt-save-btn').addEventListener('click', async () => {
+  const nameEn = document.getElementById('bt-name-en').value.trim();
+  const nameMr = document.getElementById('bt-name-mr').value.trim() || null;
+  const category = document.getElementById('bt-category').value.trim() || null;
+  const errorEl = document.getElementById('bt-error');
+  errorEl.textContent = '';
+
+  if (!nameEn) { errorEl.textContent = 'English name required.'; return; }
+
+  const slug = nameEn.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+
+  const { data: maxSort } = await sb.from('business_types').select('sort_order').order('sort_order', { ascending: false }).limit(1).maybeSingle();
+  const nextSort = (maxSort?.sort_order ?? 0) + 1;
+
+  const { error } = await sb.from('business_types').insert({
+    slug, name_en: nameEn, name_mr: nameMr, category, sort_order: nextSort
+  });
+
+  if (error) { errorEl.textContent = error.message; return; }
+
+  document.getElementById('bt-name-en').value = '';
+  document.getElementById('bt-name-mr').value = '';
+  document.getElementById('bt-category').value = '';
+  await loadBusinessTypes();
+  await loadCatalogStats();
+});
+
+document.getElementById('download-template').addEventListener('click', (e) => {
+  e.preventDefault();
+  const csv = 'name_en,name_mr,unit,price,image_url\nSample Product,नमुना उत्पादन,pcs,100,\n';
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'starter-catalog-template.csv';
+  a.click();
+});
+
+document.getElementById('csv-file').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  Papa.parse(file, {
+    header: true,
+    skipEmptyLines: true,
+    complete: (results) => {
+      const errorEl = document.getElementById('import-error');
+      errorEl.textContent = '';
+
+      const rows = results.data.filter(r => r.name_en && r.name_en.trim());
+      const missingRequired = rows.some(r => !r.unit || !r.price);
+      if (missingRequired) {
+        errorEl.textContent = 'Some rows are missing required "unit" or "price" — please check your CSV.';
+      }
+
+      parsedRows = rows;
+      document.getElementById('csv-preview').innerHTML = `
+        <p><strong>${rows.length}</strong> products found in file.</p>
+        <div style="overflow-x:auto; margin-bottom:10px;">
+          <table style="width:100%; border-collapse:collapse;">
+            <thead>
+              <tr style="border-bottom:2px solid #e2e8f0;"><th>Name</th><th>Unit</th><th>Price</th></tr>
+            </thead>
+            <tbody>
+              ${rows.slice(0, 5).map(r => `<tr style="border-bottom:1px solid #f1f5f9;"><td>${r.name_en}</td><td>${r.unit}</td><td>₹${r.price}</td></tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+        ${rows.length > 5 ? `<p class="muted" style="font-size:12px; margin-bottom:10px;">...and ${rows.length - 5} more</p>` : ''}
+      `;
+      document.getElementById('import-btn').disabled = rows.length === 0;
+    }
+  });
+});
+
+document.getElementById('import-btn').addEventListener('click', async () => {
+  const btn = document.getElementById('import-btn');
+  const errorEl = document.getElementById('import-error');
+  const businessTypeId = document.getElementById('import-type-select').value;
+  errorEl.textContent = '';
+
+  if (!businessTypeId) { errorEl.textContent = 'Select a business type first.'; return; }
+  if (parsedRows.length === 0) { errorEl.textContent = 'No rows to import.'; return; }
+
+  btn.disabled = true;
+  btn.textContent = 'Importing...';
+
+  const records = parsedRows.map(r => ({
+    business_type_id: businessTypeId,
+    name_en: r.name_en.trim(),
+    name_mr: r.name_mr ? r.name_mr.trim() : null,
+    unit: r.unit.trim(),
+    suggested_price: Number(r.price) || 0,
+    image_url: r.image_url ? r.image_url.trim() : null,
+    image_source: r.image_url ? 'seller-provided' : null
+  }));
+
+  const { error } = await sb.from('industry_products').upsert(records, { onConflict: 'business_type_id,name_en' });
+
+  btn.disabled = false;
+  btn.textContent = 'Import Products';
+
+  if (error) { errorEl.textContent = error.message; return; }
+
+  document.getElementById('csv-preview').innerHTML = `<p style="color:green; font-weight:700;">✓ Imported ${records.length} products successfully.</p>`;
+  document.getElementById('csv-file').value = '';
+  parsedRows = [];
+  document.getElementById('import-btn').disabled = true;
+  await loadCatalogStats();
+});
+
+async function loadCatalogStats() {
+  const { data } = await sb
+    .from('business_types')
+    .select('name_en, industry_products(count)')
+    .order('sort_order');
+
+  const el = document.getElementById('catalog-stats');
+  el.innerHTML = `
+    <div style="overflow-x:auto;">
+      <table style="width:100%; border-collapse:collapse;">
+        <thead>
+          <tr style="border-bottom:2px solid #e2e8f0;"><th>Business Type</th><th>Products in Catalog</th></tr>
+        </thead>
+        <tbody>
+          ${(data ?? []).map(t => `<tr style="border-bottom:1px solid #f1f5f9;"><td><strong>${t.name_en}</strong></td><td>${t.industry_products?.[0]?.count ?? 0}</td></tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+init();
+</script>
+</body>
+</html>

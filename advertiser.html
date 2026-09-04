@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2874f0">
+<title>Advertiser Portal & Monetization — ALL ERP</title>
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+.adv-hero {
+  background: linear-gradient(135deg, #1e3a8a, #2563eb);
+  color: #fff;
+  border-radius: 12px;
+  padding: 36px 24px;
+  margin-bottom: 20px;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(37,99,235,0.15);
+}
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+  margin: 16px 0;
+}
+.pricing-card {
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  text-align: center;
+  background: var(--card);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.pricing-card:hover {
+  border-color: var(--secondary);
+  background: #f8fafc;
+}
+.pricing-card.selected {
+  border-color: var(--secondary);
+  background: #f0f5ff;
+  box-shadow: 0 4px 12px rgba(37,99,235,0.12);
+  transform: translateY(-2px);
+}
+.pricing-price {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--secondary);
+  margin: 8px 0;
+}
+.upi-pay-box {
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 18px;
+  margin: 16px 0;
+  text-align: center;
+}
+.card {
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+</style>
+</head>
+<body>
+<nav id="app-nav"></nav>
+
+<main class="container page-ad-frame">
+  <!-- 1. TOP AD SLOT -->
+  <div id="ad-slot-adv-top" class="ad-slot-banner"></div>
+
+  <div class="center-with-side-ads">
+    <!-- 2. LEFT SIDE AD SLOT -->
+    <aside class="ad-side-column">
+      <div class="ad-side-card">
+        <div class="side-ad-title">Sponsored</div>
+        <div id="ad-slot-adv-left"></div>
+      </div>
+    </aside>
+
+    <!-- CENTER CONTENT -->
+    <div class="main-center-content">
+      <div class="adv-hero">
+        <div style="font-size:12px; font-weight:800; letter-spacing:1px; color:#ffe500; margin-bottom:8px;">📢 LOCAL ADVERTISING ENGINE</div>
+        <h1 style="margin:0 0 8px 0; font-size:28px;">स्थानिक व्यापाराला बनवा सुपरफास्ट!</h1>
+        <p style="margin:0 auto; max-width:650px; font-size:14px; color:#cbd5e1;">मार्केटप्लेसवर टॉप बॅनर, व्हिडिओ किंवा ऑडिओ जाहिराती चालवून हजारो स्थानिक ग्राहकांपर्यंत पोहोचा. फक्त ₹९९ पासून सुरुवात.</p>
+      </div>
+
+      <div id="not-logged-in" style="display:none; text-align:center; padding:30px;" class="card">
+        <h3>जाहिरात सुरू करण्यासाठी कृपया आधी <a href="login.html" style="color:#2563eb; font-weight:700;">Log In (लॉगिन)</a> करा.</h3>
+      </div>
+
+      <div id="signup-view" style="display:none; max-width:500px; margin:0 auto;" class="card">
+        <h2 style="margin-top:0;">जाहिरातदार व्हा (Become an Advertiser)</h2>
+        <p class="muted" style="font-size:13px;">तुमच्या दुकानाची किंवा ब्रँडची जाहिरात थेट ग्राहकांच्या मोबाईलवर दाखवण्यासाठी प्रोफाईल तयार करा.</p>
+        <label style="font-weight:700; font-size:13px;">कंपनी / ब्रँडचे नाव *</label>
+        <input id="company-name" placeholder="उदा. निखिल किराणा / पाटील कन्स्ट्रक्शन्स" required style="width:100%; padding:9px; border:1px solid #cbd5e1; border-radius:8px; margin-top:4px; box-sizing:border-box;">
+        <p id="signup-error" class="error-text" style="color:#dc2626; font-size:12px; margin-top:6px;"></p>
+        <button class="btn" id="signup-btn" style="width:100%; background:#2563eb; color:#fff; margin-top:12px; padding:10px; border:none; border-radius:8px; font-weight:700; cursor:pointer;">नोंदणी करा (Register as Advertiser)</button>
+      </div>
+
+      <div id="portal-view" style="display:none;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:16px;">
+          <div>
+            <h3 style="margin:0; font-size:20px; color:#1e293b;">📢 जाहिरातदार डॅशबोर्ड (Advertiser Hub)</h3>
+            <span class="muted" style="font-size:12.5px;" id="adv-company-display">Local Business Advertising</span>
+          </div>
+          <button class="btn" id="tab-new" style="background:#16a34a; color:#fff; font-weight:700; padding:9px 16px; border:none; border-radius:8px; cursor:pointer;">+ नवीन जाहिरात कॅम्पेन (New Campaign)</button>
+        </div>
+
+        <div id="verify-notice" class="card" style="display:none; background:#fff8e1; border-color:#ffd54f;">
+          <strong>⏳ ॲडमिन मंजुरी प्रलंबित (Pending Admin Approval)</strong>
+          <p class="muted" style="margin:4px 0 0">तुमचे खाते पडताळणीसाठी पाठवले आहे. पेमेंट कन्फर्म होताच तुमची जाहिरात लगेच लाईव्ह होईल.</p>
+        </div>
+
+        <!-- Campaigns List -->
+        <div id="campaigns-view"></div>
+
+        <!-- NEW CAMPAIGN CREATION WITH UPI PAYMENT -->
+        <div id="new-campaign-view" style="display:none" class="card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <h3 style="margin:0;">नवीन जाहिरात पॅकेज निवडा (Select Ad Plan)</h3>
+            <button class="btn secondary" id="camp-cancel-btn" style="padding:4px 8px; font-size:12px; background:#e2e8f0; border:none; border-radius:6px; cursor:pointer; font-weight:700;">✕ बंद करा</button>
+          </div>
+
+          <div class="pricing-grid">
+            <div class="pricing-card selected" data-amount="99" data-views="1000" data-name="Starter Boost">
+              <strong>Starter Boost</strong>
+              <div class="pricing-price">₹99</div>
+              <div class="muted" style="font-size:12px;">१,००० व्ह्यूज (1,000 Views)</div>
+            </div>
+            <div class="pricing-card" data-amount="399" data-views="5000" data-name="Business Pro">
+              <strong>Business Pro</strong>
+              <div class="pricing-price">₹399</div>
+              <div class="muted" style="font-size:12px;">५,००० व्ह्यूज (5,000 Views)</div>
+            </div>
+            <div class="pricing-card" data-amount="999" data-views="15000" data-name="Mega Blast">
+              <strong>Mega Blast</strong>
+              <div class="pricing-price">₹999</div>
+              <div class="muted" style="font-size:12px;">१५,००० व्ह्यूज + ऑल स्लॉट</div>
+            </div>
+          </div>
+
+          <label style="font-weight:700; font-size:13px; display:block; margin-top:10px; margin-bottom:4px;">कॅम्पेनचे नाव (Campaign Name) *</label>
+          <input id="camp-name" placeholder="उदा. गणपती स्पेशल ऑफर जाहिरात" required style="width:100%; padding:9px; border:1px solid #cbd5e1; border-radius:8px; margin-bottom:12px; box-sizing:border-box;">
+
+          <div style="display:flex; gap:10px; margin-bottom:12px;">
+            <div style="flex:1;">
+              <label style="font-weight:700; font-size:13px; display:block; margin-bottom:4px;">सुरू होण्याची तारीख</label>
+              <input id="camp-start" type="date" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:8px; box-sizing:border-box;">
+            </div>
+            <div style="flex:1;">
+              <label style="font-weight:700; font-size:13px; display:block; margin-bottom:4px;">समाप्ती तारीख</label>
+              <input id="camp-end" type="date" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:8px; box-sizing:border-box;">
+            </div>
+          </div>
+
+          <!-- UPI QR Code Box -->
+          <div class="upi-pay-box">
+            <h4 style="margin:0 0 6px; color:var(--secondary);">📲 QR कोड स्कॅन करून पेमेंट करा</h4>
+            <p class="muted" style="font-size:12.5px; margin:0 0 8px;">Google Pay, PhonePe, Paytm किंवा कोणत्याही UPI ॲपने स्कॅन करा.</p>
+            
+            <div style="max-width:300px; margin:0 auto 10px; text-align:left;">
+              <label style="font-size:11.5px; margin-bottom:2px; font-weight:700; display:block;">पेमेंट बँक खाते निवडा:</label>
+              <select id="upi-account-select" style="font-size:13px; padding:7px; width:100%; border:1px solid #cbd5e1; border-radius:6px;" onchange="onUPIAccountChange(this.value)">
+                <option value="Sankalppurtichitfunds@oksbi">Sankalppurti Chit Funds (SBI)</option>
+                <option value="gandhiabhinay@ybl">Abhinay Gandhi (PhonePe / YBL)</option>
+                <option value="9130977993@pthdfc">HDFC Bank UPI (9130977993)</option>
+              </select>
+            </div>
+
+            <img id="upi-qr-img" src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=upi://pay?pa=Sankalppurtichitfunds@oksbi%26pn=Marketplace_Ads%26am=99%26cu=INR" alt="UPI QR Code" style="width:150px; height:150px; border:1px solid #ccc; border-radius:8px; background:white; padding:4px;">
+            
+            <div style="margin-top:8px; font-size:13px;">
+              पेमेंट UPI ID: <strong id="display-upi-id" style="color:var(--secondary);">Sankalppurtichitfunds@oksbi</strong>
+            </div>
+          </div>
+
+          <label style="font-weight:700; font-size:13px; display:block; margin-bottom:4px;">पेमेंट ट्रान्झॅक्शन / UTR नंबर टाका *</label>
+          <input id="camp-utr" placeholder="उदा. 4234XXXXXXXX (12 अंकी UTR / Ref No.)" required style="width:100%; padding:9px; border:1px solid #cbd5e1; border-radius:8px; margin-bottom:10px; box-sizing:border-box;">
+
+          <p id="camp-error" style="color:#dc2626; font-size:12px; margin-bottom:8px;"></p>
+          
+          <div style="display:flex; gap:8px;">
+            <button class="btn" id="camp-save-btn" style="flex:1; background:#2563eb; color:#fff; padding:11px; border:none; border-radius:8px; font-weight:700; cursor:pointer;">पेमेंट नोंदवा व कॅम्पेन तयार करा</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. RIGHT SIDE AD SLOT -->
+    <aside class="ad-side-column">
+      <div class="ad-side-card">
+        <div class="side-ad-title">Featured</div>
+        <div id="ad-slot-adv-right"></div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- 4. BOTTOM AD SLOT -->
+  <div id="ad-slot-adv-bottom" class="ad-slot-banner" style="margin-top:20px"></div>
+</main>
+
+<script src="js/supabase-client.js"></script>
+<script src="js/cart.js"></script>
+<script src="js/nav.js"></script>
+<script src="js/referral.js"></script>
+<script src="js/ads.js"></script>
+<script>
+let currentUser = null;
+let advertiserRow = null;
+let selectedBudget = 99;
+let selectedViews = 1000;
+let ADMIN_UPI_ID = "Sankalppurtichitfunds@oksbi";
+
+async function init() {
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user) { document.getElementById('not-logged-in').style.display = 'block'; return; }
+  currentUser = user;
+
+  const { data: adv } = await sb.from('advertisers').select('*').eq('user_id', user.id).maybeSingle();
+
+  if (!adv) {
+    document.getElementById('signup-view').style.display = 'block';
+    return;
+  }
+
+  advertiserRow = adv;
+  document.getElementById('portal-view').style.display = 'block';
+  document.getElementById('adv-company-display').textContent = adv.company_name;
+  if (!adv.is_verified) document.getElementById('verify-notice').style.display = 'block';
+
+  document.getElementById('display-upi-id').textContent = ADMIN_UPI_ID;
+  updateQRCode(selectedBudget);
+  await loadCampaigns();
+}
+
+function onUPIAccountChange(selectedId) {
+  ADMIN_UPI_ID = selectedId;
+  document.getElementById('display-upi-id').textContent = selectedId;
+  updateQRCode(selectedBudget);
+}
+
+function updateQRCode(amount) {
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=upi://pay?pa=${encodeURIComponent(ADMIN_UPI_ID)}%26pn=Marketplace_Ads%26am=${amount}%26cu=INR`;
+  document.getElementById('upi-qr-img').src = qrUrl;
+}
+
+document.querySelectorAll('.pricing-card').forEach(card => {
+  card.addEventListener('click', () => {
+    document.querySelectorAll('.pricing-card').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    selectedBudget = Number(card.dataset.amount);
+    selectedViews = Number(card.dataset.views);
+    updateQRCode(selectedBudget);
+  });
+});
+
+document.getElementById('signup-btn').addEventListener('click', async () => {
+  const name = document.getElementById('company-name').value.trim();
+  const errorEl = document.getElementById('signup-error');
+  if (!name) { errorEl.textContent = 'Company name required.'; return; }
+
+  const { error } = await sb.from('advertisers').insert({ user_id: currentUser.id, company_name: name });
+  if (error) { errorEl.textContent = error.message; return; }
+
+  if (typeof attachReferralCode === 'function') {
+    await attachReferralCode('advertisers', currentUser.id, 'user_id');
+  }
+
+  await sb.from('users').update({ is_advertiser: true }).eq('id', currentUser.id);
+  location.reload();
+});
+
+async function uploadMediaFile(file, bucket = 'ads-media') {
+  const fileExt = file.name.split('.').pop();
+  const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
+  const filePath = `uploads/${fileName}`;
+
+  try {
+    const { data, error } = await sb.storage.from(bucket).upload(filePath, file, { cacheControl: '3600', upsert: false });
+    if (!error) {
+      const { data: { publicUrl } } = sb.storage.from(bucket).getPublicUrl(filePath);
+      return publicUrl;
+    }
+  } catch (err) {
+    console.debug('Storage upload note:', err);
+  }
+
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (e) => resolve(e.target.result);
+    reader.readAsDataURL(file);
+  });
+}
+
+async function loadCampaigns() {
+  const { data: campaigns } = await sb
+    .from('campaigns')
+    .select('id, name, status, budget, utr_number, payment_status, start_date, end_date, advertisements(id, ad_type, placement, media_url, is_active, ad_impressions(count), ad_clicks(count))')
+    .eq('advertiser_id', advertiserRow.id)
+    .order('created_at', { ascending: false });
+
+  const view = document.getElementById('campaigns-view');
+  if (!campaigns || campaigns.length === 0) {
+    view.innerHTML = '<div class="card" style="text-align:center; padding:30px;"><p class="muted">कोणतेही कॅम्पेन सक्रिय नाही. वरील "+ नवीन जाहिरात कॅम्पेन" वर क्लिक करा.</p></div>';
+    return;
+  }
+
+  view.innerHTML = campaigns.map(c => `
+    <div class="card" style="margin-bottom:12px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
+        <strong>${c.name}</strong>
+        <div>
+          <span class="badge ${c.payment_status === 'verified' || c.status === 'active' ? 'live' : 'hidden'}">${c.status === 'active' ? 'LIVE' : (c.payment_status === 'pending' ? '⏳ UTR PENDING' : c.status.toUpperCase())}</span>
+        </div>
+      </div>
+      <div class="muted" style="font-size:12.5px; margin:4px 0;">
+        बजेट: <strong>₹${c.budget || 99}</strong> | UTR: <code>${c.utr_number || 'थेट'}</code>
+      </div>
+
+      <div style="margin-top:8px">
+        ${(c.advertisements ?? []).map(ad => `
+          <div style="font-size:12.5px; padding:6px 0; border-top:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap">
+            <div>
+              <strong>${ad.ad_type.toUpperCase()}</strong> · स्लॉट: <span style="color:#2874f0; font-weight:600">${(ad.placement || 'All').toUpperCase()}</span> ·
+              👁 ${ad.ad_impressions?.[0]?.count ?? 0} व्ह्यूज · 🖱 ${ad.ad_clicks?.[0]?.count ?? 0} क्लिक्स
+            </div>
+            <div>
+              ${ad.media_url ? `<a href="${ad.media_url}" target="_blank" style="font-size:12px;">पहा</a>` : ''}
+            </div>
+          </div>
+        `).join('') || '<div class="muted" style="font-size:12px;">कोणतीही जाहिरात फाईल अपलोड केलेली नाही.</div>'}
+      </div>
+
+      <div style="display:flex; gap:8px; margin-top:8px;">
+        <button class="btn add-ad-btn" data-campaign="${c.id}" style="font-size:12px; padding:6px 10px; background:#2563eb; color:#fff; border:none; border-radius:6px; cursor:pointer; font-weight:700;">+ जाहिरात फाईल जोडा</button>
+      </div>
+
+      <div class="ad-form card" data-campaign-form="${c.id}" style="display:none; margin-top:10px; background:#f9fbfd;">
+        <h4 style="margin-top:0">जाहिरात अपलोड करा</h4>
+        <label style="font-size:12px; font-weight:700;">प्रकार</label>
+        <select class="ad-type-select" style="width:100%; padding:7px; margin-bottom:8px; border:1px solid #cbd5e1; border-radius:6px;">
+          <option value="image">इमेज / फोटो</option>
+          <option value="video">व्हिडिओ / रील</option>
+          <option value="audio">ऑडिओ</option>
+          <option value="poster">पोस्टर / बॅनर</option>
+        </select>
+        <label style="font-size:12px; font-weight:700;">जागा (Placement)</label>
+        <select class="ad-placement-select" style="width:100%; padding:7px; margin-bottom:8px; border:1px solid #cbd5e1; border-radius:6px;">
+          <option value="all">सर्व जागांवर (All Slots)</option>
+          <option value="top">Top Banner</option>
+          <option value="left">Left Sidebar</option>
+          <option value="right">Right Sidebar</option>
+          <option value="bottom">Bottom Banner</option>
+        </select>
+        <label style="font-size:12px; font-weight:700;">फाईल निवडा</label>
+        <input type="file" class="ad-media-file" accept="image/*,video/*,audio/*" style="width:100%; margin-bottom:8px;">
+        <label style="font-size:12px; font-weight:700;">टार्गेट लिंक (Website / WhatsApp)</label>
+        <input type="text" class="ad-target-url" placeholder="https://wa.me/91XXXXXXXXXX" style="width:100%; padding:7px; border:1px solid #cbd5e1; border-radius:6px; box-sizing:border-box; margin-bottom:8px;">
+        <p class="ad-status-msg muted" style="font-size:12px; margin:4px 0"></p>
+        <div style="display:flex; gap:6px; margin-top:8px">
+          <button class="btn ad-save-btn" data-campaign="${c.id}" style="font-size:12px; padding:6px 12px; background:#16a34a; color:#fff; border:none; border-radius:6px; cursor:pointer; font-weight:700;">अपलोड करा</button>
+          <button class="btn secondary ad-cancel-btn" data-campaign="${c.id}" style="font-size:12px; padding:6px 12px; background:#e2e8f0; border:none; border-radius:6px; cursor:pointer; font-weight:700;">रद्द</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+
+  view.querySelectorAll('.add-ad-btn').forEach(btn => btn.addEventListener('click', (e) => {
+    const form = view.querySelector(`.ad-form[data-campaign-form="${e.target.dataset.campaign}"]`);
+    form.style.display = form.style.display === 'none' ? 'block' : 'none';
+  }));
+
+  view.querySelectorAll('.ad-cancel-btn').forEach(btn => btn.addEventListener('click', (e) => {
+    const form = view.querySelector(`.ad-form[data-campaign-form="${e.target.dataset.campaign}"]`);
+    form.style.display = 'none';
+  }));
+
+  view.querySelectorAll('.ad-save-btn').forEach(btn => btn.addEventListener('click', async (e) => {
+    const campaignId = e.target.dataset.campaign;
+    const form = view.querySelector(`.ad-form[data-campaign-form="${campaignId}"]`);
+    const statusMsg = form.querySelector('.ad-status-msg');
+    const saveBtn = form.querySelector('.ad-save-btn');
+    const adType = form.querySelector('.ad-type-select').value;
+    const placement = form.querySelector('.ad-placement-select').value;
+    const fileInput = form.querySelector('.ad-media-file');
+    const targetUrl = form.querySelector('.ad-target-url').value.trim();
+
+    if (!fileInput.files || !fileInput.files[0]) {
+      statusMsg.textContent = 'कृपया फाईल निवडा.';
+      return;
+    }
+
+    saveBtn.disabled = true;
+    statusMsg.textContent = 'अपलोड होत आहे...';
+
+    const mediaUrl = await uploadMediaFile(fileInput.files[0], 'ads-media');
+
+    await sb.from('advertisements').insert({
+      campaign_id: campaignId,
+      ad_type: adType,
+      placement: placement,
+      media_url: mediaUrl,
+      target_url: targetUrl || null
+    });
+
+    saveBtn.disabled = false;
+    await loadCampaigns();
+  }));
+}
+
+document.getElementById('tab-new').addEventListener('click', () => {
+  document.getElementById('new-campaign-view').style.display = 'block';
+  document.getElementById('campaigns-view').style.display = 'none';
+});
+
+document.getElementById('camp-cancel-btn').addEventListener('click', () => {
+  document.getElementById('new-campaign-view').style.display = 'none';
+  document.getElementById('campaigns-view').style.display = 'block';
+});
+
+document.getElementById('camp-save-btn').addEventListener('click', async () => {
+  const name = document.getElementById('camp-name').value.trim();
+  const utr = document.getElementById('camp-utr').value.trim();
+  const startDate = document.getElementById('camp-start').value || null;
+  const endDate = document.getElementById('camp-end').value || null;
+  const errorEl = document.getElementById('camp-error');
+
+  if (!name || !utr) { errorEl.textContent = 'कॅम्पेनचे नाव आणि UTR नंबर आवश्यक आहे.'; return; }
+
+  const { error } = await sb.from('campaigns').insert({
+    advertiser_id: advertiserRow.id,
+    name,
+    budget: selectedBudget,
+    impressions_budget: selectedViews,
+    utr_number: utr,
+    payment_status: 'pending',
+    start_date: startDate,
+    end_date: endDate,
+    status: 'draft'
+  });
+
+  if (error) { errorEl.textContent = error.message; return; }
+
+  alert('✅ पेमेंट रेफरन्स सबमिट झाला आहे! ॲडमिन कडून व्हेरिफाय होताच कॅम्पेन लाईव्ह होईल.');
+  document.getElementById('camp-cancel-btn').click();
+  await loadCampaigns();
+});
+
+init();
+
+// Render 4 distinct sponsored ad slots
+renderMultiAdSlots([
+  { id: 'ad-slot-adv-top', placement: 'top' },
+  { id: 'ad-slot-adv-left', placement: 'left' },
+  { id: 'ad-slot-adv-right', placement: 'right' },
+  { id: 'ad-slot-adv-bottom', placement: 'bottom' }
+]);
+</script>
+</body>
+</html>

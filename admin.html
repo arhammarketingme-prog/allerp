@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2874f0">
+<title>Admin Portal — ALL ERP & Marketplace</title>
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  /* 🌟 प्रगत ॲडमिन पॅनल फिनिशिंग व ट्रान्झिशन्स */
+  .card { transition: transform 0.15s ease, box-shadow 0.15s ease; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+  .card:hover { box-shadow: 0 6px 16px rgba(0,0,0,0.06); }
+  .tabs button { cursor: pointer; transition: background 0.2s, color 0.2s; padding: 8px 14px; font-weight: 600; border-radius: 6px; border: 1px solid #cbd5e1; background: #f8fafc; color: #334155; }
+  .tabs button.active { background: #0284c7; color: #ffffff; border-color: #0284c7; }
+  table th, table td { padding: 10px 12px; text-align: left; }
+  .verify-ad-btn { transition: opacity 0.2s; }
+  .verify-ad-btn:hover { opacity: 0.9; }
+</style>
+</head>
+<body>
+<nav id="app-nav"></nav>
+
+<main class="container" style="max-width: 1100px; margin-top: 20px;">
+  <div id="not-authorized" style="display:none; text-align:center; padding:40px;">
+    <h1>⛔ Access Denied</h1>
+    <p class="muted">This page is for administrators only.</p>
+  </div>
+
+  <div id="admin-body" style="display:none">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+      <h1 style="margin: 0; color: #0f172a;">⚙️ Admin Portal</h1>
+      <div>
+        <a href="admin-catalog.html" class="secondary" style="padding: 6px 12px; font-size: 13px; text-decoration:none; margin-right: 8px;">📦 Bulk Catalog Import →</a>
+      </div>
+    </div>
+
+    <!-- साफ केलेले टॅब्ज (पार्टनर सिस्टीम वगळून) -->
+    <div class="tabs" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;">
+      <button id="tab-businesses" class="active">🏪 Businesses (<span id="count-businesses">0</span>)</button>
+      <button id="tab-delivery-boys">🛵 Delivery Boys (<span id="count-delivery-boys">0</span>)</button>
+      <button id="tab-ad-payments">💳 Ad Payments & Campaigns (<span id="count-ad-payments">0</span>)</button>
+      <button id="tab-advertisers">📢 Advertisers (<span id="count-advertisers">0</span>)</button>
+      <button id="tab-product-master">🏷️ Barcode Catalog (<span id="count-product-master">0</span>)</button>
+      <button id="tab-b2b-pools">🤝 Group Buying Pools</button>
+      <button id="tab-audit-log">📜 Audit Log</button>
+      <button id="tab-product-moderation">🚫 Product Moderation</button>
+      <button id="tab-inquiries">📧 Inquiries (<span id="count-inquiries">0</span>)</button>
+    </div>
+
+    <div style="margin-bottom:14px; background: #f1f5f9; padding: 10px 14px; border-radius: 6px; display: inline-block;">
+      <label style="cursor:pointer; font-weight:600; font-size:13.5px; color: #334155; display: flex; align-items: center; gap: 6px; margin: 0;">
+        <input type="checkbox" id="filter-pending" style="width:auto; margin:0;">
+        Show only Pending (unverified) items
+      </label>
+    </div>
+
+    <div id="view-businesses"></div>
+    <div id="view-delivery-boys" style="display:none"></div>
+    <div id="view-ad-payments" style="display:none"></div>
+    <div id="view-advertisers" style="display:none"></div>
+    <div id="view-product-master" style="display:none"></div>
+    <div id="view-b2b-pools" style="display:none"></div>
+    <div id="view-audit-log" style="display:none"></div>
+    <div id="view-product-moderation" style="display:none"></div>
+    <div id="view-inquiries" style="display:none"></div>
+  </div>
+</main>
+
+<script src="js/supabase-client.js"></script>
+<script src="js/cart.js"></script>
+<script src="js/nav.js"></script>
+<script>
+function switchAdminTab(activeTabId, activeViewId) {
+  ['tab-businesses','tab-delivery-boys','tab-ad-payments','tab-advertisers','tab-product-master','tab-b2b-pools','tab-audit-log','tab-product-moderation','tab-inquiries'].forEach(t => {
+    const el = document.getElementById(t);
+    if (el) el.classList.remove('active');
+  });
+  ['view-businesses','view-delivery-boys','view-ad-payments','view-advertisers','view-product-master','view-b2b-pools','view-audit-log','view-product-moderation','view-inquiries'].forEach(v => {
+    const el = document.getElementById(v);
+    if (el) el.style.display = 'none';
+  });
+  const tEl = document.getElementById(activeTabId);
+  const vEl = document.getElementById(activeViewId);
+  if (tEl) tEl.classList.add('active');
+  if (vEl) vEl.style.display = 'block';
+}
+
+let showPendingOnly = false;
+let allBusinesses = [], allAdvertisers = [], allDeliveryBoys = [];
+
+async function init() {
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user) { window.location.href = 'login.html'; return; }
+
+  const { data: profile } = await sb.from('users').select('is_admin').eq('id', user.id).single();
+
+  if (!profile || !profile.is_admin) {
+    document.getElementById('not-authorized').style.display = 'block';
+    return;
+  }
+
+  document.getElementById('admin-body').style.display = 'block';
+  await loadAll();
+  await loadAdPayments();
+  await loadDeliveryBoys();
+}
+
+async function loadAll() {
+  const [b, a] = await Promise.all([
+    sb.from('businesses').select('id, name, slug, city, is_verified, is_active, created_at, business_types(name_mr, name_en)').order('created_at', { ascending: false }),
+    sb.from('advertisers').select('id, company_name, is_verified, created_at, users(full_name)').order('created_at', { ascending: false }),
+  ]);
+
+  allBusinesses = b.data ?? [];
+  allAdvertisers = a.data ?? [];
+
+  document.getElementById('count-businesses').textContent = allBusinesses.filter(x => !x.is_verified).length;
+  document.getElementById('count-advertisers').textContent = allAdvertisers.filter(x => !x.is_verified).length;
+
+  renderBusinesses();
+  renderAdvertisers();
+}
+
+function applyFilter(list) {
+  return showPendingOnly ? list.filter(x => !x.is_verified) : list;
+}
+
+function renderBusinesses() {
+  const list = applyFilter(allBusinesses);
+  const el = document.getElementById('view-businesses');
+  if (list.length === 0) { el.innerHTML = '<p class="muted">Nothing here.</p>'; return; }
+
+  el.innerHTML = list.map(b => `
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center">
+        <div>
+          <strong style="font-size: 16px; color: #0f172a;">${b.name}</strong> <span class="muted">/${b.slug}</span><br>
+          <span class="muted" style="font-size:13px">${b.business_types?.name_mr ?? b.business_types?.name_en ?? ''} ${b.city ? '· ' + b.city : ''}</span>
+        </div>
+        <div>
+          <span class="badge ${b.is_verified ? 'live' : 'hidden'}" style="padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 700;">${b.is_verified ? 'Verified' : 'Pending'}</span>
+        </div>
+      </div>
+      <div style="margin-top:12px; display:flex; gap:8px">
+        ${!b.is_verified
+          ? `<button class="verify-biz-btn" data-id="${b.id}" data-val="true" style="background:#16a34a; color:#fff; border:none; padding:6px 12px; border-radius:4px; font-size:12px; font-weight:600; cursor:pointer;">✓ Approve</button>`
+          : `<button class="secondary verify-biz-btn" data-id="${b.id}" data-val="false" style="padding:6px 12px; border-radius:4px; font-size:12px; font-weight:600;">Un-verify</button>`}
+        <button class="secondary active-biz-btn" data-id="${b.id}" data-val="${!b.is_active}" style="padding:6px 12px; border-radius:4px; font-size:12px; font-weight:600;">
+          ${b.is_active ? 'Suspend' : 'Un-suspend'}
+        </button>
+      </div>
+    </div>
+  `).join('');
+
+  el.querySelectorAll('.verify-biz-btn').forEach(btn => btn.addEventListener('click', async (e) => {
+    await sb.from('businesses').update({ is_verified: e.target.dataset.val === 'true' }).eq('id', e.target.dataset.id);
+    await loadAll();
+  }));
+  el.querySelectorAll('.active-biz-btn').forEach(btn => btn.addEventListener('click', async (e) => {
+    await sb.from('businesses').update({ is_active: e.target.dataset.val === 'true' }).eq('id', e.target.dataset.id);
+    await loadAll();
+  }));
+}
+
+function renderAdvertisers() {
+  const list = applyFilter(allAdvertisers);
+  const el = document.getElementById('view-advertisers');
+  if (list.length === 0) { el.innerHTML = '<p class="muted">Nothing here.</p>'; return; }
+
+  el.innerHTML = list.map(a => `
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center">
+        <div><strong style="font-size: 16px; color: #0f172a;">${a.company_name}</strong><br><span class="muted" style="font-size:13px">${a.users?.full_name ?? ''}</span></div>
+        <span class="badge ${a.is_verified ? 'live' : 'hidden'}" style="padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 700;">${a.is_verified ? 'Verified' : 'Pending'}</span>
+      </div>
+      <div style="margin-top:12px">
+        <button class="verify-adv-btn" data-id="${a.id}" data-val="${!a.is_verified}" style="background:${a.is_verified ? '#64748b' : '#16a34a'}; color:#fff; border:none; padding:6px 12px; border-radius:4px; font-size:12px; font-weight:600; cursor:pointer;">
+          ${a.is_verified ? 'Un-verify' : '✓ Approve'}
+        </button>
+      </div>
+    </div>
+  `).join('');
+
+  el.querySelectorAll('.verify-adv-btn').forEach(btn => btn.addEventListener('click', async (e) => {
+    await sb.from('advertisers').update({ is_verified: e.target.dataset.val === 'true' }).eq('id', e.target.dataset.id);
+    await loadAll();
+  }));
+}
+
+async function loadAdPayments() {
+  const { data: campaigns } = await sb
+    .from('campaigns')
+    .select('id, name, budget, utr_number, payment_status, status, end_date, created_at, moderation_note, advertisers(company_name)')
+    .order('created_at', { ascending: false });
+
+  const view = document.getElementById('view-ad-payments');
+  const countEl = document.getElementById('count-ad-payments');
+  const pendingCount = (campaigns ?? []).filter(c => c.payment_status === 'pending' || c.status === 'draft').length;
+  if (countEl) countEl.textContent = pendingCount;
+
+  if (!campaigns || campaigns.length === 0) {
+    view.innerHTML = '<div class="card"><p class="muted">No ad campaigns submitted yet.</p></div>';
+    return;
+  }
+
+  view.innerHTML = `
+    <div class="card">
+      <h3 style="margin-top:0; color:#0f172a;">Ad Campaigns & UPI Payment Receipts</h3>
+      <div style="overflow-x:auto;">
+        <table style="width:100%; border-collapse:collapse;">
+          <thead>
+            <tr style="border-bottom:2px solid #e2e8f0; color:#475569; font-size:13px;">
+              <th>Company</th>
+              <th>Campaign</th>
+              <th>Amount Paid</th>
+              <th>UTR / Ref Number</th>
+              <th>Payment Status</th>
+              <th>Ad Status</th>
+              <th>Expiry Date</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${campaigns.map(c => `
+              <tr style="border-bottom:1px solid #f1f5f9; font-size:14px;">
+                <td><strong>${c.advertisers?.company_name || 'Advertiser'}</strong></td>
+                <td>${c.name}</td>
+                <td><strong>₹${c.budget || 0}</strong></td>
+                <td><code style="background:#f1f5f9; padding:2px 6px; border-radius:4px; font-size:12px;">${c.utr_number || 'Cash/Direct'}</code></td>
+                <td><span class="badge ${c.payment_status === 'verified' ? 'live' : 'hidden'}">${c.payment_status || 'pending'}</span></td>
+                <td>
+                  <span class="badge ${c.status === 'active' ? 'live' : 'hidden'}">${c.status}</span>
+                  ${c.moderation_note ? `<br><span class="muted" style="font-size:10.5px;">📝 ${escapeHtmlAdmin(c.moderation_note)}</span>` : ''}
+                </td>
+                <td>
+                  ${c.end_date
+                    ? `<span style="${new Date(c.end_date) < new Date(new Date().toDateString()) ? 'color:#dc2626; font-weight:700;' : ''}">${new Date(c.end_date).toLocaleDateString('en-IN')}${new Date(c.end_date) < new Date(new Date().toDateString()) ? ' ⚠️ मुदत संपली' : ''}</span>`
+                    : '<span class="muted">मुदत नाही</span>'}
+                </td>
+                <td style="white-space:nowrap;">
+                  ${c.payment_status !== 'verified' ? `<button class="verify-ad-btn" data-id="${c.id}" style="font-size:12px; padding:6px 10px; background:#16a34a; color:white; border:none; border-radius:4px; cursor:pointer; font-weight:600; margin-bottom:4px;">✓ Verify & Activate</button>` : ''}
+                  ${c.status === 'active' ? `<button onclick="pauseAdCampaign('${c.id}')" style="font-size:12px; padding:6px 10px; background:#dc2626; color:white; border:none; border-radius:4px; cursor:pointer; font-weight:600;">⏸️ थांबवा</button>` : ''}
+                  ${(c.status === 'paused' || c.status === 'rejected') && c.payment_status === 'verified' ? `<button onclick="resumeAdCampaign('${c.id}')" style="font-size:12px; padding:6px 10px; background:#0284c7; color:white; border:none; border-radius:4px; cursor:pointer; font-weight:600;">▶️ पुन्हा सुरू करा</button>` : ''}
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+
+  view.querySelectorAll('.verify-ad-btn').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      const campId = e.target.dataset.id;
+      btn.disabled = true;
+      btn.textContent = 'Activating...';
+      await sb.from('campaigns').update({ payment_status: 'verified', status: 'active' }).eq('id', campId);
+      await loadAdPayments();
+    });
+  });
+}
+
+async function pauseAdCampaign(campaignId) {
+  const reason = prompt('जाहिरात का थांबवत आहेस? (कारण नोंदवलं जाईल)');
+  if (reason === null) return; // रद्द केलं
+  const { error } = await sb.rpc('admin_moderate_campaign', { p_campaign_id: campaignId, p_new_status: 'paused', p_reason: reason || null });
+  if (error) { alert('त्रुटी: ' + error.message); return; }
+  await loadAdPayments();
+}
+
+async function resumeAdCampaign(campaignId) {
+  if (!confirm('ही जाहिरात परत सुरू करायची आहे का?')) return;
+  const { error } = await sb.rpc('admin_moderate_campaign', { p_campaign_id: campaignId, p_new_status: 'active', p_reason: null });
+  if (error) { alert('त्रुटी: ' + error.message); return; }
+  await loadAdPayments();
+}
+
+async function loadDeliveryBoys() {
+  const { data: boys } = await sb.from('delivery_boys').select('*').order('created_at', { ascending: false });
+  allDeliveryBoys = boys ?? [];
+  const countEl = document.getElementById('count-delivery-boys');
+  if (countEl) countEl.textContent = allDeliveryBoys.filter(d => !d.user_id).length; // "not yet linked" count
+  renderDeliveryBoys();
+}
+
+function renderDeliveryBoys() {
+  const el = document.getElementById('view-delivery-boys');
+
+  el.innerHTML = `
+    <div class="card">
+      <h3 style="margin-top:0; color:#0f172a;">➕ नवीन डिलिव्हरी बॉय जोडा</h3>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;">
+        <div><label style="font-size:12px; font-weight:700;">नाव</label><input id="db-new-name" placeholder="उदा. संदीप पवार" style="margin:0;"></div>
+        <div><label style="font-size:12px; font-weight:700;">फोन</label><input id="db-new-phone" placeholder="10-अंकी नंबर" style="margin:0;"></div>
+        <div><label style="font-size:12px; font-weight:700;">ईमेल आयडी</label><input id="db-new-email" type="email" placeholder="उदा. sandeep@gmail.com" style="margin:0;"></div>
+        <div><label style="font-size:12px; font-weight:700;">वाहन नं.</label><input id="db-new-vehicle" placeholder="उदा. MH15-AB-1234" style="margin:0;"></div>
+        <div><label style="font-size:12px; font-weight:700;">प्रति डिलिव्हरी कमिशन (₹)</label><input id="db-new-fee" type="number" placeholder="उदा. 30" style="margin:0; width:100px;"></div>
+        <button id="db-add-btn" style="background:#16a34a; padding:8px 16px;">जोडा</button>
+      </div>
+      <p class="muted" style="font-size:12px; margin:6px 0 0;">💡 ईमेल आयडी टाकला तर, डिलिव्हरी बॉयने त्याच ईमेलने login.html वर साईनअप केल्यावर खातं एका क्लिकवर जोडता येईल.</p>
+      <p id="db-add-msg" style="font-size:12.5px; margin:8px 0 0;"></p>
+    </div>
+
+    <div id="db-list"></div>
+  `;
+
+  document.getElementById('db-add-btn').addEventListener('click', addDeliveryBoy);
+
+  const listEl = document.getElementById('db-list');
+  if (allDeliveryBoys.length === 0) {
+    listEl.innerHTML = '<p class="muted">अजून कोणताही डिलिव्हरी बॉय जोडलेला नाही.</p>';
+    return;
+  }
+
+  listEl.innerHTML = allDeliveryBoys.map(d => `
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+        <div>
+          <strong style="font-size:16px; color:#0f172a;">${escapeHtmlAdmin(d.name)}</strong>
+          <span class="muted" style="font-size:13px;"> · 📞 ${escapeHtmlAdmin(d.phone)} ${d.vehicle_number ? '· 🛵 ' + escapeHtmlAdmin(d.vehicle_number) : ''} ${d.default_delivery_fee ? '· ₹' + d.default_delivery_fee + '/डिलिव्हरी' : ''}</span>
+          <br>
+          <span class="muted" style="font-size:13px;">✉️ ${d.email ? escapeHtmlAdmin(d.email) : '<em>ईमेल नोंदवलेला नाही</em>'}</span>
+          <br>
+          <span class="badge ${d.is_available ? 'live' : 'hidden'}" style="margin-top:6px; display:inline-block;">${d.is_available ? 'Available' : 'Not available'}</span>
+          <span class="badge ${d.user_id ? 'live' : 'hidden'}" style="margin-top:6px; display:inline-block;">${d.user_id ? '🔗 Login जोडलेला' : '⚠️ Login जोडलेला नाही'}</span>
+        </div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button class="db-edit-btn" data-id="${d.id}" style="background:#f59e0b; padding:6px 12px; font-size:12px;">✏️ माहिती Edit करा</button>
+          ${!d.user_id ? `<button class="db-link-select-btn" data-id="${d.id}" style="background:#0284c7; padding:6px 12px; font-size:12px;">✉️ खातं निवडून जोडा</button>` : ''}
+          ${!d.user_id ? `<button class="db-link-btn" data-id="${d.id}" data-phone="${d.phone}" style="background:#2563eb; padding:6px 12px; font-size:12px;">🔗 फोन/यादीने जोडा</button>` : ''}
+          <button class="db-delete-btn" data-id="${d.id}" style="background:#dc2626; padding:6px 12px; font-size:12px;">🗑️ काढा</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+
+  listEl.querySelectorAll('.db-edit-btn').forEach(btn => btn.addEventListener('click', () => openEditDeliveryBoy(btn.dataset.id)));
+  listEl.querySelectorAll('.db-link-select-btn').forEach(btn => btn.addEventListener('click', () => openLinkBySelectPicker(btn.dataset.id)));
+  listEl.querySelectorAll('.db-link-btn').forEach(btn => btn.addEventListener('click', () => linkDeliveryBoy(btn.dataset.id, btn.dataset.phone)));
+  listEl.querySelectorAll('.db-delete-btn').forEach(btn => btn.addEventListener('click', () => deleteDeliveryBoy(btn.dataset.id)));
+}
+
+async function addDeliveryBoy() {
+  const name = document.getElementById('db-new-name').value.trim();
+  const phone = document.getElementById('db-new-phone').value.trim();
+  const email = document.getElementById('db-new-email').value.trim();
+  const vehicle = document.getElementById('db-new-vehicle').value.trim();
+  const fee = Number(document.getElementById('db-new-fee').value) || 0;
+  const msgEl = document.getElementById('db-add-msg');
+
+  if (!name || !phone) { msgEl.textContent = '⚠️ नाव व फोन नंबर दोन्ही आवश्यक आहेत.'; msgEl.style.color = '#dc2626'; return; }
+
+  const { error } = await sb.from('delivery_boys').insert([{ name, phone, email: email || null, vehicle_number: vehicle || null, default_delivery_fee: fee }]);
+  if (error) { msgEl.textContent = '❌ ' + error.message; msgEl.style.color = '#dc2626'; return; }
+
+  msgEl.textContent = '✅ जोडलं!'; msgEl.style.color = '#16a34a';
+  document.getElementById('db-new-name').value = '';
+  document.getElementById('db-new-phone').value = '';
+  document.getElementById('db-new-email').value = '';
+  document.getElementById('db-new-vehicle').value = '';
+  document.getElementById('db-new-fee').value = '';
+  await loadDeliveryBoys();
+}
+
+async function openEditDeliveryBoy(deliveryBoyId) {
+  const d = allDeliveryBoys.find(x => x.id === deliveryBoyId);
+  if (!d) return;
+
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed; inset:0; background:rgba(15,23,42,0.55); z-index:1000; display:flex; align-items:center; justify-content:center; padding:16px;';
+  overlay.innerHTML = `
+    <div style="background:#fff; border-radius:10px; padding:20px; max-width:420px; width:100%;">
+      <h3 style="margin-top:0;">✏️ डिलिव्हरी बॉयची माहिती Edit करा</h3>
+
+      <label style="font-size:12px; font-weight:700;">नाव</label>
+      <input id="edit-db-name" value="${escapeHtmlAdmin(d.name || '')}" style="margin-bottom:10px;">
+
+      <label style="font-size:12px; font-weight:700;">फोन</label>
+      <input id="edit-db-phone" value="${escapeHtmlAdmin(d.phone || '')}" style="margin-bottom:10px;">
+
+      <label style="font-size:12px; font-weight:700;">ईमेल आयडी</label>
+      <input id="edit-db-email" type="email" value="${escapeHtmlAdmin(d.email || '')}" style="margin-bottom:10px;">
+
+      <label style="font-size:12px; font-weight:700;">वाहन नं.</label>
+      <input id="edit-db-vehicle" value="${escapeHtmlAdmin(d.vehicle_number || '')}" style="margin-bottom:10px;">
+
+      <label style="font-size:12px; font-weight:700;">प्रति डिलिव्हरी कमिशन (₹)</label>
+      <input id="edit-db-fee" type="number" value="${d.default_delivery_fee || 0}" style="margin-bottom:14px;">
+
+      <p id="edit-db-msg" style="font-size:12.5px; margin:0 0 10px; min-height:16px;"></p>
+
+      <div style="display:flex; gap:8px; justify-content:flex-end;">
+        <button id="edit-db-cancel" class="secondary">रद्द करा</button>
+        <button id="edit-db-save" style="background:#16a34a;">जतन करा</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  overlay.querySelector('#edit-db-cancel').addEventListener('click', () => document.body.removeChild(overlay));
+
+  overlay.querySelector('#edit-db-save').addEventListener('click', async () => {
+    const name = overlay.querySelector('#edit-db-name').value.trim();
+    const phone = overlay.querySelector('#edit-db-phone').value.trim();
+    const email = overlay.querySelector('#edit-db-email').value.trim();
+    const vehicle = overlay.querySelector('#edit-db-vehicle').value.trim();
+    const fee = Number(overlay.querySelector('#edit-db-fee').value) || 0;
+    const msgEl = overlay.querySelector('#edit-db-msg');
+
+    if (!name || !phone) { msgEl.textContent = '⚠️ नाव व फोन नंबर दोन्ही आवश्यक आहेत.'; msgEl.style.color = '#dc2626'; return; }
+
+    const { error } = await sb.from('delivery_boys')
+      .update({ name, phone, email: email || null, vehicle_number: vehicle || null, default_delivery_fee: fee })
+      .eq('id', deliveryBoyId);
+
+    if (error) { msgEl.textContent = '❌ ' + error.message; msgEl.style.color = '#dc2626'; return; }
+
+    document.body.removeChild(overlay);
+    await loadDeliveryBoys();
+  });
+}
+
+async function openLinkBySelectPicker(deliveryBoyId) {
+  const { data: accounts, error } = await sb.rpc('admin_list_linkable_accounts');
+  if (error) { alert('❌ खाती लोड करताना अडचण: ' + error.message); return; }
+
+  if (!accounts || accounts.length === 0) {
+    alert('⚠️ सध्या जोडण्यासाठी कुठलंही मोकळं (न जोडलेलं) खातं सापडलं नाही.\n\nडिलिव्हरी बॉयला आधी login.html वरून साईनअप करायला सांगा.');
+    return;
+  }
+
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed; inset:0; background:rgba(15,23,42,0.55); z-index:1000; display:flex; align-items:center; justify-content:center; padding:16px;';
+  overlay.innerHTML = `
+    <div style="background:#fff; border-radius:10px; padding:20px; max-width:460px; width:100%;">
+      <h3 style="margin-top:0;">✉️ खातं निवडा</h3>
+      <p class="muted" style="font-size:12.5px; margin-top:-6px;">नोंदणीकृत (व अजून न जोडलेल्या) खात्यांच्या ईमेल आयडीवरून निवडा:</p>
+      <select id="link-select-email" style="width:100%; margin-bottom:12px;">
+        <option value="">-- ईमेल निवडा --</option>
+        ${accounts.map(a => `<option value="${a.user_id}">${escapeHtmlAdmin(a.email || '(ईमेल नाही)')} ${a.full_name ? '— ' + escapeHtmlAdmin(a.full_name) : ''} ${a.phone ? '· ' + escapeHtmlAdmin(a.phone) : ''}</option>`).join('')}
+      </select>
+      <div style="display:flex; gap:8px; justify-content:flex-end;">
+        <button id="link-select-cancel" class="secondary">रद्द करा</button>
+        <button id="link-select-confirm" style="background:#16a34a;">जोडा</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  overlay.querySelector('#link-select-cancel').addEventListener('click', () => document.body.removeChild(overlay));
+  overlay.querySelector('#link-select-confirm').addEventListener('click', async () => {
+    const selectEl = overlay.querySelector('#link-select-email');
+    const userId = selectEl.value;
+    if (!userId) { alert('⚠️ कृपया आधी एक ईमेल निवडा.'); return; }
+    const chosen = accounts.find(a => a.user_id === userId);
+    document.body.removeChild(overlay);
+
+    // डिलिव्हरी बॉयवर ईमेल अजून सेव्ह केलेला नसेल तर आपोआप भरून घ्या
+    if (chosen && chosen.email) {
+      await sb.from('delivery_boys').update({ email: chosen.email }).eq('id', deliveryBoyId).is('email', null);
+    }
+    await finalizeLinking(deliveryBoyId, userId);
+  });
+}
+
+async function linkDeliveryBoy(deliveryBoyId, phone) {
+  // आधी फोन नंबरने थेट जुळणारं खातं शोधतो (नवीन साईनअपसाठी काम करेल)
+  const { data: matchedUser } = await sb.from('users').select('id, full_name, phone').eq('phone', phone).maybeSingle();
+
+  if (matchedUser) {
+    const confirmMsg = `हे खातं जोडायचं का?\n\nनाव: ${matchedUser.full_name || '(नाव नाही)'}\nफोन: ${matchedUser.phone}`;
+    if (!confirm(confirmMsg)) return;
+    await finalizeLinking(deliveryBoyId, matchedUser.id);
+    return;
+  }
+
+  // फोन जुळला नाही (जुने साईनअप ज्यांनी फोन नंबर नोंदवलेला नाही) —
+  // सगळ्या नोंदणीकृत यूजर्सची यादी दाखवून manually निवडायला देतो
+  openManualLinkPicker(deliveryBoyId, phone);
+}
+
+async function openManualLinkPicker(deliveryBoyId, phone) {
+  const { data: allUsers, error } = await sb.from('users').select('id, full_name, phone').order('created_at', { ascending: false }).limit(200);
+
+  if (error || !allUsers || allUsers.length === 0) {
+    alert(`⚠️ फोन नंबर "${phone}" ने साईनअप केलेलं खातं सापडलं नाही, आणि यूजर यादीही मिळाली नाही.\n\nडिलिव्हरी बॉयला login.html वरून साईनअप करायला सांगा.`);
+    return;
+  }
+
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed; inset:0; background:rgba(15,23,42,0.55); z-index:1000; display:flex; align-items:center; justify-content:center; padding:16px;';
+  overlay.innerHTML = `
+    <div style="background:#fff; border-radius:10px; padding:20px; max-width:460px; width:100%; max-height:80vh; display:flex; flex-direction:column;">
+      <h3 style="margin-top:0;">🔗 खाते manually निवडा</h3>
+      <p class="muted" style="font-size:12.5px; margin-top:-6px;">फोन "${phone}" ने कुठलंही खातं सापडलं नाही (कदाचित जुनं साईनअप, फोन नंबर नोंदवलेला नाही). यादीतून योग्य खातं शोधून निवडा:</p>
+      <input type="text" id="manual-link-search" placeholder="नावाने किंवा फोनने शोधा..." style="margin-bottom:10px;">
+      <div id="manual-link-list" style="overflow-y:auto; flex:1; border:1px solid #e2e8f0; border-radius:6px;"></div>
+      <button id="manual-link-close" class="secondary" style="margin-top:12px;">रद्द करा</button>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  function renderList(filterText) {
+    const q = (filterText || '').toLowerCase();
+    const filtered = allUsers.filter(u => (u.full_name || '').toLowerCase().includes(q) || (u.phone || '').includes(q));
+    const listEl = overlay.querySelector('#manual-link-list');
+    if (filtered.length === 0) {
+      listEl.innerHTML = '<p class="muted" style="padding:10px;">काहीच सापडलं नाही.</p>';
+      return;
+    }
+    listEl.innerHTML = filtered.map(u => `
+      <div class="manual-link-row" data-id="${u.id}" style="padding:10px; border-bottom:1px solid #f1f5f9; cursor:pointer;">
+        <strong>${u.full_name || '(नाव नाही)'}</strong><br>
+        <span class="muted" style="font-size:12px;">${u.phone || 'फोन नोंदवलेला नाही'} · ID: ${u.id.substring(0,8)}</span>
+      </div>
+    `).join('');
+    listEl.querySelectorAll('.manual-link-row').forEach(row => {
+      row.addEventListener('click', async () => {
+        document.body.removeChild(overlay);
+        await finalizeLinking(deliveryBoyId, row.dataset.id);
+      });
+    });
+  }
+
+  renderList('');
+  overlay.querySelector('#manual-link-search').addEventListener('input', (e) => renderList(e.target.value));
+  overlay.querySelector('#manual-link-close').addEventListener('click', () => document.body.removeChild(overlay));
+}
+
+async function finalizeLinking(deliveryBoyId, userId) {
+  const { error } = await sb.from('delivery_boys').update({ user_id: userId }).eq('id', deliveryBoyId);
+  if (error) { alert('❌ जोडताना अडचण: ' + error.message); return; }
+  alert('✅ यशस्वीरित्या जोडलं! आता हा डिलिव्हरी बॉय delivery-boy.html वर लॉगिन करून स्वतःच्या ऑर्डर्स बघू शकेल.');
+  await loadDeliveryBoys();
+}
+
+async function deleteDeliveryBoy(deliveryBoyId) {
+  if (!confirm('हा डिलिव्हरी बॉय कायमचा काढायचा आहे का? (त्याला असाइन झालेल्या जुन्या ऑर्डर्सवर परिणाम होणार नाही)')) return;
+  const { error } = await sb.from('delivery_boys').delete().eq('id', deliveryBoyId);
+  if (error) { alert('❌ ' + error.message); return; }
+  await loadDeliveryBoys();
+}
+
+function escapeHtmlAdmin(str) {
+  const div = document.createElement('div');
+  div.textContent = str ?? '';
+  return div.innerHTML;
+}
+
+document.getElementById('tab-businesses').addEventListener('click', () => switchAdminTab('tab-businesses', 'view-businesses'));
+document.getElementById('tab-delivery-boys').addEventListener('click', () => {
+  switchAdminTab('tab-delivery-boys', 'view-delivery-boys');
+});
+document.getElementById('tab-ad-payments').addEventListener('click', () => {
+  switchAdminTab('tab-ad-payments', 'view-ad-payments');
+  loadAdPayments();
+});
+document.getElementById('tab-advertisers').addEventListener('click', () => switchAdminTab('tab-advertisers', 'view-advertisers'));
+document.getElementById('tab-product-master').addEventListener('click', () => {
+  switchAdminTab('tab-product-master', 'view-product-master');
+  loadProductMasterQueue();
+});
+
+document.getElementById('tab-b2b-pools').addEventListener('click', () => {
+  switchAdminTab('tab-b2b-pools', 'view-b2b-pools');
+  loadB2BPools();
+});
+
+async function loadB2BPools() {
+  const container = document.getElementById('view-b2b-pools');
+  container.innerHTML = '<p class="muted">लोड होत आहे...</p>';
+
+  const { data, error } = await sb.from('group_buying_pools_public').select('*').order('created_at', { ascending: false });
+  const listHtml = (error)
+    ? `<p style="color:red;">त्रुटी: ${error.message}</p>`
+    : (!data || data.length === 0)
+      ? '<p class="muted">अजून कुठलाही पूल नाही.</p>'
+      : `<table style="width:100%; border-collapse:collapse; margin-top:16px;">
+          <thead><tr style="border-bottom:2px solid #e2e8f0;"><th>मालाचे नाव</th><th>फॅक्टरी दर</th><th>टार्गेट</th><th>जमा</th><th>स्थिती</th><th>कृती</th></tr></thead>
+          <tbody>
+            ${data.map(p => `
+              <tr style="border-bottom:1px solid #f1f5f9;">
+                <td><strong>${escapeHtmlAdmin(p.item_name)}</strong></td>
+                <td>₹${p.factory_price}/${escapeHtmlAdmin(p.unit_label)}</td>
+                <td>${p.target_quantity} ${escapeHtmlAdmin(p.unit_label)}</td>
+                <td>${p.committed_quantity} ${escapeHtmlAdmin(p.unit_label)}</td>
+                <td><span class="badge ${p.status === 'active' ? 'live' : 'hidden'}">${p.status}</span></td>
+                <td>${p.status === 'active' ? `<button type="button" onclick="closeB2BPool('${p.id}')" style="background:#dc2626; color:#fff; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:12px;">Close करा</button>` : '—'}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>`;
+
+  container.innerHTML = `
+    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:14px; margin-bottom:10px;">
+      <h4 style="margin:0 0 10px;">+ नवीन Group Buying Pool सुरू करा</h4>
+      <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:8px;">
+        <input id="nb-item-name" placeholder="मालाचे नाव (उदा. गूळ व साखर)" style="padding:8px; border:1px solid #cbd5e1; border-radius:4px;">
+        <input id="nb-unit-label" placeholder="युनिट (उदा. kg, बॅग)" style="padding:8px; border:1px solid #cbd5e1; border-radius:4px;">
+        <input id="nb-factory-price" type="number" placeholder="फॅक्टरी दर ₹" style="padding:8px; border:1px solid #cbd5e1; border-radius:4px;">
+        <input id="nb-retail-price" type="number" placeholder="किरकोळ बाजार दर ₹ (ऐच्छिक)" style="padding:8px; border:1px solid #cbd5e1; border-radius:4px;">
+        <input id="nb-target-qty" type="number" placeholder="टार्गेट प्रमाण" style="padding:8px; border:1px solid #cbd5e1; border-radius:4px;">
+        <input id="nb-city" placeholder="शहर (ऐच्छिक)" style="padding:8px; border:1px solid #cbd5e1; border-radius:4px;">
+      </div>
+      <p id="nb-error" style="color:red; font-size:12.5px; margin:8px 0 0;"></p>
+      <button type="button" onclick="createB2BPool()" style="margin-top:8px; background:#16a34a; color:#fff; border:none; padding:8px 14px; border-radius:6px; cursor:pointer; font-weight:700;">पूल सुरू करा</button>
+    </div>
+    ${listHtml}
+  `;
+}
+
+async function createB2BPool() {
+  const item_name = document.getElementById('nb-item-name').value.trim();
+  const unit_label = document.getElementById('nb-unit-label').value.trim();
+  const factory_price = Number(document.getElementById('nb-factory-price').value);
+  const retail_price = Number(document.getElementById('nb-retail-price').value) || null;
+  const target_quantity = Number(document.getElementById('nb-target-qty').value);
+  const city = document.getElementById('nb-city').value.trim() || null;
+  const errorEl = document.getElementById('nb-error');
+
+  if (!item_name || !unit_label || !factory_price || !target_quantity) {
+    errorEl.textContent = 'कृपया सर्व आवश्यक तपशील भरा.';
+    return;
+  }
+
+  const { error } = await sb.from('group_buying_pools').insert({
+    item_name, unit_label, factory_price, retail_price, target_quantity, city
+  });
+  if (error) { errorEl.textContent = error.message; return; }
+  await loadB2BPools();
+}
+
+async function closeB2BPool(id) {
+  if (!confirm('हा पूल बंद करायचा आहे का?')) return;
+  const { error } = await sb.from('group_buying_pools').update({ status: 'completed' }).eq('id', id);
+  if (error) { alert('त्रुटी: ' + error.message); return; }
+  await loadB2BPools();
+}
+
+async function loadProductMasterQueue() {
+  const container = document.getElementById('view-product-master');
+  container.innerHTML = '<p class="muted">लोड होत आहे...</p>';
+  const { data, error } = await sb.from('product_master')
+    .select('id, barcode, name, unit, image_url, approval_status, created_at, businesses(name)')
+    .order('created_at', { ascending: false })
+    .limit(200);
+  if (error) { container.innerHTML = `<p style="color:red;">त्रुटी: ${error.message}</p>`; return; }
+
+  const pendingCount = (data ?? []).filter(p => p.approval_status === 'pending').length;
+  document.getElementById('count-product-master').textContent = pendingCount;
+
+  if (!data || data.length === 0) { container.innerHTML = '<p class="muted">कोणतेही बारकोड नोंदणीकृत नाहीत.</p>'; return; }
+
+  container.innerHTML = `
+    <table style="width:100%; border-collapse:collapse;">
+      <thead><tr style="border-bottom:2px solid #e2e8f0;"><th>फोटो</th><th>नाव</th><th>बारकोड</th><th>कोणी जोडलं</th><th>स्थिती</th><th>कृती</th></tr></thead>
+      <tbody>
+        ${data.map(p => `
+          <tr style="border-bottom:1px solid #f1f5f9;">
+            <td><img src="${p.image_url || 'https://placehold.co/60x60'}" style="width:36px;height:36px;object-fit:cover;border-radius:4px;" loading="lazy"></td>
+            <td><strong>${escapeHtmlAdmin(p.name)}</strong><br><span class="muted" style="font-size:11.5px;">${p.unit || ''}</span></td>
+            <td style="font-family:monospace;">${escapeHtmlAdmin(p.barcode)}</td>
+            <td>${p.businesses?.name ? escapeHtmlAdmin(p.businesses.name) : '—'}</td>
+            <td><span class="badge ${p.approval_status === 'approved' ? 'live' : (p.approval_status === 'rejected' ? 'hidden' : 'pending')}">${p.approval_status}</span></td>
+            <td>
+              ${p.approval_status !== 'approved' ? `<button type="button" onclick="setProductMasterStatus('${p.id}','approved')" style="background:#16a34a; color:#fff; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:12px; margin-right:4px;">✓ Approve</button>` : ''}
+              ${p.approval_status !== 'rejected' ? `<button type="button" onclick="setProductMasterStatus('${p.id}','rejected')" style="background:#dc2626; color:#fff; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:12px;">✕ Reject</button>` : ''}
+            </td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>`;
+}
+
+async function setProductMasterStatus(id, status) {
+  const { error } = await sb.from('product_master').update({ approval_status: status, updated_at: new Date().toISOString() }).eq('id', id);
+  if (error) { alert('त्रुटी: ' + error.message); return; }
+  await loadProductMasterQueue();
+}
+
+document.getElementById('tab-product-moderation').addEventListener('click', () => {
+  switchAdminTab('tab-product-moderation', 'view-product-moderation');
+  renderProductModerationSearch();
+});
+
+function renderProductModerationSearch() {
+  const container = document.getElementById('view-product-moderation');
+  container.innerHTML = `
+    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:14px; margin-bottom:10px;">
+      <label style="font-weight:700; font-size:13px;">प्रॉडक्टचं नाव टाईप कर</label>
+      <div style="display:flex; gap:8px; margin-top:6px;">
+        <input id="pm-search-input" placeholder="उदा. Turmeric Powder" style="flex:1; padding:8px; border:1px solid #cbd5e1; border-radius:4px;" onkeydown="if(event.key==='Enter') searchProductsForModeration()">
+        <button type="button" onclick="searchProductsForModeration()" style="background:#2563eb; color:#fff; border:none; padding:8px 14px; border-radius:6px; cursor:pointer; font-weight:700;">शोध</button>
+      </div>
+    </div>
+    <div id="pm-results"><p class="muted">वरती शोध सुरू कर.</p></div>
+  `;
+}
+
+async function searchProductsForModeration() {
+  const q = document.getElementById('pm-search-input').value.trim();
+  const resultsEl = document.getElementById('pm-results');
+  if (!q) { resultsEl.innerHTML = '<p class="muted">कृपया काहीतरी टाईप कर.</p>'; return; }
+  resultsEl.innerHTML = '<p class="muted">शोधत आहे...</p>';
+
+  const { data, error } = await sb.from('business_products')
+    .select('id, name, unit, selling_price, is_active, moderation_note, image_url, businesses(name)')
+    .ilike('name', `%${q}%`)
+    .limit(50);
+
+  if (error) { resultsEl.innerHTML = `<p style="color:red;">त्रुटी: ${error.message}</p>`; return; }
+  if (!data || data.length === 0) { resultsEl.innerHTML = '<p class="muted">काहीही सापडलं नाही.</p>'; return; }
+
+  resultsEl.innerHTML = `
+    <table style="width:100%; border-collapse:collapse;">
+      <thead><tr style="border-bottom:2px solid #e2e8f0;"><th>फोटो</th><th>नाव</th><th>दुकान</th><th>किंमत</th><th>स्थिती</th><th>कृती</th></tr></thead>
+      <tbody>
+        ${data.map(p => `
+          <tr style="border-bottom:1px solid #f1f5f9;">
+            <td><img src="${p.image_url || 'https://placehold.co/48x48'}" style="width:36px;height:36px;object-fit:cover;border-radius:4px;" loading="lazy"></td>
+            <td><strong>${escapeHtmlAdmin(p.name)}</strong>${p.moderation_note ? `<br><span class="muted" style="font-size:10.5px;">📝 ${escapeHtmlAdmin(p.moderation_note)}</span>` : ''}</td>
+            <td>${p.businesses?.name ? escapeHtmlAdmin(p.businesses.name) : '—'}</td>
+            <td>₹${p.selling_price}/${escapeHtmlAdmin(p.unit || '')}</td>
+            <td><span class="badge ${p.is_active ? 'live' : 'hidden'}">${p.is_active ? 'सक्रिय' : 'बंद केलेलं'}</span></td>
+            <td>
+              ${p.is_active
+                ? `<button onclick="moderateProduct('${p.id}', false)" style="background:#dc2626; color:#fff; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-size:12px;">🚫 थांबवा</button>`
+                : `<button onclick="moderateProduct('${p.id}', true)" style="background:#16a34a; color:#fff; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-size:12px;">✓ परत सुरू करा</button>`}
+            </td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+async function moderateProduct(productId, makeActive) {
+  let reason = null;
+  if (!makeActive) {
+    reason = prompt('हे प्रॉडक्ट का थांबवत आहेस? (उदा. कायद्याचं उल्लंघन, बंदी असलेला माल, चुकीची माहिती)');
+    if (reason === null) return; // रद्द केलं
+  }
+  const { error } = await sb.rpc('admin_moderate_product', { p_product_id: productId, p_is_active: makeActive, p_reason: reason });
+  if (error) { alert('त्रुटी: ' + error.message); return; }
+  await searchProductsForModeration();
+}
+
+document.getElementById('tab-inquiries').addEventListener('click', () => {
+  switchAdminTab('tab-inquiries', 'view-inquiries');
+  loadInquiries();
+});
+
+async function loadInquiries() {
+  const container = document.getElementById('view-inquiries');
+  container.innerHTML = '<p class="muted">लोड होत आहे...</p>';
+
+  const { data, error } = await sb.from('contact_inquiries')
+    .select('id, name, contact_info, message, status, created_at')
+    .order('created_at', { ascending: false })
+    .limit(100);
+
+  const newCount = (data ?? []).filter(i => i.status === 'new').length;
+  document.getElementById('count-inquiries').textContent = newCount;
+
+  if (error) { container.innerHTML = `<p style="color:red;">त्रुटी: ${error.message}</p>`; return; }
+  if (!data || data.length === 0) { container.innerHTML = '<p class="muted">अजून कुठलाही संदेश आलेला नाही.</p>'; return; }
+
+  container.innerHTML = data.map(i => `
+    <div style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:12px; margin-bottom:10px; ${i.status === 'new' ? 'border-left:4px solid #2563eb;' : ''}">
+      <div style="display:flex; justify-content:space-between; align-items:start;">
+        <div>
+          <strong>${escapeHtmlAdmin(i.name)}</strong> <span class="muted" style="font-size:12px;">(${escapeHtmlAdmin(i.contact_info)})</span>
+          <p style="margin:6px 0; font-size:13.5px; color:#334155;">${escapeHtmlAdmin(i.message)}</p>
+          <span class="muted" style="font-size:11px;">${new Date(i.created_at).toLocaleString('en-IN')}</span>
+        </div>
+        <div style="text-align:right;">
+          <span class="badge ${i.status === 'resolved' ? 'live' : (i.status === 'read' ? 'pending' : 'hidden')}">${i.status}</span><br>
+          ${i.status !== 'resolved' ? `<button onclick="markInquiryStatus('${i.id}', '${i.status === 'new' ? 'read' : 'resolved'}')" style="margin-top:6px; font-size:11.5px; padding:4px 8px; background:#2563eb; color:#fff; border:none; border-radius:4px; cursor:pointer;">${i.status === 'new' ? 'वाचलं' : 'सोडवलं'} म्हणून चिन्हांकित करा</button>` : ''}
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function markInquiryStatus(id, status) {
+  const { error } = await sb.from('contact_inquiries').update({ status }).eq('id', id);
+  if (error) { alert('त्रुटी: ' + error.message); return; }
+  await loadInquiries();
+}
+
+document.getElementById('tab-audit-log').addEventListener('click', () => {
+  switchAdminTab('tab-audit-log', 'view-audit-log');
+  loadAuditLog();
+});
+
+async function loadAuditLog() {
+  const container = document.getElementById('view-audit-log');
+  container.innerHTML = '<p class="muted">लोड होत आहे...</p>';
+
+  const { data, error } = await sb.from('audit_logs')
+    .select('id, action, entity_type, entity_id, created_at, businesses(name), users(full_name)')
+    .order('created_at', { ascending: false })
+    .limit(200);
+
+  if (error) { container.innerHTML = `<p style="color:red;">त्रुटी: ${error.message}</p>`; return; }
+  if (!data || data.length === 0) { container.innerHTML = '<p class="muted">अजून कुठलीही नोंद नाही.</p>'; return; }
+
+  container.innerHTML = `
+    <table style="width:100%; border-collapse:collapse;">
+      <thead><tr style="border-bottom:2px solid #e2e8f0;"><th>वेळ</th><th>कृती</th><th>कोणी केलं</th><th>व्यवसाय</th></tr></thead>
+      <tbody>
+        ${data.map(a => `
+          <tr style="border-bottom:1px solid #f1f5f9; font-size:13px;">
+            <td>${new Date(a.created_at).toLocaleString('en-IN')}</td>
+            <td><code>${escapeHtmlAdmin(a.action)}</code>${a.entity_type ? ` <span class="muted">(${escapeHtmlAdmin(a.entity_type)})</span>` : ''}</td>
+            <td>${a.users?.full_name ? escapeHtmlAdmin(a.users.full_name) : '—'}</td>
+            <td>${a.businesses?.name ? escapeHtmlAdmin(a.businesses.name) : '—'}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+    <p class="muted" style="font-size:11.5px; margin-top:10px;">शेवटच्या २०० नोंदी दाखवल्या आहेत. टीप: सध्या फक्त व्यवसाय-निर्मिती व कॅटलॉग-सिंक इव्हेंट्सच नोंदवले जातात — स्टॉक/किंमत/ऑर्डर/Khata बदल अजून यात जोडलेले नाहीत.</p>
+  `;
+}
+
+document.getElementById('filter-pending').addEventListener('change', (e) => {
+  showPendingOnly = e.target.checked;
+  renderBusinesses(); renderAdvertisers();
+});
+
+init();
+</script>
+</body>
+</html>
