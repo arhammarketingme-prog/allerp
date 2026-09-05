@@ -190,6 +190,10 @@ function renderAdvertisers() {
 }
 
 async function loadAdPayments() {
+  // ⚠️ मुदत संपलेल्या जाहिराती इथे आल्या-आल्या आपोआप 'completed' होतील —
+  // customer कोणी साईटवर आल्याची वाट न बघता (आधी फक्त तेव्हाच चालायचं)
+  await sb.rpc('cleanup_expired_ads');
+
   const { data: campaigns } = await sb
     .from('campaigns')
     .select('id, name, budget, utr_number, payment_status, status, end_date, created_at, moderation_note, advertisers(company_name)')
@@ -574,28 +578,45 @@ async function loadB2BPools() {
   container.innerHTML = '<p class="muted">लोड होत आहे...</p>';
 
   const { data, error } = await sb.from('group_buying_pools_public').select('*').order('created_at', { ascending: false });
+
+  // पूल कोणत्या दुकानाला/होलसेलरला नेमायचा यासाठी businesses ची यादी
+  const { data: businesses } = await sb.from('businesses').select('id, name').eq('is_verified', true).order('name');
+  const businessOptions = `<option value="">— अजून ठरवलं नाही —</option>` +
+    (businesses || []).map(b => `<option value="${b.id}">${escapeHtmlAdmin(b.name)}</option>`).join('');
+
   const listHtml = (error)
     ? `<p style="color:red;">त्रुटी: ${error.message}</p>`
     : (!data || data.length === 0)
       ? '<p class="muted">अजून कुठलाही पूल नाही.</p>'
-      : `<table style="width:100%; border-collapse:collapse; margin-top:16px;">
-          <thead><tr style="border-bottom:2px solid #e2e8f0;"><th>मालाचे नाव</th><th>फॅक्टरी दर</th><th>टार्गेट</th><th>जमा</th><th>स्थिती</th><th>कृती</th></tr></thead>
-          <tbody>
-            ${data.map(p => `
-              <tr style="border-bottom:1px solid #f1f5f9;">
-                <td><strong>${escapeHtmlAdmin(p.item_name)}</strong></td>
-                <td>₹${p.factory_price}/${escapeHtmlAdmin(p.unit_label)}</td>
-                <td>${p.target_quantity} ${escapeHtmlAdmin(p.unit_label)}</td>
-                <td>${p.committed_quantity} ${escapeHtmlAdmin(p.unit_label)}</td>
-                <td><span class="badge ${p.status === 'active' ? 'live' : 'hidden'}">${p.status}</span></td>
-                <td>${p.status === 'active' ? `<button type="button" onclick="closeB2BPool('${p.id}')" style="background:#dc2626; color:#fff; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:12px;">Close करा</button>` : '—'}</td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>`;
+      : data.map(p => {
+          const pct = Math.min(100, Math.round((p.committed_quantity / p.target_quantity) * 100));
+          return `
+          <div style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:14px; margin-bottom:10px;">
+            <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+              <div>
+                <strong style="font-size:15px;">${escapeHtmlAdmin(p.item_name)}</strong>
+                <span class="badge ${p.status === 'active' ? 'live' : 'hidden'}" style="margin-left:8px;">${p.status}</span>
+                <div class="muted" style="font-size:12.5px; margin-top:4px;">
+                  ₹${p.factory_price}/${escapeHtmlAdmin(p.unit_label)} · जमा: <strong>${p.committed_quantity} / ${p.target_quantity} ${escapeHtmlAdmin(p.unit_label)} (${pct}%)</strong>
+                </div>
+              </div>
+              <div style="text-align:right;">
+                ${p.status === 'active' ? `<button type="button" onclick="closeB2BPool('${p.id}')" style="background:#dc2626; color:#fff; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-size:12px;">Close करा</button>` : ''}
+                <button type="button" onclick="togglePoolParticipants('${p.id}')" style="background:#0284c7; color:#fff; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-size:12px; margin-left:4px;">👥 सहभागी बघा</button>
+              </div>
+            </div>
+            <div style="margin-top:10px; display:flex; align-items:center; gap:8px; font-size:13px;">
+              <label style="font-weight:700;">हा पूल भरणारा दुकानदार/होलसेलर:</label>
+              <select onchange="assignPoolBusiness('${p.id}', this.value)" style="padding:5px; border:1px solid #cbd5e1; border-radius:4px;">
+                ${businessOptions.replace(`value="${p.assigned_business_id}"`, `value="${p.assigned_business_id}" selected`)}
+              </select>
+            </div>
+            <div id="pool-participants-${p.id}" style="display:none; margin-top:10px; background:#f8fafc; border-radius:6px; padding:10px;"></div>
+          </div>`;
+        }).join('');
 
   container.innerHTML = `
-    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:14px; margin-bottom:10px;">
+    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:14px; margin-bottom:14px;">
       <h4 style="margin:0 0 10px;">+ नवीन Group Buying Pool सुरू करा</h4>
       <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:8px;">
         <input id="nb-item-name" placeholder="मालाचे नाव (उदा. गूळ व साखर)" style="padding:8px; border:1px solid #cbd5e1; border-radius:4px;">
@@ -609,6 +630,43 @@ async function loadB2BPools() {
       <button type="button" onclick="createB2BPool()" style="margin-top:8px; background:#16a34a; color:#fff; border:none; padding:8px 14px; border-radius:6px; cursor:pointer; font-weight:700;">पूल सुरू करा</button>
     </div>
     ${listHtml}
+  `;
+}
+
+async function assignPoolBusiness(poolId, businessId) {
+  const { error } = await sb.from('group_buying_pools').update({ assigned_business_id: businessId || null }).eq('id', poolId);
+  if (error) { alert('त्रुटी: ' + error.message); await loadB2BPools(); return; }
+}
+
+async function togglePoolParticipants(poolId) {
+  const box = document.getElementById(`pool-participants-${poolId}`);
+  if (box.style.display === 'block') { box.style.display = 'none'; return; }
+
+  box.style.display = 'block';
+  box.innerHTML = '<p class="muted" style="font-size:12.5px;">लोड होत आहे...</p>';
+
+  const { data, error } = await sb.from('group_buying_commitments')
+    .select('quantity, phone, created_at, users(full_name)')
+    .eq('pool_id', poolId)
+    .order('created_at', { ascending: false });
+
+  if (error) { box.innerHTML = `<p style="color:red; font-size:12.5px;">त्रुटी: ${error.message}</p>`; return; }
+  if (!data || data.length === 0) { box.innerHTML = '<p class="muted" style="font-size:12.5px;">अजून कोणीही मागणी नोंदवलेली नाही.</p>'; return; }
+
+  box.innerHTML = `
+    <table style="width:100%; border-collapse:collapse; font-size:12.5px;">
+      <thead><tr style="border-bottom:1px solid #e2e8f0;"><th style="text-align:left;">ग्राहक</th><th style="text-align:left;">फोन</th><th style="text-align:left;">प्रमाण</th></tr></thead>
+      <tbody>
+        ${data.map(c => `
+          <tr style="border-bottom:1px solid #f1f5f9;">
+            <td>${escapeHtmlAdmin(c.users?.full_name || 'नाव नाही')}</td>
+            <td>${escapeHtmlAdmin(c.phone || '—')}</td>
+            <td><strong>${c.quantity}</strong></td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+    <p class="muted" style="font-size:11px; margin-top:6px;">एकूण ${data.length} सहभागी</p>
   `;
 }
 
