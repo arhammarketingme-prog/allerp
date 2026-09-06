@@ -196,7 +196,7 @@ async function loadAdPayments() {
 
   const { data: campaigns } = await sb
     .from('campaigns')
-    .select('id, name, budget, utr_number, payment_status, status, end_date, created_at, moderation_note, advertisers(company_name)')
+    .select('id, name, budget, utr_number, payment_status, status, start_date, end_date, created_at, moderation_note, advertisers(company_name)')
     .order('created_at', { ascending: false });
 
   const view = document.getElementById('view-ad-payments');
@@ -222,6 +222,7 @@ async function loadAdPayments() {
               <th>UTR / Ref Number</th>
               <th>Payment Status</th>
               <th>Ad Status</th>
+              <th>सुरू झाली</th>
               <th>Expiry Date</th>
               <th>Action</th>
             </tr>
@@ -237,6 +238,11 @@ async function loadAdPayments() {
                 <td>
                   <span class="badge ${c.status === 'active' ? 'live' : 'hidden'}">${c.status}</span>
                   ${c.moderation_note ? `<br><span class="muted" style="font-size:10.5px;">📝 ${escapeHtmlAdmin(c.moderation_note)}</span>` : ''}
+                </td>
+                <td>
+                  ${c.start_date
+                    ? new Date(c.start_date).toLocaleDateString('en-IN')
+                    : `<span class="muted">${new Date(c.created_at).toLocaleDateString('en-IN')} (created)</span>`}
                 </td>
                 <td>
                   ${c.end_date
