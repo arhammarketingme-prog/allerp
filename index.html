@@ -423,6 +423,32 @@ async function loadProducts() {
     `);
 
     if ((index + 1) % 4 === 0) {
+      const sponsoredProducts = window.activeSponsoredProducts || [];
+      const spIndex = Math.floor(index / 4) % (sponsoredProducts.length || 1);
+      const sp = sponsoredProducts[spIndex];
+
+      if (sp) {
+        // 🛒 खरं Sponsored Product — दुकानदाराने प्रत्यक्ष sponsor केलेलं
+        // उत्पादन, बाकी कार्ड्ससारखंच पण "Sponsored" लेबलसकट
+        renderedCards.push(`
+          <div class="card in-grid-sponsored-card" style="background:#fffbeb; border:2px solid #f59e0b;">
+            <div class="card-img-wrapper">
+              <img src="${sp.image_url || 'https://placehold.co/400x400'}" alt="${sp.name}" loading="lazy">
+            </div>
+            <span style="background:#f59e0b; color:#fff; font-size:10px; font-weight:800; padding:2px 8px; border-radius:4px; display:inline-block; margin-bottom:4px;">📢 SPONSORED</span>
+            <h3 class="product-title" title="${sp.name}">${sp.name}</h3>
+            <div class="product-seller">🏪 ${sp.business_name || ''} ${sp.business_city ? '· ' + sp.business_city : ''}</div>
+            <div class="price-row"><span class="selling-price">₹${sp.selling_price}</span></div>
+            <div style="display:flex; flex-direction:column; gap:6px; margin-top:auto;">
+              <a class="btn" style="width:100%; font-size:12px;" href="product.html?name=${encodeURIComponent(sp.name)}" onclick="if(typeof recordSponsoredProductClick==='function') recordSponsoredProductClick('${sp.advertisement_id}')">
+                View Details
+              </a>
+            </div>
+          </div>
+        `);
+        return;
+      }
+
       const adIndex = Math.floor(index / 4) % (activeAdsList.length || 1);
       const activeAd = activeAdsList[adIndex] || {
         media_url: 'https://placehold.co/400x300/f59e0b/FFFFFF?text=%F0%9F%93%A2+Sponsored+Ad',
@@ -486,6 +512,9 @@ function startDealTimer() {
   await loadWishlist();
   await loadBusinessTypes();
   if (typeof fetchEligibleAds === 'function') await fetchEligibleAds();
+  if (typeof fetchSponsoredProducts === 'function') {
+    window.activeSponsoredProducts = await fetchSponsoredProducts(3);
+  }
   await loadProducts();
   startDealTimer();
   renderMultiAdSlots([

@@ -160,6 +160,9 @@
             </div>
           </div>
 
+          <label style="font-weight:700; font-size:13px; display:block; margin-bottom:4px;">🎯 कुठल्या शहरात दिसावी? (Location Targeting)</label>
+          <input id="camp-location" placeholder="उदा. Satara, Koregaon — रिकामं ठेवलं तर सर्व ठिकाणी दिसेल" style="width:100%; padding:9px; border:1px solid #cbd5e1; border-radius:8px; margin-bottom:12px; box-sizing:border-box;">
+
           <!-- UPI QR Code Box -->
           <div class="upi-pay-box">
             <h4 style="margin:0 0 6px; color:var(--secondary);">📲 QR कोड स्कॅन करून पेमेंट करा</h4>
@@ -345,24 +348,36 @@ async function loadCampaigns() {
       <div class="ad-form card" data-campaign-form="${c.id}" style="display:none; margin-top:10px; background:#f9fbfd;">
         <h4 style="margin-top:0">जाहिरात अपलोड करा</h4>
         <label style="font-size:12px; font-weight:700;">प्रकार</label>
-        <select class="ad-type-select" style="width:100%; padding:7px; margin-bottom:8px; border:1px solid #cbd5e1; border-radius:6px;">
+        <select class="ad-type-select" style="width:100%; padding:7px; margin-bottom:8px; border:1px solid #cbd5e1; border-radius:6px;" onchange="toggleSponsoredProductPicker(this, '${c.id}')">
           <option value="image">इमेज / फोटो</option>
           <option value="video">व्हिडिओ / रील</option>
           <option value="audio">ऑडिओ</option>
-          <option value="poster">पोस्टर / बॅनर</option>
+          <option value="banner">पोस्टर / बॅनर</option>
+          <option value="sponsored_product">🛒 Sponsored Product (माझं उत्पादन सर्चमध्ये दाखवा)</option>
         </select>
-        <label style="font-size:12px; font-weight:700;">जागा (Placement)</label>
-        <select class="ad-placement-select" style="width:100%; padding:7px; margin-bottom:8px; border:1px solid #cbd5e1; border-radius:6px;">
-          <option value="all">सर्व जागांवर (All Slots)</option>
-          <option value="top">Top Banner</option>
-          <option value="left">Left Sidebar</option>
-          <option value="right">Right Sidebar</option>
-          <option value="bottom">Bottom Banner</option>
-        </select>
-        <label style="font-size:12px; font-weight:700;">फाईल निवडा</label>
-        <input type="file" class="ad-media-file" accept="image/*,video/*,audio/*" style="width:100%; margin-bottom:8px;">
-        <label style="font-size:12px; font-weight:700;">टार्गेट लिंक (Website / WhatsApp)</label>
-        <input type="text" class="ad-target-url" placeholder="https://wa.me/91XXXXXXXXXX" style="width:100%; padding:7px; border:1px solid #cbd5e1; border-radius:6px; box-sizing:border-box; margin-bottom:8px;">
+
+        <div class="sponsored-product-picker" style="display:none; margin-bottom:8px;">
+          <label style="font-size:12px; font-weight:700;">कुठलं उत्पादन sponsor करायचं?</label>
+          <select class="ad-sponsored-product-select" style="width:100%; padding:7px; border:1px solid #cbd5e1; border-radius:6px;">
+            <option value="">— लोड होत आहे —</option>
+          </select>
+          <p class="muted" style="font-size:11px; margin:4px 0 0;">हे उत्पादन ग्राहकांच्या सर्च निकालांमध्ये "Sponsored" म्हणून दिसेल — वेगळी फाईल अपलोड करायची गरज नाही.</p>
+        </div>
+
+        <div class="ad-media-fields">
+          <label style="font-size:12px; font-weight:700;">जागा (Placement)</label>
+          <select class="ad-placement-select" style="width:100%; padding:7px; margin-bottom:8px; border:1px solid #cbd5e1; border-radius:6px;">
+            <option value="all">सर्व जागांवर (All Slots)</option>
+            <option value="top">Top Banner</option>
+            <option value="left">Left Sidebar</option>
+            <option value="right">Right Sidebar</option>
+            <option value="bottom">Bottom Banner</option>
+          </select>
+          <label style="font-size:12px; font-weight:700;">फाईल निवडा</label>
+          <input type="file" class="ad-media-file" accept="image/*,video/*,audio/*" style="width:100%; margin-bottom:8px;">
+          <label style="font-size:12px; font-weight:700;">टार्गेट लिंक (Website / WhatsApp)</label>
+          <input type="text" class="ad-target-url" placeholder="https://wa.me/91XXXXXXXXXX" style="width:100%; padding:7px; border:1px solid #cbd5e1; border-radius:6px; box-sizing:border-box; margin-bottom:8px;">
+        </div>
         <p class="ad-status-msg muted" style="font-size:12px; margin:4px 0"></p>
         <div style="display:flex; gap:6px; margin-top:8px">
           <button class="btn ad-save-btn" data-campaign="${c.id}" style="font-size:12px; padding:6px 12px; background:#16a34a; color:#fff; border:none; border-radius:6px; cursor:pointer; font-weight:700;">अपलोड करा</button>
@@ -388,9 +403,31 @@ async function loadCampaigns() {
     const statusMsg = form.querySelector('.ad-status-msg');
     const saveBtn = form.querySelector('.ad-save-btn');
     const adType = form.querySelector('.ad-type-select').value;
+    const targetUrl = form.querySelector('.ad-target-url').value.trim();
+
+    if (adType === 'sponsored_product') {
+      const productId = form.querySelector('.ad-sponsored-product-select').value;
+      if (!productId) { statusMsg.textContent = 'कृपया उत्पादन निवड.'; return; }
+
+      saveBtn.disabled = true;
+      statusMsg.textContent = 'सेव्ह होत आहे...';
+
+      const { error } = await sb.from('advertisements').insert({
+        campaign_id: campaignId,
+        ad_type: 'sponsored_product',
+        placement: 'search_results',
+        sponsored_business_product_id: productId,
+        target_url: targetUrl || null
+      });
+
+      saveBtn.disabled = false;
+      if (error) { statusMsg.textContent = 'त्रुटी: ' + error.message; return; }
+      await loadCampaigns();
+      return;
+    }
+
     const placement = form.querySelector('.ad-placement-select').value;
     const fileInput = form.querySelector('.ad-media-file');
-    const targetUrl = form.querySelector('.ad-target-url').value.trim();
 
     if (!fileInput.files || !fileInput.files[0]) {
       statusMsg.textContent = 'कृपया फाईल निवडा.';
@@ -402,7 +439,7 @@ async function loadCampaigns() {
 
     const mediaUrl = await uploadMediaFile(fileInput.files[0], 'ads-media');
 
-    await sb.from('advertisements').insert({
+    const { error } = await sb.from('advertisements').insert({
       campaign_id: campaignId,
       ad_type: adType,
       placement: placement,
@@ -411,8 +448,47 @@ async function loadCampaigns() {
     });
 
     saveBtn.disabled = false;
+    if (error) { statusMsg.textContent = 'त्रुटी: ' + error.message; return; }
     await loadCampaigns();
   }));
+}
+
+// प्रकार 'Sponsored Product' निवडल्यावर उत्पादन-निवड dropdown दाखवणे,
+// आणि advertiser च्या स्वतःच्या व्यवसायातली उत्पादनं लोड करणे
+async function toggleSponsoredProductPicker(selectEl, campaignId) {
+  const form = selectEl.closest('.ad-form');
+  const pickerBox = form.querySelector('.sponsored-product-picker');
+  const mediaFields = form.querySelector('.ad-media-fields');
+  const isSponsored = selectEl.value === 'sponsored_product';
+
+  pickerBox.style.display = isSponsored ? 'block' : 'none';
+  mediaFields.style.display = isSponsored ? 'none' : 'block';
+
+  if (isSponsored) {
+    const productSelect = pickerBox.querySelector('.ad-sponsored-product-select');
+    productSelect.innerHTML = '<option value="">— लोड होत आहे —</option>';
+
+    const { data: myBusinesses } = await sb.from('businesses').select('id').eq('owner_id', currentUser.id);
+    const businessIds = (myBusinesses || []).map(b => b.id);
+
+    if (businessIds.length === 0) {
+      productSelect.innerHTML = '<option value="">तुझा स्वतःचा व्यवसाय/दुकान नाही — आधी दुकान नोंदणी कर</option>';
+      return;
+    }
+
+    const { data: products } = await sb.from('business_products')
+      .select('id, name, selling_price')
+      .in('business_id', businessIds)
+      .eq('is_active', true);
+
+    if (!products || products.length === 0) {
+      productSelect.innerHTML = '<option value="">तुझ्या दुकानात कुठलंही उत्पादन नाही</option>';
+      return;
+    }
+
+    productSelect.innerHTML = '<option value="">— निवड कर —</option>' +
+      products.map(p => `<option value="${p.id}">${p.name} (₹${p.selling_price})</option>`).join('');
+  }
 }
 
 document.getElementById('tab-new').addEventListener('click', () => {
@@ -430,6 +506,7 @@ document.getElementById('camp-save-btn').addEventListener('click', async () => {
   const utr = document.getElementById('camp-utr').value.trim();
   const startDate = document.getElementById('camp-start').value || null;
   const endDate = document.getElementById('camp-end').value || null;
+  const targetLocation = document.getElementById('camp-location').value.trim() || null;
   const errorEl = document.getElementById('camp-error');
 
   if (!name || !utr) { errorEl.textContent = 'कॅम्पेनचे नाव आणि UTR नंबर आवश्यक आहे.'; return; }
@@ -443,6 +520,7 @@ document.getElementById('camp-save-btn').addEventListener('click', async () => {
     payment_status: 'pending',
     start_date: startDate,
     end_date: endDate,
+    target_location: targetLocation,
     status: 'draft'
   });
 

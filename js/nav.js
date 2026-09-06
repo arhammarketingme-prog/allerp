@@ -83,6 +83,12 @@ async function renderNav() {
         <option value="hi" ${currentLang === 'hi' ? 'selected' : ''}>हिन्दी</option>
       </select>
 
+      <!-- 📍 शहर निवड (जाहिरात/उत्पादन location targeting साठी) -->
+      <input id="global-city-input" list="global-city-list" placeholder="📍 शहर" value="${getCustomerCity() || ''}" oninput="setCustomerCity(this.value)" style="padding:5px 10px; font-size:12px; border-radius:6px; background:#1e293b; color:#fff; border:1px solid #475569; margin-bottom:0; width:90px; cursor:text;">
+      <datalist id="global-city-list">
+        <option value="Satara"><option value="Koregaon"><option value="Karad"><option value="Pune"><option value="Kolhapur">
+      </datalist>
+
       <!-- ⚙️ ॲडमिन पोर्टल -->
       ${isAdmin ? `<a href="admin.html" style="background: #dc2626; color: #ffffff; padding: 6px 12px; border-radius: 6px; font-weight: 700; text-decoration: none; font-size: 13px;">⚙️ Admin</a>` : ''}
 
@@ -139,6 +145,14 @@ async function renderNav() {
 document.addEventListener("DOMContentLoaded", () => {
   renderNav();
 });
+
+// 📍 ग्राहकाचं निवडलेलं शहर (जाहिरात व Sponsored Product targeting साठी)
+function getCustomerCity() {
+  return localStorage.getItem('allerp_customer_city') || '';
+}
+function setCustomerCity(city) {
+  localStorage.setItem('allerp_customer_city', (city || '').trim());
+}
 
 // 🔔 Notifications dropdown
 function escapeHtmlNav(str) {

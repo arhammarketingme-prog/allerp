@@ -96,11 +96,20 @@ async function fetchEligibleAds() {
       .select('*');
 
     if (!error && ads && ads.length > 0) {
+      // 🎯 Location targeting: ज्या जाहिरातींना target_location सेट आहे,
+      // त्या फक्त ग्राहकाने निवडलेल्या शहराशी जुळल्या तरच दाखवायच्या.
+      // target_location रिकामं/null असेल तर ती सर्वत्र दाखवली जाते.
+      const customerCity = (typeof getCustomerCity === 'function' ? getCustomerCity() : '').toLowerCase().trim();
+      const locationFiltered = ads.filter(a =>
+        !a.target_location || !customerCity || a.target_location.toLowerCase().includes(customerCity)
+      );
+      const adsToUse = locationFiltered.length > 0 ? locationFiltered : ads;
+
       // frequency cap: आजच्या मर्यादेपेक्षा जास्त वेळा दाखवलेल्या जाहिराती वगळणे
-      const withinCap = ads.filter(a =>
+      const withinCap = adsToUse.filter(a =>
         getTodayImpressionCount(a.id) < (a.frequency_cap_per_user_per_day || 5)
       );
-      const pool = withinCap.length > 0 ? withinCap : ads;
+      const pool = withinCap.length > 0 ? withinCap : adsToUse;
 
       for (let i = pool.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -229,6 +238,38 @@ function renderAdSenseSlot(placement) {
 
 function triggerAdSenseLoad() {
   try { (window.adsbygoogle = window.adsbygoogle || []).push({}); } catch (e) {}
+}
+
+// 🛒 Sponsored Products — search/product-grid मध्ये थेट मिसळण्यासाठी
+// (Amazon/Flipkart च्या "Sponsored" टाइल्ससारखं)
+async function fetchSponsoredProducts(limit = 2) {
+  try {
+    const { data, error } = await sb.from('eligible_sponsored_products').select('*');
+    if (error || !data || data.length === 0) return [];
+
+    const customerCity = (typeof getCustomerCity === 'function' ? getCustomerCity() : '').toLowerCase().trim();
+    const locationFiltered = data.filter(p =>
+      !p.target_location || !customerCity || p.target_location.toLowerCase().includes(customerCity)
+    );
+    const pool = locationFiltered.length > 0 ? locationFiltered : data;
+
+    for (let i = pool.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [pool[i], pool[j]] = [pool[j], pool[i]];
+    }
+
+    const picked = pool.slice(0, limit);
+    picked.forEach(p => {
+      sb.rpc('record_ad_impression', { p_advertisement_id: p.advertisement_id, p_placement: 'search_results' });
+    });
+    return picked;
+  } catch (e) {
+    return [];
+  }
+}
+
+async function recordSponsoredProductClick(advertisementId) {
+  await sb.rpc('record_ad_click', { p_advertisement_id: advertisementId, p_session_key: getAdSessionKey() });
 }
 
 async function renderMultiAdSlots(slots, rotationIntervalSeconds = 10) {
