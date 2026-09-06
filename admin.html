@@ -196,7 +196,7 @@ async function loadAdPayments() {
 
   const { data: campaigns } = await sb
     .from('campaigns')
-    .select('id, name, budget, utr_number, payment_status, status, start_date, end_date, created_at, moderation_note, advertisers(company_name)')
+    .select('id, name, budget, utr_number, payment_status, status, start_date, end_date, created_at, moderation_note, advertiser_id, advertisers(company_name, user_id, users(phone, full_name))')
     .order('created_at', { ascending: false });
 
   const view = document.getElementById('view-ad-payments');
@@ -209,9 +209,59 @@ async function loadAdPayments() {
     return;
   }
 
+  // ⏳ पुढच्या ७ दिवसांत संपणाऱ्या active जाहिराती — जेणेकरून वेळेतच
+  // जाहिरातदाराला फोन करून renew करायला सांगता येईल
+  const today = new Date(new Date().toDateString());
+  const in7Days = new Date(today); in7Days.setDate(in7Days.getDate() + 7);
+  const expiringSoon = campaigns.filter(c =>
+    c.status === 'active' && c.end_date && new Date(c.end_date) >= today && new Date(c.end_date) <= in7Days
+  );
+
+  const expiringSoonHtml = expiringSoon.length > 0 ? `
+    <div class="card" style="border-left:4px solid #f59e0b; margin-bottom:14px;">
+      <h3 style="margin-top:0; color:#92400e;">⏳ पुढच्या ७ दिवसांत संपणाऱ्या जाहिराती (${expiringSoon.length}) — Renewal साठी संपर्क कर</h3>
+      <table style="width:100%; border-collapse:collapse;">
+        <thead><tr style="border-bottom:2px solid #e2e8f0; font-size:13px;"><th>Company</th><th>Campaign</th><th>संपते</th><th>संपर्क</th></tr></thead>
+        <tbody>
+          ${expiringSoon.map(c => `
+            <tr style="border-bottom:1px solid #fef3c7;">
+              <td><strong>${escapeHtmlAdmin(c.advertisers?.company_name || 'Advertiser')}</strong></td>
+              <td>${escapeHtmlAdmin(c.name)}</td>
+              <td style="color:#dc2626; font-weight:700;">${new Date(c.end_date).toLocaleDateString('en-IN')}</td>
+              <td>${c.advertisers?.users?.phone ? `<a href="tel:${c.advertisers.users.phone}">📞 ${c.advertisers.users.phone}</a>` : '<span class="muted">नंबर नाही</span>'}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  ` : '';
+
+  // 🏢 प्रत्येक जाहिरातदाराचा एकत्रित इतिहास (किती वेळा, कधी-कधी जाहिरात
+  // दिली — सणासुदीचा पॅटर्न ओळखायला उपयोगी)
+  const advertiserGroups = {};
+  campaigns.forEach(c => {
+    const key = c.advertiser_id;
+    if (!advertiserGroups[key]) {
+      advertiserGroups[key] = { company: c.advertisers?.company_name || 'Advertiser', phone: c.advertisers?.users?.phone, campaigns: [] };
+    }
+    advertiserGroups[key].campaigns.push(c);
+  });
+
   view.innerHTML = `
+    ${expiringSoonHtml}
+    <div class="card" style="margin-bottom:14px;">
+      <h3 style="margin-top:0; color:#0f172a;">🏢 जाहिरातदार-निहाय इतिहास</h3>
+      <div style="display:flex; flex-wrap:wrap; gap:8px;">
+        ${Object.entries(advertiserGroups).map(([advId, g]) => `
+          <button type="button" onclick="toggleAdvertiserHistory('${advId}')" style="background:#eef2ff; border:1px solid #c7d2fe; color:#3730a3; padding:6px 12px; border-radius:20px; cursor:pointer; font-size:12.5px; font-weight:600;">
+            ${escapeHtmlAdmin(g.company)} (${g.campaigns.length})
+          </button>
+        `).join('')}
+      </div>
+      <div id="advertiser-history-box" style="display:none; margin-top:12px; background:#f8fafc; border-radius:8px; padding:12px;"></div>
+    </div>
     <div class="card">
-      <h3 style="margin-top:0; color:#0f172a;">Ad Campaigns & UPI Payment Receipts</h3>
+      <h3 style="margin-top:0; color:#0f172a;">Ad Campaigns & UPI Payment Receipts — संपूर्ण इतिहास (सगळ्या तारखा)</h3>
       <div style="overflow-x:auto;">
         <table style="width:100%; border-collapse:collapse;">
           <thead>
@@ -262,6 +312,9 @@ async function loadAdPayments() {
     </div>
   `;
 
+  // प्रत्येक जाहिरातदाराचा इतिहास बटणासाठी डेटा जतन करणे
+  window._advertiserGroupsCache = advertiserGroups;
+
   view.querySelectorAll('.verify-ad-btn').forEach(btn => {
     btn.addEventListener('click', async (e) => {
       const campId = e.target.dataset.id;
@@ -286,6 +339,41 @@ async function resumeAdCampaign(campaignId) {
   const { error } = await sb.rpc('admin_moderate_campaign', { p_campaign_id: campaignId, p_new_status: 'active', p_reason: null });
   if (error) { alert('त्रुटी: ' + error.message); return; }
   await loadAdPayments();
+}
+
+function toggleAdvertiserHistory(advertiserId) {
+  const box = document.getElementById('advertiser-history-box');
+  const g = window._advertiserGroupsCache?.[advertiserId];
+  if (!g) return;
+
+  if (box.dataset.currentId === advertiserId && box.style.display === 'block') {
+    box.style.display = 'none';
+    box.dataset.currentId = '';
+    return;
+  }
+
+  const sorted = [...g.campaigns].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+  box.innerHTML = `
+    <h4 style="margin:0 0 8px;">${escapeHtmlAdmin(g.company)} — संपूर्ण इतिहास (${g.campaigns.length} जाहिराती)</h4>
+    ${g.phone ? `<p style="margin:0 0 10px;"><a href="tel:${g.phone}">📞 ${g.phone}</a></p>` : ''}
+    <table style="width:100%; border-collapse:collapse; font-size:12.5px;">
+      <thead><tr style="border-bottom:1px solid #e2e8f0;"><th style="text-align:left;">Campaign</th><th style="text-align:left;">सुरू</th><th style="text-align:left;">संपली</th><th style="text-align:left;">बजेट</th><th style="text-align:left;">स्थिती</th></tr></thead>
+      <tbody>
+        ${sorted.map(c => `
+          <tr style="border-bottom:1px solid #f1f5f9;">
+            <td>${escapeHtmlAdmin(c.name)}</td>
+            <td>${c.start_date ? new Date(c.start_date).toLocaleDateString('en-IN') : new Date(c.created_at).toLocaleDateString('en-IN')}</td>
+            <td>${c.end_date ? new Date(c.end_date).toLocaleDateString('en-IN') : '—'}</td>
+            <td>₹${c.budget || 0}</td>
+            <td><span class="badge ${c.status === 'active' ? 'live' : 'hidden'}">${c.status}</span></td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+    <p class="muted" style="font-size:11px; margin-top:8px;">💡 टीप: तारखांवरून सणासुदी/हंगामाचा पॅटर्न दिसू शकतो (उदा. फक्त गणपती/दिवाळीत जाहिरात) — त्यानुसार पुढच्या वेळी आधीच संपर्क करता येईल.</p>
+  `;
+  box.style.display = 'block';
+  box.dataset.currentId = advertiserId;
 }
 
 async function loadDeliveryBoys() {
