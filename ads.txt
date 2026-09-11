@@ -1,0 +1,7 @@
+# Google AdSense Publisher Verification File for ALL ERP / Aapla Bazaar
+#
+# ⚠️ महत्त्वाचं: खालची ओळ अजून खरी नाही — 'pub-0000000000000000' ही placeholder
+# आहे. Google AdSense अकाउंट approve झाल्यावर, AdSense डॅशबोर्ड (Sites → तुझी
+# साईट → "Get code") मध्ये दिलेली खरी Publisher ID इथे टाकून ही फाईल पुन्हा
+# domain root वर अपलोड कर. तोपर्यंत ही फाईल अपुरी/placeholder आहे.
+google.com, pub-0000000000000000, DIRECT, f08c47fec0942fa0

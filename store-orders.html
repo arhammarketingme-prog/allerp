@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2874f0">
+<title>Store Order Management — ALL ERP</title>
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  .order-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin-bottom: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+  .status-badge { display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+  .status-pending { background: #fef3c7; color: #d97706; }
+  .status-accepted { background: #e0f2fe; color: #0284c7; }
+  .status-packed { background: #f3e8ff; color: #9333ea; }
+  .status-delivered { background: #dcfce7; color: #16a34a; }
+  .status-cancelled { background: #fee2e2; color: #dc2626; }
+</style>
+</head>
+<body>
+<nav id="app-nav"></nav>
+
+<main class="container" style="max-width: 1000px; margin-top: 20px;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <div>
+      <h2 style="margin: 0; font-size: 22px; color: #1e293b;">🏪 Store Orders & Fulfillment</h2>
+      <p style="margin: 4px 0 0 0; font-size: 13px; color: #64748b;">Manage customer orders and choose your preferred delivery mode with full freedom.</p>
+    </div>
+    <button onclick="loadStoreOrders()" class="secondary" style="font-size: 12px; padding: 6px 12px;">🔄 Refresh Orders</button>
+  </div>
+
+  <div id="orders-container">
+    <p style="text-align: center; color: #64748b; padding: 40px;">Loading orders...</p>
+  </div>
+</main>
+
+<script src="js/supabase-client.js"></script>
+<script src="js/cart.js"></script>
+<script src="js/nav.js"></script>
+<script>
+async function loadStoreOrders() {
+  const container = document.getElementById('orders-container');
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user) {
+    window.location.href = 'login.html';
+    return;
+  }
+
+  // 1. shopkeeper च्या मालकीचे दुकान शोधा
+  const { data: biz, error: bizErr } = await sb.from('businesses').select('id, name').eq('owner_id', user.id).single();
+  if (bizErr || !biz) {
+    container.innerHTML = '<div class="card" style="text-align:center; color:#dc2626;">No registered business found for your account. Please register your shop first.</div>';
+    return;
+  }
+
+  // 2. या दुकानाच्या ऑर्डर्स फेच करा
+  const { data: orders, error: ordErr } = await sb
+    .from('orders')
+    .select('*')
+    .eq('business_id', biz.id)
+    .order('created_at', { ascending: false });
+
+  if (ordErr) {
+    container.innerHTML = `<p style="color:red;">Error loading orders: ${ordErr.message}</p>`;
+    return;
+  }
+
+  if (!orders || orders.length === 0) {
+    container.innerHTML = '<div class="card" style="text-align:center; padding:30px; color:#64748b;">No new orders received yet.</div>';
+    return;
+  }
+
+  container.innerHTML = orders.map(ord => `
+    <div class="order-card">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px;">
+        <div>
+          <span style="font-size: 12px; font-weight: 700; color: #64748b;">Order ID: ${ord.id.slice(0, 8)}...</span>
+          <div style="font-size: 16px; font-weight: 800; color: #0f172a; margin-top: 2px;">₹${ord.total_amount}</div>
+        </div>
+        <div>
+          <span class="status-badge status-${ord.status}">${ord.status}</span>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; align-items: center; margin-top: 12px;">
+        <div>
+          <label style="font-size: 11px; font-weight: 700; color: #64748b; display: block; margin-bottom: 4px;">Update Status:</label>
+          <select id="status-${ord.id}" onchange="updateOrderStatus('${ord.id}')" style="margin-bottom:0; font-size:12px;">
+            <option value="pending" ${ord.status === 'pending' ? 'selected' : ''}>Pending</option>
+            <option value="accepted" ${ord.status === 'accepted' ? 'selected' : ''}>Accepted</option>
+            <option value="packed" ${ord.status === 'packed' ? 'selected' : ''}>Packed</option>
+            <option value="out_for_delivery" ${ord.status === 'out_for_delivery' ? 'selected' : ''}>Out for Delivery</option>
+            <option value="delivered" ${ord.status === 'delivered' ? 'selected' : ''}>Delivered</option>
+            <option value="cancelled" ${ord.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
+          </select>
+        </div>
+
+        <div>
+          <label style="font-size: 11px; font-weight: 700; color: #64748b; display: block; margin-bottom: 4px;">Delivery Mode (दुकानदार स्वातंत्र्य):</label>
+          <select id="fulfillment-${ord.id}" onchange="updateFulfillmentMode('${ord.id}')" style="margin-bottom:0; font-size:12px;">
+            <option value="self_delivery" ${ord.fulfillment_mode === 'self_delivery' ? 'selected' : ''}>🟢 Self Delivery (दुकानदार स्वतः)</option>
+            <option value="platform_delivery" ${ord.fulfillment_mode === 'platform_delivery' ? 'selected' : ''}>🟡 Platform Delivery Boy</option>
+            <option value="third_party" ${ord.fulfillment_mode === 'third_party' ? 'selected' : ''}>🟠 Third Party Courier</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function updateOrderStatus(orderId) {
+  const newStatus = document.getElementById(`status-${orderId}`).value;
+  const { error } = await sb.from('orders').update({ status: newStatus }).eq('id', orderId);
+  if (error) {
+    alert('Failed to update status: ' + error.message);
+  } else {
+    loadStoreOrders();
+  }
+}
+
+async function updateFulfillmentMode(orderId) {
+  const newMode = document.getElementById(`fulfillment-${orderId}`).value;
+  const { error } = await sb.from('orders').update({ fulfillment_mode: newMode }).eq('id', orderId);
+  if (error) {
+    alert('Failed to update delivery mode: ' + error.message);
+  } else {
+    loadStoreOrders();
+  }
+}
+
+document.addEventListener('DOMContentLoaded', loadStoreOrders);
+</script>
+</body>
+</html>

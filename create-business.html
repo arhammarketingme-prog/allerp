@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2874f0">
+<title>Business Onboarding — ALL ERP</title>
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+.onboarding-steps {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  position: relative;
+}
+.onboarding-steps::before {
+  content: '';
+  position: absolute;
+  top: 14px;
+  left: 10%;
+  right: 10%;
+  height: 2px;
+  background: var(--border);
+  z-index: 1;
+}
+.step-item {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  background: var(--card);
+  padding: 0 8px;
+}
+.step-circle {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--border);
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 6px;
+  font-weight: 700;
+  font-size: 13px;
+  transition: background 0.2s, color 0.2s;
+}
+.step-item.active .step-circle {
+  background: var(--secondary);
+  color: white;
+}
+.step-item.completed .step-circle {
+  background: var(--primary);
+  color: white;
+}
+.type-grid-selector {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 10px;
+  margin: 14px 0;
+}
+.type-card {
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 8px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: var(--card);
+}
+.type-card:hover {
+  border-color: var(--secondary);
+  background: #f8fafc;
+}
+.type-card.selected {
+  border-color: var(--secondary);
+  background: #f0f5ff;
+  box-shadow: 0 2px 8px rgba(37,99,235,0.15);
+  transform: translateY(-2px);
+}
+.type-icon {
+  font-size: 22px;
+  display: block;
+  margin-bottom: 4px;
+}
+.module-pill {
+  display: inline-block;
+  background: #eef2ff;
+  color: #3730a3;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  margin: 3px;
+  font-weight: 600;
+}
+.card {
+  transition: box-shadow 0.2s ease;
+}
+</style>
+</head>
+<body>
+<nav id="app-nav"></nav>
+
+<main class="container" style="max-width: 680px; margin-top: 20px;">
+  <div class="card" style="padding: 28px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.06);">
+    
+    <div class="onboarding-steps">
+      <div class="step-item active" id="step-ind-1">
+        <div class="step-circle">1</div>
+        <div style="font-size:12px; font-weight:600">Business Profile</div>
+      </div>
+      <div class="step-item" id="step-ind-2">
+        <div class="step-circle">2</div>
+        <div style="font-size:12px; font-weight:600">Business Type</div>
+      </div>
+      <div class="step-item" id="step-ind-3">
+        <div class="step-circle">3</div>
+        <div style="font-size:12px; font-weight:600">ERP Configuration</div>
+      </div>
+    </div>
+
+    <!-- STEP 1: Basic Info -->
+    <div id="step-1-view">
+      <h2>Business Details</h2>
+      <p class="muted" style="font-size:13px; margin-top:-6px">Enter your primary business and location details.</p>
+
+      <label style="font-weight:700; font-size:13px;">Business / Shop Name *</label>
+      <input id="biz-name" placeholder="e.g. Patil Builders & Contractors" required style="border-radius:8px; margin-bottom:12px; padding:9px; width:100%; border:1px solid #cbd5e1; box-sizing:border-box;">
+
+      <div style="display:flex; gap:10px; margin-bottom:12px;">
+        <div style="flex:1">
+          <label style="font-weight:700; font-size:13px;">GSTIN (Optional)</label>
+          <input id="biz-gstin" placeholder="27AAAAA0000A1Z5" style="border-radius:8px; padding:9px; width:100%; border:1px solid #cbd5e1; box-sizing:border-box;">
+        </div>
+        <div style="flex:1">
+          <label style="font-weight:700; font-size:13px;">City / Taluka *</label>
+          <input id="biz-city" placeholder="e.g. Satara / Pune" required style="border-radius:8px; padding:9px; width:100%; border:1px solid #cbd5e1; box-sizing:border-box;">
+        </div>
+      </div>
+
+      <div style="display:flex; gap:10px; margin-bottom:16px;">
+        <div style="flex:1">
+          <label style="font-weight:700; font-size:13px;">State</label>
+          <select id="biz-state" style="border-radius:8px; padding:9px; width:100%; border:1px solid #cbd5e1; box-sizing:border-box; background:#fff;">
+            <option value="Maharashtra">Maharashtra (महाराष्ट्र)</option>
+            <option value="Gujarat">Gujarat</option>
+            <option value="Karnataka">Karnataka</option>
+            <option value="Goa">Goa</option>
+            <option value="Madhya Pradesh">Madhya Pradesh</option>
+            <option value="Other">Other States</option>
+          </select>
+        </div>
+        <div style="flex:1">
+          <label style="font-weight:700; font-size:13px;">Currency</label>
+          <select id="biz-currency" style="border-radius:8px; padding:9px; width:100%; border:1px solid #cbd5e1; box-sizing:border-box; background:#fff;">
+            <option value="INR">₹ INR (Indian Rupee)</option>
+          </select>
+        </div>
+      </div>
+
+      <button id="to-step-2-btn" style="margin-top:4px; width:100%; padding:11px; background:#2563eb; color:#fff; border:none; border-radius:8px; font-weight:700; cursor:pointer;">Next: Select Business Type →</button>
+    </div>
+
+    <!-- STEP 2: Business Type -->
+    <div id="step-2-view" style="display:none">
+      <h2>What type of business do you operate?</h2>
+      <p class="muted" style="font-size:13px; margin-top:-6px">ALL ERP will automatically customize your dashboard and active modules.</p>
+
+      <div class="type-grid-selector" id="business-types-grid">
+        <div class="type-card selected" data-slug="contractor" data-name="Contractor & Construction">
+          <span class="type-icon">🏗️</span>
+          <strong>Contractor</strong>
+        </div>
+        <div class="type-card" data-slug="grocery" data-name="Grocery / Kirana">
+          <span class="type-icon">🛒</span>
+          <strong>Kirana / Grocery</strong>
+        </div>
+        <div class="type-card" data-slug="manufacturing" data-name="Manufacturing & Industry">
+          <span class="type-icon">🏭</span>
+          <strong>Manufacturing</strong>
+        </div>
+        <div class="type-card" data-slug="bakery" data-name="Bakery & Food Processing">
+          <span class="type-icon">🍞</span>
+          <strong>Bakery / Food</strong>
+        </div>
+        <div class="type-card" data-slug="restaurant" data-name="Restaurant & Hotel">
+          <span class="type-icon">🍽️</span>
+          <strong>Restaurant</strong>
+        </div>
+        <div class="type-card" data-slug="mobile-shop" data-name="Mobile & Electronics">
+          <span class="type-icon">📱</span>
+          <strong>Electronics</strong>
+        </div>
+        <div class="type-card" data-slug="clothing" data-name="Clothing & Textile">
+          <span class="type-icon">👕</span>
+          <strong>Clothing</strong>
+        </div>
+        <div class="type-card" data-slug="medical-store" data-name="Medical & Pharmacy">
+          <span class="type-icon">💊</span>
+          <strong>Medical / Clinic</strong>
+        </div>
+        <div class="type-card" data-slug="hardware" data-name="Hardware & Building Material">
+          <span class="type-icon">🔩</span>
+          <strong>Hardware</strong>
+        </div>
+        <div class="type-card" data-slug="services" data-name="Professional Services">
+          <span class="type-icon">💼</span>
+          <strong>Services / Agency</strong>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:10px; margin-top:16px">
+        <button class="secondary" id="back-to-step-1-btn" style="padding:10px 16px; border-radius:8px; font-weight:700; cursor:pointer;">← Back</button>
+        <button id="to-step-3-btn" style="flex:1; padding:10px; background:#2563eb; color:#fff; border:none; border-radius:8px; font-weight:700; cursor:pointer;">Next: Preview Modules →</button>
+      </div>
+    </div>
+
+    <!-- STEP 3: Auto Profile Config & Final Launch -->
+    <div id="step-3-view" style="display:none">
+      <h2>Smart Profile Configured!</h2>
+      <p class="muted" style="font-size:13px; margin-top:-6px">Based on your business type, the following modules have been enabled automatically:</p>
+
+      <div style="background:#f8fafc; border:1px solid var(--border); border-radius:8px; padding:14px; margin:14px 0">
+        <div style="font-size:14px; font-weight:700; color:var(--secondary); margin-bottom:8px" id="preview-business-title">
+          Selected Business
+        </div>
+        <div id="enabled-modules-list"></div>
+      </div>
+
+      <p id="error-msg" class="error-text" style="color:#dc2626; font-size:12px;"></p>
+      
+      <div style="display:flex; gap:10px; margin-top:16px">
+        <button class="secondary" id="back-to-step-2-btn" style="padding:10px 16px; border-radius:8px; font-weight:700; cursor:pointer;">← Back</button>
+        <button id="finalize-btn" style="flex:1; padding:11px; background:#16a34a; color:#fff; border:none; border-radius:8px; font-weight:700; font-size:14px; cursor:pointer;">🚀 Launch My ALL ERP</button>
+      </div>
+    </div>
+
+    <!-- SUCCESS VIEW -->
+    <div id="result-view" style="display:none; text-align:center; padding:16px 0">
+      <div style="font-size:48px; margin-bottom:10px">🎉</div>
+      <h2>Welcome to ALL ERP!</h2>
+      <p class="muted">Your business workspace, starter inventory, and ERP modules are ready.</p>
+      <a class="btn" href="dashboard.html" style="font-size:15px; padding:10px 24px; margin-top:10px; background:#2563eb; color:#fff; text-decoration:none; border-radius:8px; font-weight:700; display:inline-block;">Open ERP Dashboard →</a>
+    </div>
+
+  </div>
+</main>
+
+<script src="js/supabase-client.js"></script>
+<script src="js/cart.js"></script>
+<script src="js/nav.js"></script>
+<script src="js/referral.js"></script>
+<script src="js/erp-engine.js"></script>
+<script>
+let selectedTypeSlug = 'contractor';
+let selectedTypeName = 'Contractor & Construction';
+
+async function checkAuth() {
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user) {
+    window.location.href = 'login.html';
+  }
+}
+checkAuth();
+
+// Step 1 -> 2
+document.getElementById('to-step-2-btn').addEventListener('click', () => {
+  const name = document.getElementById('biz-name').value.trim();
+  const city = document.getElementById('biz-city').value.trim();
+  if (!name || !city) {
+    alert('Please enter Business Name and City.');
+    return;
+  }
+  document.getElementById('step-1-view').style.display = 'none';
+  document.getElementById('step-2-view').style.display = 'block';
+  document.getElementById('step-ind-1').className = 'step-item completed';
+  document.getElementById('step-ind-2').className = 'step-item active';
+});
+
+// Step 2 Selection
+document.querySelectorAll('.type-card').forEach(card => {
+  card.addEventListener('click', () => {
+    document.querySelectorAll('.type-card').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    selectedTypeSlug = card.dataset.slug;
+    selectedTypeName = card.dataset.name;
+  });
+});
+
+document.getElementById('back-to-step-1-btn').addEventListener('click', () => {
+  document.getElementById('step-2-view').style.display = 'none';
+  document.getElementById('step-1-view').style.display = 'block';
+  document.getElementById('step-ind-1').className = 'step-item active';
+  document.getElementById('step-ind-2').className = 'step-item';
+});
+
+// Step 2 -> 3
+document.getElementById('to-step-3-btn').addEventListener('click', () => {
+  document.getElementById('step-2-view').style.display = 'none';
+  document.getElementById('step-3-view').style.display = 'block';
+  document.getElementById('step-ind-2').className = 'step-item completed';
+  document.getElementById('step-ind-3').className = 'step-item active';
+
+  const name = document.getElementById('biz-name').value.trim();
+  document.getElementById('preview-business-title').textContent = `${name} (${selectedTypeName})`;
+
+  const profile = ALL_ERP.PROFILES[selectedTypeSlug] || ALL_ERP.PROFILES['default'];
+  const modulesHtml = profile.modules.map(m => `<span class="module-pill">✓ ${ALL_ERP.t(m)}</span>`).join('');
+  document.getElementById('enabled-modules-list').innerHTML = modulesHtml;
+});
+
+document.getElementById('back-to-step-2-btn').addEventListener('click', () => {
+  document.getElementById('step-3-view').style.display = 'none';
+  document.getElementById('step-2-view').style.display = 'block';
+  document.getElementById('step-ind-2').className = 'step-item active';
+  document.getElementById('step-ind-3').className = 'step-item';
+});
+
+// Finalize and Create Business
+document.getElementById('finalize-btn').addEventListener('click', async () => {
+  const name = document.getElementById('biz-name').value.trim();
+  const city = document.getElementById('biz-city').value.trim();
+  const errorEl = document.getElementById('error-msg');
+  const btn = document.getElementById('finalize-btn');
+
+  btn.disabled = true;
+  btn.textContent = 'Setting up ERP workspace...';
+  errorEl.textContent = '';
+
+  try {
+    const { data, error } = await sb.rpc('create_business', {
+      p_name: name,
+      p_business_type_slug: selectedTypeSlug,
+      p_city: city || null
+    });
+
+    if (error) {
+      errorEl.textContent = error.message;
+      btn.disabled = false;
+      btn.textContent = '🚀 Launch My ALL ERP';
+      return;
+    }
+
+    // Save business type in localStorage for instant smart profile activation
+    localStorage.setItem('allerp_current_type_' + data.id, selectedTypeSlug);
+    localStorage.setItem('allerp_active_business_id', data.id);
+
+    if (typeof attachReferralCode === 'function') {
+      await attachReferralCode('businesses', data.id, 'id');
+    }
+
+    document.getElementById('step-3-view').style.display = 'none';
+    document.getElementById('step-ind-3').className = 'step-item completed';
+    document.getElementById('result-view').style.display = 'block';
+  } catch (err) {
+    errorEl.textContent = err.message;
+    btn.disabled = false;
+    btn.textContent = '🚀 Launch My ALL ERP';
+  }
+});
+</script>
+</body>
+</html>

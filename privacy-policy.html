@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2874f0">
+<title>Privacy Policy — ALL ERP & Marketplace</title>
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  .card { border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.06); border: 1px solid #e2e8f0; background: #ffffff; padding: 32px; }
+  h1 { font-size: 26px; color: #1e293b; margin-top: 0; margin-bottom: 4px; }
+  h3 { font-size: 17px; color: #0f172a; margin-top: 24px; margin-bottom: 8px; border-bottom: 1px solid #f1f5f9; padding-bottom: 6px; }
+  p, li { color: #334155; font-size: 14px; margin-bottom: 8px; }
+  a { color: #2563eb; text-decoration: none; font-weight: 600; }
+  a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+<nav id="app-nav"></nav>
+
+<main class="container" style="max-width: 850px; margin-top: 24px; line-height: 1.7;">
+  <div class="card">
+    <h1>Privacy Policy (गोपनीयता धोरण)</h1>
+    <p class="muted" style="margin-bottom: 16px;">Last updated: September 2026</p>
+
+    <p>Welcome to <strong>ALL ERP & Local Marketplace</strong>. We respect your privacy and are committed to protecting the personal data you share with us. This policy describes what we actually collect and how we actually use it on this platform.</p>
+
+    <h3>1. Information We Collect</h3>
+    <ul>
+      <li>Account details: name, phone number, email (via login/signup)</li>
+      <li>Business details: business name, address, city, logo, GST/tax info where provided</li>
+      <li>Order details: delivery address, pincode, order items, payment method chosen</li>
+      <li>Business records: inventory, invoices, sales/purchase ledgers, and Customer Khata entries (visible only to the business that created them)</li>
+      <li>Advertising payment proof: for UPI-paid ad campaigns, we collect a payment screenshot and UTR/reference number so an admin can manually verify the payment</li>
+      <li>Contact form messages you choose to send us</li>
+      <li>Basic delivery-session data (a randomly generated browser session identifier) used only to prevent duplicate ad clicks — this is not linked to your personal identity</li>
+    </ul>
+
+    <h3>2. What We Do Not Collect or Store</h3>
+    <ul>
+      <li>We do not store payment card numbers or bank account numbers — product-sale payments happen directly between you and the seller (cash, UPI, or other methods you and the seller agree on); we only ever see order status/payment-method references, not your financial account details</li>
+      <li>We never store your account password in plain text (authentication is handled securely by our backend provider, Supabase)</li>
+    </ul>
+
+    <h3>3. Advertising on This Site</h3>
+    <p>Most advertisements you see on ALL ERP are served directly by our own advertising system (local businesses and brands advertising to shoppers in their area) — not by any external ad network.</p>
+    <p>We are in the process of also enabling <strong>Google AdSense</strong> on this site to show relevant ads. Once active, Google and its advertising partners may use cookies (including the DoubleClick DART cookie) to serve ads based on your visits to this and other websites. You can opt out of personalized advertising by visiting Google's Ads Settings at <a href="https://adssettings.google.com" target="_blank" rel="noopener">adssettings.google.com</a>, or the Google ad and content network privacy page at <a href="https://policies.google.com/technologies/ads" target="_blank" rel="noopener">policies.google.com/technologies/ads</a>. This policy will be updated with the exact date Google AdSense goes live.</p>
+
+    <h3>4. How We Use Your Information</h3>
+    <ul>
+      <li>To create and operate your account, business listing, or advertiser profile</li>
+      <li>To process and deliver orders, and to notify you of order/delivery status changes</li>
+      <li>To send in-app notifications (new orders, low stock, order status, and similar account-relevant events)</li>
+      <li>To verify UPI ad payments and activate campaigns</li>
+      <li>To respond to messages sent through our Contact Us page</li>
+    </ul>
+
+    <h3>5. Delivery Partner Data Sharing (Minimum Necessary)</h3>
+    <p>When your order is out for delivery, the assigned delivery agent can see only what is necessary to complete the delivery: your name, phone number, and delivery address. We do not share your email address, order history, or Customer Khata records with delivery agents.</p>
+
+    <h3>6. Data Protection & Tenant Isolation</h3>
+    <p>Business data (sales ledgers, Customer Khata, invoices, and employee records) is isolated at the database level using Row Level Security (RLS). No business can access or view another business's confidential records, and no customer can view another customer's orders or Khata entries.</p>
+
+    <h3>7. Where Your Data Is Stored</h3>
+    <p>Our application and database are hosted on Supabase (a managed PostgreSQL platform). We do not sell your personal data to third parties.</p>
+
+    <h3>8. Cookies & Local Storage</h3>
+    <p>We use browser local storage (not third-party tracking cookies) to keep you logged in, remember cart items, and apply features like frequency-capping for ads and offline caching for our installable app (PWA). This data stays in your own browser and is not shared with external advertising networks.</p>
+
+    <h3>9. Your Rights</h3>
+    <p>You can request access to, correction of, or deletion of your personal data by contacting us through our <a href="contact.html">Contact Us</a> page. Note that some business records (like invoices) may need to be retained for legitimate accounting/legal purposes even after an account is closed.</p>
+
+    <h3>10. Children's Privacy</h3>
+    <p>This platform is intended for business owners, retailers, delivery partners, advertisers, and adult customers. It is not directed at children under 18, and we do not knowingly collect personal data from children.</p>
+
+    <h3>11. Changes to This Policy</h3>
+    <p>We may update this policy as the platform evolves. Material changes will be reflected here with an updated "Last updated" date.</p>
+
+    <h3>12. Contact Us</h3>
+    <p>If you have any questions or suggestions about our Privacy Policy, please contact us through our <a href="contact.html">Contact Us</a> page.</p>
+  </div>
+</main>
+
+<script src="js/supabase-client.js"></script>
+<script src="js/cart.js"></script>
+<script src="js/nav.js"></script>
+</body>
+</html>

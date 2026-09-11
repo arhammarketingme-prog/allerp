@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2874f0">
+<title>डिलिव्हरी बॉय पोर्टल — ALL ERP</title>
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  .delivery-order-card { background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:16px; margin-bottom:14px; box-shadow:0 1px 3px rgba(0,0,0,0.05); }
+  .status-pill { font-size:11px; font-weight:800; padding:3px 10px; border-radius:12px; text-transform:uppercase; }
+  .status-pending, .status-accepted { background:#fef3c7; color:#b45309; }
+  .status-packed { background:#dbeafe; color:#1d4ed8; }
+  .status-dispatched { background:#ede9fe; color:#6d28d9; }
+  .status-delivered { background:#dcfce7; color:#15803d; }
+</style>
+</head>
+<body>
+<nav id="app-nav"></nav>
+
+<main class="container" style="max-width: 720px; margin-top: 20px;">
+  <div id="dp-gate">
+    <p class="muted" style="text-align:center; padding:40px;">तपासत आहे...</p>
+  </div>
+</main>
+
+<script src="js/supabase-client.js"></script>
+<script src="js/cart.js"></script>
+<script src="js/nav.js"></script>
+<script>
+let myDeliveryBoyId = null;
+
+async function initDeliveryPortal() {
+  const gate = document.getElementById('dp-gate');
+  const { data: { user } } = await sb.auth.getUser();
+
+  if (!user) {
+    gate.innerHTML = `
+      <div class="card" style="text-align:center; padding:32px;">
+        <h2>🛵 डिलिव्हरी बॉय पोर्टल</h2>
+        <p class="muted">कृपया आधी लॉगिन करा.</p>
+        <a href="login.html" class="btn" style="display:inline-block; margin-top:10px;">लॉगिन करा</a>
+      </div>`;
+    return;
+  }
+
+  const { data: dbRow, error } = await sb
+    .from('delivery_boys')
+    .select('id, name, is_available')
+    .eq('user_id', user.id)
+    .maybeSingle();
+
+  if (error || !dbRow) {
+    gate.innerHTML = `
+      <div class="card" style="text-align:center; padding:32px;">
+        <h2>🛵 डिलिव्हरी बॉय पोर्टल</h2>
+        <p class="muted">तुमचं खातं अजून कुठल्याही डिलिव्हरी बॉय प्रोफाईलशी जोडलेलं नाही.<br>कृपया अ‍ॅडमिनशी संपर्क साधा.</p>
+        <p style="font-size:12px; color:#94a3b8; margin-top:14px;">तुम्ही सध्या <strong>${user.email || user.id}</strong> या खात्याने लॉगिन आहात — अ‍ॅडमिनला हाच ईमेल द्या, म्हणजे admin.html वरून "✉️ खातं निवडून जोडा" ने योग्य खातं जोडता येईल.</p>
+      </div>`;
+    return;
+  }
+
+  myDeliveryBoyId = dbRow.id;
+
+  gate.innerHTML = `
+    <div class="card" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+      <div>
+        <h2 style="margin:0;">🛵 नमस्कार, ${dbRow.name}</h2>
+        <p class="muted" style="margin:4px 0 0;">तुम्हाला असाइन झालेल्या ऑर्डर्स</p>
+      </div>
+      <div style="display:flex; align-items:center; gap:14px;">
+        <button type="button" onclick="refreshEverything()" class="secondary" style="padding:6px 12px; font-size:12.5px; cursor:pointer;">🔄 सर्व रिफ्रेश करा</button>
+        <label style="display:flex; align-items:center; gap:6px; font-size:13px; font-weight:700;">
+          <input type="checkbox" id="availability-toggle" ${dbRow.is_available ? 'checked' : ''} onchange="toggleAvailability(this.checked)">
+          उपलब्ध आहे
+        </label>
+      </div>
+    </div>
+
+    <div id="earnings-summary" class="card" style="display:flex; gap:24px; margin-bottom:16px; padding:14px 18px;">
+      <div class="muted" style="font-size:13px;">लोड होत आहे...</div>
+    </div>
+
+    <div id="return-pickup-container"></div>
+
+    <div id="cash-ledger-container"></div>
+
+    <div style="display:flex; gap:8px; margin-bottom:14px;">
+      <button id="tab-active-btn" class="btn" onclick="switchDeliveryTab('active')">🚚 सक्रिय ऑर्डर्स</button>
+      <button id="tab-history-btn" class="secondary" onclick="switchDeliveryTab('history')">✅ पूर्ण झालेल्या डिलिव्हरी</button>
+    </div>
+
+    <div id="my-orders-container"></div>
+  `;
+
+  loadEarningsSummary();
+  loadReturnPickups();
+  loadCashLedger();
+  loadMyOrders();
+}
+
+async function loadReturnPickups() {
+  const container = document.getElementById('return-pickup-container');
+  if (!container) return;
+
+  const { data: pickups, error } = await sb
+    .from('orders')
+    .select('id, customer_name, customer_phone, delivery_address, pincode, items_summary, return_type, return_pickup_status, return_shop_otp, businesses(name, city)')
+    .eq('return_delivery_boy_id', myDeliveryBoyId)
+    .in('return_pickup_status', ['assigned', 'picked_up'])
+    .order('return_resolved_at', { ascending: false });
+
+  if (error || !pickups || pickups.length === 0) { container.innerHTML = ''; return; }
+
+  container.innerHTML = `
+    <div class="card" style="border:1px solid #fde68a; background:#fffbeb; margin-bottom:16px; padding:14px 16px;">
+      <h3 style="margin:0 0 10px; color:#92400e;">🔁 रिटर्न/रिप्लेस पिकअप</h3>
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        ${pickups.map(o => {
+          if (o.return_pickup_status === 'picked_up') {
+            return `
+            <div style="border:1px solid #86efac; border-radius:8px; padding:10px 12px; background:#f0fdf4;">
+              <div style="font-weight:800; font-size:13px;">${o.return_type === 'replace' ? '🔁 रिप्लेस' : '↩️ रिटर्न'} — माल तुमच्याकडे आहे</div>
+              <div style="font-size:13px; margin-top:4px;">🏪 ${o.businesses?.name || ''} कडे नेऊन द्या</div>
+              <div style="margin-top:8px; background:#fff; border:1px dashed #16a34a; padding:6px 10px; border-radius:5px; text-align:center;">
+                <span style="font-size:11px; color:#64748b;">दुकानदाराला सांगायचा OTP</span><br>
+                <strong style="font-size:18px; letter-spacing:3px; color:#16a34a;">${o.return_shop_otp || '-'}</strong>
+              </div>
+              ${!o.return_shop_otp ? `<button onclick="regenerateReturnShopOtp('${o.id}')" style="margin-top:6px; background:#0284c7; color:#fff; padding:5px 12px; font-size:12px; border:none; border-radius:5px; cursor:pointer; font-weight:700;">🔄 OTP दिसत नाहीये — पुन्हा तयार करा</button>` : ''}
+            </div>`;
+          }
+          return `
+          <div style="border:1px solid #fde68a; border-radius:8px; padding:10px 12px; background:#fff;">
+            <div style="font-weight:800; font-size:13px;">${o.return_type === 'replace' ? '🔁 रिप्लेस (नवीन वस्तू न्या + जुनी परत आणा)' : '↩️ फक्त रिटर्न (वस्तू परत आणा)'}</div>
+            <div style="font-size:13px; margin-top:4px;">🏪 ${o.businesses?.name || ''} → 👤 ${o.customer_name || 'ग्राहक'} · 📞 ${o.customer_phone || '-'}</div>
+            <div style="font-size:12.5px; color:#64748b;">📍 ${o.delivery_address || '-'} ${o.pincode || ''}</div>
+            <div style="font-size:12.5px; color:#475569; margin-top:3px;">🛒 ${o.items_summary || '-'}</div>
+            <div style="display:flex; gap:6px; align-items:center; margin-top:8px;">
+              <input type="text" id="return-pin-${o.id}" placeholder="ग्राहकाचा पिन" maxlength="6" inputmode="numeric" style="width:110px; margin-bottom:0;">
+              <button class="btn" onclick="confirmReturnPickup('${o.id}')">✅ वस्तू परत घेतली</button>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+  `;
+}
+
+async function confirmReturnPickup(orderId) {
+  const pin = document.getElementById(`return-pin-${orderId}`).value.trim();
+  if (!pin) { alert('कृपया ग्राहकाचा पिन टाका!'); return; }
+
+  const { data, error } = await sb.rpc('confirm_return_pickup', { p_order_id: orderId, p_pin: pin });
+  if (error) { alert('❌ ' + error.message); return; }
+
+  const shopOtp = data?.return_shop_otp;
+  alert(shopOtp
+    ? `✅ नोंदवलं!\n\nदुकानात माल परत देताना दुकानदाराला हा OTP सांगा:\n\n🔑 ${shopOtp}\n\n(हा OTP "माझ्याकडील रिटर्न पिकअप" खाली पुन्हा दिसेल.)`
+    : '✅ नोंदवलं!');
+  loadReturnPickups();
+}
+
+async function regenerateReturnShopOtp(orderId) {
+  const { data, error } = await sb.rpc('regenerate_return_shop_otp', { p_order_id: orderId });
+  if (error) { alert('❌ ' + error.message); return; }
+  alert(`✅ नवीन OTP: ${data}`);
+  loadReturnPickups();
+}
+
+async function loadEarningsSummary() {
+  const el = document.getElementById('earnings-summary');
+  if (!el) return;
+
+  const { data, error } = await sb
+    .from('orders')
+    .select('delivery_fee, delivered_at')
+    .eq('delivery_boy_id', myDeliveryBoyId)
+    .eq('status', 'delivered');
+
+  if (error || !data) { el.innerHTML = '<div class="muted" style="font-size:13px;">कमाई लोड करता आली नाही.</div>'; return; }
+
+  const totalEarned = data.reduce((sum, o) => sum + (Number(o.delivery_fee) || 0), 0);
+  const totalDeliveries = data.length;
+  const today = new Date().toDateString();
+  const todayEarned = data.filter(o => o.delivered_at && new Date(o.delivered_at).toDateString() === today)
+                           .reduce((sum, o) => sum + (Number(o.delivery_fee) || 0), 0);
+
+  el.innerHTML = `
+    <div><div style="font-size:11px; color:#64748b; font-weight:700;">एकूण डिलिव्हरी</div><div style="font-size:20px; font-weight:800; color:#0f172a;">${totalDeliveries}</div></div>
+    <div><div style="font-size:11px; color:#64748b; font-weight:700;">एकूण कमाई</div><div style="font-size:20px; font-weight:800; color:#16a34a;">₹${totalEarned}</div></div>
+    <div><div style="font-size:11px; color:#64748b; font-weight:700;">आजची कमाई</div><div style="font-size:20px; font-weight:800; color:#0284c7;">₹${todayEarned}</div></div>
+  `;
+}
+
+let currentDeliveryTab = 'active';
+
+function switchDeliveryTab(tab) {
+  currentDeliveryTab = tab;
+  document.getElementById('tab-active-btn').className = tab === 'active' ? 'btn' : 'secondary';
+  document.getElementById('tab-history-btn').className = tab === 'history' ? 'btn' : 'secondary';
+  if (tab === 'active') loadMyOrders();
+  else loadMyDeliveryHistory();
+}
+
+async function refreshEverything() {
+  await Promise.all([
+    loadEarningsSummary(),
+    loadReturnPickups(),
+    loadCashLedger(),
+    currentDeliveryTab === 'active' ? loadMyOrders() : loadMyDeliveryHistory()
+  ]);
+}
+
+async function toggleAvailability(checked) {
+  await sb.from('delivery_boys').update({ is_available: checked }).eq('id', myDeliveryBoyId);
+}
+
+async function loadMyOrders() {
+  const container = document.getElementById('my-orders-container');
+  const { data: orders, error } = await sb
+    .from('orders')
+    .select('id, customer_name, customer_phone, delivery_address, pincode, items_summary, total_amount, status, delivery_accepted_at, delivery_fee, businesses(name, city)')
+    .eq('delivery_boy_id', myDeliveryBoyId)
+    .not('status', 'in', '("delivered","rejected")')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    container.innerHTML = `<p style="color:red;">ऑर्डर्स लोड करताना अडचण: ${error.message}</p>`;
+    return;
+  }
+
+  if (!orders || orders.length === 0) {
+    container.innerHTML = '<div class="card" style="text-align:center; padding:30px; color:#64748b;">सध्या तुमच्याकडे कोणतीही सक्रिय ऑर्डर नाही.</div>';
+    return;
+  }
+
+  container.innerHTML = orders.map(o => {
+    const phoneClean = o.customer_phone ? o.customer_phone.replace(/\D/g, '') : '';
+    let nextAction = '';
+
+    if (!o.delivery_accepted_at) {
+      nextAction = `<button class="btn" onclick="acceptAssignment('${o.id}')" style="background:#16a34a;">✅ ही ऑर्डर स्वीकारा (Accept)</button>`;
+    } else if (o.status === 'packed' || o.status === 'accepted') {
+      nextAction = `
+        <div style="display:flex; gap:6px; align-items:center;">
+          <input type="text" id="pickup-otp-${o.id}" placeholder="दुकानदाराचा OTP" maxlength="6" inputmode="numeric" style="width:130px; margin-bottom:0;">
+          <button class="btn" onclick="confirmPickupFromShop('${o.id}')">🚚 पिकअप OTP टाका — रवाना करा</button>
+        </div>`;
+    } else if (o.status === 'dispatched') {
+      nextAction = `
+        <div style="display:flex; gap:6px; align-items:center;">
+          <input type="text" id="pin-${o.id}" placeholder="6-अंकी पिन" maxlength="6" inputmode="numeric" style="width:110px; margin-bottom:0;">
+          <button class="btn" onclick="confirmDelivery('${o.id}')">✅ डिलिव्हर केलं</button>
+        </div>`;
+    } else if (!o.status || o.status === 'pending') {
+      nextAction = `<p class="muted" style="font-size:12.5px; margin:0;">⏳ दुकानदार अजून ऑर्डर तयार करत आहे. पॅकिंग पूर्ण झाल्यावर इथे "रवाना करा" बटण दिसेल.</p>`;
+    }
+
+    const canReject = o.status !== 'dispatched' && o.status !== 'delivered';
+
+    return `
+      <div class="delivery-order-card">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+          <div>
+            <span class="status-pill status-${o.status || 'pending'}">${o.status || 'pending'}</span>
+            ${o.delivery_accepted_at ? '<span class="status-pill" style="background:#dcfce7; color:#15803d; margin-left:4px;">✅ स्वीकारली</span>' : '<span class="status-pill" style="background:#fee2e2; color:#b91c1c; margin-left:4px;">🆕 नवीन असाइनमेंट</span>'}
+            <div style="font-weight:800; margin-top:6px;">🏪 ${o.businesses?.name || 'दुकान'} ${o.businesses?.city ? '· ' + o.businesses.city : ''}</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-weight:800; color:#16a34a;">₹${o.total_amount || 0}</div>
+            ${o.delivery_fee ? `<div style="font-size:11px; color:#0284c7; font-weight:700;">🛵 माझं कमिशन: ₹${o.delivery_fee}</div>` : ''}
+          </div>
+        </div>
+        <div style="margin-top:10px;">
+          <div style="font-size:12px; font-weight:700; color:#334155;">📦 डिलिव्हर करायचे प्रॉडक्ट्स:</div>
+          <ul style="margin:4px 0 0; padding-left:20px; font-size:13px; color:#475569;">
+            ${(o.items_summary || '').split(',').map(x => x.trim()).filter(Boolean).map(x => `<li>${x}</li>`).join('') || '<li>-</li>'}
+          </ul>
+        </div>
+        <div style="margin-top:10px; font-size:13px;">
+          👤 ${o.customer_name || 'ग्राहक'} · 📞 ${o.customer_phone || '-'}
+          ${phoneClean ? `<a href="https://wa.me/91${phoneClean}" target="_blank" style="margin-left:8px;">💬 WhatsApp</a>` : ''}
+        </div>
+        <div style="font-size:13px; color:#64748b;">📍 ${o.delivery_address || '-'} ${o.pincode || ''}</div>
+        <div style="margin-top:12px; display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+          ${nextAction}
+          ${canReject ? `<button onclick="rejectAssignment('${o.id}')" style="background:none; border:1px solid #dc2626; color:#dc2626; padding:5px 10px; font-size:12px; border-radius:6px; cursor:pointer;">❌ ही डिलिव्हरी नाकारा</button>` : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+async function acceptAssignment(orderId) {
+  const { error } = await sb.from('orders').update({ delivery_accepted_at: new Date().toISOString() }).eq('id', orderId);
+  if (error) { alert('❌ ' + error.message); return; }
+  loadMyOrders();
+}
+
+async function rejectAssignment(orderId) {
+  if (!confirm('ही डिलिव्हरी नाकारायची का? ती दुकानदाराकडे पुन्हा असाइन करण्यासाठी परत जाईल.')) return;
+  const { error } = await sb.from('orders').update({ delivery_boy_id: null, delivery_accepted_at: null }).eq('id', orderId);
+  if (error) { alert('❌ ' + error.message); return; }
+  loadMyOrders();
+}
+
+async function loadMyDeliveryHistory() {
+  const container = document.getElementById('my-orders-container');
+  container.innerHTML = '<p class="muted" style="text-align:center; padding:20px;">लोड होत आहे...</p>';
+
+  const { data: orders, error } = await sb
+    .from('orders')
+    .select('id, customer_name, customer_phone, delivery_address, pincode, items_summary, total_amount, status, created_at, delivery_fee, businesses(name, city)')
+    .eq('delivery_boy_id', myDeliveryBoyId)
+    .eq('status', 'delivered')
+    .order('created_at', { ascending: false })
+    .limit(50);
+
+  if (error) {
+    container.innerHTML = `<p style="color:red;">इतिहास लोड करताना अडचण: ${error.message}</p>`;
+    return;
+  }
+
+  if (!orders || orders.length === 0) {
+    container.innerHTML = '<div class="card" style="text-align:center; padding:30px; color:#64748b;">अजून कुठलीही डिलिव्हरी पूर्ण झालेली नाही.</div>';
+    return;
+  }
+
+  container.innerHTML = orders.map(o => `
+    <div class="delivery-order-card">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+        <div>
+          <span class="status-pill status-delivered">✅ Delivered</span>
+          <div style="font-weight:800; margin-top:6px;">🏪 ${o.businesses?.name || 'दुकान'} ${o.businesses?.city ? '· ' + o.businesses.city : ''}</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-weight:800; color:#16a34a;">₹${o.total_amount || 0}</div>
+          ${o.delivery_fee ? `<div style="font-size:11px; color:#0284c7; font-weight:700;">🛵 कमिशन: ₹${o.delivery_fee}</div>` : ''}
+        </div>
+      </div>
+      <div style="margin-top:10px;">
+        <div style="font-size:12px; font-weight:700; color:#334155;">📦 डिलिव्हर केलेले प्रॉडक्ट्स:</div>
+        <ul style="margin:4px 0 0; padding-left:20px; font-size:13px; color:#475569;">
+          ${(o.items_summary || '').split(',').map(x => x.trim()).filter(Boolean).map(x => `<li>${x}</li>`).join('') || '<li>-</li>'}
+        </ul>
+      </div>
+      <div style="margin-top:10px; font-size:13px;">👤 ${o.customer_name || 'ग्राहक'} · 📞 ${o.customer_phone || '-'}</div>
+      <div style="font-size:12px; color:#94a3b8; margin-top:4px;">${o.created_at ? new Date(o.created_at).toLocaleDateString('mr-IN', { day:'2-digit', month:'short', year:'numeric' }) : ''}</div>
+    </div>
+  `).join('');
+}
+
+async function confirmPickupFromShop(orderId) {
+  const otp = document.getElementById(`pickup-otp-${orderId}`).value.trim();
+  if (!otp) { alert('कृपया दुकानदाराकडून OTP विचारून टाका!'); return; }
+
+  const { error } = await sb.rpc('confirm_pickup_from_shop', { p_order_id: orderId, p_otp: otp });
+  if (error) { alert('❌ ' + error.message); return; }
+
+  alert('✅ पिकअप कन्फर्म झाला — रवाना करा!');
+  loadMyOrders();
+}
+
+async function confirmDelivery(orderId) {
+  const inputPin = document.getElementById(`pin-${orderId}`).value.trim();
+  if (!inputPin) { alert('कृपया ग्राहकाचा पिन टाका!'); return; }
+
+  const { data: orderData } = await sb.from('orders').select('delivery_pin, payment_method, total_amount').eq('id', orderId).single();
+  if (!orderData || inputPin !== orderData.delivery_pin) {
+    alert('❌ चुकीचा पिन! कृपया ग्राहकाकडून पुन्हा विचारा.');
+    return;
+  }
+
+  await sb.from('orders').update({ status: 'delivered', delivered_at: new Date().toISOString() }).eq('id', orderId);
+
+  // 💵 रोख (Cash) घेतली का — फक्त हिशोबासाठी नोंद, पैसे प्लॅटफॉर्मवरून जात नाहीत
+  if (confirm(`ग्राहकाकडून रोख (Cash) घेतली का?\n\n"OK" = हो, रोख घेतली\n"Cancel" = नाही (आधीच ऑनलाइन पेमेंट झालेलं आहे)`)) {
+    const amountStr = prompt('किती रोख घेतली? (₹)', orderData.total_amount || '');
+    const amount = Number(amountStr);
+    if (amountStr && !isNaN(amount) && amount > 0) {
+      const { error: cashErr } = await sb.rpc('record_cash_collected', { p_order_id: orderId, p_amount: amount });
+      if (cashErr) console.error('Cash record error:', cashErr.message);
+    }
+  }
+
+  alert('🎉 डिलिव्हरी यशस्वीरित्या नोंदवली गेली!');
+  loadMyOrders();
+  loadCashLedger();
+}
+
+async function loadCashLedger() {
+  const container = document.getElementById('cash-ledger-container');
+  if (!container) return;
+
+  const { data: pending } = await sb.from('orders')
+    .select('id, business_id, cash_collected_amount, businesses(name)')
+    .eq('delivery_boy_id', myDeliveryBoyId)
+    .eq('cash_handover_status', 'pending_handover');
+
+  const { data: myHandovers } = await sb.from('cash_handovers')
+    .select('id, business_id, amount, otp, status')
+    .eq('delivery_boy_id', myDeliveryBoyId)
+    .eq('status', 'pending_confirmation');
+
+  const { data: recentlySettled } = await sb.from('cash_handovers')
+    .select('id, business_id, amount, confirmed_at')
+    .eq('delivery_boy_id', myDeliveryBoyId)
+    .eq('status', 'confirmed')
+    .order('confirmed_at', { ascending: false })
+    .limit(5);
+
+  if ((!pending || pending.length === 0) && (!myHandovers || myHandovers.length === 0) && (!recentlySettled || recentlySettled.length === 0)) {
+    container.innerHTML = '';
+    return;
+  }
+
+  // दुकाननिहाय गटवार करा
+  const groupByShop = (rows) => {
+    const map = {};
+    (rows || []).forEach(o => {
+      if (!map[o.business_id]) map[o.business_id] = { name: o.businesses?.name || 'दुकान', total: 0, count: 0 };
+      map[o.business_id].total += Number(o.cash_collected_amount) || 0;
+      map[o.business_id].count += 1;
+    });
+    return map;
+  };
+
+  const pendingByShop = groupByShop(pending);
+  const totalPending = Object.values(pendingByShop).reduce((s, v) => s + v.total, 0);
+
+  const businessIdsForHandovers = [...new Set([...(myHandovers || []).map(h => h.business_id), ...(recentlySettled || []).map(h => h.business_id)])];
+  const { data: shopNamesData } = businessIdsForHandovers.length
+    ? await sb.from('businesses').select('id, name').in('id', businessIdsForHandovers)
+    : { data: [] };
+  const shopNameMap = Object.fromEntries((shopNamesData || []).map(b => [b.id, b.name]));
+
+  container.innerHTML = `
+    <div class="card" style="border:1px solid #bae6fd; background:#f0f9ff; margin-bottom:16px; padding:14px 16px;">
+      <h3 style="margin:0 0 8px; color:#0369a1;">💵 माझ्याकडील रोख हिशोब (एकूण: ₹${totalPending})</h3>
+      <p class="muted" style="font-size:11.5px; margin:0 0 10px;">ही फक्त हिशोबाची नोंद आहे — पैसे तुमच्याकडेच असतात, तुम्ही ते थेट दुकानदाराला रोख द्यायचे आहेत.</p>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        ${Object.entries(pendingByShop).map(([bid, s]) => `
+          <div style="display:flex; justify-content:space-between; align-items:center; border:1px solid #bae6fd; border-radius:6px; padding:8px 12px; background:#fff;">
+            <div><strong>${s.name}</strong> <span class="muted" style="font-size:12px;">(${s.count} ऑर्डर्स)</span></div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <strong style="color:#0369a1;">₹${s.total}</strong>
+              <button onclick="handOverCash('${bid}')" style="background:#16a34a; color:#fff; padding:4px 10px; font-size:11.5px; border:none; border-radius:5px; cursor:pointer; font-weight:700;">✅ दुकानदाराला रोख दिली</button>
+            </div>
+          </div>
+        `).join('')}
+        ${(myHandovers || []).map(h => `
+          <div style="border:1px solid #86efac; border-radius:6px; padding:8px 12px; background:#f0fdf4;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <strong>${shopNameMap[h.business_id] || 'दुकान'}</strong>
+              <strong style="color:#16a34a;">₹${h.amount}</strong>
+            </div>
+            <div style="margin-top:4px; font-size:11.5px; color:#b45309; font-weight:700;">⏳ दुकानदाराच्या OTP-पडताळणीची वाट पाहत आहे</div>
+            <div style="margin-top:6px; background:#fff; border:1px dashed #16a34a; padding:5px 8px; border-radius:5px; text-align:center;">
+              <span style="font-size:10.5px; color:#64748b;">दुकानदाराला सांगायचा OTP</span><br>
+              <strong style="font-size:16px; letter-spacing:2px; color:#16a34a;">${h.otp}</strong>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+
+      ${recentlySettled && recentlySettled.length > 0 ? `
+        <div style="margin-top:14px; padding-top:10px; border-top:1px solid #bae6fd;">
+          <div style="font-size:12px; font-weight:700; color:#166534; margin-bottom:6px;">✅ अलीकडे सेटल झालेलं (दुकानदाराने कन्फर्म केलं)</div>
+          <div style="display:flex; flex-direction:column; gap:6px;">
+            ${recentlySettled.map(h => `
+              <div style="display:flex; justify-content:space-between; font-size:12px; color:#166534;">
+                <span>${shopNameMap[h.business_id] || 'दुकान'}</span>
+                <span>₹${h.amount} — ${h.confirmed_at ? new Date(h.confirmed_at).toLocaleString('mr-IN', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' }) : ''} ✅</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+async function handOverCash(businessId) {
+  if (!confirm('या दुकानाची सर्व प्रलंबित रोख आता द्यायला निघालात का? OTP तयार होईल — तो दुकानदाराला सांगा.')) return;
+  const { data, error } = await sb.rpc('initiate_cash_handover', { p_business_id: businessId });
+  if (error) { alert('❌ ' + error.message); return; }
+
+  alert(`✅ OTP तयार झाला — दुकानदाराला हा सांगा:\n\n🔑 ${data.otp}\n\nरक्कम: ₹${data.amount}`);
+  loadCashLedger();
+}
+
+document.addEventListener('DOMContentLoaded', initDeliveryPortal);
+</script>
+</body>
+</html>

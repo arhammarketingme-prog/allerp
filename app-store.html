@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2874f0">
+<title>App Store — Business Super Platform</title>
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+.app-hero {
+  background: linear-gradient(135deg, #1e3a8a, #2563eb);
+  color: #fff;
+  border-radius: 12px;
+  padding: 32px 24px;
+  margin-bottom: 20px;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(30,58,138,0.15);
+}
+.app-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+}
+.app-card-item {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.app-card-item:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+}
+.app-btn-action {
+  width: 100%;
+  border-radius: 8px;
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: opacity 0.2s, background 0.2s;
+}
+.app-btn-action:hover {
+  opacity: 0.9;
+}
+</style>
+</head>
+<body>
+<nav id="app-nav"></nav>
+
+<main class="container page-ad-frame">
+  <!-- 1. TOP AD SLOT -->
+  <div id="ad-slot-app-top" class="ad-slot-banner"></div>
+
+  <div class="center-with-side-ads">
+    <!-- 2. LEFT SIDE AD SLOT -->
+    <aside class="ad-side-column">
+      <div class="ad-side-card">
+        <div class="side-ad-title">Sponsored</div>
+        <div id="ad-slot-app-left"></div>
+      </div>
+    </aside>
+
+    <!-- CENTER CONTENT -->
+    <div class="main-center-content">
+      <div class="app-hero">
+        <div style="font-size:12px; font-weight:800; letter-spacing:1px; color:#ffe500; margin-bottom:8px;">🧩 ALL ERP EXTENSIBILITY STORE</div>
+        <h1 style="margin:0 0 8px 0; font-size:26px;">Business App Marketplace</h1>
+        <p style="margin:0 auto; max-width:600px; font-size:13.5px; color:#cbd5e1;">Extend your local store or enterprise ERP with plug-and-play modules like WhatsApp automation, advanced GST filing, and inventory management.</p>
+      </div>
+
+      <div style="display:flex; gap:12px; margin-bottom:16px; flex-wrap:wrap; align-items:center;">
+        <input id="search-box" placeholder="🔍 Search apps..." style="flex:2; margin-bottom:0; border-radius:8px; padding:9px 12px; border:1px solid #cbd5e1;">
+        <select id="category-filter" style="flex:1; margin-bottom:0; border-radius:8px; padding:9px 12px; border:1px solid #cbd5e1;">
+          <option value="">All Categories</option>
+        </select>
+      </div>
+
+      <div id="my-business-picker" class="card" style="display:none; background:#f8fafc; border-color:#cbd5e1; margin-bottom:16px; padding:14px; border-radius:10px;">
+        <label style="font-weight:700; color:#0f172a; display:block; margin-bottom:6px;">🏪 Install apps into which business?</label>
+        <select id="business-select" style="font-weight:700; color:#2563eb; margin-bottom:0; border-radius:8px; padding:8px; width:100%; border:1px solid #cbd5e1;"></select>
+      </div>
+
+      <div id="apps-grid" class="app-grid"><p class="muted">Loading apps...</p></div>
+    </div>
+
+    <!-- 3. RIGHT SIDE AD SLOT -->
+    <aside class="ad-side-column">
+      <div class="ad-side-card">
+        <div class="side-ad-title">Featured</div>
+        <div id="ad-slot-app-right"></div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- 4. BOTTOM AD SLOT -->
+  <div id="ad-slot-app-bottom" class="ad-slot-banner" style="margin-top:20px"></div>
+</main>
+
+<script src="js/supabase-client.js"></script>
+<script src="js/cart.js"></script>
+<script src="js/nav.js"></script>
+<script src="js/ads.js"></script>
+<script>
+let myBusinesses = [];
+let myInstalledAppIds = new Set();
+
+async function init() {
+  const { data: { user } } = await sb.auth.getUser();
+
+  if (user) {
+    const { data: businesses } = await sb.from('businesses').select('id, name').eq('owner_id', user.id);
+    myBusinesses = businesses ?? [];
+    if (myBusinesses.length > 0) {
+      document.getElementById('my-business-picker').style.display = 'block';
+      const select = document.getElementById('business-select');
+      select.innerHTML = myBusinesses.map(b => `<option value="${b.id}">${b.name}</option>`).join('');
+      select.addEventListener('change', loadInstalledApps);
+      await loadInstalledApps();
+    }
+  }
+
+  await loadCategories();
+  await loadApps();
+}
+
+async function loadInstalledApps() {
+  const businessId = document.getElementById('business-select').value;
+  if (!businessId) return;
+  const { data } = await sb.from('app_installations').select('app_id, is_enabled').eq('business_id', businessId);
+  myInstalledAppIds = new Set((data ?? []).filter(i => i.is_enabled).map(i => i.app_id));
+  await loadApps();
+}
+
+async function loadCategories() {
+  const { data } = await sb.from('apps').select('category').eq('is_published', true);
+  const categories = [...new Set((data ?? []).map(a => a.category).filter(Boolean))];
+  const select = document.getElementById('category-filter');
+  select.innerHTML = '<option value="">All Categories</option>' + categories.map(c => `<option value="${c}">${c}</option>`).join('');
+}
+
+async function loadApps() {
+  const container = document.getElementById('apps-grid');
+  container.innerHTML = '<p class="muted">Loading...</p>';
+
+  const searchTerm = document.getElementById('search-box').value;
+  const category = document.getElementById('category-filter').value;
+
+  let query = sb
+    .from('apps')
+    .select('id, name, category, description, pricing_model, price, icon_url, developers!inner(is_verified, company_name)')
+    .eq('is_published', true)
+    .eq('developers.is_verified', true);
+
+  if (searchTerm) query = query.ilike('name', `%${searchTerm}%`);
+  if (category) query = query.eq('category', category);
+
+  const { data: apps, error } = await query;
+
+  if (error) { container.innerHTML = `<p class="error-text">${error.message}</p>`; return; }
+  if (!apps || apps.length === 0) { container.innerHTML = '<div class="card" style="grid-column:1/-1; text-align:center; padding:30px;"><p class="muted">No apps found.</p></div>'; return; }
+
+  const businessId = document.getElementById('business-select')?.value;
+
+  container.innerHTML = apps.map(a => `
+    <div class="app-card-item">
+      <div>
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+          ${a.icon_url ? `<img src="${a.icon_url}" style="width:42px; height:42px; border-radius:8px; object-fit:cover;">` : '<div style="width:42px; height:42px; background:#eff6ff; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:20px;">🧩</div>'}
+          <div>
+            <h3 style="margin:0; font-size:15px; color:#1e293b;">${a.name}</h3>
+            <div class="muted" style="font-size:11px;">${a.category} · by ${a.developers?.company_name ?? 'Developer'}</div>
+          </div>
+        </div>
+        <p style="font-size:12.5px; color:#475569; margin:6px 0; line-height:1.4;">${a.description ?? ''}</p>
+      </div>
+      <div>
+        <div style="font-weight:800; font-size:13.5px; color:#16a34a; margin:8px 0;">${a.pricing_model === 'free' ? 'Free' : (a.price ? '₹' + a.price : a.pricing_model)}</div>
+        ${businessId
+          ? (myInstalledAppIds.has(a.id)
+              ? `<button class="btn secondary uninstall-btn app-btn-action" data-app="${a.id}">✓ Installed — Remove</button>`
+              : `<button class="btn install-btn app-btn-action" data-app="${a.id}" style="background:#2563eb; color:#fff;">Install App</button>`)
+          : `<p class="muted" style="font-size:11.5px; margin-top:6px;">${myBusinesses.length === 0 ? 'Create business first' : 'Select business above'}</p>`}
+      </div>
+    </div>
+  `).join('');
+
+  container.querySelectorAll('.install-btn').forEach(btn => btn.addEventListener('click', async (e) => {
+    const businessId = document.getElementById('business-select').value;
+    await sb.from('app_installations').upsert(
+      { app_id: e.target.dataset.app, business_id: businessId, is_enabled: true },
+      { onConflict: 'app_id,business_id' }
+    );
+    await loadInstalledApps();
+  }));
+  container.querySelectorAll('.uninstall-btn').forEach(btn => btn.addEventListener('click', async (e) => {
+    const businessId = document.getElementById('business-select').value;
+    await sb.from('app_installations').update({ is_enabled: false }).eq('app_id', e.target.dataset.app).eq('business_id', businessId);
+    await loadInstalledApps();
+  }));
+}
+
+document.getElementById('search-box').addEventListener('input', () => {
+  clearTimeout(window._t);
+  window._t = setTimeout(loadApps, 300);
+});
+document.getElementById('category-filter').addEventListener('change', loadApps);
+
+init();
+
+// Render 4 distinct ad slots
+renderMultiAdSlots([
+  { id: 'ad-slot-app-top', placement: 'top' },
+  { id: 'ad-slot-app-left', placement: 'left' },
+  { id: 'ad-slot-app-right', placement: 'right' },
+  { id: 'ad-slot-app-bottom', placement: 'bottom' }
+]);
+</script>
+</body>
+</html>

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2874f0">
+<title>Wishlist — Business Super Platform</title>
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  /* 🌟 विशलिस्ट पेज प्रगत फिनिशिंग व ॲनिमेशन्स */
+  .grid .card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .grid .card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+  }
+  .grid .card img {
+    border-radius: 8px;
+    object-fit: cover;
+    max-height: 160px;
+    width: 100%;
+  }
+  .remove-wishlist-btn {
+    transition: background 0.2s;
+  }
+  .remove-wishlist-btn:hover {
+    background: #fee2e2;
+    color: #dc2626;
+  }
+</style>
+</head>
+<body>
+<nav id="app-nav"></nav>
+
+<main class="container" style="max-width: 1100px; margin-top: 24px;">
+  <div style="margin-bottom: 20px;">
+    <h1 style="margin: 0 0 4px 0; font-size: 26px; color: #1e293b;">❤️ माझी आवडती उत्पादने (My Wishlist)</h1>
+    <p class="muted" style="font-size: 13.5px; margin: 0;">तुम्ही सेव्ह केलेल्या सर्व उत्पादनांची यादी एकाच ठिकाणी.</p>
+  </div>
+  <div id="wishlist-items" class="grid"><p class="muted">Loading...</p></div>
+</main>
+
+<script src="js/supabase-client.js"></script>
+<script src="js/cart.js"></script>
+<script src="js/nav.js"></script>
+<script>
+async function loadWishlistPage() {
+  const { data: { user } } = await sb.auth.getUser();
+  const container = document.getElementById('wishlist-items');
+
+  if (!user) {
+    container.innerHTML = `<div class="card" style="grid-column:1/-1; text-align:center; padding:30px;"><p class="muted">विशलिस्ट पाहण्यासाठी कृपया आधी <a href="login.html" style="color:#2563eb; font-weight:700;">Log In (लॉगिन)</a> करा.</p></div>`;
+    return;
+  }
+
+  const { data: items } = await sb
+    .from('wishlists')
+    .select('id, business_product_id, business_products(name, selling_price, unit, image_url, marketplace_visible, businesses(name, slug))')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false });
+
+  if (!items || items.length === 0) {
+    container.innerHTML = `<div class="card" style="grid-column:1/-1; text-align:center; padding:40px;"><p class="muted">तुमची विशलिस्ट सध्या रिकामी आहे. <a href="index.html" style="color:#2563eb; font-weight:700;">मार्केटप्लेसवर</a> जाऊन आवडत्या प्रॉडक्ट्सवर ♡ टॅप करा.</p></div>`;
+    return;
+  }
+
+  container.innerHTML = items.map(w => {
+    const p = w.business_products;
+    if (!p) return '';
+    return `
+      <div class="card" style="padding:16px;">
+        <div>
+          ${p.image_url ? `<img src="${p.image_url}" alt="${p.name}">` : ''}
+          <h3 style="font-size:15px; margin:10px 0 2px; color:#1e293b;">${p.name}</h3>
+          <div class="muted" style="font-size:13px">🏪 ${p.businesses?.name ?? ''}</div>
+          <div style="font-weight:800; margin-top:6px; font-size:16px; color:#0f172a;">₹${p.selling_price} <span style="font-size:12px; font-weight:normal;" class="muted">/ ${p.unit}</span></div>
+          ${!p.marketplace_visible ? `<div class="badge hidden" style="margin-top:6px; background:#fef2f2; color:#dc2626; padding:2px 6px; border-radius:4px; font-size:11px; display:inline-block;">Currently unavailable</div>` : ''}
+        </div>
+        <div style="display:flex; gap:8px; margin-top:12px">
+          <a class="btn" href="product.html?name=${encodeURIComponent(p.name)}" style="font-size:13px; padding:7px 12px; background:#2563eb; color:#fff; text-decoration:none; border-radius:6px; font-weight:700; text-align:center; flex:1;">पहा (View)</a>
+          <button class="secondary remove-wishlist-btn" data-id="${w.id}" style="font-size:13px; padding:7px 12px; border-radius:6px; font-weight:700; cursor:pointer;">काढून टाका</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  container.querySelectorAll('.remove-wishlist-btn').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      await sb.from('wishlists').delete().eq('id', e.target.dataset.id);
+      loadWishlistPage();
+    });
+  });
+}
+
+loadWishlistPage();
+</script>
+</body>
+</html>
