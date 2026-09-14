@@ -85,6 +85,8 @@ async function initDeliveryPortal() {
 
     <div id="return-pickup-container"></div>
 
+    <div id="available-deliveries-container"></div>
+
     <div id="cash-ledger-container"></div>
 
     <div style="display:flex; gap:8px; margin-bottom:14px;">
@@ -97,6 +99,7 @@ async function initDeliveryPortal() {
 
   loadEarningsSummary();
   loadReturnPickups();
+  loadAvailableDeliveries();
   loadCashLedger();
   loadMyOrders();
 }
@@ -208,9 +211,52 @@ async function refreshEverything() {
   await Promise.all([
     loadEarningsSummary(),
     loadReturnPickups(),
+    loadAvailableDeliveries(),
     loadCashLedger(),
     currentDeliveryTab === 'active' ? loadMyOrders() : loadMyDeliveryHistory()
   ]);
+}
+
+// 🆕 Platform Delivery pool — अजून कोणीही न स्वीकारलेल्या ऑर्डर्स दाखवणे
+// (आधी हा भाग पूर्णपणे गायब होता — "Platform Delivery" निवडलेली ऑर्डर
+// कधीच कुठल्याही डिलिव्हरी बॉयला दिसायची नाही)
+async function loadAvailableDeliveries() {
+  const container = document.getElementById('available-deliveries-container');
+  const { data, error } = await sb.rpc('get_available_platform_deliveries');
+
+  if (error) { container.innerHTML = ''; console.warn('Available deliveries error:', error); return; }
+  if (!data || data.length === 0) { container.innerHTML = ''; return; }
+
+  container.innerHTML = `
+    <div class="card" style="border:2px solid #f59e0b; margin-bottom:16px;">
+      <h3 style="margin-top:0; color:#92400e;">🆕 उपलब्ध Platform Deliveries (${data.length})</h3>
+      ${data.map(o => `
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid #fef3c7;">
+          <div>
+            <strong>🏪 ${escapeHtmlDB(o.business_name)}</strong> <span class="muted" style="font-size:12px;">(${escapeHtmlDB(o.business_city || '')})</span><br>
+            <span class="muted" style="font-size:12px;">₹${o.total_amount} · ${new Date(o.created_at).toLocaleString('mr-IN')}</span>
+          </div>
+          <button type="button" onclick="claimDelivery('${o.order_id}')" style="background:#16a34a; color:#fff; border:none; padding:8px 14px; border-radius:6px; cursor:pointer; font-weight:700;">✓ स्वीकार करा</button>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+async function claimDelivery(orderId) {
+  const { data: claimed, error } = await sb.rpc('claim_platform_delivery', { p_order_id: orderId });
+  if (error) { alert('त्रुटी: ' + error.message); return; }
+  if (!claimed) {
+    alert('माफ करा, ही ऑर्डर आत्ताच दुसऱ्या डिलिव्हरी बॉयने स्वीकारली.');
+  } else {
+    alert('✅ ऑर्डर स्वीकारली! "सक्रिय ऑर्डर्स" मध्ये दिसेल.');
+  }
+  await refreshEverything();
+}
+
+function escapeHtmlDB(str) {
+  if (!str) return '';
+  return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 }
 
 async function toggleAvailability(checked) {
