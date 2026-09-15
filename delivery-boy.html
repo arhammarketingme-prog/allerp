@@ -413,17 +413,16 @@ async function confirmDelivery(orderId) {
   const inputPin = document.getElementById(`pin-${orderId}`).value.trim();
   if (!inputPin) { alert('कृपया ग्राहकाचा पिन टाका!'); return; }
 
-  const { data: orderData } = await sb.from('orders').select('delivery_pin, payment_method, total_amount').eq('id', orderId).single();
-  if (!orderData || inputPin !== orderData.delivery_pin) {
-    alert('❌ चुकीचा पिन! कृपया ग्राहकाकडून पुन्हा विचारा.');
-    return;
-  }
+  // 🔒 आता पिन सर्व्हरवरच तपासला जातो — खरा पिन कधीच ब्राउझरला पाठवला जात
+  // नाही (आधी थेट select करून client-side compare व्हायचं, जे असुरक्षित होतं)
+  const { error } = await sb.rpc('confirm_delivery', { p_order_id: orderId, p_pin: inputPin });
+  if (error) { alert('❌ ' + error.message); return; }
 
-  await sb.from('orders').update({ status: 'delivered', delivered_at: new Date().toISOString() }).eq('id', orderId);
+  const { data: orderData } = await sb.from('orders').select('payment_method, total_amount').eq('id', orderId).single();
 
   // 💵 रोख (Cash) घेतली का — फक्त हिशोबासाठी नोंद, पैसे प्लॅटफॉर्मवरून जात नाहीत
   if (confirm(`ग्राहकाकडून रोख (Cash) घेतली का?\n\n"OK" = हो, रोख घेतली\n"Cancel" = नाही (आधीच ऑनलाइन पेमेंट झालेलं आहे)`)) {
-    const amountStr = prompt('किती रोख घेतली? (₹)', orderData.total_amount || '');
+    const amountStr = prompt('किती रोख घेतली? (₹)', orderData?.total_amount || '');
     const amount = Number(amountStr);
     if (amountStr && !isNaN(amount) && amount > 0) {
       const { error: cashErr } = await sb.rpc('record_cash_collected', { p_order_id: orderId, p_amount: amount });
