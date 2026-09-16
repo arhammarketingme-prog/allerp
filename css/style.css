@@ -851,3 +851,105 @@ body {
     padding: 4px 0 6px 0 !important;
   }
 }
+
+/* ==========================================================
+   ALL ERP — MODERN 2026 UI REFRESH
+   Premium, clean, mobile-first marketplace + ERP visual layer.
+   Functional classes/IDs are preserved; this layer changes presentation only.
+   ========================================================== */
+:root {
+  --primary: #5b5ce2 !important;
+  --primary-dark: #4647c7 !important;
+  --secondary: #111827 !important;
+  --secondary-dark: #0b1220 !important;
+  --accent: #10b981 !important;
+  --bg: #f6f7fb !important;
+  --card: rgba(255,255,255,.94) !important;
+  --border: #e7e9f2 !important;
+  --text: #151827 !important;
+  --muted: #6b7280 !important;
+  --shadow-sm: 0 4px 16px rgba(17,24,39,.06) !important;
+  --shadow-md: 0 14px 40px rgba(17,24,39,.11) !important;
+  --radius: 16px !important;
+}
+
+body { background: radial-gradient(circle at 10% 0%, #eef0ff 0, transparent 28%), var(--bg) !important; color: var(--text) !important; }
+
+#app-nav {
+  min-height: 64px !important;
+  padding: 10px clamp(14px,3vw,34px) !important;
+  background: rgba(17,24,39,.94) !important;
+  backdrop-filter: blur(18px) saturate(140%) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(140%) !important;
+  border-bottom: 1px solid rgba(255,255,255,.08) !important;
+  box-shadow: 0 8px 28px rgba(15,23,42,.14) !important;
+}
+#app-nav .brand { font-size: 22px !important; font-style: normal !important; letter-spacing: -.8px !important; }
+.brand-tagline { color: #c7c9ff !important; }
+#app-nav .nav-links { gap: 6px !important; }
+#app-nav .nav-links a { border-radius: 10px !important; padding: 8px 11px !important; }
+#app-nav .nav-links a:hover { background: rgba(255,255,255,.10) !important; }
+
+.container { width: min(94%, 1500px) !important; max-width: 1500px !important; padding: 18px 4px !important; }
+.page-ad-frame { padding-top: 10px !important; }
+
+.sticky-marketplace-header {
+  top: 64px !important;
+  background: rgba(246,247,251,.88) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border-bottom: 1px solid rgba(231,233,242,.8) !important;
+  box-shadow: 0 10px 24px rgba(17,24,39,.06) !important;
+}
+
+.category-row { gap: 10px !important; padding: 8px 2px 12px !important; }
+.category-chip { border-radius: 999px !important; border-color: #e4e6f0 !important; padding: 8px 15px !important; background: rgba(255,255,255,.9) !important; box-shadow: 0 3px 10px rgba(17,24,39,.05) !important; }
+.category-chip:hover, .category-chip.active { background: #eef0ff !important; border-color: #c8c9ff !important; color: #4b4dcc !important; }
+
+.grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)) !important; gap: 18px !important; }
+.card {
+  border: 1px solid rgba(231,233,242,.95) !important;
+  border-radius: 18px !important;
+  padding: 12px !important;
+  box-shadow: 0 5px 18px rgba(17,24,39,.055) !important;
+  transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease !important;
+}
+.card:hover { transform: translateY(-5px) !important; box-shadow: 0 18px 42px rgba(17,24,39,.12) !important; border-color: #d8daf0 !important; }
+.card-img-wrapper { border-radius: 14px !important; background: linear-gradient(145deg,#f8f9ff,#f2f4f8) !important; }
+
+.btn, button { border-radius: 11px !important; font-weight: 700 !important; transition: transform .18s ease, box-shadow .18s ease, opacity .18s ease !important; }
+.btn:hover, button:hover { transform: translateY(-1px); }
+input, select, textarea { border-radius: 11px !important; border-color: #dfe2ec !important; min-height: 42px; }
+input:focus, select:focus, textarea:focus { outline: none !important; border-color: #8b8ce9 !important; box-shadow: 0 0 0 4px rgba(91,92,226,.11) !important; }
+
+.kpi-card { border-radius: 18px !important; border: 1px solid #e7e9f2 !important; box-shadow: var(--shadow-sm) !important; background: rgba(255,255,255,.92) !important; }
+.kpi-value { letter-spacing: -.5px !important; }
+.modal-content { border-radius: 22px !important; border: 1px solid #e7e9f2 !important; box-shadow: 0 30px 80px rgba(15,23,42,.20) !important; }
+.badge, .status-pill, .rating-badge { border-radius: 999px !important; }
+
+.ad-slot-banner, .ad-side-card { border-radius: 16px !important; border-color: #e7e9f2 !important; box-shadow: 0 5px 18px rgba(17,24,39,.05) !important; }
+.reel-card { border-radius: 16px !important; box-shadow: 0 10px 25px rgba(15,23,42,.14) !important; }
+
+.mobile-bottom-bar { height: 66px !important; border-top: 1px solid #e7e9f2 !important; background: rgba(255,255,255,.94) !important; backdrop-filter: blur(18px) !important; box-shadow: 0 -8px 30px rgba(15,23,42,.08) !important; }
+.bottom-nav-item { font-size: 10.5px !important; }
+.bottom-nav-icon { font-size: 19px !important; }
+
+/* Remove the old dense marquee feel; keep it usable as an offer strip. */
+#global-full-marquee-strip { background: linear-gradient(90deg,#171a2b,#292d55) !important; border-bottom: 0 !important; box-shadow: 0 6px 18px rgba(17,24,39,.12) !important; }
+
+@media (max-width: 768px) {
+  #app-nav { min-height: 56px !important; padding: 8px 12px !important; }
+  #app-nav .brand { font-size: 19px !important; }
+  .brand-tagline { display:none !important; }
+  .nav-links > a:not(:last-child) { display:none !important; }
+  .container { width: 96% !important; padding-top: 10px !important; }
+  .sticky-marketplace-header { top: 56px !important; }
+  .grid { grid-template-columns: repeat(2, minmax(0,1fr)) !important; gap: 10px !important; }
+  .card { border-radius: 14px !important; padding: 8px !important; }
+  .card-img-wrapper { border-radius: 11px !important; }
+  .search-filter-row { gap: 7px !important; }
+}
+
+@media (min-width: 769px) {
+  .main-center-content { min-width: 0; }
+}
