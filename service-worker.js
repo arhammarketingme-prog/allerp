@@ -1,5 +1,5 @@
 // Service Worker for ALL ERP PWA Offline Capabilities
-const CACHE_NAME = 'allerp-cache-v2';
+const CACHE_NAME = 'allerp-cache-v3';
 const ASSETS_TO_CACHE = [
   'index.html',
   'dashboard.html',
@@ -9,7 +9,10 @@ const ASSETS_TO_CACHE = [
   'js/cart.js',
   'js/nav.js',
   'js/ads.js',
-  'manifest.json'
+  'manifest.json',
+  'js/pwa.js',
+  'icons/icon-192.png',
+  'icons/icon-512.png'
 ];
 
 self.addEventListener('install', (e) => {
