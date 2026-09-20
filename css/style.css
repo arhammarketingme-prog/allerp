@@ -1,17 +1,17 @@
 :root {
-  --primary: #fb641b;
-  --primary-dark: #e85515;
-  --secondary: #2874f0;
-  --secondary-dark: #1259c7;
-  --accent: #388e3c;
-  --bg: #f1f3f6;
+  --primary: #E8952F;
+  --primary-dark: #C97815;
+  --secondary: #1D4E89;
+  --secondary-dark: #143A66;
+  --accent: #1F8A5F;
+  --bg: #F7F5F1;
   --card: #ffffff;
-  --border: #e0e0e0;
-  --text: #212121;
-  --muted: #878787;
-  --shadow-sm: 0 1px 4px rgba(0,0,0,0.08);
-  --shadow-md: 0 3px 12px rgba(0,0,0,0.1);
-  --radius: 8px;
+  --border: #e5e1d8;
+  --text: #1E2430;
+  --muted: #7A7568;
+  --shadow-sm: 0 1px 4px rgba(30,36,48,0.08);
+  --shadow-md: 0 3px 14px rgba(30,36,48,0.12);
+  --radius: 10px;
 }
 
 * { box-sizing: border-box !important; -webkit-tap-highlight-color: transparent; }
@@ -186,7 +186,7 @@ body {
   padding-top: 6px;
 }
 
-/* Flipkart / Meesho Style Product Card */
+/* मूळ प्रॉडक्ट कार्ड डिझाईन */
 .card {
   background: #ffffff;
   border: 1px solid #eaeaea;
@@ -443,7 +443,7 @@ th { background: #f8fafc; font-weight: 700; color: #475569; }
 }
 
 /* ==========================================================
-   MOBILE-FIRST (FLIPKART / MEESHO GRADE)
+   MOBILE-FIRST रचना — व्यावसायिक दर्जाची
    ========================================================== */
 
 @media (max-width: 768px) {
@@ -563,29 +563,28 @@ th { background: #f8fafc; font-weight: 700; color: #475569; }
 
 
 /* ==========================================================
-   AUTHENTIC AMAZON / FLIPKART DESKTOP & MOBILE UI PERFECTION
+   प्रॉडक्ट कार्ड्स, बटणं आणि बॅजेस — मूळ ब्रँड रंगसंगती
    ========================================================== */
 
-/* Amazon-Style Quad & Product Cards */
 .card {
   background: #ffffff !important;
-  border: 1px solid #e3e6e6 !important;
-  border-radius: 8px !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius) !important;
   padding: 14px !important;
   display: flex !important;
   flex-direction: column !important;
   justify-content: space-between !important;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.06) !important;
+  box-shadow: 0 1px 3px rgba(30,36,48,0.06) !important;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
 .card:hover {
-  box-shadow: 0 6px 18px rgba(0,0,0,0.12) !important;
+  box-shadow: 0 6px 18px rgba(30,36,48,0.12) !important;
   transform: translateY(-3px) !important;
-  border-color: #007185 !important;
+  border-color: var(--secondary) !important;
 }
 
-/* Amazon Clean Card Images */
+/* Clean Card Images */
 .card-img-wrapper {
   position: relative !important;
   width: 100% !important;
@@ -614,7 +613,7 @@ th { background: #f8fafc; font-weight: 700; color: #475569; }
   transform: scale(1.05) !important;
 }
 
-/* Amazon Pricing Style */
+/* किंमत दाखवण्याची पद्धत */
 .price-row {
   display: flex !important;
   align-items: baseline !important;
@@ -625,63 +624,63 @@ th { background: #f8fafc; font-weight: 700; color: #475569; }
 .selling-price {
   font-size: 19px !important;
   font-weight: 800 !important;
-  color: #0f1111 !important;
+  color: var(--text) !important;
 }
 
 .original-price {
   font-size: 13px !important;
-  color: #565959 !important;
+  color: var(--muted) !important;
   text-decoration: line-through !important;
 }
 
 .discount-badge {
   font-size: 12px !important;
-  color: #cc0c39 !important;
+  color: #D6334A !important;
   font-weight: 700 !important;
 }
 
-/* Amazon Yellow / Orange Primary Buttons */
+/* मुख्य (Primary) बटणं */
 .btn, button {
-  background: #ffd814 !important;
-  color: #0f1111 !important;
-  border: 1px solid #fcd200 !important;
+  background: var(--primary) !important;
+  color: #ffffff !important;
+  border: 1px solid var(--primary-dark) !important;
   border-radius: 8px !important;
-  box-shadow: 0 2px 5px rgba(213,217,217,0.5) !important;
+  box-shadow: 0 2px 5px rgba(30,36,48,0.15) !important;
   font-weight: 700 !important;
   cursor: pointer !important;
   transition: all 0.15s ease !important;
 }
 
 .btn:hover, button:hover {
-  background: #f7ca00 !important;
-  border-color: #f2c200 !important;
+  background: var(--primary-dark) !important;
+  border-color: var(--primary-dark) !important;
 }
 
 .btn.secondary, button.secondary {
   background: #ffffff !important;
-  color: #0f1111 !important;
-  border: 1px solid #d5d9d9 !important;
-  box-shadow: 0 2px 5px rgba(213,217,217,0.5) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: 0 2px 5px rgba(30,36,48,0.08) !important;
 }
 
 .btn.secondary:hover, button.secondary:hover {
-  background: #f7fafa !important;
-  border-color: #d5d9d9 !important;
+  background: #F7F5F1 !important;
+  border-color: var(--border) !important;
 }
 
-/* In-Grid Sponsored Big Amazon Ad Card */
+/* ग्रिडमधली Sponsored प्रॉडक्ट टाइल */
 .in-grid-sponsored-card {
   background: #ffffff !important;
-  border: 2px solid #007185 !important;
+  border: 2px solid var(--secondary) !important;
 }
 
 .in-grid-sponsored-card .btn {
-  background: #ffa41c !important;
-  border-color: #ff8f00 !important;
+  background: var(--secondary) !important;
+  border-color: var(--secondary-dark) !important;
 }
 
 .in-grid-sponsored-card .btn:hover {
-  background: #fa8900 !important;
+  background: var(--secondary-dark) !important;
 }
 
 @media (max-width: 768px) {
@@ -696,10 +695,10 @@ th { background: #f8fafc; font-weight: 700; color: #475569; }
 
 
 /* ==========================================================
-   MEESHO-GRADE AESTHETICS (STORY AVATARS, MALL BADGES, CLEAN CARDS)
+   कॅटेगरी स्टोरीज, बॅजेस — मूळ रचना
    ========================================================== */
 
-/* 1. Meesho Category Story Avatars */
+/* १. कॅटेगरी स्टोरी-स्टाईल आयकॉन्स */
 .category-row {
   display: flex !important;
   gap: 16px !important;
@@ -727,27 +726,27 @@ th { background: #f8fafc; font-weight: 700; color: #475569; }
   width: 58px !important;
   height: 58px !important;
   border-radius: 50% !important;
-  background: linear-gradient(135deg, #fdf2f8, #f0fdf4) !important;
-  border: 2px solid #e0e7ff !important;
+  background: linear-gradient(135deg, #FDF3E7, #EAF6F3) !important;
+  border: 2px solid var(--border) !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
   font-size: 26px !important;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.06) !important;
+  box-shadow: 0 2px 6px rgba(30,36,48,0.08) !important;
   margin-bottom: 4px !important;
   transition: border-color 0.15s ease !important;
 }
 
 .meesho-cat-card:hover .meesho-cat-avatar,
 .meesho-cat-card.active .meesho-cat-avatar {
-  border-color: #2874f0 !important;
-  background: #eff6ff !important;
+  border-color: var(--secondary) !important;
+  background: #EEF3F9 !important;
 }
 
 .meesho-cat-name {
   font-size: 11.5px !important;
   font-weight: 700 !important;
-  color: #334155 !important;
+  color: var(--text) !important;
   text-align: center !important;
   max-width: 72px !important;
   white-space: nowrap !important;
@@ -755,9 +754,9 @@ th { background: #f8fafc; font-weight: 700; color: #475569; }
   text-overflow: ellipsis !important;
 }
 
-/* 2. Meesho Mall Badge */
+/* २. मॉल/व्हेरिफाईड बॅज */
 .meesho-mall-badge {
-  background: #3b82f6 !important;
+  background: var(--secondary) !important;
   color: #ffffff !important;
   font-size: 9.5px !important;
   font-weight: 800 !important;
@@ -766,9 +765,9 @@ th { background: #f8fafc; font-weight: 700; color: #475569; }
   letter-spacing: 0.3px !important;
 }
 
-/* 3. Rating Badge */
+/* ३. रेटिंग बॅज */
 .rating-badge {
-  background: #16a34a !important;
+  background: var(--accent) !important;
   color: #ffffff !important;
   font-size: 10.5px !important;
   font-weight: 800 !important;

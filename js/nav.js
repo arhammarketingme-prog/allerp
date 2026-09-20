@@ -246,7 +246,7 @@ function showInstallBanner() {
   banner.id = 'allerp-install-banner';
   banner.style.cssText = `
     position: fixed; bottom: 14px; left: 14px; right: 14px; max-width: 420px;
-    margin: 0 auto; background: linear-gradient(135deg, #2874f0, #0ea5a3);
+    margin: 0 auto; background: linear-gradient(135deg, #1D4E89, #0ea5a3);
     color: #fff; border-radius: 14px; padding: 12px 14px; z-index: 9999;
     display: flex; align-items: center; gap: 12px;
     box-shadow: 0 8px 24px rgba(0,0,0,0.25); font-family: inherit;
@@ -254,7 +254,7 @@ function showInstallBanner() {
   banner.innerHTML = `
     <svg width="40" height="40" viewBox="0 0 100 100" style="flex-shrink:0; border-radius:9px;">
       <defs><linearGradient id="ib" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stop-color="#2874f0"/><stop offset="100%" stop-color="#0ea5a3"/>
+        <stop offset="0%" stop-color="#1D4E89"/><stop offset="100%" stop-color="#0ea5a3"/>
       </linearGradient></defs>
       <rect width="100" height="100" rx="22" fill="url(#ib)"/>
       <path d="M20 42 L20 78 Q20 80 22 80 L78 80 Q80 80 80 78 L80 42" fill="none" stroke="#fff" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
