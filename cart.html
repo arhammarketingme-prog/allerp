@@ -14,15 +14,15 @@
     .cart-item-card:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.06); }
     .qty-btn { padding: 6px 12px; background: #e2e8f0; border: none; cursor: pointer; font-weight: bold; color: #334155; transition: background 0.2s; }
     .qty-btn:hover { background: #cbd5e1; }
-    .checkout-proceed-btn { padding: 12px 24px; background: #ff9900; color: #000; border: none; border-radius: 6px; font-weight: 800; font-size: 15px; cursor: pointer; box-shadow: 0 3px 6px rgba(0,0,0,0.15); transition: opacity 0.2s, transform 0.1s; }
+    .checkout-proceed-btn { padding: 12px 24px; background: #E8952F; color: #fff; border: none; border-radius: 6px; font-weight: 800; font-size: 15px; cursor: pointer; box-shadow: 0 3px 6px rgba(30,36,48,0.15); transition: opacity 0.2s, transform 0.1s; }
     .checkout-proceed-btn:hover { opacity: 0.95; transform: translateY(-1px); }
     .modal-content-box { background:#fff; padding:26px; border-radius:12px; width:90%; max-width:440px; box-shadow:0 15px 30px rgba(0,0,0,0.2); position:relative; animation: scaleIn 0.2s ease; max-height: 90vh; overflow-y: auto; }
     @keyframes scaleIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
     .payment-option-box { display: flex; gap: 10px; margin-bottom: 12px; }
     .payment-card { flex: 1; border: 2px solid #cbd5e1; border-radius: 6px; padding: 10px; text-align: center; cursor: pointer; font-size: 13px; font-weight: 700; color: #334155; background: #f8fafc; transition: all 0.2s; }
-    .payment-card.active { border-color: #2563eb; background: #eff6ff; color: #1d4ed8; }
-    .copy-upi-btn { background: #2563eb; color: #fff; border: none; padding: 5px 12px; border-radius: 4px; font-size: 11.5px; font-weight: bold; cursor: pointer; margin-top: 6px; display: inline-block; }
-    .copy-upi-btn:hover { background: #1d4ed8; }
+    .payment-card.active { border-color: #1D4E89; background: #eff6ff; color: #143A66; }
+    .copy-upi-btn { background: #1D4E89; color: #fff; border: none; padding: 5px 12px; border-radius: 4px; font-size: 11.5px; font-weight: bold; cursor: pointer; margin-top: 6px; display: inline-block; }
+    .copy-upi-btn:hover { background: #143A66; }
     .direct-upi-intent-btn { background: #16a34a; color: #fff; border: none; padding: 10px 14px; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 10px; text-decoration: none; display: inline-block; box-sizing: border-box; text-align: center; }
     .direct-upi-intent-btn:hover { background: #15803d; }
   </style>
@@ -201,7 +201,7 @@
         container.innerHTML = `
           <div style="background: #fff; padding: 40px; text-align: center; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
             <p style="font-size: 16px; color: #64748b; margin-bottom: 16px;">तुमची कार्ट सध्या रिकामी आहे.</p>
-            <a href="index.html" style="background: #2563eb; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 6px; font-weight: 700; display: inline-block;">खरेदी सुरू ठेवा</a>
+            <a href="index.html" style="background: #1D4E89; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 6px; font-weight: 700; display: inline-block;">खरेदी सुरू ठेवा</a>
           </div>
         `;
         return;
