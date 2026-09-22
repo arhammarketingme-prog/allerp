@@ -14,7 +14,7 @@
   .card { transition: transform 0.15s ease, box-shadow 0.15s ease; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin-bottom: 12px; }
   .card:hover { box-shadow: 0 6px 16px rgba(0,0,0,0.06); }
   .tabs button { cursor: pointer; transition: background 0.2s, color 0.2s; padding: 8px 14px; font-weight: 600; border-radius: 6px; border: 1px solid #cbd5e1; background: #f8fafc; color: #334155; }
-  .tabs button.active { background: #0284c7; color: #ffffff; border-color: #0284c7; }
+  .tabs button.active { background: #1D4E89; color: #ffffff; border-color: #1D4E89; }
   table th, table td { padding: 10px 12px; text-align: left; }
   .verify-ad-btn { transition: opacity 0.2s; }
   .verify-ad-btn:hover { opacity: 0.9; }
@@ -303,7 +303,7 @@ async function loadAdPayments() {
                 <td style="white-space:nowrap;">
                   ${c.payment_status !== 'verified' ? `<button class="verify-ad-btn" data-id="${c.id}" style="font-size:12px; padding:6px 10px; background:#16a34a; color:white; border:none; border-radius:4px; cursor:pointer; font-weight:600; margin-bottom:4px;">✓ Verify & Activate</button>` : ''}
                   ${c.status === 'active' ? `<button onclick="pauseAdCampaign('${c.id}')" style="font-size:12px; padding:6px 10px; background:#dc2626; color:white; border:none; border-radius:4px; cursor:pointer; font-weight:600;">⏸️ थांबवा</button>` : ''}
-                  ${(c.status === 'paused' || c.status === 'rejected') && c.payment_status === 'verified' ? `<button onclick="resumeAdCampaign('${c.id}')" style="font-size:12px; padding:6px 10px; background:#0284c7; color:white; border:none; border-radius:4px; cursor:pointer; font-weight:600;">▶️ पुन्हा सुरू करा</button>` : ''}
+                  ${(c.status === 'paused' || c.status === 'rejected') && c.payment_status === 'verified' ? `<button onclick="resumeAdCampaign('${c.id}')" style="font-size:12px; padding:6px 10px; background:#1D4E89; color:white; border:none; border-radius:4px; cursor:pointer; font-weight:600;">▶️ पुन्हा सुरू करा</button>` : ''}
                 </td>
               </tr>
             `).join('')}
@@ -428,8 +428,8 @@ function renderDeliveryBoys() {
         </div>
         <div style="display:flex; gap:8px; flex-wrap:wrap;">
           <button class="db-edit-btn" data-id="${d.id}" style="background:#f59e0b; padding:6px 12px; font-size:12px;">✏️ माहिती Edit करा</button>
-          ${!d.user_id ? `<button class="db-link-select-btn" data-id="${d.id}" style="background:#0284c7; padding:6px 12px; font-size:12px;">✉️ खातं निवडून जोडा</button>` : ''}
-          ${!d.user_id ? `<button class="db-link-btn" data-id="${d.id}" data-phone="${d.phone}" style="background:#2563eb; padding:6px 12px; font-size:12px;">🔗 फोन/यादीने जोडा</button>` : ''}
+          ${!d.user_id ? `<button class="db-link-select-btn" data-id="${d.id}" style="background:#1D4E89; padding:6px 12px; font-size:12px;">✉️ खातं निवडून जोडा</button>` : ''}
+          ${!d.user_id ? `<button class="db-link-btn" data-id="${d.id}" data-phone="${d.phone}" style="background:#1D4E89; padding:6px 12px; font-size:12px;">🔗 फोन/यादीने जोडा</button>` : ''}
           <button class="db-delete-btn" data-id="${d.id}" style="background:#dc2626; padding:6px 12px; font-size:12px;">🗑️ काढा</button>
         </div>
       </div>
@@ -697,7 +697,7 @@ async function loadB2BPools() {
               </div>
               <div style="text-align:right;">
                 ${p.status === 'active' ? `<button type="button" onclick="closeB2BPool('${p.id}')" style="background:#dc2626; color:#fff; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-size:12px;">Close करा</button>` : ''}
-                <button type="button" onclick="togglePoolParticipants('${p.id}')" style="background:#0284c7; color:#fff; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-size:12px; margin-left:4px;">👥 सहभागी बघा</button>
+                <button type="button" onclick="togglePoolParticipants('${p.id}')" style="background:#1D4E89; color:#fff; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-size:12px; margin-left:4px;">👥 सहभागी बघा</button>
               </div>
             </div>
             <div style="margin-top:10px; display:flex; align-items:center; gap:8px; font-size:13px;">
@@ -846,7 +846,7 @@ function renderProductModerationSearch() {
       <label style="font-weight:700; font-size:13px;">प्रॉडक्टचं नाव टाईप कर</label>
       <div style="display:flex; gap:8px; margin-top:6px;">
         <input id="pm-search-input" placeholder="उदा. Turmeric Powder" style="flex:1; padding:8px; border:1px solid #cbd5e1; border-radius:4px;" onkeydown="if(event.key==='Enter') searchProductsForModeration()">
-        <button type="button" onclick="searchProductsForModeration()" style="background:#2563eb; color:#fff; border:none; padding:8px 14px; border-radius:6px; cursor:pointer; font-weight:700;">शोध</button>
+        <button type="button" onclick="searchProductsForModeration()" style="background:#1D4E89; color:#fff; border:none; padding:8px 14px; border-radius:6px; cursor:pointer; font-weight:700;">शोध</button>
       </div>
     </div>
     <div id="pm-results"><p class="muted">वरती शोध सुरू कर.</p></div>
@@ -922,7 +922,7 @@ async function loadInquiries() {
   if (!data || data.length === 0) { container.innerHTML = '<p class="muted">अजून कुठलाही संदेश आलेला नाही.</p>'; return; }
 
   container.innerHTML = data.map(i => `
-    <div style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:12px; margin-bottom:10px; ${i.status === 'new' ? 'border-left:4px solid #2563eb;' : ''}">
+    <div style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:12px; margin-bottom:10px; ${i.status === 'new' ? 'border-left:4px solid #1D4E89;' : ''}">
       <div style="display:flex; justify-content:space-between; align-items:start;">
         <div>
           <strong>${escapeHtmlAdmin(i.name)}</strong> <span class="muted" style="font-size:12px;">(${escapeHtmlAdmin(i.contact_info)})</span>
@@ -931,7 +931,7 @@ async function loadInquiries() {
         </div>
         <div style="text-align:right;">
           <span class="badge ${i.status === 'resolved' ? 'live' : (i.status === 'read' ? 'pending' : 'hidden')}">${i.status}</span><br>
-          ${i.status !== 'resolved' ? `<button onclick="markInquiryStatus('${i.id}', '${i.status === 'new' ? 'read' : 'resolved'}')" style="margin-top:6px; font-size:11.5px; padding:4px 8px; background:#2563eb; color:#fff; border:none; border-radius:4px; cursor:pointer;">${i.status === 'new' ? 'वाचलं' : 'सोडवलं'} म्हणून चिन्हांकित करा</button>` : ''}
+          ${i.status !== 'resolved' ? `<button onclick="markInquiryStatus('${i.id}', '${i.status === 'new' ? 'read' : 'resolved'}')" style="margin-top:6px; font-size:11.5px; padding:4px 8px; background:#1D4E89; color:#fff; border:none; border-radius:4px; cursor:pointer;">${i.status === 'new' ? 'वाचलं' : 'सोडवलं'} म्हणून चिन्हांकित करा</button>` : ''}
         </div>
       </div>
     </div>

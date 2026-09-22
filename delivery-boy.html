@@ -13,7 +13,7 @@
   .delivery-order-card { background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:16px; margin-bottom:14px; box-shadow:0 1px 3px rgba(0,0,0,0.05); }
   .status-pill { font-size:11px; font-weight:800; padding:3px 10px; border-radius:12px; text-transform:uppercase; }
   .status-pending, .status-accepted { background:#fef3c7; color:#b45309; }
-  .status-packed { background:#dbeafe; color:#1d4ed8; }
+  .status-packed { background:#dbeafe; color:#1D4E89; }
   .status-dispatched { background:#ede9fe; color:#6d28d9; }
   .status-delivered { background:#dcfce7; color:#15803d; }
 </style>
@@ -132,7 +132,7 @@ async function loadReturnPickups() {
                 <span style="font-size:11px; color:#64748b;">दुकानदाराला सांगायचा OTP</span><br>
                 <strong style="font-size:18px; letter-spacing:3px; color:#16a34a;">${o.return_shop_otp || '-'}</strong>
               </div>
-              ${!o.return_shop_otp ? `<button onclick="regenerateReturnShopOtp('${o.id}')" style="margin-top:6px; background:#0284c7; color:#fff; padding:5px 12px; font-size:12px; border:none; border-radius:5px; cursor:pointer; font-weight:700;">🔄 OTP दिसत नाहीये — पुन्हा तयार करा</button>` : ''}
+              ${!o.return_shop_otp ? `<button onclick="regenerateReturnShopOtp('${o.id}')" style="margin-top:6px; background:#1D4E89; color:#fff; padding:5px 12px; font-size:12px; border:none; border-radius:5px; cursor:pointer; font-weight:700;">🔄 OTP दिसत नाहीये — पुन्हा तयार करा</button>` : ''}
             </div>`;
           }
           return `
@@ -194,7 +194,7 @@ async function loadEarningsSummary() {
   el.innerHTML = `
     <div><div style="font-size:11px; color:#64748b; font-weight:700;">एकूण डिलिव्हरी</div><div style="font-size:20px; font-weight:800; color:#0f172a;">${totalDeliveries}</div></div>
     <div><div style="font-size:11px; color:#64748b; font-weight:700;">एकूण कमाई</div><div style="font-size:20px; font-weight:800; color:#16a34a;">₹${totalEarned}</div></div>
-    <div><div style="font-size:11px; color:#64748b; font-weight:700;">आजची कमाई</div><div style="font-size:20px; font-weight:800; color:#0284c7;">₹${todayEarned}</div></div>
+    <div><div style="font-size:11px; color:#64748b; font-weight:700;">आजची कमाई</div><div style="font-size:20px; font-weight:800; color:#1D4E89;">₹${todayEarned}</div></div>
   `;
 }
 
@@ -317,7 +317,7 @@ async function loadMyOrders() {
           </div>
           <div style="text-align:right;">
             <div style="font-weight:800; color:#16a34a;">₹${o.total_amount || 0}</div>
-            ${o.delivery_fee ? `<div style="font-size:11px; color:#0284c7; font-weight:700;">🛵 माझं कमिशन: ₹${o.delivery_fee}</div>` : ''}
+            ${o.delivery_fee ? `<div style="font-size:11px; color:#1D4E89; font-weight:700;">🛵 माझं कमिशन: ₹${o.delivery_fee}</div>` : ''}
           </div>
         </div>
         <div style="margin-top:10px;">
@@ -384,7 +384,7 @@ async function loadMyDeliveryHistory() {
         </div>
         <div style="text-align:right;">
           <div style="font-weight:800; color:#16a34a;">₹${o.total_amount || 0}</div>
-          ${o.delivery_fee ? `<div style="font-size:11px; color:#0284c7; font-weight:700;">🛵 कमिशन: ₹${o.delivery_fee}</div>` : ''}
+          ${o.delivery_fee ? `<div style="font-size:11px; color:#1D4E89; font-weight:700;">🛵 कमिशन: ₹${o.delivery_fee}</div>` : ''}
         </div>
       </div>
       <div style="margin-top:10px;">
@@ -484,14 +484,14 @@ async function loadCashLedger() {
 
   container.innerHTML = `
     <div class="card" style="border:1px solid #bae6fd; background:#f0f9ff; margin-bottom:16px; padding:14px 16px;">
-      <h3 style="margin:0 0 8px; color:#0369a1;">💵 माझ्याकडील रोख हिशोब (एकूण: ₹${totalPending})</h3>
+      <h3 style="margin:0 0 8px; color:#1D4E89;">💵 माझ्याकडील रोख हिशोब (एकूण: ₹${totalPending})</h3>
       <p class="muted" style="font-size:11.5px; margin:0 0 10px;">ही फक्त हिशोबाची नोंद आहे — पैसे तुमच्याकडेच असतात, तुम्ही ते थेट दुकानदाराला रोख द्यायचे आहेत.</p>
       <div style="display:flex; flex-direction:column; gap:8px;">
         ${Object.entries(pendingByShop).map(([bid, s]) => `
           <div style="display:flex; justify-content:space-between; align-items:center; border:1px solid #bae6fd; border-radius:6px; padding:8px 12px; background:#fff;">
             <div><strong>${s.name}</strong> <span class="muted" style="font-size:12px;">(${s.count} ऑर्डर्स)</span></div>
             <div style="display:flex; align-items:center; gap:8px;">
-              <strong style="color:#0369a1;">₹${s.total}</strong>
+              <strong style="color:#1D4E89;">₹${s.total}</strong>
               <button onclick="handOverCash('${bid}')" style="background:#16a34a; color:#fff; padding:4px 10px; font-size:11.5px; border:none; border-radius:5px; cursor:pointer; font-weight:700;">✅ दुकानदाराला रोख दिली</button>
             </div>
           </div>

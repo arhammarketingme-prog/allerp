@@ -11,7 +11,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 .adv-hero {
-  background: linear-gradient(135deg, #1e3a8a, #2563eb);
+  background: linear-gradient(135deg, #1e3a8a, #1D4E89);
   color: #fff;
   border-radius: 12px;
   padding: 36px 24px;
@@ -93,7 +93,7 @@
       </div>
 
       <div id="not-logged-in" style="display:none; text-align:center; padding:30px;" class="card">
-        <h3>जाहिरात सुरू करण्यासाठी कृपया आधी <a href="login.html" style="color:#2563eb; font-weight:700;">Log In (लॉगिन)</a> करा.</h3>
+        <h3>जाहिरात सुरू करण्यासाठी कृपया आधी <a href="login.html" style="color:#1D4E89; font-weight:700;">Log In (लॉगिन)</a> करा.</h3>
       </div>
 
       <div id="signup-view" style="display:none; max-width:500px; margin:0 auto;" class="card">
@@ -102,7 +102,7 @@
         <label style="font-weight:700; font-size:13px;">कंपनी / ब्रँडचे नाव *</label>
         <input id="company-name" placeholder="उदा. निखिल किराणा / पाटील कन्स्ट्रक्शन्स" required style="width:100%; padding:9px; border:1px solid #cbd5e1; border-radius:8px; margin-top:4px; box-sizing:border-box;">
         <p id="signup-error" class="error-text" style="color:#dc2626; font-size:12px; margin-top:6px;"></p>
-        <button class="btn" id="signup-btn" style="width:100%; background:#2563eb; color:#fff; margin-top:12px; padding:10px; border:none; border-radius:8px; font-weight:700; cursor:pointer;">नोंदणी करा (Register as Advertiser)</button>
+        <button class="btn" id="signup-btn" style="width:100%; background:#1D4E89; color:#fff; margin-top:12px; padding:10px; border:none; border-radius:8px; font-weight:700; cursor:pointer;">नोंदणी करा (Register as Advertiser)</button>
       </div>
 
       <div id="portal-view" style="display:none;">
@@ -191,7 +191,7 @@
           <p id="camp-error" style="color:#dc2626; font-size:12px; margin-bottom:8px;"></p>
           
           <div style="display:flex; gap:8px;">
-            <button class="btn" id="camp-save-btn" style="flex:1; background:#2563eb; color:#fff; padding:11px; border:none; border-radius:8px; font-weight:700; cursor:pointer;">पेमेंट नोंदवा व कॅम्पेन तयार करा</button>
+            <button class="btn" id="camp-save-btn" style="flex:1; background:#1D4E89; color:#fff; padding:11px; border:none; border-radius:8px; font-weight:700; cursor:pointer;">पेमेंट नोंदवा व कॅम्पेन तयार करा</button>
           </div>
         </div>
       </div>
@@ -343,7 +343,7 @@ async function loadCampaigns() {
       </div>
 
       <div style="display:flex; gap:8px; margin-top:8px;">
-        <button class="btn add-ad-btn" data-campaign="${c.id}" style="font-size:12px; padding:6px 10px; background:#2563eb; color:#fff; border:none; border-radius:6px; cursor:pointer; font-weight:700;">+ जाहिरात फाईल जोडा</button>
+        <button class="btn add-ad-btn" data-campaign="${c.id}" style="font-size:12px; padding:6px 10px; background:#1D4E89; color:#fff; border:none; border-radius:6px; cursor:pointer; font-weight:700;">+ जाहिरात फाईल जोडा</button>
       </div>
 
       <div class="ad-form card" data-campaign-form="${c.id}" style="display:none; margin-top:10px; background:#f9fbfd;">

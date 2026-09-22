@@ -11,7 +11,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 .app-hero {
-  background: linear-gradient(135deg, #1e3a8a, #2563eb);
+  background: linear-gradient(135deg, #1e3a8a, #1D4E89);
   color: #fff;
   border-radius: 12px;
   padding: 32px 24px;
@@ -86,7 +86,7 @@
 
       <div id="my-business-picker" class="card" style="display:none; background:#f8fafc; border-color:#cbd5e1; margin-bottom:16px; padding:14px; border-radius:10px;">
         <label style="font-weight:700; color:#0f172a; display:block; margin-bottom:6px;">🏪 Install apps into which business?</label>
-        <select id="business-select" style="font-weight:700; color:#2563eb; margin-bottom:0; border-radius:8px; padding:8px; width:100%; border:1px solid #cbd5e1;"></select>
+        <select id="business-select" style="font-weight:700; color:#1D4E89; margin-bottom:0; border-radius:8px; padding:8px; width:100%; border:1px solid #cbd5e1;"></select>
       </div>
 
       <div id="apps-grid" class="app-grid"><p class="muted">Loading apps...</p></div>
@@ -187,7 +187,7 @@ async function loadApps() {
         ${businessId
           ? (myInstalledAppIds.has(a.id)
               ? `<button class="btn secondary uninstall-btn app-btn-action" data-app="${a.id}">✓ Installed — Remove</button>`
-              : `<button class="btn install-btn app-btn-action" data-app="${a.id}" style="background:#2563eb; color:#fff;">Install App</button>`)
+              : `<button class="btn install-btn app-btn-action" data-app="${a.id}" style="background:#1D4E89; color:#fff;">Install App</button>`)
           : `<p class="muted" style="font-size:11.5px; margin-top:6px;">${myBusinesses.length === 0 ? 'Create business first' : 'Select business above'}</p>`}
       </div>
     </div>

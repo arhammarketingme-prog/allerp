@@ -153,7 +153,7 @@ async function initPassbook() {
   try {
     const { data: { user } } = await sb.auth.getUser();
     if (!user) {
-      document.getElementById('transactions-list').innerHTML = '<p class="muted" style="text-align:center; padding:20px;">कृपया खाते पाहण्यासाठी आधी <a href="login.html" style="color:#2563eb; font-weight:700;">Log In (लॉगिन)</a> करा.</p>';
+      document.getElementById('transactions-list').innerHTML = '<p class="muted" style="text-align:center; padding:20px;">कृपया खाते पाहण्यासाठी आधी <a href="login.html" style="color:#1D4E89; font-weight:700;">Log In (लॉगिन)</a> करा.</p>';
       return;
     }
 

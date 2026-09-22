@@ -64,7 +64,7 @@ async function renderNav() {
       
       <a href="b2b-collective.html" style="color: #ffffff; background: #7c3aed; font-weight: 700; text-decoration: none; font-size: 13px; padding: 6px 12px; border-radius: 6px;">🤝 B2B</a>
       
-      <a href="app-store.html" style="color: #ffffff; background: #0284c7; font-weight: 700; text-decoration: none; font-size: 13px; padding: 6px 12px; border-radius: 6px;">📱 Apps</a>
+      <a href="app-store.html" style="color: #ffffff; background: #1D4E89; font-weight: 700; text-decoration: none; font-size: 13px; padding: 6px 12px; border-radius: 6px;">📱 Apps</a>
       
       <a href="customer-passbook.html" style="color: #ffffff; background: #db2777; font-weight: 700; text-decoration: none; font-size: 13px; padding: 6px 12px; border-radius: 6px;">📒 Khata</a>
       
@@ -104,22 +104,22 @@ async function renderNav() {
              <div id="notif-dropdown" style="display:none; position:absolute; right:0; top:38px; width:300px; max-height:360px; overflow-y:auto; background:#fff; border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,0.2); z-index:200;">
                <div style="padding:10px; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center;">
                  <strong style="color:#0f172a; font-size:13px;">सूचना</strong>
-                 <a href="#" onclick="markAllNotifsRead(); return false;" style="font-size:11.5px; color:#2563eb; text-decoration:none;">सर्व वाचलं म्हणून चिन्हांकित करा</a>
+                 <a href="#" onclick="markAllNotifsRead(); return false;" style="font-size:11.5px; color:#1D4E89; text-decoration:none;">सर्व वाचलं म्हणून चिन्हांकित करा</a>
                </div>
                <div id="notif-list" style="padding:8px;"><p class="muted" style="font-size:12.5px; padding:8px;">लोड होत आहे...</p></div>
              </div>
            </div>
            <a href="b2b-wholesale.html" style="background: #7c3aed; color: #fff; padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 700; text-decoration: none;">🏭 Wholesale</a>
-           <a href="dashboard.html" style="background: #0284c7; color: #fff; padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 700; text-decoration: none;">📊 My ERP</a>
+           <a href="dashboard.html" style="background: #1D4E89; color: #fff; padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 700; text-decoration: none;">📊 My ERP</a>
            <a href="#" onclick="sb.auth.signOut().then(() => location.reload()); return false;" style="background: #1e293b; border: 1px solid #64748b; color: #ffffff; padding: 6px 10px; border-radius: 6px; font-size: 13px; font-weight: 700; text-decoration: none;">🚪 Logout</a>`
-        : `<a href="login.html" style="background: #2563eb; color: #fff; padding: 6px 14px; border-radius: 6px; font-size: 13px; font-weight: 700; text-decoration: none;">🔑 Login</a>`}
+        : `<a href="login.html" style="background: #1D4E89; color: #fff; padding: 6px 14px; border-radius: 6px; font-size: 13px; font-weight: 700; text-decoration: none;">🔑 Login</a>`}
     </div>
   `;
 
   if (!document.getElementById('global-full-marquee-strip')) {
     const stripContainer = document.createElement('div');
     stripContainer.id = 'global-full-marquee-strip';
-    stripContainer.style.cssText = "width: 100vw; position: relative; left: 50%; right: 50%; margin-left: -50vw; margin-right: -50vw; background: linear-gradient(90deg, #1e3a8a, #3b82f6); border-bottom: 2px solid rgba(255,255,255,0.15); padding: 9px 20px; margin-top: 0; margin-bottom: 18px; box-shadow: 0 3px 8px rgba(0,0,0,0.15); z-index: 99; display: flex; align-items: center; justify-content: center;";
+    stripContainer.style.cssText = "width: 100vw; position: relative; left: 50%; right: 50%; margin-left: -50vw; margin-right: -50vw; background: linear-gradient(90deg, #1e3a8a, #1D4E89); border-bottom: 2px solid rgba(255,255,255,0.15); padding: 9px 20px; margin-top: 0; margin-bottom: 18px; box-shadow: 0 3px 8px rgba(0,0,0,0.15); z-index: 99; display: flex; align-items: center; justify-content: center;";
     
     stripContainer.innerHTML = `
       <div style="max-width: 1250px; width: 100%; display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
