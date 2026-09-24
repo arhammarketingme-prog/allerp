@@ -4,161 +4,626 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AllERP — Universal Multi-Business Operating System</title>
+  
+  <!-- FontAwesome अधिकृत आयकॉन्स (कोणतेही चौकोन येणार नाहीत) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="css/style.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-</head>
-<body class="theme-erp">
 
-  <!-- मूळ ऑल-ईआरपी टॉप हेडर -->
-  <header class="erp-top-nav">
-    <div class="nav-brand">
-      <span>🚀 <b>AllERP</b></span>
-      <small>Smart Marketplace</small>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background-color: #f8fafc; color: #1e293b; }
+
+    /* 🚀 मूळ टॉप ऑल-ईआरपी नेव्हिगेशन */
+    .top-header {
+      background-color: #0b192c;
+      color: #ffffff;
+      padding: 8px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 18px;
+      font-weight: 800;
+      color: #38bdf8;
+    }
+    .brand-logo small {
+      color: #94a3b8;
+      font-size: 11px;
+      font-weight: normal;
+    }
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .nav-btn {
+      background: #1e293b;
+      color: #f1f5f9;
+      border: 1px solid #334155;
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      cursor: pointer;
+    }
+    .nav-btn.btn-adv { background: #d97706; border-color: #b45309; color: #fff; }
+    .nav-btn.btn-b2b { background: #581c87; border-color: #4c1d95; color: #fff; }
+    .nav-btn.btn-del { background: #065f46; border-color: #047857; color: #fff; }
+    .nav-btn.btn-bell { background: #d97706; border-color: #b45309; color: #fff; }
+    .nav-btn.btn-ws { background: #1e3a8a; border-color: #1e40af; color: #fff; }
+    .nav-btn.btn-logout { background: #d97706; border-color: #b45309; color: #fff; }
+
+    /* 📢 मूळ पिवळी रोटेशन स्ट्रिप (Live Continuous Running Marquee) */
+    .ad-strip {
+      background: #fef08a;
+      border-bottom: 1px solid #facc15;
+      padding: 6px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      overflow: hidden;
+    }
+    .ticker-wrap {
+      flex: 1;
+      overflow: hidden;
+      white-space: nowrap;
+      margin-right: 15px;
+    }
+    .ticker-move {
+      display: inline-block;
+      white-space: nowrap;
+      animation: ticker-slide 22s linear infinite;
+      font-size: 12px;
+      font-weight: 700;
+      color: #854d0e;
+    }
+    @keyframes ticker-slide {
+      0% { transform: translateX(100%); }
+      100% { transform: translateX(-100%); }
+    }
+    .ticker-badge {
+      background: #f59e0b;
+      color: #fff;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 800;
+      margin-right: 6px;
+    }
+    .ad-right-contact {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: #854d0e;
+      white-space: nowrap;
+    }
+    .btn-give-ad {
+      background: #b45309;
+      color: #fff;
+      border: none;
+      padding: 4px 12px;
+      border-radius: 15px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* 🏢 मुख्य निखिल किराणा कार्ड */
+    .main-wrap {
+      max-width: 1400px;
+      margin: 15px auto;
+      padding: 0 15px;
+    }
+    .shop-bar {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 16px 22px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    }
+    .shop-title-box h1 {
+      font-size: 24px;
+      font-weight: 800;
+      color: #0f172a;
+    }
+    .shop-title-box p {
+      font-size: 12px;
+      color: #64748b;
+      margin-top: 2px;
+    }
+    .shop-right-btns {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .btn-orange-market {
+      background: #b45309;
+      color: #fff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .select-language {
+      padding: 7px 12px;
+      border-radius: 6px;
+      border: 1px solid #cbd5e1;
+      font-size: 12px;
+      font-weight: 700;
+      background: #fff;
+      outline: none;
+    }
+    .btn-ai {
+      background: #b45309;
+      color: #fff;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    /* 🔘 ईआरपी मेनू टॅब्स (मूळ रंगात) */
+    .erp-tabs-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 15px;
+      overflow-x: auto;
+    }
+    .erp-tab {
+      background: #b45309;
+      color: #fff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    /* 📦 इन्व्हेंटरी पॅनल */
+    .inventory-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    }
+    .inventory-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 14px;
+      border-bottom: 1px solid #f1f5f9;
+      margin-bottom: 14px;
+    }
+    .inventory-top h2 {
+      font-size: 16px;
+      font-weight: 800;
+      color: #0f172a;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .inv-actions {
+      display: flex;
+      gap: 8px;
+    }
+    .btn-add-prod {
+      background: #b45309;
+      color: #fff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* सर्च बार */
+    .search-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .search-input-box {
+      flex: 1;
+      position: relative;
+    }
+    .search-input-box i {
+      position: absolute;
+      left: 12px;
+      top: 10px;
+      color: #94a3b8;
+      font-size: 12px;
+    }
+    .search-input-box input {
+      width: 100%;
+      padding: 8px 12px 8px 32px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      font-size: 12px;
+      outline: none;
+    }
+    .btn-search {
+      background: #b45309;
+      color: #fff;
+      border: none;
+      padding: 8px 24px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    /* 📋 टेबल */
+    .inventory-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      text-align: left;
+    }
+    .inventory-table th {
+      background: #f8fafc;
+      padding: 10px 14px;
+      color: #475569;
+      font-weight: 700;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .inventory-table td {
+      padding: 12px 14px;
+      color: #334155;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .prod-thumb {
+      width: 36px;
+      height: 36px;
+      object-fit: contain;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      background: #fff;
+      padding: 2px;
+      display: block;
+    }
+
+    /* ================= मूळ पॉप-अप (MODAL) ================= */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(15, 23, 42, 0.65);
+      z-index: 99999;
+      justify-content: center;
+      align-items: center;
+      padding: 15px;
+    }
+    .modal-card {
+      background: #ffffff;
+      width: 100%;
+      max-width: 600px;
+      border-radius: 12px;
+      padding: 22px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+    .modal-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #e2e8f0;
+      padding-bottom: 12px;
+      margin-bottom: 14px;
+    }
+    .modal-head h3 {
+      font-size: 16px;
+      font-weight: 800;
+      color: #0f172a;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-close-modal {
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      padding: 4px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .form-item {
+      margin-bottom: 12px;
+    }
+    .form-item label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      color: #334155;
+      margin-bottom: 5px;
+    }
+    .input-row {
+      display: flex;
+      gap: 8px;
+    }
+    .form-ctrl {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      font-size: 13px;
+      outline: none;
+    }
+    .btn-scan {
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      padding: 8px 14px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      white-space: nowrap;
+    }
+    .wholesale-details {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: 8px;
+      padding: 10px 12px;
+      margin-bottom: 12px;
+    }
+    .wholesale-details summary {
+      font-size: 12px;
+      font-weight: 700;
+      color: #166534;
+      cursor: pointer;
+    }
+
+    /* ✨ ऑटो-मॅप्ड फोटो कार्ड */
+    .auto-preview-card {
+      display: none;
+      align-items: center;
+      gap: 14px;
+      padding: 10px 14px;
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
+    .preview-thumb-box {
+      width: 72px;
+      height: 72px;
+      min-width: 72px;
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      padding: 2px;
+    }
+    .preview-thumb-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .three-inputs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .three-inputs .col { flex: 1; }
+    .btn-save-submit {
+      background: #b45309;
+      color: #fff;
+      border: none;
+      padding: 11px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 800;
+      width: 100%;
+      cursor: pointer;
+      margin-top: 6px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- १. मूळ टॉप हेडर -->
+  <header class="top-header">
+    <div class="brand-logo">
+      <i class="fa-solid fa-rocket"></i> AllERP <small>Smart Marketplace</small>
     </div>
-    <div class="nav-links">
-      <a href="index.html" class="btn-erp-nav">🏠 Home</a>
-      <a href="advertiser.html" class="btn-erp-nav btn-adv">📢 Advertise</a>
-      <a href="b2b-collective.html" class="btn-erp-nav btn-b2b">📦 B2B</a>
-      <a href="app-store.html" class="btn-erp-nav">📱 Apps</a>
-      <a href="delivery-boy.html" class="btn-erp-nav btn-del">🛵 डिलिव्हरी</a>
-      <button class="btn-erp-nav btn-bell">🔔</button>
-      <a href="b2b-wholesale.html" class="btn-erp-nav btn-ws">🏢 Wholesale</a>
-      <a href="admin.html" class="btn-erp-nav">📊 My ERP</a>
-      <button class="btn-erp-nav btn-logout">Logout</button>
+    <div class="nav-actions">
+      <a href="index.html" class="nav-btn"><i class="fa-solid fa-house"></i> Home</a>
+      <a href="advertiser.html" class="nav-btn btn-adv"><i class="fa-solid fa-bullhorn"></i> Advertise</a>
+      <a href="b2b-collective.html" class="nav-btn btn-b2b"><i class="fa-solid fa-boxes-stacked"></i> B2B</a>
+      <a href="app-store.html" class="nav-btn"><i class="fa-solid fa-mobile-screen"></i> Apps</a>
+      <a href="delivery-boy.html" class="nav-btn btn-del"><i class="fa-solid fa-motorcycle"></i> डिलिव्हरी</a>
+      <button class="nav-btn btn-bell"><i class="fa-solid fa-bell"></i></button>
+      <a href="b2b-wholesale.html" class="nav-btn btn-ws"><i class="fa-solid fa-warehouse"></i> Wholesale</a>
+      <a href="admin.html" class="nav-btn"><i class="fa-solid fa-chart-line"></i> My ERP</a>
+      <button class="nav-btn btn-logout">Logout</button>
     </div>
   </header>
 
-  <!-- मूळ व्हॉट्सॲप जाहिरात बार -->
-  <div class="ad-ticker-bar">
-    <div class="ticker-left">
-      <span class="badge-special">⚡ स्पेशल ऑफर</span>
-      <span class="ticker-text">सुपरफास्ट! आपल्या दुकानाची जाहिरात थेट ग्राहकांच्या मोबाईलवर दाखवा - फक्त ₹९९ पासून सुरू!</span>
+  <!-- २. मूळ व्हॉट्सॲप फिरणारी रोटेशन पट्टी (Running Text Animation) -->
+  <div class="ad-strip">
+    <div class="ticker-wrap">
+      <div class="ticker-move">
+        <span class="ticker-badge">⚡ स्पेशल ऑफर</span>
+        <span>सुपरफास्ट! आपल्या दुकानाची जाहिरात थेट ग्राहकांच्या मोबाईलवर दाखवा - फक्त ₹९९ पासून सुरू! — सर्व किराणा, कपडे आणि स्टेशनरी दुकानदारांसाठी विशेष सवलत!</span>
+      </div>
     </div>
-    <div class="ticker-right">
+    <div class="ad-right-contact">
       <span>WhatsApp करा: <b>+91 91309 77...</b></span>
-      <button onclick="window.location.href='advertiser.html'" class="btn-give-ad">📢 जाहिरात द्या</button>
+      <button onclick="window.location.href='advertiser.html'" class="btn-give-ad">
+        <i class="fa-solid fa-bullhorn"></i> जाहिरात द्या
+      </button>
     </div>
   </div>
 
-  <main class="erp-main-container">
-    <!-- दुकान माहिती कार्ड -->
-    <div class="shop-brand-card">
-      <div class="shop-title-area">
+  <main class="main-wrap">
+    <!-- ३. निखिल किराणा कार्ड -->
+    <div class="shop-bar">
+      <div class="shop-title-box">
         <h1>Nikhil Kirana</h1>
         <p>Universal Multi-Business Operating System & Local Retail Network</p>
       </div>
-      <div class="shop-controls-area">
-        <button class="btn-primary-orange">🌐 ग्लोबल मार्केटप्लेस</button>
-        <select class="lang-dropdown">
+      <div class="shop-right-btns">
+        <button class="btn-orange-market"><i class="fa-solid fa-globe"></i> ग्लोबल मार्केटप्लेस</button>
+        <select class="select-language">
           <option value="mr" selected>मराठी</option>
           <option value="en">English</option>
           <option value="hi">हिंदी</option>
         </select>
-        <button class="btn-primary-orange">🤖 AI</button>
+        <button class="btn-ai"><i class="fa-solid fa-robot"></i> AI</button>
       </div>
     </div>
 
-    <!-- ईआरपी मेनू टॅब्स -->
-    <div class="erp-tabs-scroll">
-      <button class="tab-item active">📊 डॅशबोर्ड</button>
-      <button class="tab-item">📦 इन्व्हेंटरी व स्टॉक</button>
-      <button class="tab-item">💰 विक्री व इन्व्हॉइस</button>
-      <button class="tab-item">🏗️ प्रकल्प / साईट्स</button>
-      <button class="tab-item">⚡ POS काउंटर</button>
-      <button class="tab-item">🛒 ऑनलाईन ऑर्डर्स</button>
+    <!-- ४. ईआरपी मेनू टॅब्स -->
+    <div class="erp-tabs-row">
+      <button class="erp-tab"><i class="fa-solid fa-chart-pie"></i> डॅशबोर्ड</button>
+      <button class="erp-tab"><i class="fa-solid fa-box"></i> इन्व्हेंटरी व स्टॉक</button>
+      <button class="erp-tab"><i class="fa-solid fa-receipt"></i> विक्री व इन्व्हॉइस</button>
+      <button class="erp-tab"><i class="fa-solid fa-sheet-plastic"></i> प्रकल्प / साईट्स</button>
+      <button class="erp-tab"><i class="fa-solid fa-bolt"></i> POS काउंटर</button>
+      <button class="erp-tab"><i class="fa-solid fa-cart-shopping"></i> ऑनलाईन ऑर्डर्स</button>
     </div>
 
-    <!-- इन्व्हेंटरी पॅनल -->
-    <div class="erp-inventory-box">
-      <div class="inv-box-header">
-        <h2>📦 इन्व्हेंटरी व उत्पादने (Universal Inventory)</h2>
-        <div class="inv-header-actions">
-          <button class="btn-primary-orange">🌐 ग्लोबल मार्केटप्लेस</button>
-          <button onclick="openProductModal()" class="btn-primary-orange">+ नवीन प्रॉडक्ट जोडा</button>
+    <!-- ५. इन्व्हेंटरी व उत्पादने पॅनल -->
+    <div class="inventory-card">
+      <div class="inventory-top">
+        <h2><i class="fa-solid fa-box-open" style="color:#b45309;"></i> इन्व्हेंटरी व उत्पादने (Universal Inventory)</h2>
+        <div class="inv-actions">
+          <button class="btn-orange-market"><i class="fa-solid fa-globe"></i> ग्लोबल मार्केटप्लेस</button>
+          <button onclick="openProductModal()" class="btn-add-prod"><i class="fa-solid fa-plus"></i> नवीन प्रॉडक्ट जोडा</button>
         </div>
       </div>
 
-      <div class="inv-search-bar">
-        <input type="text" placeholder="🔍 इन्व्हॉइस, ग्राहक, उत्पादने किंवा ऑर्डर्स शोधा...">
-        <button class="btn-search-blue">शोधा</button>
+      <div class="search-row">
+        <div class="search-input-box">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" placeholder="इन्व्हॉइस, ग्राहक, उत्पादने किंवा ऑर्डर्स शोधा...">
+        </div>
+        <button class="btn-search">शोधा</button>
       </div>
 
-      <div class="inv-table-wrapper">
-        <table class="inv-table-content">
-          <thead>
-            <tr>
-              <th>फोटो</th>
-              <th>उत्पादन</th>
-              <th>विक्री दर</th>
-              <th>स्टॉक (थेट एडिट करा)</th>
-              <th>स्थिती</th>
-            </tr>
-          </thead>
-          <tbody id="inventoryList">
-            <tr>
-              <td><img src="logo.svg" style="width:30px; height:30px; object-fit:contain;"></td>
-              <td><b>Lux Soap</b></td>
-              <td>₹35</td>
-              <td>100</td>
-              <td><span style="color:#16a34a; font-weight:bold;">LIVE</span></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <!-- इन्व्हेंटरी टेबल -->
+      <table class="inventory-table">
+        <thead>
+          <tr>
+            <th style="width: 60px;">फोटो</th>
+            <th>उत्पादन</th>
+            <th>विक्री दर</th>
+            <th>स्टॉक (थेट एडिट करा)</th>
+            <th>स्थिती</th>
+          </tr>
+        </thead>
+        <tbody id="inventoryList">
+          <tr>
+            <td>
+              <!-- Lux Soap चा अस्सल आणि न तुटणारा फोटो -->
+              <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='10' fill='%23fce7f3' stroke='%23f43f5e' stroke-width='2'/><circle cx='50' cy='46' r='26' fill='%23ffffff'/><text x='50' y='52' font-family='Arial Black,sans-serif' font-size='16' font-weight='900' fill='%23e11d48' text-anchor='middle'>LUX</text><text x='50' y='76' font-family='Arial,sans-serif' font-size='8' font-weight='bold' fill='%23be185d' text-anchor='middle'>ROSE BEAUTY</text></svg>" class="prod-thumb" alt="Lux Soap">
+            </td>
+            <td><b>Lux Soap</b></td>
+            <td>₹35</td>
+            <td>100</td>
+            <td><span style="color:#16a34a; font-weight:bold;">LIVE</span></td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </main>
 
-  <!-- ================= मूळ प्रॉडक्ट ॲड पॉप-अप (MODAL) ================= -->
-  <div id="addProductModal" class="erp-modal-backdrop" style="display:none;">
-    <div class="erp-modal-window">
-      <div class="erp-modal-header">
-        <h3>🎁 नवीन प्रॉडक्ट जोडा (स्कॅनर व ऑटो-मॅपिंग सह)</h3>
+  <!-- ================= प्रॉडक्ट पॉप-अप ================= -->
+  <div id="addProductModal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h3><i class="fa-solid fa-gift" style="color:#b45309;"></i> नवीन प्रॉडक्ट जोडा (स्कॅनर व ऑटो-मॅपिंग सह)</h3>
         <button onclick="closeProductModal()" class="btn-close-modal">✕ बंद करा</button>
       </div>
 
       <form id="productEntryForm" onsubmit="saveProduct(event)">
-        <div class="form-field-group">
+        <div class="form-item">
           <label>उत्पादनाचे नाव * (उदा. Turmeric Powder, Basmati Rice)</label>
-          <div style="display:flex; gap:8px;">
-            <input type="text" id="product_name_input" class="form-input-ctrl" placeholder="उदा. tata salt, parle g, bisleri, maggi..." autocomplete="off" required>
-            <button type="button" class="btn-scanner-action">📷 स्कॅनर</button>
+          <div class="input-row">
+            <input type="text" id="product_name_input" class="form-ctrl" placeholder="उदा. tata salt, parle g, bisleri, maggi..." autocomplete="off" required>
+            <button type="button" class="btn-scan"><i class="fa-solid fa-camera"></i> स्कॅनर</button>
           </div>
         </div>
 
-        <div class="form-field-group">
+        <div class="form-item">
           <label>बारकोड (Barcode)</label>
-          <input type="text" id="barcode_input" class="form-input-ctrl" placeholder="स्कॅन करा किंवा टाईप करा...">
+          <input type="text" id="barcode_input" class="form-ctrl" placeholder="स्कॅन करा किंवा टाईप करा...">
         </div>
 
-        <details class="wholesale-accordion-box">
+        <details class="wholesale-details">
           <summary>📦 Wholesale भाव (ऐच्छिक — फक्त Wholesaler असल्यास)</summary>
           <div style="display:flex; gap:10px; margin-top:10px;">
-            <input type="number" id="wholesale_price_val" class="form-input-ctrl" placeholder="Wholesale भाव ₹">
-            <input type="number" id="min_wholesale_qty_val" class="form-input-ctrl" placeholder="किमान ऑर्डर प्रमाण">
+            <input type="number" id="wholesale_price_val" class="form-ctrl" placeholder="Wholesale भाव ₹">
+            <input type="number" id="min_wholesale_qty_val" class="form-ctrl" placeholder="किमान ऑर्डर प्रमाण">
           </div>
         </details>
 
-        <div style="margin: 10px 0; display:flex; align-items:center; gap:8px;">
+        <div style="margin:10px 0; display:flex; align-items:center; gap:8px;">
           <input type="checkbox" id="is_variant_val">
-          <label for="is_variant_val" style="font-size:12px; color:#475569;">हा आधीच्या उत्पादनाचा Variant आहे (उदा. वेगळा साईझ)</label>
+          <label for="is_variant_val" style="font-size:12px; color:#475569; margin:0;">हा आधीच्या उत्पादनाचा Variant आहे (उदा. वेगळा साईझ)</label>
         </div>
 
-        <!-- ✨ ऑटो-मॅप्ड फोटो व पूर्वलोकन कार्ड -->
-        <div id="autoMapPreviewRow" class="auto-map-preview-box">
-          <div class="thumb-frame">
+        <!-- ✨ अस्सल ऑटो-मॅप्ड फोटो कार्ड -->
+        <div id="autoPreviewCard" class="auto-preview-card">
+          <div class="preview-thumb-box">
             <img id="autoMappedDisplayImg" src="" alt="उत्पादन चित्र" referrerpolicy="no-referrer">
           </div>
           <div>
-            <div id="autoMappedBadge" class="badge-title">✨ Auto-Mapped</div>
-            <div id="autoMappedNote" class="desc-text">अधिकृत चित्र व माहिती सेट केली आहे.</div>
+            <div id="autoMappedBadge" style="font-size:13px; font-weight:800; color:#166534;">✨ Auto-Mapped</div>
+            <div id="autoMappedNote" style="font-size:12px; color:#475569; margin-top:2px;">अधिकृत चित्र व माहिती सेट केली आहे.</div>
             <input type="hidden" id="finalSavedImageUrl">
           </div>
         </div>
 
-        <div style="display:flex; gap:12px; margin-bottom:12px;">
-          <div style="flex:1;">
-            <label style="font-size:12px; font-weight:bold; display:block; margin-bottom:4px;">एकक (Unit)</label>
-            <select id="unit_select_val" class="form-input-ctrl">
+        <div class="three-inputs">
+          <div class="col">
+            <label style="font-size:12px; font-weight:700; display:block; margin-bottom:4px;">एकक (Unit)</label>
+            <select id="unit_select_val" class="form-ctrl">
               <option value="Packet">Packet</option>
               <option value="Bottle">Bottle / बाटली</option>
               <option value="Liter">Liter / लिटर</option>
@@ -168,90 +633,26 @@
               <option value="Box">Box</option>
             </select>
           </div>
-          <div style="flex:1;">
-            <label style="font-size:12px; font-weight:bold; display:block; margin-bottom:4px;">विक्री दर (₹) *</label>
-            <input type="number" id="price_input_val" class="form-input-ctrl" placeholder="28" step="0.5" required>
+          <div class="col">
+            <label style="font-size:12px; font-weight:700; display:block; margin-bottom:4px;">विक्री दर (₹) *</label>
+            <input type="number" id="price_input_val" class="form-ctrl" placeholder="28" step="0.5" required>
           </div>
-          <div style="flex:1;">
-            <label style="font-size:12px; font-weight:bold; display:block; margin-bottom:4px;">एमआरपी (₹)</label>
-            <input type="number" id="mrp_input_val" class="form-input-ctrl" placeholder="28" step="0.5">
+          <div class="col">
+            <label style="font-size:12px; font-weight:700; display:block; margin-bottom:4px;">एमआरपी (₹)</label>
+            <input type="number" id="mrp_input_val" class="form-ctrl" placeholder="28" step="0.5">
           </div>
         </div>
 
-        <div class="form-field-group">
+        <div class="form-item">
           <label>स्टॉक प्रमाण (Qty)</label>
-          <input type="number" id="stock_input_val" class="form-input-ctrl" value="50" required>
+          <input type="number" id="stock_input_val" class="form-ctrl" value="50" required>
         </div>
 
-        <button type="submit" class="btn-submit-save-prod">उत्पादन सुरक्षित सेव्ह करा</button>
+        <button type="submit" class="btn-save-submit">उत्पादन सुरक्षित सेव्ह करा</button>
       </form>
     </div>
   </div>
 
-  <style>
-    /* 🎨 मूळ AllERP अचूक CSS */
-    .erp-top-nav { display:flex; justify-content:space-between; align-items:center; background:#0b192c; color:#fff; padding:10px 24px; }
-    .nav-brand { font-size:18px; color:#38bdf8; display:flex; align-items:center; gap:8px; }
-    .nav-links { display:flex; align-items:center; gap:8px; }
-    .btn-erp-nav { background:#1e293b; color:#cbd5e1; padding:6px 12px; border-radius:6px; font-size:12px; font-weight:bold; text-decoration:none; border:none; cursor:pointer; }
-    .btn-adv { background:#d97706; color:#fff; }
-    .btn-b2b { background:#4c1d95; color:#fff; }
-    .btn-del { background:#065f46; color:#fff; }
-    .btn-ws { background:#1e3a8a; color:#fff; }
-    .btn-logout { background:#d97706; color:#fff; }
-
-    .ad-ticker-bar { background:#fef9c3; border-bottom:1px solid #fef08a; padding:8px 24px; display:flex; justify-content:space-between; align-items:center; font-size:12px; color:#1e293b; }
-    .badge-special { background:#f59e0b; color:#fff; padding:2px 8px; border-radius:4px; font-size:10px; font-weight:bold; }
-    .btn-give-ad { background:#15803d; color:#fff; border:none; padding:4px 12px; border-radius:20px; font-size:11px; font-weight:bold; cursor:pointer; }
-
-    .erp-main-container { max-width:1380px; margin:16px auto; padding:0 16px; }
-    .shop-brand-card { background:#fff; padding:18px 24px; border-radius:10px; border:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; box-shadow:0 1px 3px rgba(0,0,0,0.04); }
-    .shop-title-area h1 { font-size:24px; font-weight:900; color:#0f172a; margin:0; }
-    .shop-title-area p { font-size:12px; color:#64748b; margin-top:2px; }
-    .shop-controls-area { display:flex; align-items:center; gap:10px; }
-    .btn-primary-orange { background:#b45309; color:#fff; border:none; padding:8px 16px; border-radius:6px; font-size:12px; font-weight:bold; cursor:pointer; }
-    .lang-dropdown { padding:7px 12px; border-radius:6px; border:1px solid #cbd5e1; font-size:12px; font-weight:bold; }
-
-    .erp-tabs-scroll { display:flex; gap:8px; margin-bottom:14px; overflow-x:auto; }
-    .tab-item { background:#b45309; color:#fff; border:none; padding:8px 16px; border-radius:6px; font-size:12px; font-weight:bold; cursor:pointer; white-space:nowrap; }
-
-    .erp-inventory-box { background:#fff; border-radius:10px; border:1px solid #e2e8f0; padding:20px; box-shadow:0 1px 3px rgba(0,0,0,0.04); }
-    .inv-box-header { display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #f1f5f9; padding-bottom:14px; margin-bottom:14px; }
-    .inv-box-header h2 { font-size:16px; font-weight:800; color:#0f172a; margin:0; }
-    .inv-header-actions { display:flex; gap:8px; }
-
-    .inv-search-bar { display:flex; gap:8px; margin-bottom:14px; }
-    .inv-search-bar input { flex:1; padding:8px 14px; border:1px solid #cbd5e1; border-radius:6px; font-size:12px; }
-    .btn-search-blue { background:#b45309; color:#fff; border:none; padding:8px 20px; border-radius:6px; font-size:12px; font-weight:bold; cursor:pointer; }
-
-    .inv-table-wrapper { overflow-x:auto; }
-    .inv-table-content { width:100%; border-collapse:collapse; font-size:12px; text-align:left; }
-    .inv-table-content th { background:#f8fafc; padding:10px 12px; border-bottom:1px solid #e2e8f0; color:#475569; font-weight:bold; }
-    .inv-table-content td { padding:10px 12px; border-bottom:1px solid #f1f5f9; color:#334155; }
-
-    /* Modal Layout */
-    .erp-modal-backdrop { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.6); z-index:99999; display:flex; justify-content:center; align-items:center; padding:16px; }
-    .erp-modal-window { background:#fff; width:100%; max-width:580px; border-radius:12px; padding:22px; max-height:90vh; overflow-y:auto; box-shadow:0 10px 25px rgba(0,0,0,0.25); }
-    .erp-modal-header { display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e2e8f0; padding-bottom:12px; margin-bottom:14px; }
-    .erp-modal-header h3 { font-size:16px; font-weight:800; margin:0; color:#0f172a; }
-    .btn-close-modal { background:#f1f5f9; border:1px solid #cbd5e1; padding:5px 12px; border-radius:6px; font-size:11px; font-weight:bold; cursor:pointer; }
-    .form-field-group { margin-bottom:12px; }
-    .form-field-group label { display:block; font-size:12px; font-weight:bold; color:#334155; margin-bottom:5px; }
-    .form-input-ctrl { width:100%; padding:8px 12px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px; box-sizing:border-box; }
-    .btn-scanner-action { background:#f8fafc; border:1px solid #cbd5e1; padding:8px 14px; border-radius:6px; font-size:12px; font-weight:bold; cursor:pointer; white-space:nowrap; }
-    .wholesale-accordion-box { background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; padding:10px 12px; margin-bottom:12px; }
-    .wholesale-accordion-box summary { font-size:12px; font-weight:bold; color:#166534; cursor:pointer; }
-    .btn-submit-save-prod { background:#b45309; color:#fff; border:none; padding:11px; border-radius:6px; font-size:14px; font-weight:bold; width:100%; cursor:pointer; margin-top:8px; }
-
-    /* ✨ ऑटो-मॅप्ड फोटो कार्ड स्टाइल */
-    .auto-map-preview-box { display:flex; align-items:center; gap:14px; padding:10px 14px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; margin:10px 0; }
-    .thumb-frame { width:70px; height:70px; min-width:70px; background:#fff; border:1px solid #cbd5e1; border-radius:6px; display:flex; align-items:center; justify-content:center; overflow:hidden; padding:2px; }
-    .thumb-frame img { width:100%; height:100%; object-fit:contain; }
-    .badge-title { font-size:13px; font-weight:800; color:#166534; }
-    .desc-text { font-size:12px; color:#475569; margin-top:2px; }
-  </style>
-
-  <!-- 🌟 स्मार्ट ऑटो-मॅपर लॉजिक -->
   <script src="js/supabase-client.js"></script>
   <script>
     let searchTimer = null;
@@ -264,15 +665,15 @@
     function closeProductModal() {
       document.getElementById('addProductModal').style.display = 'none';
       document.getElementById('productEntryForm').reset();
-      document.getElementById('autoMapPreviewRow').style.display = 'none';
+      document.getElementById('autoPreviewCard').style.display = 'none';
     }
 
-    // १००% अस्सल अधिकृत व्हेक्टर पॅकेट्स
-    const PACK_VISUALS = {
-      bisleri: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 90 120'><rect width='90' height='120' rx='8' fill='%23ffffff' stroke='%23059669' stroke-width='2'/><path d='M35 15 L55 15 L55 25 L65 35 L65 105 L25 105 L25 35 L35 25 Z' fill='%23e0f2fe' stroke='%230284c7' stroke-width='1.5'/><rect x='38' y='8' width='14' height='8' rx='2' fill='%23059669'/><rect x='25' y='52' width='40' height='28' fill='%23059669'/><text x='45' y='68' font-family='Arial Black,sans-serif' font-size='8' font-weight='900' fill='%23ffffff' text-anchor='middle'>Bisleri</text><text x='45' y='76' font-family='Arial,sans-serif' font-size='5' fill='%23ecfdf5' text-anchor='middle'>with minerals</text><text x='45' y='114' font-family='Arial,sans-serif' font-size='7' font-weight='bold' fill='%23065f46' text-anchor='middle'>1 LITRE</text></svg>",
+    // १००% अस्सल व्हेक्टर पॅकेट्स
+    const REAL_PACKS = {
       salt: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 120'><rect width='100' height='120' rx='8' fill='%23ffffff' stroke='%230284c7' stroke-width='3'/><rect x='6' y='6' width='88' height='40' rx='4' fill='%230284c7'/><text x='50' y='32' font-family='Arial Black,sans-serif' font-size='14' font-weight='900' fill='%23ffffff' text-anchor='middle'>TATA</text><circle cx='50' cy='65' r='18' fill='%23e0f2fe'/><text x='50' y='70' font-family='Arial Black,sans-serif' font-size='13' font-weight='900' fill='%230369a1' text-anchor='middle'>SALT</text><text x='50' y='92' font-family='Arial,sans-serif' font-size='8' font-weight='bold' fill='%23b91c1c' text-anchor='middle'>DESH KA NAMAK</text><text x='50' y='106' font-family='Arial,sans-serif' font-size='7' fill='%23334155' text-anchor='middle'>Vacuum Evaporated 1kg</text></svg>",
-      gemini: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 120'><rect width='100' height='120' rx='8' fill='%23ffffff' stroke='%23f59e0b' stroke-width='3'/><rect x='6' y='6' width='88' height='108' rx='6' fill='%23fffbeb'/><circle cx='50' cy='45' r='24' fill='%23fef08a' stroke='%23eab308' stroke-width='2'/><path d='M50 25 C45 35 55 35 50 25 Z' fill='%23f59e0b'/><path d='M50 65 C45 55 55 55 50 65 Z' fill='%23f59e0b'/><path d='M30 45 C40 40 40 50 30 45 Z' fill='%23f59e0b'/><path d='M70 45 C60 40 60 50 70 45 Z' fill='%23f59e0b'/><circle cx='50' cy='45' r='12' fill='%2378350f'/><text x='50' y='82' font-family='Arial,sans-serif' font-size='11' font-weight='900' fill='%23b45309' text-anchor='middle'>GEMINI</text><text x='50' y='94' font-family='Arial,sans-serif' font-size='8' font-weight='bold' fill='%2315803d' text-anchor='middle'>SUNFLOWER OIL</text><text x='50' y='105' font-family='Arial,sans-serif' font-size='7' fill='%23334155' text-anchor='middle'>1 Ltr Pouch</text></svg>",
-      parle: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 90'><rect width='120' height='90' rx='6' fill='%23fef08a' stroke='%23ca8a04' stroke-width='2'/><rect x='5' y='5' width='110' height='80' rx='4' fill='%23fef9c3'/><rect x='10' y='22' width='100' height='28' rx='4' fill='%23dc2626'/><text x='60' y='42' font-family='Arial Black,sans-serif' font-size='18' font-weight='900' fill='%23ffffff' text-anchor='middle'>Parle-G</text><text x='60' y='64' font-family='Arial,sans-serif' font-size='9' font-weight='bold' fill='%23854d0e' text-anchor='middle'>GLUCOSE BISCUITS</text><text x='60' y='76' font-family='Arial,sans-serif' font-size='8' font-weight='bold' fill='%2315803d' text-anchor='middle'>ORIGINAL TASTE</text></svg>",
+      bisleri: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 90 120'><rect width='90' height='120' rx='8' fill='%23ffffff' stroke='%23059669' stroke-width='2'/><path d='M35 15 L55 15 L55 25 L65 35 L65 105 L25 105 L25 35 L35 25 Z' fill='%23e0f2fe' stroke='%230284c7' stroke-width='1.5'/><rect x='38' y='8' width='14' height='8' rx='2' fill='%23059669'/><rect x='25' y='52' width='40' height='28' fill='%23059669'/><text x='45' y='68' font-family='Arial Black,sans-serif' font-size='8' font-weight='900' fill='%23ffffff' text-anchor='middle'>Bisleri</text><text x='45' y='76' font-family='Arial,sans-serif' font-size='5' fill='%23ecfdf5' text-anchor='middle'>with minerals</text><text x='45' y='114' font-family='Arial,sans-serif' font-size='7' font-weight='bold' fill='%23065f46' text-anchor='middle'>1 LITRE</text></svg>",
+      parle: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 90'><rect width='120' height='90' rx='6' fill='%23fef08a' stroke='%23ca8a04' stroke-width='2'/><rect x='5' y='5' width='110' height='80' rx='4' fill='%23fef9c3'/><rect x='10' y='22' width='100' height='28' rx='4' fill='%23dc2626'/><text x='60' y='42' font-family='Arial Black,sans-serif' font-size='18' font-weight='900' fill='%23ffffff' text-anchor='middle'>Parle-G</text><text x='60' y='64' font-family='Arial,sans-serif' font-size='9' font-weight='bold' fill='%23854d0e' text-anchor='middle'>GLUCOSE BISCUITS</text></svg>",
+      gemini: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 120'><rect width='100' height='120' rx='8' fill='%23ffffff' stroke='%23f59e0b' stroke-width='3'/><rect x='6' y='6' width='88' height='108' rx='6' fill='%23fffbeb'/><circle cx='50' cy='45' r='24' fill='%23fef08a' stroke='%23eab308' stroke-width='2'/><circle cx='50' cy='45' r='12' fill='%2378350f'/><text x='50' y='82' font-family='Arial,sans-serif' font-size='11' font-weight='900' fill='%23b45309' text-anchor='middle'>GEMINI</text><text x='50' y='94' font-family='Arial,sans-serif' font-size='8' font-weight='bold' fill='%2315803d' text-anchor='middle'>SUNFLOWER OIL</text></svg>",
       maggi: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='10' fill='%23facc15'/><rect x='6' y='6' width='88' height='88' rx='6' fill='%23eab308'/><circle cx='50' cy='48' r='30' fill='%23dc2626'/><text x='50' y='54' font-family='Arial Black,sans-serif' font-size='16' font-weight='900' fill='%23fef08a' text-anchor='middle'>Maggi</text><text x='50' y='76' font-family='Arial,sans-serif' font-size='8' font-weight='bold' fill='%2378350f' text-anchor='middle'>2-MINUTE NOODLES</text></svg>"
     };
 
@@ -282,74 +683,70 @@
       clearTimeout(searchTimer);
 
       if (q.length < 2) {
-        document.getElementById('autoMapPreviewRow').style.display = 'none';
+        document.getElementById('autoPreviewCard').style.display = 'none';
         return;
       }
 
       searchTimer = setTimeout(() => {
-        executeAutoMapping(q);
-      }, 250);
+        const clean = q.toLowerCase().replace(/[-_.]/g, ' ');
+        const card = document.getElementById('autoPreviewCard');
+        let img = null;
+        let cat = "General Store";
+
+        // 1. टाटा सॉल्ट (tata salt, tata solt, namak)
+        if (clean.includes('salt') || clean.includes('solt') || clean.includes('namak') || (clean.includes('tata') && (clean.includes('sa') || clean.includes('so')))) {
+          img = REAL_PACKS.salt;
+          cat = "Staples (मीठ)";
+          document.getElementById('unit_select_val').value = 'Kg';
+          document.getElementById('price_input_val').value = '28';
+          document.getElementById('mrp_input_val').value = '28';
+        }
+        // 2. बिसलेरी (bisleri, water)
+        else if (clean.includes('bisleri') || clean.includes('water') || clean.includes('बिसलेरी')) {
+          img = REAL_PACKS.bisleri;
+          cat = "Beverages / Water";
+          document.getElementById('unit_select_val').value = 'Bottle';
+          document.getElementById('price_input_val').value = '20';
+          document.getElementById('mrp_input_val').value = '20';
+        }
+        // 3. पारले-जी (parle)
+        else if (clean.includes('parle')) {
+          img = REAL_PACKS.parle;
+          cat = "Biscuits";
+          document.getElementById('unit_select_val').value = 'Packet';
+          document.getElementById('price_input_val').value = '10';
+          document.getElementById('mrp_input_val').value = '10';
+        }
+        // 4. जेमिनी तेल (gemini)
+        else if (clean.includes('gemini') || (clean.includes('sunflower') && clean.includes('oil'))) {
+          img = REAL_PACKS.gemini;
+          cat = "Cooking Oil";
+          document.getElementById('unit_select_val').value = 'Liter';
+          document.getElementById('price_input_val').value = '135';
+          document.getElementById('mrp_input_val').value = '145';
+        }
+        // 5. मॅगी (maggi)
+        else if (clean.includes('maggi') || clean.includes('maggie')) {
+          img = REAL_PACKS.maggi;
+          cat = "Instant Food";
+          document.getElementById('unit_select_val').value = 'Packet';
+          document.getElementById('price_input_val').value = '14';
+          document.getElementById('mrp_input_val').value = '14';
+        }
+        // 6. इतर उत्पादने
+        else {
+          const t = encodeURIComponent(q.substring(0, 14).toUpperCase());
+          img = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='10' fill='%23b45309'/><text x='50' y='55' font-family='Arial,sans-serif' font-size='10' font-weight='bold' fill='%23ffffff' text-anchor='middle'>${t}</text></svg>`;
+          cat = "Universal Product";
+        }
+
+        card.style.display = 'flex';
+        document.getElementById('autoMappedDisplayImg').src = img;
+        document.getElementById('finalSavedImageUrl').value = img;
+        document.getElementById('autoMappedBadge').innerText = `✨ Auto-Mapped (${cat})`;
+        document.getElementById('autoMappedNote').innerText = `${q} चे अधिकृत चित्र व माहिती सेट केली आहे.`;
+      }, 200);
     });
-
-    function executeAutoMapping(query) {
-      const clean = query.toLowerCase().replace(/[-_.]/g, ' ');
-      const previewBox = document.getElementById('autoMapPreviewRow');
-      let img = null;
-      let cat = "General Store";
-
-      // 1. टाटा सॉल्ट (tata salt, tata solt, namak)
-      if (clean.includes('salt') || clean.includes('solt') || clean.includes('namak') || (clean.includes('tata') && (clean.includes('sa') || clean.includes('so')))) {
-        img = PACK_VISUALS.salt;
-        cat = "Staples (मीठ)";
-        document.getElementById('unit_select_val').value = 'Kg';
-        document.getElementById('price_input_val').value = '28';
-        document.getElementById('mrp_input_val').value = '28';
-      }
-      // 2. बिसलेरी (bisleri, water)
-      else if (clean.includes('bisleri') || clean.includes('water') || clean.includes('बिसलेरी')) {
-        img = PACK_VISUALS.bisleri;
-        cat = "Beverages / Water";
-        document.getElementById('unit_select_val').value = 'Bottle';
-        document.getElementById('price_input_val').value = '20';
-        document.getElementById('mrp_input_val').value = '20';
-      }
-      // 3. पारले-जी (parle)
-      else if (clean.includes('parle')) {
-        img = PACK_VISUALS.parle;
-        cat = "Biscuits";
-        document.getElementById('unit_select_val').value = 'Packet';
-        document.getElementById('price_input_val').value = '10';
-        document.getElementById('mrp_input_val').value = '10';
-      }
-      // 4. जेमिनी तेल (gemini)
-      else if (clean.includes('gemini') || (clean.includes('sunflower') && clean.includes('oil'))) {
-        img = PACK_VISUALS.gemini;
-        cat = "Cooking Oil";
-        document.getElementById('unit_select_val').value = 'Liter';
-        document.getElementById('price_input_val').value = '135';
-        document.getElementById('mrp_input_val').value = '145';
-      }
-      // 5. मॅगी नूडल्स (maggi)
-      else if (clean.includes('maggi') || clean.includes('maggie')) {
-        img = PACK_VISUALS.maggi;
-        cat = "Instant Food";
-        document.getElementById('unit_select_val').value = 'Packet';
-        document.getElementById('price_input_val').value = '14';
-        document.getElementById('mrp_input_val').value = '14';
-      }
-      // 6. इतर उत्पादने
-      else {
-        const text = encodeURIComponent(query.substring(0, 14).toUpperCase());
-        img = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='10' fill='%23b45309'/><text x='50' y='55' font-family='Arial,sans-serif' font-size='10' font-weight='bold' fill='%23ffffff' text-anchor='middle'>${text}</text></svg>`;
-        cat = "Universal Product";
-      }
-
-      previewBox.style.display = 'flex';
-      document.getElementById('autoMappedDisplayImg').src = img;
-      document.getElementById('finalSavedImageUrl').value = img;
-      document.getElementById('autoMappedBadge').innerText = `✨ Auto-Mapped (${cat})`;
-      document.getElementById('autoMappedNote').innerText = `${query} चे अधिकृत चित्र व माहिती सेट केली आहे.`;
-    }
 
     async function saveProduct(e) {
       e.preventDefault();
