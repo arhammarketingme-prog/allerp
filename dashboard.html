@@ -3,14 +3,30 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AllERP — Universal Business OS</title>
-  <!-- मूळ ऑल-ईआरपी डिझाइनसाठी आवश्यक Tailwind व Icons -->
+  <title>AllERP — Universal Multi-Business Operating System</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="css/style.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    /* ऑटो-मॅप्ड फोटो कार्ड */
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    
+    /* Pixel-Perfect Custom Classes */
+    .erp-tab-btn {
+      background-color: #b45309;
+      color: #ffffff;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 8px 16px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+      transition: background 0.15s ease;
+    }
+    .erp-tab-btn:hover { background-color: #92400e; }
+    
     .auto-map-preview-box {
       display: none;
       align-items: center;
@@ -42,147 +58,150 @@
     }
   </style>
 </head>
-<body class="bg-slate-100 text-slate-800 antialiased font-sans">
+<body class="bg-[#f8fafc] text-slate-800 antialiased">
 
-  <!-- १. मूळ AllERP टॉप डार्क नेव्हिगेशन बार -->
-  <header class="bg-[#0b1b36] text-white px-4 py-2.5 shadow-md sticky top-0 z-50">
-    <div class="max-w-[1400px] mx-auto flex flex-wrap items-center justify-between gap-3">
+  <!-- 1. AllERP Top Dark Navbar (Pixel-Perfect from Screenshot) -->
+  <header class="bg-[#0b1728] text-white px-4 py-2 border-b border-slate-800">
+    <div class="max-w-[1400px] mx-auto flex items-center justify-between">
       <div class="flex items-center gap-2">
-        <span class="text-sky-400 text-lg font-black tracking-wide flex items-center gap-1.5">
-          <i class="fa-solid fa-rocket"></i> AllERP
+        <span class="text-[#38bdf8] text-lg font-black tracking-wide flex items-center gap-1.5">
+          <i class="fa-solid fa-rocket text-sm"></i> AllERP
         </span>
-        <span class="text-[11px] text-slate-400 font-medium hidden sm:inline">Smart Marketplace</span>
+        <span class="text-[11px] text-slate-400 font-normal">Smart Marketplace</span>
       </div>
 
-      <nav class="flex flex-wrap items-center gap-1.5 text-xs font-bold">
-        <a href="index.html" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded flex items-center gap-1.5">
-          <i class="fa-solid fa-house"></i> Home
+      <nav class="flex items-center gap-1.5 text-xs font-semibold">
+        <a href="index.html" class="bg-[#1e293b] hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded flex items-center gap-1.5">
+          <i class="fa-solid fa-house text-[11px]"></i> Home
         </a>
-        <a href="advertiser.html" class="bg-amber-600 hover:bg-amber-700 text-white px-3 py-1.5 rounded flex items-center gap-1.5">
-          <i class="fa-solid fa-bullhorn"></i> Advertise
+        <a href="advertiser.html" class="bg-[#d97706] hover:bg-[#b45309] text-white px-3 py-1.5 rounded flex items-center gap-1.5">
+          <i class="fa-solid fa-bullhorn text-[11px]"></i> Advertise
         </a>
-        <a href="b2b-collective.html" class="bg-purple-900 hover:bg-purple-800 text-purple-200 px-3 py-1.5 rounded flex items-center gap-1.5">
-          <i class="fa-solid fa-boxes-stacked"></i> B2B
+        <a href="b2b-collective.html" class="bg-[#4c1d95] hover:bg-[#5b21b6] text-purple-100 px-3 py-1.5 rounded flex items-center gap-1.5">
+          <i class="fa-solid fa-boxes-stacked text-[11px]"></i> B2B
         </a>
-        <a href="app-store.html" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded flex items-center gap-1.5">
-          <i class="fa-solid fa-mobile-screen"></i> Apps
+        <a href="app-store.html" class="bg-[#1e293b] hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded flex items-center gap-1.5">
+          <i class="fa-solid fa-mobile-screen text-[11px]"></i> Apps
         </a>
-        <a href="delivery-boy.html" class="bg-emerald-800 hover:bg-emerald-700 text-emerald-100 px-3 py-1.5 rounded flex items-center gap-1.5">
-          <i class="fa-solid fa-motorcycle"></i> डिलिव्हरी
+        <a href="delivery-boy.html" class="bg-[#065f46] hover:bg-[#047857] text-emerald-100 px-3 py-1.5 rounded flex items-center gap-1.5">
+          <i class="fa-solid fa-motorcycle text-[11px]"></i> डिलिव्हरी
         </a>
-        <button class="bg-amber-600 hover:bg-amber-700 text-white px-3 py-1.5 rounded">
-          <i class="fa-solid fa-bell"></i>
+        <button class="bg-[#d97706] hover:bg-[#b45309] text-white w-7 h-7 rounded flex items-center justify-center">
+          <i class="fa-solid fa-bell text-[11px]"></i>
         </button>
-        <a href="b2b-wholesale.html" class="bg-blue-900 hover:bg-blue-800 text-blue-100 px-3 py-1.5 rounded flex items-center gap-1.5">
-          <i class="fa-solid fa-warehouse"></i> Wholesale
+        <a href="b2b-wholesale.html" class="bg-[#1e3a8a] hover:bg-[#1d4ed8] text-blue-100 px-3 py-1.5 rounded flex items-center gap-1.5">
+          <i class="fa-solid fa-warehouse text-[11px]"></i> Wholesale
         </a>
-        <a href="admin.html" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded flex items-center gap-1.5">
-          <i class="fa-solid fa-chart-line"></i> My ERP
+        <a href="admin.html" class="bg-[#1e293b] hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded flex items-center gap-1.5">
+          <i class="fa-solid fa-chart-line text-[11px]"></i> My ERP
         </a>
-        <button class="bg-amber-600 hover:bg-amber-700 text-white px-3 py-1.5 rounded font-bold">
+        <button class="bg-[#d97706] hover:bg-[#b45309] text-white px-3 py-1.5 rounded font-bold">
           Logout
         </button>
       </nav>
     </div>
   </header>
 
-  <!-- २. मूळ व्हॉट्सॲप पिवळी जाहिरात पट्टी -->
-  <div class="bg-amber-300 border-b border-amber-400 px-4 py-2 text-xs font-bold text-amber-950 flex flex-wrap items-center justify-between gap-2">
-    <div class="flex items-center gap-2">
-      <span class="bg-amber-500 text-white text-[10px] px-2 py-0.5 rounded font-black">⚡ स्पेशल ऑफर</span>
-      <span>सुपरफास्ट! आपल्या दुकानाची जाहिरात थेट ग्राहकांच्या मोबाईलवर दाखवा - फक्त ₹९९ पासून सुरू!</span>
-    </div>
-    <div class="flex items-center gap-3">
-      <span>WhatsApp करा: <b>+91 91309 77...</b></span>
-      <button onclick="window.location.href='advertiser.html'" class="bg-emerald-700 hover:bg-emerald-800 text-white px-3.5 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-        <i class="fa-solid fa-bullhorn text-[10px]"></i> जाहिरात द्या
-      </button>
+  <!-- 2. WhatsApp Notification Yellow Bar (Exact Color & Font Match) -->
+  <div class="bg-[#fef9c3] border-b border-[#fef08a] px-4 py-2 text-xs font-medium text-slate-800">
+    <div class="max-w-[1400px] mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <span class="bg-[#f59e0b] text-white text-[10px] px-2 py-0.5 rounded font-bold">⚡ स्पेशल ऑफर</span>
+        <span class="text-slate-800">सुपरफास्ट! आपल्या दुकानाची जाहिरात थेट ग्राहकांच्या मोबाईलवर दाखवा - फक्त ₹९९ पासून सुरू!</span>
+      </div>
+      <div class="flex items-center gap-3">
+        <span class="text-slate-700">WhatsApp करा: <b class="text-slate-900">+91 91309 77...</b></span>
+        <button onclick="window.location.href='advertiser.html'" class="bg-[#15803d] hover:bg-[#166534] text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5">
+          <i class="fa-solid fa-bullhorn text-[10px]"></i> जाहिरात द्या
+        </button>
+      </div>
     </div>
   </div>
 
-  <!-- मुख्य कंटेनर -->
-  <main class="max-w-[1400px] mx-auto p-4 sm:p-6 space-y-5">
+  <!-- Main Workspace -->
+  <main class="max-w-[1400px] mx-auto p-4 sm:p-5 space-y-4">
 
-    <!-- ३. दुकानदाराचे हेडर कार्ड (Nikhil Kirana) -->
-    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <!-- 3. Nikhil Kirana Identity Card (Pixel-Perfect Alignment) -->
+    <div class="bg-white rounded-lg border border-slate-200/80 p-5 shadow-sm flex items-center justify-between">
       <div>
-        <h1 class="text-2xl font-black text-slate-900 tracking-tight">Nikhil Kirana</h1>
-        <p class="text-xs text-slate-500 font-medium mt-0.5">Universal Multi-Business Operating System & Local Retail Network</p>
+        <h1 class="text-2xl font-black text-slate-900">Nikhil Kirana</h1>
+        <p class="text-xs text-slate-400 mt-0.5 font-normal">Universal Multi-Business Operating System & Local Retail Network</p>
       </div>
 
-      <div class="flex flex-wrap items-center gap-2.5">
-        <button class="bg-amber-600 hover:bg-amber-700 text-white px-3.5 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-sm">
-          <i class="fa-solid fa-globe"></i> ग्लोबल मार्केटप्लेस
+      <!-- Right Action Items (In Single Horizontal Row as Original) -->
+      <div class="flex items-center gap-3">
+        <button class="bg-[#b45309] hover:bg-[#92400e] text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-sm">
+          <i class="fa-solid fa-globe text-xs"></i> ग्लोबल मार्केटप्लेस
         </button>
-        <select class="bg-white border border-slate-300 text-slate-700 px-3 py-2 rounded-lg text-xs font-bold outline-none">
+        <select class="bg-white border border-slate-300 text-slate-700 px-3 py-2 rounded-lg text-xs font-bold outline-none cursor-pointer">
           <option value="mr" selected>मराठी</option>
           <option value="en">English</option>
           <option value="hi">हिंदी</option>
         </select>
-        <button class="bg-amber-600 hover:bg-amber-700 text-white px-3.5 py-2 rounded-lg text-xs font-bold flex items-center gap-1 shadow-sm">
-          <i class="fa-solid fa-robot"></i> AI
+        <button class="bg-[#b45309] hover:bg-[#92400e] text-white px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-sm">
+          <i class="fa-solid fa-robot text-xs"></i> AI
         </button>
       </div>
     </div>
 
-    <!-- ४. मूळ ईआरपी टॅब्स बार -->
-    <div class="flex items-center gap-2 overflow-x-auto pb-1 text-xs font-bold">
-      <button class="bg-amber-600 text-white px-4 py-2.5 rounded-lg flex items-center gap-1.5 shadow-sm whitespace-nowrap">
-        <i class="fa-solid fa-chart-pie"></i> डॅशबोर्ड
+    <!-- 4. ERP Action Tabs Bar (All In Single Row) -->
+    <div class="flex items-center gap-2 overflow-x-auto pb-1">
+      <button class="erp-tab-btn">
+        <i class="fa-solid fa-chart-pie text-xs"></i> डॅशबोर्ड
       </button>
-      <button class="bg-amber-600 text-white px-4 py-2.5 rounded-lg flex items-center gap-1.5 shadow-sm whitespace-nowrap">
-        <i class="fa-solid fa-box"></i> इन्व्हेंटरी व स्टॉक
+      <button class="erp-tab-btn">
+        <i class="fa-solid fa-box text-xs"></i> इन्व्हेंटरी व स्टॉक
       </button>
-      <button class="bg-amber-600 text-white px-4 py-2.5 rounded-lg flex items-center gap-1.5 shadow-sm whitespace-nowrap">
-        <i class="fa-solid fa-receipt"></i> विक्री व इन्व्हॉइस
+      <button class="erp-tab-btn">
+        <i class="fa-solid fa-receipt text-xs"></i> विक्री व इन्व्हॉइस
       </button>
-      <button class="bg-amber-600 text-white px-4 py-2.5 rounded-lg flex items-center gap-1.5 shadow-sm whitespace-nowrap">
-        <i class="fa-solid fa-sheet-plastic"></i> प्रकल्प / साईट्स
+      <button class="erp-tab-btn">
+        <i class="fa-solid fa-sheet-plastic text-xs"></i> प्रकल्प / साईट्स
       </button>
-      <button class="bg-amber-600 text-white px-4 py-2.5 rounded-lg flex items-center gap-1.5 shadow-sm whitespace-nowrap">
-        <i class="fa-solid fa-bolt"></i> POS काउंटर
+      <button class="erp-tab-btn">
+        <i class="fa-solid fa-bolt text-xs"></i> POS काउंटर
       </button>
-      <button class="bg-amber-600 text-white px-4 py-2.5 rounded-lg flex items-center gap-1.5 shadow-sm whitespace-nowrap">
-        <i class="fa-solid fa-cart-shopping"></i> ऑनलाईन ऑर्डर्स
+      <button class="erp-tab-btn">
+        <i class="fa-solid fa-cart-shopping text-xs"></i> ऑनलाईन ऑर्डर्स
       </button>
     </div>
 
-    <!-- ५. मूळ इन्व्हेंटरी व उत्पादने कार्ड -->
-    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
+    <!-- 5. Inventory & Products Panel -->
+    <div class="bg-white rounded-lg border border-slate-200/80 p-5 shadow-sm">
+      <div class="flex items-center justify-between pb-4 border-b border-slate-100">
         <h2 class="text-base font-extrabold text-slate-800 flex items-center gap-2">
-          <i class="fa-solid fa-box-open text-amber-600"></i> इन्व्हेंटरी व उत्पादने (Universal Inventory)
+          <i class="fa-solid fa-box-open text-[#b45309]"></i> इन्व्हेंटरी व उत्पादने (Universal Inventory)
         </h2>
 
         <div class="flex items-center gap-2">
-          <button class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold px-3.5 py-2 rounded-lg flex items-center gap-1.5 shadow-sm">
-            <i class="fa-solid fa-globe"></i> ग्लोबल मार्केटप्लेस
+          <button class="bg-[#b45309] hover:bg-[#92400e] text-white text-xs font-bold px-3.5 py-2 rounded-lg flex items-center gap-1.5 shadow-sm">
+            <i class="fa-solid fa-globe text-xs"></i> ग्लोबल मार्केटप्लेस
           </button>
-          <button onclick="openProductModal()" class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold px-3.5 py-2 rounded-lg flex items-center gap-1.5 shadow-sm">
-            <i class="fa-solid fa-plus"></i> नवीन प्रॉडक्ट जोडा
+          <button onclick="openProductModal()" class="bg-[#b45309] hover:bg-[#92400e] text-white text-xs font-bold px-4 py-2 rounded-lg flex items-center gap-1.5 shadow-sm">
+            <i class="fa-solid fa-plus text-xs"></i> नवीन प्रॉडक्ट जोडा
           </button>
         </div>
       </div>
 
-      <!-- शोध बार -->
+      <!-- Quick Search Row -->
       <div class="flex gap-2 my-4">
         <div class="relative flex-1">
           <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 text-xs">
             <i class="fa-solid fa-magnifying-glass"></i>
           </span>
-          <input type="text" placeholder="इन्व्हॉइस, ग्राहक, उत्पादने किंवा ऑर्डर्स शोधा..." class="w-full border border-slate-300 rounded-lg pl-8 pr-3 py-2 text-xs focus:ring-1 focus:ring-amber-500 focus:outline-none">
+          <input type="text" placeholder="इन्व्हॉइस, ग्राहक, उत्पादने किंवा ऑर्डर्स शोधा..." class="w-full border border-slate-300 rounded-lg pl-8 pr-3 py-2 text-xs focus:ring-1 focus:ring-[#b45309] focus:outline-none">
         </div>
-        <button class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold px-5 py-2 rounded-lg shadow-sm">
+        <button class="bg-[#b45309] hover:bg-[#92400e] text-white text-xs font-bold px-6 py-2 rounded-lg shadow-sm">
           शोधा
         </button>
       </div>
 
-      <!-- इन्व्हेंटरी टेबल -->
+      <!-- Inventory Table -->
       <div class="overflow-x-auto">
         <table class="w-full text-left text-xs text-slate-600">
           <thead class="bg-slate-50 text-slate-700 font-bold border-b border-slate-200">
             <tr>
-              <th class="p-3">फोटो</th>
+              <th class="p-3 w-16">फोटो</th>
               <th class="p-3">उत्पादन</th>
               <th class="p-3">विक्री दर</th>
               <th class="p-3">स्टॉक (थेट एडिट करा)</th>
@@ -201,41 +220,41 @@
     </div>
   </main>
 
-  <!-- ================= मूळ पॉप-अप (MODAL) + स्मार्ट ऑटो-मॅपर ================= -->
+  <!-- ================= ORIGINAL ADD PRODUCT MODAL ================= -->
   <div id="addProductModal" class="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center hidden p-4">
     <div class="bg-white rounded-xl shadow-2xl border border-slate-200 max-w-xl w-full p-6 max-h-[92vh] overflow-y-auto">
       
-      <!-- Modal Header -->
+      <!-- Modal Top Header -->
       <div class="flex items-center justify-between border-b border-slate-200 pb-3 mb-4">
         <h3 class="font-black text-slate-800 text-sm sm:text-base flex items-center gap-2">
-          <i class="fa-solid fa-gift text-amber-600"></i> नवीन प्रॉडक्ट जोडा (स्कॅनर व ऑटो-मॅपिंग सह)
+          <i class="fa-solid fa-gift text-[#b45309]"></i> नवीन प्रॉडक्ट जोडा (स्कॅनर व ऑटो-मॅपिंग सह)
         </h3>
-        <button onclick="closeProductModal()" class="bg-amber-600 hover:bg-amber-700 text-white px-3 py-1 rounded-md text-xs font-bold flex items-center gap-1">
+        <button onclick="closeProductModal()" class="bg-[#b45309] hover:bg-[#92400e] text-white px-3 py-1 rounded-md text-xs font-bold flex items-center gap-1">
           ✕ बंद करा
         </button>
       </div>
 
       <form id="productForm" onsubmit="saveProduct(event)">
-        <!-- प्रॉडक्ट नाव -->
+        <!-- Name Field -->
         <div class="mb-3">
           <label class="block text-xs font-bold text-slate-700 mb-1">
             उत्पादनाचे नाव * (उदा. Turmeric Powder, Basmati Rice)
           </label>
           <div class="flex gap-2">
-            <input type="text" id="product_name" class="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-1 focus:ring-amber-500 focus:outline-none" placeholder="उदा. maggi, parle g, bisleri water, tata solt..." autocomplete="off" required>
+            <input type="text" id="product_name" class="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-1 focus:ring-[#b45309] focus:outline-none" placeholder="उदा. maggi, parle g, bisleri water, tata solt..." autocomplete="off" required>
             <button type="button" class="bg-slate-50 border border-slate-300 hover:bg-slate-100 px-3 py-2 rounded-lg text-xs font-bold text-slate-700 flex items-center gap-1.5 whitespace-nowrap">
               <i class="fa-solid fa-camera"></i> स्कॅनर
             </button>
           </div>
         </div>
 
-        <!-- बारकोड -->
+        <!-- Barcode Field -->
         <div class="mb-3">
           <label class="block text-xs font-bold text-slate-700 mb-1">बारकोड (Barcode)</label>
           <input type="text" id="barcode" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs" placeholder="स्कॅन करा किंवा टाईप करा...">
         </div>
 
-        <!-- Wholesale भाव -->
+        <!-- Wholesale Box -->
         <details class="bg-emerald-50/70 border border-emerald-200 rounded-lg p-3 mb-3">
           <summary class="text-xs font-bold text-emerald-800 cursor-pointer">📦 Wholesale भाव (ऐच्छिक — फक्त Wholesaler असल्यास)</summary>
           <div class="grid grid-cols-2 gap-3 mt-3">
@@ -244,13 +263,13 @@
           </div>
         </details>
 
-        <!-- Variant चेकबॉक्स -->
+        <!-- Variant Checkbox -->
         <div class="flex items-center gap-2 mb-3">
-          <input type="checkbox" id="is_variant" class="rounded border-slate-300 text-amber-600 focus:ring-amber-500">
+          <input type="checkbox" id="is_variant" class="rounded border-slate-300 text-[#b45309] focus:ring-[#b45309]">
           <label for="is_variant" class="text-xs text-slate-600">हा आधीच्या उत्पादनाचा Variant आहे (उदा. वेगळा साईझ)</label>
         </div>
 
-        <!-- ✨ अस्सल ऑटो-मॅप्ड फोटो पूर्वलोकन -->
+        <!-- ✨ Auto-Mapped Authentic Photo Card -->
         <div id="autoMapSection" class="auto-map-preview-box">
           <div class="thumb-frame">
             <img id="autoMappedImg" src="" alt="उत्पादन चित्र" referrerpolicy="no-referrer">
@@ -262,7 +281,7 @@
           </div>
         </div>
 
-        <!-- एकक, दर व एमआरपी -->
+        <!-- Units & Prices -->
         <div class="grid grid-cols-3 gap-3 mb-3">
           <div>
             <label class="block text-xs font-bold text-slate-700 mb-1">एकक (Unit)</label>
@@ -286,21 +305,20 @@
           </div>
         </div>
 
-        <!-- स्टॉक -->
+        <!-- Stock -->
         <div class="mb-4">
           <label class="block text-xs font-bold text-slate-700 mb-1">स्टॉक प्रमाण (Qty)</label>
           <input type="number" id="stock_qty" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs" value="50" required>
         </div>
 
-        <!-- सेव्ह बटण -->
-        <button type="submit" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-2.5 rounded-lg text-xs shadow-md">
+        <!-- Submit Button -->
+        <button type="submit" class="w-full bg-[#b45309] hover:bg-[#92400e] text-white font-bold py-2.5 rounded-lg text-xs shadow-md">
           उत्पादन सुरक्षित सेव्ह करा
         </button>
       </form>
     </div>
   </div>
 
-  <!-- जावास्क्रिप्ट व स्मार्ट मॅपर -->
   <script src="js/supabase-client.js"></script>
   <script>
     let searchTimer = null;
@@ -316,7 +334,7 @@
       document.getElementById('autoMapSection').style.display = 'none';
     }
 
-    // अस्सल आणि सुरक्षित व्हेक्टर व्हिज्युअल्स
+    // 🌟 अधिकृत व्हेक्टर पॅकेट्स
     const PACK_VISUALS = {
       bisleri: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 90 120'><rect width='90' height='120' rx='8' fill='%23ffffff' stroke='%23059669' stroke-width='2'/><path d='M35 15 L55 15 L55 25 L65 35 L65 105 L25 105 L25 35 L35 25 Z' fill='%23e0f2fe' stroke='%230284c7' stroke-width='1.5'/><rect x='38' y='8' width='14' height='8' rx='2' fill='%23059669'/><rect x='25' y='52' width='40' height='28' fill='%23059669'/><text x='45' y='68' font-family='Arial Black,sans-serif' font-size='8' font-weight='900' fill='%23ffffff' text-anchor='middle'>Bisleri</text><text x='45' y='76' font-family='Arial,sans-serif' font-size='5' fill='%23ecfdf5' text-anchor='middle'>with minerals</text><text x='45' y='114' font-family='Arial,sans-serif' font-size='7' font-weight='bold' fill='%23065f46' text-anchor='middle'>1 LITRE</text></svg>",
       salt: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 120'><rect width='100' height='120' rx='8' fill='%23ffffff' stroke='%230284c7' stroke-width='3'/><rect x='6' y='6' width='88' height='40' rx='4' fill='%230284c7'/><text x='50' y='32' font-family='Arial Black,sans-serif' font-size='14' font-weight='900' fill='%23ffffff' text-anchor='middle'>TATA</text><circle cx='50' cy='65' r='18' fill='%23e0f2fe'/><text x='50' y='70' font-family='Arial Black,sans-serif' font-size='13' font-weight='900' fill='%230369a1' text-anchor='middle'>SALT</text><text x='50' y='92' font-family='Arial,sans-serif' font-size='8' font-weight='bold' fill='%23b91c1c' text-anchor='middle'>DESH KA NAMAK</text><text x='50' y='106' font-family='Arial,sans-serif' font-size='7' fill='%23334155' text-anchor='middle'>Vacuum Evaporated 1kg</text></svg>",
@@ -326,7 +344,6 @@
       classmate: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='10' fill='%230284c7'/><rect x='45' y='15' width='10' height='60' rx='3' fill='%23ffffff'/><polygon points='45,75 55,75 50,88' fill='%2394a3b8'/><text x='50' y='52' font-family='Arial,sans-serif' font-size='6' font-weight='bold' fill='%230284c7' text-anchor='middle' transform='rotate(90 50 52)'>classmate</text></svg>"
     };
 
-    // इनपुट लिसनर
     const inputName = document.getElementById('product_name');
     inputName.addEventListener('input', function(e) {
       const q = e.target.value.trim();
@@ -399,7 +416,7 @@
       // 7. Generic
       else {
         const text = encodeURIComponent(query.substring(0, 14).toUpperCase());
-        img = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='10' fill='%230284c7'/><text x='50' y='55' font-family='Arial,sans-serif' font-size='10' font-weight='bold' fill='%23ffffff' text-anchor='middle'>${text}</text></svg>`;
+        img = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='10' fill='%23b45309'/><text x='50' y='55' font-family='Arial,sans-serif' font-size='10' font-weight='bold' fill='%23ffffff' text-anchor='middle'>${text}</text></svg>`;
         cat = "Universal Product";
       }
 
