@@ -156,7 +156,7 @@
         </div>
     </div>
 
-    <!-- युनिव्हर्सल प्रॉडक्ट पॉप-अप -->
+    <!-- प्रॉडक्ट पॉप-अप -->
     <div id="addProductModal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
@@ -166,8 +166,8 @@
 
             <form id="productEntryForm" onsubmit="handleProductSubmit(event)">
                 <div class="form-group">
-                    <label>उत्पादनाचे नाव * (उदा. Tata Salt, Gemini Oil, Parle-G, Maggi)</label>
-                    <input type="text" id="modalProductName" class="form-control" placeholder="उदा. tata solt, parle g, gemini oil..." autocomplete="off" required>
+                    <label>उत्पादनाचे नाव * (उदा. Bisleri, Tata Salt, Gemini Oil, Parle-G, Maggi)</label>
+                    <input type="text" id="modalProductName" class="form-control" placeholder="उदा. bisleri, tata salt, parle g, gemini..." autocomplete="off" required>
                 </div>
 
                 <div class="form-group">
@@ -175,7 +175,7 @@
                     <input type="text" id="modalBarcode" class="form-control" placeholder="स्कॅन करा किंवा टाईप करा...">
                 </div>
 
-                <!-- ✨ अस्सल फोटो विभाग -->
+                <!-- अस्सल फोटो विभाग -->
                 <div class="form-group" id="autoMapSection" style="display: none;">
                     <label style="color: #166534; font-size: 13px; font-weight: bold;">✨ शोधलेला ओरिजिनल फोटो व माहिती:</label>
                     <div class="auto-preview-card">
@@ -195,8 +195,9 @@
                         <label>एकक (Unit)</label>
                         <select id="modalUnit" class="form-control">
                             <option value="Packet">Packet</option>
-                            <option value="Kg">Kg / किलो</option>
+                            <option value="Bottle">Bottle / बाटली</option>
                             <option value="Liter">Liter / लिटर</option>
+                            <option value="Kg">Kg / किलो</option>
                             <option value="Piece">Piece / नग</option>
                             <option value="Book">Book / वही</option>
                             <option value="Box">Box</option>
@@ -204,11 +205,11 @@
                     </div>
                     <div class="form-group" style="flex: 1;">
                         <label>विक्री दर (₹) *</label>
-                        <input type="number" id="modalPrice" class="form-control" placeholder="10" step="0.5" required>
+                        <input type="number" id="modalPrice" class="form-control" placeholder="20" step="0.5" required>
                     </div>
                     <div class="form-group" style="flex: 1;">
                         <label>एमआरपी (₹)</label>
-                        <input type="number" id="modalMrp" class="form-control" placeholder="10" step="0.5">
+                        <input type="number" id="modalMrp" class="form-control" placeholder="20" step="0.5">
                     </div>
                 </div>
 
@@ -250,41 +251,52 @@
             }
 
             searchTimer = setTimeout(() => {
-                fetchSmartAutoProduct(query);
-            }, 300);
+                fetchComprehensiveMasterProduct(query);
+            }, 250);
         });
 
-        // १. टाटा सॉल्टचे अस्सल पांढरे-निळे व्हिज्युअल पॅकेट
+        // १. बिसलेरी मिनरल वॉटर (Bisleri 1L Bottle)
+        const BISLERI_BOTTLE = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 90 120'><rect width='90' height='120' rx='8' fill='%23ffffff' stroke='%23059669' stroke-width='2'/><path d='M35 15 L55 15 L55 25 L65 35 L65 105 L25 105 L25 35 L35 25 Z' fill='%23e0f2fe' stroke='%230284c7' stroke-width='1.5'/><rect x='38' y='8' width='14' height='8' rx='2' fill='%23059669'/><rect x='25' y='52' width='40' height='28' fill='%23059669'/><text x='45' y='68' font-family='Arial Black,sans-serif' font-size='8' font-weight='900' fill='%23ffffff' text-anchor='middle'>Bisleri</text><text x='45' y='76' font-family='Arial,sans-serif' font-size='5' fill='%23ecfdf5' text-anchor='middle'>with minerals</text><text x='45' y='114' font-family='Arial,sans-serif' font-size='7' font-weight='bold' fill='%23065f46' text-anchor='middle'>1 LITRE</text></svg>";
+
+        // २. टाटा सॉल्ट (Tata Salt)
         const TATA_SALT_PACKET = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 120'><rect width='100' height='120' rx='8' fill='%23ffffff' stroke='%230284c7' stroke-width='3'/><rect x='6' y='6' width='88' height='40' rx='4' fill='%230284c7'/><text x='50' y='32' font-family='Arial Black,sans-serif' font-size='14' font-weight='900' fill='%23ffffff' text-anchor='middle'>TATA</text><circle cx='50' cy='65' r='18' fill='%23e0f2fe'/><text x='50' y='70' font-family='Arial Black,sans-serif' font-size='13' font-weight='900' fill='%230369a1' text-anchor='middle'>SALT</text><text x='50' y='92' font-family='Arial,sans-serif' font-size='8' font-weight='bold' fill='%23b91c1c' text-anchor='middle'>DESH KA NAMAK</text><text x='50' y='106' font-family='Arial,sans-serif' font-size='7' fill='%23334155' text-anchor='middle'>Vacuum Evaporated 1kg</text></svg>";
 
-        // २. जेमिनी तेल पॅकेट
-        const GEMINI_OIL_PACKET = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 120'><rect width='100' height='120' rx='8' fill='%23ffffff' stroke='%23f59e0b' stroke-width='3'/><rect x='6' y='6' width='88' height='108' rx='6' fill='%23fffbeb'/><circle cx='50' cy='45' r='24' fill='%23fef08a' stroke='%23eab308' stroke-width='2'/><path d='M50 25 C45 35 55 35 50 25 Z' fill='%23f59e0b'/><path d='M50 65 C45 55 55 55 50 65 Z' fill='%23f59e0b'/><path d='M30 45 C40 40 40 50 30 45 Z' fill='%23f59e0b'/><path d='M70 45 C60 40 60 50 70 45 Z' fill='%23f59e0b'/><circle cx='50' cy='45' r='12' fill='%2378350f'/><text x='50' y='82' font-family='Arial,sans-serif' font-size='11' font-weight='900' fill='%23b45309' text-anchor='middle'>GEMINI</text><text x='50' y='94' font-family='Arial,sans-serif' font-size='8' font-weight='bold' fill='%2315803d' text-anchor='middle'>SUNFLOWER OIL</text><text x='50' y='105' font-family='Arial,sans-serif' font-size='7' fill='%23334155' text-anchor='middle'>1 Ltr Pouch</text></svg>";
+        // ३. जेमिनी सूर्यफूल तेल (Gemini Oil)
+        const GEMINI_OIL_PACKET = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 120'><rect width='100' height='120' rx='8' fill='%23ffffff' stroke='%23f59e0b' stroke-width='3'/><rect x='6' y='6' width='88' height='108' rx='6' fill='%23fffbeb'/><circle cx='50' cy='45' r='24' fill='%23fef08a' stroke='%23eab308' stroke-width='2'/><path d='M50 25 C45 35 55 35 50 25 Z' fill='%23f59e0b'/><path d='M50 65 C45 55 55 55 50 65 Z' fill='%23f59e0b'/><circle cx='50' cy='45' r='12' fill='%2378350f'/><text x='50' y='82' font-family='Arial,sans-serif' font-size='11' font-weight='900' fill='%23b45309' text-anchor='middle'>GEMINI</text><text x='50' y='94' font-family='Arial,sans-serif' font-size='8' font-weight='bold' fill='%2315803d' text-anchor='middle'>SUNFLOWER OIL</text><text x='50' y='105' font-family='Arial,sans-serif' font-size='7' fill='%23334155' text-anchor='middle'>1 Ltr Pouch</text></svg>";
 
-        // ३. पारले-जी बिस्किट पॅकेट
-        const PARLE_G_PACKET = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 90'><rect width='120' height='90' rx='6' fill='%23fef08a' stroke='%23ca8a04' stroke-width='2'/><rect x='5' y='5' width='110' height='80' rx='4' fill='%23fef9c3'/><rect x='10' y='22' width='100' height='28' rx='4' fill='%23dc2626'/><text x='60' y='42' font-family='Arial Black,sans-serif' font-size='18' font-weight='900' fill='%23ffffff' text-anchor='middle'>Parle-G</text><text x='60' y='64' font-family='Arial,sans-serif' font-size='9' font-weight='bold' fill='%23854d0e' text-anchor='middle'>GLUCOSE BISCUITS</text><text x='60' y='76' font-family='Arial,sans-serif' font-size='8' font-weight='bold' fill='%2315803d' text-anchor='middle'>ORIGINAL TASTE</text></svg>";
+        // ४. पारले-जी बिस्किट (Parle-G)
+        const PARLE_G_PACKET = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 90'><rect width='120' height='90' rx='6' fill='%23fef08a' stroke='%23ca8a04' stroke-width='2'/><rect x='5' y='5' width='110' height='80' rx='4' fill='%23fef9c3'/><rect x='10' y='22' width='100' height='28' rx='4' fill='%23dc2626'/><text x='60' y='42' font-family='Arial Black,sans-serif' font-size='18' font-weight='900' fill='%23ffffff' text-anchor='middle'>Parle-G</text><text x='60' y='64' font-family='Arial,sans-serif' font-size='9' font-weight='bold' fill='%23854d0e' text-anchor='middle'>GLUCOSE BISCUITS</text></svg>";
 
-        // ४. मॅगी नूडल्स
+        // ५. मॅगी नूडल्स (Maggi)
         const MAGGI_PACKET = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='10' fill='%23facc15'/><rect x='6' y='6' width='88' height='88' rx='6' fill='%23eab308'/><circle cx='50' cy='48' r='30' fill='%23dc2626'/><text x='50' y='54' font-family='Arial Black,sans-serif' font-size='16' font-weight='900' fill='%23fef08a' text-anchor='middle'>Maggi</text><text x='50' y='76' font-family='Arial,sans-serif' font-size='8' font-weight='bold' fill='%2378350f' text-anchor='middle'>2-MINUTE NOODLES</text></svg>";
 
-        // ५. क्लासमेट पेन
+        // ६. क्लासमेट पेन (Classmate Pen)
         const CLASSMATE_PEN = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='10' fill='%230284c7'/><rect x='45' y='15' width='10' height='60' rx='3' fill='%23ffffff'/><polygon points='45,75 55,75 50,88' fill='%2394a3b8'/><text x='50' y='52' font-family='Arial,sans-serif' font-size='6' font-weight='bold' fill='%230284c7' text-anchor='middle' transform='rotate(90 50 52)'>classmate</text></svg>";
 
-        // स्मार्ट आणि स्पेलिंग-फ्रेंडली शोध इंजिन
-        async function fetchSmartAutoProduct(query) {
+        // मास्टर स्मार्ट मॅपर इंजिन
+        async function fetchComprehensiveMasterProduct(query) {
             const autoSection = document.getElementById('autoMapSection');
-            const clean = query.toLowerCase().replace(/[-_]/g, ' ');
+            const clean = query.toLowerCase().replace(/[-_.]/g, ' ');
             let selectedImg = null;
             let category = "General Store";
 
-            // A. टाटा सॉल्ट / मीठ (Spelling: tata solt, salt, namak, tata namak)
-            if (clean.includes('solt') || clean.includes('salt') || clean.includes('namak') || (clean.includes('tata') && (clean.includes('so') || clean.includes('sa')))) {
+            // A. बिसलेरी / पाणी बाटली (Bisleri Water)
+            if (clean.includes('bisleri') || clean.includes('water bottle') || clean.includes('mineral water') || clean.includes('बिसलेरी')) {
+                selectedImg = BISLERI_BOTTLE;
+                category = "Beverages / Water";
+                document.getElementById('modalUnit').value = 'Bottle';
+                document.getElementById('modalPrice').value = '20';
+                document.getElementById('modalMrp').value = '20';
+            }
+            // B. मीठ / टाटा सॉल्ट (Tata Salt, Solt, Namak)
+            else if (clean.includes('solt') || clean.includes('salt') || clean.includes('namak') || (clean.includes('tata') && (clean.includes('sa') || clean.includes('so')))) {
                 selectedImg = TATA_SALT_PACKET;
                 category = "Staples (मीठ)";
                 document.getElementById('modalUnit').value = 'Kg';
                 document.getElementById('modalPrice').value = '28';
                 document.getElementById('modalMrp').value = '28';
             }
-            // B. पारले-जी (parle, parle g, parle-g, parley)
+            // C. पारले-जी (Parle-G)
             else if (clean.includes('parle')) {
                 selectedImg = PARLE_G_PACKET;
                 category = "Biscuits";
@@ -292,7 +304,7 @@
                 document.getElementById('modalPrice').value = '10';
                 document.getElementById('modalMrp').value = '10';
             }
-            // C. जेमिनी तेल (gemini, sunflower oil, tel)
+            // D. जेमिनी तेल (Gemini Oil)
             else if (clean.includes('gemini') || (clean.includes('sunflower') && clean.includes('oil'))) {
                 selectedImg = GEMINI_OIL_PACKET;
                 category = "Cooking Oil";
@@ -300,7 +312,7 @@
                 document.getElementById('modalPrice').value = '135';
                 document.getElementById('modalMrp').value = '145';
             }
-            // D. मॅगी नूडल्स (maggi, maggie, noodle)
+            // E. मॅगी नूडल्स (Maggi)
             else if (clean.includes('maggi') || clean.includes('maggie')) {
                 selectedImg = MAGGI_PACKET;
                 category = "Instant Food";
@@ -308,7 +320,7 @@
                 document.getElementById('modalPrice').value = '14';
                 document.getElementById('modalMrp').value = '14';
             }
-            // E. क्लासमेट पेन / वही (classmate, pen)
+            // F. क्लासमेट पेन (Classmate Pen)
             else if (clean.includes('classmate') || clean.includes('pen')) {
                 selectedImg = CLASSMATE_PEN;
                 category = "Stationery";
@@ -316,14 +328,14 @@
                 document.getElementById('modalPrice').value = '10';
                 document.getElementById('modalMrp').value = '10';
             }
-            // F. इतर उत्पादने (Dynamic Badge)
+            // G. इतर कोणत्याही उत्पादनासाठी डायनॅमिक बॅज
             else {
                 const label = encodeURIComponent(query.substring(0, 14).toUpperCase());
                 selectedImg = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='10' fill='%230284c7'/><text x='50' y='55' font-family='Arial,sans-serif' font-size='10' font-weight='bold' fill='%23ffffff' text-anchor='middle'>${label}</text></svg>`;
                 category = "Universal Product";
             }
 
-            // UI मध्ये थेट इमेज दाखवणे
+            // UI मध्ये थेट लोड करणे
             autoSection.style.display = 'block';
             const imgEl = document.getElementById('autoMappedImage');
             imgEl.src = selectedImg;
