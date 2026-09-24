@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AllERP - डॅशबोर्ड व इन्व्हेंटरी मॅनेजमेंट</title>
+    <title>AllERP - युनिव्हर्सल मल्टी-बिझनेस ऑटो-मॅपर</title>
     <link rel="stylesheet" href="css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
@@ -15,13 +15,10 @@
             color: #fff;
             padding: 12px 24px;
         }
-        .top-navbar a, .top-navbar button {
+        .top-navbar a {
             color: #fff;
             text-decoration: none;
             margin-left: 12px;
-            background: transparent;
-            border: none;
-            cursor: pointer;
             font-size: 14px;
         }
         .main-container {
@@ -40,23 +37,14 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
             margin-bottom: 20px;
         }
-        .action-bar {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        .btn-action {
-            background: #f8fafc;
-            border: 1px solid #cbd5e1;
-            padding: 10px 18px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-        }
         .btn-primary {
             background: #d97706;
             color: #fff;
             border: none;
+            padding: 10px 18px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
         }
         .btn-primary:hover { background: #b45309; }
 
@@ -132,32 +120,15 @@
             border: 1px solid #cbd5e1;
             padding: 2px;
         }
-        .table-responsive {
-            background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        th, td {
-            padding: 12px;
-            border-bottom: 1px solid #e2e8f0;
-            text-align: left;
-        }
-        th { background: #f8fafc; }
     </style>
 </head>
 <body>
 
     <nav class="top-navbar">
-        <div style="font-size: 20px; font-weight: bold;">🚀 AllERP <span style="font-size: 13px; font-weight: normal;">Smart Marketplace</span></div>
+        <div style="font-size: 20px; font-weight: bold;">🚀 AllERP <span style="font-size: 13px; font-weight: normal;">Universal Multi-Business</span></div>
         <div>
             <a href="index.html">🏠 Home</a>
             <a href="advertiser.html">📢 Advertise</a>
-            <a href="b2b-wholesale.html">📦 Wholesale</a>
             <a href="admin.html">⚙️ My ERP</a>
         </div>
     </nav>
@@ -165,57 +136,27 @@
     <div class="main-container">
         <div class="shop-header">
             <div>
-                <h2 style="margin: 0;" id="shopTitleDisplay">Nikhil Kirana</h2>
-                <small style="color: #64748b;">Universal Multi-Business Operating System</small>
+                <h2 style="margin: 0;">युनिव्हर्सल बिझनेस डॅशबोर्ड</h2>
+                <small style="color: #64748b;">किराणा, कपडे, स्टेशनरी, हार्डवेअर सर्व व्यवसायांसाठी एकच सिस्टीम</small>
             </div>
             <div>
-                <button class="btn-action btn-primary" onclick="openProductModal()">+ नवीन प्रॉडक्ट जोडा</button>
+                <button class="btn-primary" onclick="openProductModal()">+ नवीन प्रॉडक्ट जोडा</button>
             </div>
-        </div>
-
-        <div class="action-bar">
-            <button class="btn-action">📊 डॅशबोर्ड</button>
-            <button class="btn-action">📦 इन्व्हेंटरी व स्टॉक</button>
-            <button class="btn-action">💰 विक्री व इन्व्हॉइस</button>
-            <button class="btn-action">⚡ POS काउंटर</button>
-        </div>
-
-        <div class="table-responsive">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <h3>📦 इन्व्हेंटरी व उत्पादने</h3>
-                <input type="text" placeholder="उत्पादने शोधा..." style="padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px;">
-            </div>
-            <table>
-                <thead>
-                    <tr>
-                        <th>फोटो</th>
-                        <th>उत्पादन</th>
-                        <th>किंमत (₹)</th>
-                        <th>स्टॉक</th>
-                        <th>स्थिती</th>
-                    </tr>
-                </thead>
-                <tbody id="inventoryTableBody">
-                    <tr>
-                        <td colspan="5" style="text-align: center; color: #64748b;">उत्पादने लोड होत आहेत...</td>
-                    </tr>
-                </tbody>
-            </table>
         </div>
     </div>
 
-    <!-- नवीन प्रॉडक्ट ॲड पॉप-अप (Modal) -->
+    <!-- युनिव्हर्सल प्रॉडक्ट पॉप-अप -->
     <div id="addProductModal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 style="margin: 0;">🎁 नवीन प्रॉडक्ट जोडा (स्मार्ट ऑटो-मॅपिंग सह)</h3>
+                <h3 style="margin: 0;">🎁 कोणतेही उत्पादन जोडा (युनिव्हर्सल ऑटो-मॅपिंग)</h3>
                 <button class="close-btn" onclick="closeProductModal()">✕ बंद करा</button>
             </div>
 
             <form id="productEntryForm" onsubmit="handleProductSubmit(event)">
                 <div class="form-group">
-                    <label>उत्पादनाचे नाव * (उदा. Nestle Maggi, Parle-G, Amul Butter)</label>
-                    <input type="text" id="modalProductName" class="form-control" placeholder="उदा. parle, maggi..." autocomplete="off" required>
+                    <label>उत्पादनाचे नाव * (उदा. Navneet Book, Raymond Shirt, Dettol, Classmate Pen)</label>
+                    <input type="text" id="modalProductName" class="form-control" placeholder="उदा. navneet, raymond, classmate, maggi..." autocomplete="off" required>
                 </div>
 
                 <div class="form-group">
@@ -223,9 +164,9 @@
                     <input type="text" id="modalBarcode" class="form-control" placeholder="स्कॅन करा किंवा टाईप करा...">
                 </div>
 
-                <!-- ✨ अचूक ऑटो-मॅप फोटो विभाग -->
+                <!-- ✨ युनिव्हर्सल ऑटो-फेच फोटो विभाग -->
                 <div class="form-group" id="autoMapSection" style="display: none;">
-                    <label style="color: #166534; font-size: 13px; font-weight: bold;">✨ ऑटो-मॅप्ड फोटो व पूर्वलोकन:</label>
+                    <label style="color: #166534; font-size: 13px; font-weight: bold;">✨ ऑटो-मॅप्ड ओरिजिनल फोटो व माहिती:</label>
                     <div class="auto-preview-card">
                         <img id="autoMappedImage" src="" alt="Product">
                         <div>
@@ -240,21 +181,21 @@
                     <div class="form-group" style="flex: 1;">
                         <label>एकक (Unit)</label>
                         <select id="modalUnit" class="form-control">
+                            <option value="Piece">Piece / नग</option>
                             <option value="Packet">Packet</option>
+                            <option value="Book">Book / वही</option>
                             <option value="Kg">Kg</option>
-                            <option value="Gram">Gram</option>
-                            <option value="Piece">Piece</option>
-                            <option value="Liter">Liter</option>
+                            <option value="Meter">Meter</option>
                             <option value="Box">Box</option>
                         </select>
                     </div>
                     <div class="form-group" style="flex: 1;">
                         <label>विक्री दर (₹) *</label>
-                        <input type="number" id="modalPrice" class="form-control" placeholder="10" step="0.5" required>
+                        <input type="number" id="modalPrice" class="form-control" placeholder="100" step="0.5" required>
                     </div>
                     <div class="form-group" style="flex: 1;">
                         <label>एमआरपी (₹)</label>
-                        <input type="number" id="modalMrp" class="form-control" placeholder="10" step="0.5">
+                        <input type="number" id="modalMrp" class="form-control" placeholder="100" step="0.5">
                     </div>
                 </div>
 
@@ -263,7 +204,7 @@
                     <input type="number" id="modalStock" class="form-control" value="50" required>
                 </div>
 
-                <button type="submit" class="btn-action btn-primary" style="width: 100%; padding: 12px; font-size: 16px; margin-top: 10px;">
+                <button type="submit" class="btn-primary" style="width: 100%; padding: 12px; font-size: 16px; margin-top: 10px;">
                     उत्पादन सुरक्षित सेव्ह करा
                 </button>
             </form>
@@ -272,85 +213,7 @@
 
     <script src="js/supabase-client.js"></script>
     <script>
-        // अस्सल फॉलबॅक जनरेटर
-        function generateProductBadge(name, colorBg, colorText) {
-            return `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='10' fill='${encodeURIComponent(colorBg)}'/><text x='50' y='55' font-family='Arial,sans-serif' font-size='14' font-weight='bold' fill='${encodeURIComponent(colorText)}' text-anchor='middle'>${encodeURIComponent(name)}</text></svg>`;
-        }
-
-        // प्रत्येक प्रॉडक्टचा अस्सल आणि वेगळा फोटो
-        const PRESET_PRODUCTS = [
-            {
-                keywords: ['maggi', 'maggie', 'मॅगी', 'noodles'],
-                name: 'Nestle Maggi 2-Minute Masala Noodles 70g',
-                category: 'Instant Food',
-                unit: 'Packet',
-                price: 14,
-                mrp: 14,
-                imageUrl: 'https://images.openfoodfacts.org/images/products/890/105/890/1559/front_en.3.400.jpg',
-                fallback: generateProductBadge('MAGGI', '#facc15', '#b91c1c')
-            },
-            {
-                keywords: ['parle', 'parle-g', 'parleg', 'पारले'],
-                name: 'Parle-G Gold Glucose Biscuits',
-                category: 'Biscuits',
-                unit: 'Packet',
-                price: 10,
-                mrp: 10,
-                // अस्सल पारले-जी पॅकेट फोटो
-                imageUrl: 'https://images.openfoodfacts.org/images/products/8901719101038/front_en.4.400.jpg',
-                fallback: generateProductBadge('PARLE-G', '#fef08a', '#854d0e')
-            },
-            {
-                keywords: ['good day', 'britannia', 'गुड डे'],
-                name: 'Britannia Good Day Butter Cookies',
-                category: 'Biscuits',
-                unit: 'Packet',
-                price: 20,
-                mrp: 20,
-                imageUrl: 'https://images.openfoodfacts.org/images/products/8901063012640/front_en.8.400.jpg',
-                fallback: generateProductBadge('GOOD DAY', '#fed7aa', '#9a3412')
-            },
-            {
-                keywords: ['butter', 'amul butter', 'बटर', 'अमूल'],
-                name: 'Amul Pasteurised Butter 100g',
-                category: 'Dairy',
-                unit: 'Piece',
-                price: 56,
-                mrp: 58,
-                imageUrl: 'https://images.openfoodfacts.org/images/products/8901262010054/front_en.10.400.jpg',
-                fallback: generateProductBadge('AMUL', '#bfdbfe', '#1e40af')
-            },
-            {
-                keywords: ['yippee', 'यिप्पी'],
-                name: 'Sunfeast YiPPee! Masala Noodles',
-                category: 'Instant Food',
-                unit: 'Packet',
-                price: 14,
-                mrp: 15,
-                imageUrl: 'https://images.openfoodfacts.org/images/products/8901725181222/front_en.3.400.jpg',
-                fallback: generateProductBadge('YIPPEE', '#fed7aa', '#c2410c')
-            },
-            {
-                keywords: ['salt', 'tata salt', 'मीठ'],
-                name: 'Tata Salt Vacuum Evaporated 1kg',
-                category: 'Staples',
-                unit: 'Kg',
-                price: 26,
-                mrp: 28,
-                imageUrl: 'https://images.openfoodfacts.org/images/products/8901030012586/front_en.6.400.jpg',
-                fallback: generateProductBadge('TATA SALT', '#e0f2fe', '#0369a1')
-            },
-            {
-                keywords: ['dettol', 'डेटॉल'],
-                name: 'Dettol Original Bathing Soap',
-                category: 'Personal Care',
-                unit: 'Piece',
-                price: 38,
-                mrp: 40,
-                imageUrl: 'https://images.openfoodfacts.org/images/products/8901396328209/front_en.4.400.jpg',
-                fallback: generateProductBadge('DETTOL', '#dcfce7', '#15803d')
-            }
-        ];
+        let searchTimeout = null;
 
         function openProductModal() {
             document.getElementById('addProductModal').style.display = 'flex';
@@ -363,73 +226,73 @@
             document.getElementById('autoMapSection').style.display = 'none';
         }
 
-        // इनपुट टाईप करताना योग्य मॅपिंग
+        // डायनॅमिक युनिव्हर्सल इमेज सर्च (कपडे, स्टेशनरी, किराणा सर्वकाही)
         const nameInput = document.getElementById('modalProductName');
-        nameInput.addEventListener('input', async function(e) {
-            const val = e.target.value.trim().toLowerCase();
-            const autoSection = document.getElementById('autoMapSection');
+        nameInput.addEventListener('input', function(e) {
+            const query = e.target.value.trim();
+            clearTimeout(searchTimeout);
 
-            if (val.length < 2) {
-                autoSection.style.display = 'none';
+            if (query.length < 3) {
+                document.getElementById('autoMapSection').style.display = 'none';
                 return;
             }
 
-            // योग्य उत्पादन शोधणे
-            let match = null;
-            for (const item of PRESET_PRODUCTS) {
-                if (item.keywords.some(k => val.includes(k) || k.includes(val))) {
-                    match = item;
-                    break;
-                }
-            }
-
-            if (match) {
-                applyAutoMapping(match.imageUrl, match.fallback, match.category, match.name, match.price, match.mrp, match.unit);
-            } else {
-                // Open Food Facts लाइव्ह सर्च
-                try {
-                    const res = await fetch(`https://in.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(val)}&search_simple=1&action=process&json=1&page_size=1`);
-                    const data = await res.json();
-                    if (data.products && data.products.length > 0) {
-                        const prod = data.products[0];
-                        const img = prod.image_front_url || prod.image_url;
-                        if (img) {
-                            applyAutoMapping(img, null, prod.categories ? prod.categories.split(',')[0] : 'General', prod.product_name || val);
-                        }
-                    }
-                } catch (err) {
-                    console.warn("API Error:", err);
-                }
-            }
+            // युझर टाईप करून थांबल्यावर सर्च सुरू होईल (Debounce)
+            searchTimeout = setTimeout(() => {
+                fetchUniversalProductData(query);
+            }, 500);
         });
 
-        function applyAutoMapping(imgUrl, fallbackUrl, category, name, price, mrp, unit) {
+        async function fetchUniversalProductData(query) {
             const autoSection = document.getElementById('autoMapSection');
+            const cleanQuery = encodeURIComponent(query);
+            let foundImage = null;
+            let detectedCategory = 'Universal Business';
+
+            // १. आधी Open Food & Product Facts मध्ये शोधणे (FMCG, किराणा)
+            try {
+                const offRes = await fetch(`https://in.openfoodfacts.org/cgi/search.pl?search_terms=${cleanQuery}&search_simple=1&action=process&json=1&page_size=1`);
+                const offData = await offRes.json();
+                if (offData.products && offData.products.length > 0 && (offData.products[0].image_front_url || offData.products[0].image_url)) {
+                    foundImage = offData.products[0].image_front_url || offData.products[0].image_url;
+                    detectedCategory = offData.products[0].categories ? offData.products[0].categories.split(',')[0] : 'Kirana & Grocery';
+                }
+            } catch (e) {}
+
+            // २. जर सापडले नाही (उदा. Navneet Book, Raymond Shirt, स्टेशनरी, कपडे) तर युनिव्हर्सल विकिमीडिया ब्रँड सर्च
+            if (!foundImage) {
+                try {
+                    const wikiRes = await fetch(`https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=${cleanQuery}&gsrlimit=1&prop=imageinfo&iiprop=url&format=json&origin=*`);
+                    const wikiData = await wikiRes.json();
+                    if (wikiData.query && wikiData.query.pages) {
+                        const page = Object.values(wikiData.query.pages)[0];
+                        if (page.imageinfo && page.imageinfo[0] && page.imageinfo[0].url) {
+                            foundImage = page.imageinfo[0].url;
+                            detectedCategory = 'Stationery / Apparel';
+                        }
+                    }
+                } catch (e) {}
+            }
+
+            // ३. जर तरीही बाहेरील इमेज मिळाली नाही, तर युनिक ब्रँड व्हिज्युअल कार्ड (Fallback)
+            if (!foundImage) {
+                const cleanBadgeText = query.substring(0, 15).toUpperCase();
+                foundImage = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='10' fill='%230284c7'/><text x='50' y='55' font-family='Arial,sans-serif' font-size='11' font-weight='bold' fill='%23ffffff' text-anchor='middle'>${encodeURIComponent(cleanBadgeText)}</text></svg>`;
+            }
+
+            // UI मध्ये दाखवणे
             autoSection.style.display = 'block';
-
-            const imgEl = document.getElementById('autoMappedImage');
-            
-            // जर इमेज लोड झाली नाही तर त्या उत्पादनाचा स्वतःचा बॅकअप लोड होईल
-            imgEl.onerror = function() {
-                this.onerror = null;
-                this.src = fallbackUrl || generateProductBadge(name.substring(0, 10), '#f1f5f9', '#334155');
-            };
-            imgEl.src = imgUrl;
-
-            document.getElementById('autoMappedCategory').innerText = `✨ Auto-Mapped (${category})`;
-            document.getElementById('autoMappedName').innerText = `${name} चे ओरिजिनल चित्र सेट केले आहे.`;
-            document.getElementById('finalProductImageUrl').value = imgUrl;
-
-            if (price) document.getElementById('modalPrice').value = price;
-            if (mrp) document.getElementById('modalMrp').value = mrp;
-            if (unit) document.getElementById('modalUnit').value = unit;
+            document.getElementById('autoMappedImage').src = foundImage;
+            document.getElementById('autoMappedCategory').innerText = `✨ Auto-Mapped (${detectedCategory})`;
+            document.getElementById('autoMappedName').innerText = `${query} चे अधिकृत चित्र शोधले गेले आहे.`;
+            document.getElementById('finalProductImageUrl').value = foundImage;
         }
 
         async function handleProductSubmit(e) {
             e.preventDefault();
             const name = document.getElementById('modalProductName').value;
             const barcode = document.getElementById('modalBarcode').value;
-            const imgUrl = document.getElementById('finalProductImageUrl').value || 'logo.svg';
+            const imgUrl = document.getElementById('finalProductImageUrl').value;
             const price = parseFloat(document.getElementById('modalPrice').value);
             const mrp = parseFloat(document.getElementById('modalMrp').value) || price;
             const stock = parseInt(document.getElementById('modalStock').value);
@@ -450,43 +313,16 @@
                         }]);
 
                     if (error) throw error;
-                    alert('उत्पादन ओरिजिनल फोटोसह यशस्वीरित्या सेव्ह झाले!');
+                    alert('उत्पादन यशस्वीरीत्या सेव्ह झाले!');
                     closeProductModal();
-                    loadProducts();
                 } else {
-                    alert(`उत्पादन सेव्ह झाले:\nनाव: ${name}\nकिंमत: ₹${price}`);
+                    alert(`उत्पादन सेव्ह झाले:\nनाव: ${name}\nदर: ₹${price}`);
                     closeProductModal();
                 }
             } catch (err) {
                 alert('त्रुटी: ' + err.message);
             }
         }
-
-        async function loadProducts() {
-            const tbody = document.getElementById('inventoryTableBody');
-            try {
-                if (!window.supabaseClient) return;
-                const { data, error } = await window.supabaseClient.from('shop_products').select('*').limit(10);
-                if (error || !data || data.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">कोणतेही उत्पादन सापडले नाही.</td></tr>';
-                    return;
-                }
-                tbody.innerHTML = '';
-                data.forEach(p => {
-                    tbody.innerHTML += `
-                        <tr>
-                            <td><img src="${p.image_url || 'logo.svg'}" style="width:40px;height:40px;object-fit:contain;border-radius:4px;border:1px solid #ddd;"></td>
-                            <td><b>${p.name}</b></td>
-                            <td>₹${p.price}</td>
-                            <td>${p.stock_qty || 0}</td>
-                            <td><span style="color:#16a34a;font-weight:bold;">उपलब्ध</span></td>
-                        </tr>
-                    `;
-                });
-            } catch(e) {}
-        }
-
-        document.addEventListener('DOMContentLoaded', loadProducts);
     </script>
 </body>
 </html>
