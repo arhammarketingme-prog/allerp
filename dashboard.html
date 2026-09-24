@@ -1745,7 +1745,45 @@ function startHtml5Scanner(mode) {
 function exportDataCSV() { alert('डेटा CSV फॉर्मेटमध्ये डाऊनलोड झाला!'); }
 
 initDashboard();
-</script>
+initDashboard();
+  </script>
+
+  <!-- ✨ अस्सल ब्रँड फोटो ऑटो-मॅपर (थेट इनबिल्ट) -->
+  <script>
+    (function() {
+      const REAL_PRODUCT_IMAGES = {
+        "salt": "https://images.openfoodfacts.org/images/products/8901030012586/front_en.6.400.jpg",
+        "solt": "https://images.openfoodfacts.org/images/products/8901030012586/front_en.6.400.jpg",
+        "namak": "https://images.openfoodfacts.org/images/products/8901030012586/front_en.6.400.jpg",
+        "bisleri": "https://images.openfoodfacts.org/images/products/8906007280235/front_en.13.400.jpg",
+        "water": "https://images.openfoodfacts.org/images/products/8906007280235/front_en.13.400.jpg",
+        "parle": "https://images.openfoodfacts.org/images/products/8901719101038/front_en.4.400.jpg",
+        "gemini": "https://images.openfoodfacts.org/images/products/8906007280235/front_en.13.400.jpg",
+        "maggi": "https://images.openfoodfacts.org/images/products/890/105/890/1559/front_en.3.400.jpg",
+        "maggie": "https://images.openfoodfacts.org/images/products/890/105/890/1559/front_en.3.400.jpg"
+      };
+
+      document.addEventListener('input', function(e) {
+        const input = e.target;
+        if (input && (input.id.includes('name') || input.placeholder?.includes('Turmeric') || input.name === 'product_name')) {
+          const val = input.value.toLowerCase().trim();
+          
+          for (const key in REAL_PRODUCT_IMAGES) {
+            if (val.includes(key)) {
+              // मोडलमधील इमेज शोधून थेट अस्सल फोटो दाखवणे
+              const allImgs = document.querySelectorAll('img');
+              allImgs.forEach(img => {
+                if (img.src.includes('ui-avatars') || img.closest('#addProductModal') || img.closest('.modal')) {
+                  img.src = REAL_PRODUCT_IMAGES[key];
+                  img.style.objectFit = 'contain';
+                }
+              });
+              break;
+            }
+          }
+        }
+      }, true);
+    })();
+  </script>
 </body>
 </html>
-<script src="js/smart-mapper.js"></script>
