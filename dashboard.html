@@ -156,7 +156,7 @@
             <form id="productEntryForm" onsubmit="handleProductSubmit(event)">
                 <div class="form-group">
                     <label>उत्पादनाचे नाव * (उदा. Gemini Sunflower Oil, Classmate Pen, Raymond Shirt)</label>
-                    <input type="text" id="modalProductName" class="form-control" placeholder="उदा. gemini sunflower oil, fortune oil, classmate..." autocomplete="off" required>
+                    <input type="text" id="modalProductName" class="form-control" placeholder="उदा. gemini sunflower oil, fortune, classmate pen..." autocomplete="off" required>
                 </div>
 
                 <div class="form-group">
@@ -164,11 +164,11 @@
                     <input type="text" id="modalBarcode" class="form-control" placeholder="स्कॅन करा किंवा टाईप करा...">
                 </div>
 
-                <!-- ✨ शोधलेला ओरिजिनल फोटो विभाग -->
+                <!-- ✨ अस्सल फोटो विभाग -->
                 <div class="form-group" id="autoMapSection" style="display: none;">
                     <label style="color: #166534; font-size: 13px; font-weight: bold;">✨ शोधलेला ओरिजिनल फोटो व माहिती:</label>
                     <div class="auto-preview-card">
-                        <img id="autoMappedImage" src="" alt="Product">
+                        <img id="autoMappedImage" src="" alt="Product Photo" referrerpolicy="no-referrer">
                         <div>
                             <div id="autoMappedCategory" style="font-weight: bold; color: #166534; font-size: 14px;"></div>
                             <div id="autoMappedName" style="font-size: 13px; color: #334155; margin-top: 2px;"></div>
@@ -238,86 +238,89 @@
             }
 
             searchTimer = setTimeout(() => {
-                fetchSmartUniversalProduct(query);
-            }, 400);
+                fetchRealCommercialProduct(query);
+            }, 300);
         });
 
-        // स्मार्ट प्रॉडक्ट शोध इंजिन (कोणत्याही ब्रँडसाठी काम करणारे)
-        async function fetchSmartUniversalProduct(query) {
+        // अनब्लॉक्ड आणि थेट काम करणारे युनिव्हर्सल इमेज इंजिन
+        async function fetchRealCommercialProduct(query) {
             const autoSection = document.getElementById('autoMapSection');
             const cleanQuery = query.toLowerCase();
-            let foundImg = null;
+            let finalImg = null;
             let category = "General Store";
 
-            // A. सामान्य किराणा / तेल / स्टेशनरी कीवर्ड्स मॅपिंग
-            if (cleanQuery.includes('gemini') || cleanQuery.includes('sunflower oil')) {
-                foundImg = "https://images.openfoodfacts.org/images/products/8906007280235/front_en.13.400.jpg";
+            // १. प्रमुख भारतीय ब्रँड्सचे थेट अनब्लॉक्ड अधिकृत वेब CDN इमेजेस
+            if (cleanQuery.includes('gemini') || (cleanQuery.includes('sunflower') && cleanQuery.includes('oil'))) {
+                // जेमिनी सूर्यफूल तेलाचा थेट CDN फोटो
+                finalImg = "https://images.openfoodfacts.org/images/products/8906007280235/front_en.13.400.jpg";
                 category = "Cooking Oil";
             } else if (cleanQuery.includes('fortune')) {
-                foundImg = "https://images.openfoodfacts.org/images/products/8906007280013/front_en.4.400.jpg";
+                finalImg = "https://images.openfoodfacts.org/images/products/8906007280013/front_en.4.400.jpg";
                 category = "Cooking Oil";
-            } else if (cleanQuery.includes('classmate') && cleanQuery.includes('pen')) {
-                foundImg = "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Ballpoint-pen-parts.jpg/440px-Ballpoint-pen-parts.jpg";
+            } else if (cleanQuery.includes('classmate') || cleanQuery.includes('pen')) {
+                finalImg = "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Ballpoint-pen-parts.jpg/300px-Ballpoint-pen-parts.jpg";
                 category = "Stationery";
-            } else if (cleanQuery.includes('navneet')) {
-                foundImg = "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/De_re_metallica_1556_2475.jpg/440px-De_re_metallica_1556_2475.jpg";
+            } else if (cleanQuery.includes('navneet') || cleanQuery.includes('notebook')) {
+                finalImg = "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Various_notebooks.jpg/300px-Various_notebooks.jpg";
                 category = "Stationery / Books";
             } else if (cleanQuery.includes('maggi')) {
-                foundImg = "https://images.openfoodfacts.org/images/products/890/105/890/1559/front_en.3.400.jpg";
+                finalImg = "https://images.openfoodfacts.org/images/products/890/105/890/1559/front_en.3.400.jpg";
                 category = "Instant Food";
+            } else if (cleanQuery.includes('parle')) {
+                finalImg = "https://images.openfoodfacts.org/images/products/8901719101038/front_en.4.400.jpg";
+                category = "Biscuits";
             }
 
-            // B. जर वरील कीवर्ड्समध्ये नसेल तर Open Food Facts India API शोधणे
-            if (!foundImg) {
+            // २. जर वरील यादीत नसेल तर Open Food Facts इंडियावरून थेट URL शोधणे
+            if (!finalImg) {
                 try {
                     const res = await fetch(`https://in.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(query)}&search_simple=1&action=process&json=1&page_size=1`);
                     const data = await res.json();
                     if (data.products && data.products.length > 0) {
                         const p = data.products[0];
-                        foundImg = p.image_front_url || p.image_url;
-                        if (foundImg) category = p.categories ? p.categories.split(',')[0] : "Grocery";
+                        finalImg = p.image_front_url || p.image_url;
+                        if (finalImg) category = p.categories ? p.categories.split(',')[0] : "Grocery";
                     }
                 } catch (e) {}
             }
 
-            // C. विकिपीडिया / कॉमन्स अधिकृत ब्रँड शोध
-            if (!foundImg) {
+            // ३. विकिमीडिया अधिकृत ब्रँड शोध (कपडे, स्टेशनरी, हार्डवेअरसाठी)
+            if (!finalImg) {
                 try {
-                    const wikiRes = await fetch(`https://en.wikipedia.org/w/api.php?action=query&format=json&origin=*&prop=pageimages&pithumbsize=400&generator=prefixsearch&gpssearch=${encodeURIComponent(query)}&gpslimit=1`);
+                    const wikiRes = await fetch(`https://en.wikipedia.org/w/api.php?action=query&format=json&origin=*&prop=pageimages&pithumbsize=300&generator=prefixsearch&gpssearch=${encodeURIComponent(query)}&gpslimit=1`);
                     const wikiData = await wikiRes.json();
                     if (wikiData.query && wikiData.query.pages) {
                         const page = Object.values(wikiData.query.pages)[0];
                         if (page && page.thumbnail && page.thumbnail.source) {
-                            foundImg = page.thumbnail.source;
-                            category = "Brand Product";
+                            finalImg = page.thumbnail.source;
+                            category = "Merchandise";
                         }
                     }
                 } catch (e) {}
             }
 
-            // D. स्वच्छ फॉलबॅक (कधीही न तुटणारा)
-            if (!foundImg) {
-                foundImg = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='10' fill='%23f59e0b'/><text x='50' y='55' font-family='Arial,sans-serif' font-size='10' font-weight='bold' fill='%23ffffff' text-anchor='middle'>${encodeURIComponent(query.substring(0, 14).toUpperCase())}</text></svg>`;
-            }
-
-            // UI मध्ये अचूक दाखवणे
+            // UI मध्ये थेट इमेज रेंडर करणे
             autoSection.style.display = 'block';
             const imgEl = document.getElementById('autoMappedImage');
-            
-            imgEl.onerror = function() {
-                this.onerror = null;
-                this.src = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='10' fill='%230284c7'/><text x='50' y='55' font-family='Arial,sans-serif' font-size='10' font-weight='bold' fill='%23ffffff' text-anchor='middle'>${encodeURIComponent(query.substring(0, 14).toUpperCase())}</text></svg>`;
-            };
-            imgEl.src = foundImg;
+
+            // जर ब्राउझरने डायरेक्ट लिंक अडवली तर WSrv / Images CDN द्वारे अनब्लॉक करून लोड करणे
+            if (finalImg && finalImg.startsWith('http')) {
+                // wsrv.nl ही मोफत, अल्ट्रा-फास्ट इमेज प्रॉक्सी आहे जी CORS ब्लॉक होऊ देत नाही
+                const unblockedUrl = `https://wsrv.nl/?url=${encodeURIComponent(finalImg)}&w=200&output=jpg`;
+                imgEl.src = unblockedUrl;
+                document.getElementById('finalProductImageUrl').value = unblockedUrl;
+            } else {
+                imgEl.src = finalImg;
+                document.getElementById('finalProductImageUrl').value = finalImg;
+            }
 
             document.getElementById('autoMappedCategory').innerText = `✨ Auto-Mapped (${category})`;
             document.getElementById('autoMappedName').innerText = `${query} चे अधिकृत चित्र लोड झाले आहे.`;
-            document.getElementById('finalProductImageUrl').value = foundImg;
 
-            // युनिट ऑटो-सिलेक्ट
-            if (cleanQuery.includes('oil') || cleanQuery.includes('तेल') || cleanQuery.includes('milk')) {
+            // स्मार्ट युनिट
+            if (cleanQuery.includes('oil') || cleanQuery.includes('तेल') || cleanQuery.includes('milk') || cleanQuery.includes('ghee')) {
                 document.getElementById('modalUnit').value = 'Liter';
-            } else if (cleanQuery.includes('pen') || cleanQuery.includes('shirt')) {
+            } else if (cleanQuery.includes('pen') || cleanQuery.includes('shirt') || cleanQuery.includes('soap')) {
                 document.getElementById('modalUnit').value = 'Piece';
             } else if (cleanQuery.includes('book') || cleanQuery.includes('notebook')) {
                 document.getElementById('modalUnit').value = 'Book';
