@@ -60,7 +60,7 @@
         }
         .btn-primary:hover { background: #b45309; }
 
-        /* Modal Popup Styles */
+        /* Modal Styles */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -204,7 +204,7 @@
         </div>
     </div>
 
-    <!-- नवीन प्रॉडक्ट ॲड करण्याचा पॉप-अप (Modal) -->
+    <!-- नवीन प्रॉडक्ट ॲड पॉप-अप (Modal) -->
     <div id="addProductModal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
@@ -215,7 +215,7 @@
             <form id="productEntryForm" onsubmit="handleProductSubmit(event)">
                 <div class="form-group">
                     <label>उत्पादनाचे नाव * (उदा. Nestle Maggi, Parle-G, Amul Butter)</label>
-                    <input type="text" id="modalProductName" class="form-control" placeholder="उदा. maggi..." autocomplete="off" required>
+                    <input type="text" id="modalProductName" class="form-control" placeholder="उदा. parle, maggi..." autocomplete="off" required>
                 </div>
 
                 <div class="form-group">
@@ -223,15 +223,14 @@
                     <input type="text" id="modalBarcode" class="form-control" placeholder="स्कॅन करा किंवा टाईप करा...">
                 </div>
 
-                <!-- ✨ अस्सल ऑटो-मॅप फोटो विभाग -->
+                <!-- ✨ अचूक ऑटो-मॅप फोटो विभाग -->
                 <div class="form-group" id="autoMapSection" style="display: none;">
                     <label style="color: #166534; font-size: 13px; font-weight: bold;">✨ ऑटो-मॅप्ड फोटो व पूर्वलोकन:</label>
                     <div class="auto-preview-card">
-                        <!-- fallback सह इमेज टॅग -->
-                        <img id="autoMappedImage" src="" alt="Maggi Pack" crossorigin="anonymous">
+                        <img id="autoMappedImage" src="" alt="Product">
                         <div>
-                            <div id="autoMappedCategory" style="font-weight: bold; color: #166534; font-size: 14px;">✨ Auto-Mapped (Instant Food)</div>
-                            <div id="autoMappedName" style="font-size: 13px; color: #334155; margin-top: 2px;">मॅगी नूडल्स चे अचूक ओरिजिनल चित्र सेट केले आहे.</div>
+                            <div id="autoMappedCategory" style="font-weight: bold; color: #166534; font-size: 14px;"></div>
+                            <div id="autoMappedName" style="font-size: 13px; color: #334155; margin-top: 2px;"></div>
                             <input type="hidden" id="finalProductImageUrl">
                         </div>
                     </div>
@@ -251,11 +250,11 @@
                     </div>
                     <div class="form-group" style="flex: 1;">
                         <label>विक्री दर (₹) *</label>
-                        <input type="number" id="modalPrice" class="form-control" placeholder="14" step="0.5" required>
+                        <input type="number" id="modalPrice" class="form-control" placeholder="10" step="0.5" required>
                     </div>
                     <div class="form-group" style="flex: 1;">
                         <label>एमआरपी (₹)</label>
-                        <input type="number" id="modalMrp" class="form-control" placeholder="14" step="0.5">
+                        <input type="number" id="modalMrp" class="form-control" placeholder="10" step="0.5">
                     </div>
                 </div>
 
@@ -271,22 +270,55 @@
         </div>
     </div>
 
-    <!-- स्क्रिप्ट्स -->
     <script src="js/supabase-client.js"></script>
     <script>
-        // अस्सल नेस्ले मॅगीचे डायरेक्ट CDN व हाय-क्वालिटी पॅकेजिंग चित्र (कधीही न तुटणारे)
-        const MAGGI_OFFICIAL_IMG = "https://images.openfoodfacts.org/images/products/890/105/890/1559/front_en.3.400.jpg";
-        const MAGGI_FALLBACK_SVG = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='12' fill='%23facc15'/><rect x='8' y='8' width='84' height='84' rx='8' fill='%23eab308'/><circle cx='50' cy='48' r='30' fill='%23dc2626'/><text x='50' y='54' font-family='Arial Black,sans-serif' font-size='16' font-weight='900' fill='%23fef08a' text-anchor='middle'>Maggi</text><text x='50' y='76' font-family='Arial,sans-serif' font-size='9' font-weight='bold' fill='%2378350f' text-anchor='middle'>2-MINUTE NOODLES</text></svg>";
+        // अस्सल फॉलबॅक जनरेटर
+        function generateProductBadge(name, colorBg, colorText) {
+            return `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='10' fill='${encodeURIComponent(colorBg)}'/><text x='50' y='55' font-family='Arial,sans-serif' font-size='14' font-weight='bold' fill='${encodeURIComponent(colorText)}' text-anchor='middle'>${encodeURIComponent(name)}</text></svg>`;
+        }
 
+        // प्रत्येक प्रॉडक्टचा अस्सल आणि वेगळा फोटो
         const PRESET_PRODUCTS = [
             {
-                keywords: ['maggi', 'maggie', 'मॅगी', 'noodles', 'मॅगी नूडल्स'],
+                keywords: ['maggi', 'maggie', 'मॅगी', 'noodles'],
                 name: 'Nestle Maggi 2-Minute Masala Noodles 70g',
                 category: 'Instant Food',
                 unit: 'Packet',
                 price: 14,
                 mrp: 14,
-                imageUrl: MAGGI_OFFICIAL_IMG
+                imageUrl: 'https://images.openfoodfacts.org/images/products/890/105/890/1559/front_en.3.400.jpg',
+                fallback: generateProductBadge('MAGGI', '#facc15', '#b91c1c')
+            },
+            {
+                keywords: ['parle', 'parle-g', 'parleg', 'पारले'],
+                name: 'Parle-G Gold Glucose Biscuits',
+                category: 'Biscuits',
+                unit: 'Packet',
+                price: 10,
+                mrp: 10,
+                // अस्सल पारले-जी पॅकेट फोटो
+                imageUrl: 'https://images.openfoodfacts.org/images/products/8901719101038/front_en.4.400.jpg',
+                fallback: generateProductBadge('PARLE-G', '#fef08a', '#854d0e')
+            },
+            {
+                keywords: ['good day', 'britannia', 'गुड डे'],
+                name: 'Britannia Good Day Butter Cookies',
+                category: 'Biscuits',
+                unit: 'Packet',
+                price: 20,
+                mrp: 20,
+                imageUrl: 'https://images.openfoodfacts.org/images/products/8901063012640/front_en.8.400.jpg',
+                fallback: generateProductBadge('GOOD DAY', '#fed7aa', '#9a3412')
+            },
+            {
+                keywords: ['butter', 'amul butter', 'बटर', 'अमूल'],
+                name: 'Amul Pasteurised Butter 100g',
+                category: 'Dairy',
+                unit: 'Piece',
+                price: 56,
+                mrp: 58,
+                imageUrl: 'https://images.openfoodfacts.org/images/products/8901262010054/front_en.10.400.jpg',
+                fallback: generateProductBadge('AMUL', '#bfdbfe', '#1e40af')
             },
             {
                 keywords: ['yippee', 'यिप्पी'],
@@ -295,25 +327,28 @@
                 unit: 'Packet',
                 price: 14,
                 mrp: 15,
-                imageUrl: 'https://images.openfoodfacts.org/images/products/8901725181222/front_en.3.400.jpg'
+                imageUrl: 'https://images.openfoodfacts.org/images/products/8901725181222/front_en.3.400.jpg',
+                fallback: generateProductBadge('YIPPEE', '#fed7aa', '#c2410c')
             },
             {
-                keywords: ['parle-g', 'parle g', 'पारले'],
-                name: 'Parle-G Gold Glucose Biscuits',
-                category: 'Biscuits',
-                unit: 'Packet',
-                price: 10,
-                mrp: 10,
-                imageUrl: 'https://images.openfoodfacts.org/images/products/8901719101038/front_en.4.400.jpg'
+                keywords: ['salt', 'tata salt', 'मीठ'],
+                name: 'Tata Salt Vacuum Evaporated 1kg',
+                category: 'Staples',
+                unit: 'Kg',
+                price: 26,
+                mrp: 28,
+                imageUrl: 'https://images.openfoodfacts.org/images/products/8901030012586/front_en.6.400.jpg',
+                fallback: generateProductBadge('TATA SALT', '#e0f2fe', '#0369a1')
             },
             {
-                keywords: ['butter', 'amul butter', 'बटर'],
-                name: 'Amul Pasteurised Butter 100g',
-                category: 'Dairy',
+                keywords: ['dettol', 'डेटॉल'],
+                name: 'Dettol Original Bathing Soap',
+                category: 'Personal Care',
                 unit: 'Piece',
-                price: 56,
-                mrp: 58,
-                imageUrl: 'https://images.openfoodfacts.org/images/products/8901262010054/front_en.10.400.jpg'
+                price: 38,
+                mrp: 40,
+                imageUrl: 'https://images.openfoodfacts.org/images/products/8901396328209/front_en.4.400.jpg',
+                fallback: generateProductBadge('DETTOL', '#dcfce7', '#15803d')
             }
         ];
 
@@ -328,7 +363,7 @@
             document.getElementById('autoMapSection').style.display = 'none';
         }
 
-        // इनपुट बॉक्समध्ये टाईप करताना मॅपिंग
+        // इनपुट टाईप करताना योग्य मॅपिंग
         const nameInput = document.getElementById('modalProductName');
         nameInput.addEventListener('input', async function(e) {
             const val = e.target.value.trim().toLowerCase();
@@ -339,7 +374,7 @@
                 return;
             }
 
-            // १. मॅगी किंवा स्थानिक डेटाबेस तपासणे
+            // योग्य उत्पादन शोधणे
             let match = null;
             for (const item of PRESET_PRODUCTS) {
                 if (item.keywords.some(k => val.includes(k) || k.includes(val))) {
@@ -349,9 +384,9 @@
             }
 
             if (match) {
-                applyAutoMapping(match.imageUrl, match.category, match.name, match.price, match.mrp, match.unit);
+                applyAutoMapping(match.imageUrl, match.fallback, match.category, match.name, match.price, match.mrp, match.unit);
             } else {
-                // २. बाहेरील Open Food Facts वरून शोधणे
+                // Open Food Facts लाइव्ह सर्च
                 try {
                     const res = await fetch(`https://in.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(val)}&search_simple=1&action=process&json=1&page_size=1`);
                     const data = await res.json();
@@ -359,7 +394,7 @@
                         const prod = data.products[0];
                         const img = prod.image_front_url || prod.image_url;
                         if (img) {
-                            applyAutoMapping(img, prod.categories ? prod.categories.split(',')[0] : 'Grocery', prod.product_name || val);
+                            applyAutoMapping(img, null, prod.categories ? prod.categories.split(',')[0] : 'General', prod.product_name || val);
                         }
                     }
                 } catch (err) {
@@ -368,16 +403,16 @@
             }
         });
 
-        function applyAutoMapping(imgUrl, category, name, price, mrp, unit) {
+        function applyAutoMapping(imgUrl, fallbackUrl, category, name, price, mrp, unit) {
             const autoSection = document.getElementById('autoMapSection');
             autoSection.style.display = 'block';
 
             const imgEl = document.getElementById('autoMappedImage');
             
-            // जर बाहेरील इमेज सर्व्हरने ब्लॉक केले तर थेट बॅकअप पॅकेट लोड होईल
+            // जर इमेज लोड झाली नाही तर त्या उत्पादनाचा स्वतःचा बॅकअप लोड होईल
             imgEl.onerror = function() {
                 this.onerror = null;
-                this.src = MAGGI_FALLBACK_SVG;
+                this.src = fallbackUrl || generateProductBadge(name.substring(0, 10), '#f1f5f9', '#334155');
             };
             imgEl.src = imgUrl;
 
@@ -390,12 +425,11 @@
             if (unit) document.getElementById('modalUnit').value = unit;
         }
 
-        // प्रॉडक्ट सेव्ह करणे
         async function handleProductSubmit(e) {
             e.preventDefault();
             const name = document.getElementById('modalProductName').value;
             const barcode = document.getElementById('modalBarcode').value;
-            const imgUrl = document.getElementById('finalProductImageUrl').value || MAGGI_FALLBACK_SVG;
+            const imgUrl = document.getElementById('finalProductImageUrl').value || 'logo.svg';
             const price = parseFloat(document.getElementById('modalPrice').value);
             const mrp = parseFloat(document.getElementById('modalMrp').value) || price;
             const stock = parseInt(document.getElementById('modalStock').value);
