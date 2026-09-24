@@ -124,8 +124,8 @@
             margin-top: 10px;
         }
         .auto-preview-card img {
-            width: 65px;
-            height: 65px;
+            width: 75px;
+            height: 75px;
             object-fit: contain;
             background: #fff;
             border-radius: 6px;
@@ -227,10 +227,11 @@
                 <div class="form-group" id="autoMapSection" style="display: none;">
                     <label style="color: #166534; font-size: 13px; font-weight: bold;">✨ ऑटो-मॅप्ड फोटो व पूर्वलोकन:</label>
                     <div class="auto-preview-card">
-                        <img id="autoMappedImage" src="" alt="Product">
+                        <!-- fallback सह इमेज टॅग -->
+                        <img id="autoMappedImage" src="" alt="Maggi Pack" crossorigin="anonymous">
                         <div>
                             <div id="autoMappedCategory" style="font-weight: bold; color: #166534; font-size: 14px;">✨ Auto-Mapped (Instant Food)</div>
-                            <div id="autoMappedName" style="font-size: 13px; color: #334155; margin-top: 2px;">मॅगी नूडल्स चे अचूक ओरिजिनल चित्र रेडी आहे.</div>
+                            <div id="autoMappedName" style="font-size: 13px; color: #334155; margin-top: 2px;">मॅगी नूडल्स चे अचूक ओरिजिनल चित्र सेट केले आहे.</div>
                             <input type="hidden" id="finalProductImageUrl">
                         </div>
                     </div>
@@ -273,7 +274,10 @@
     <!-- स्क्रिप्ट्स -->
     <script src="js/supabase-client.js"></script>
     <script>
-        // अस्सल प्रॉडक्ट्सचा डेटाबेस (नेस्ले मॅगीच्या ओरिजिनल पिवळ्या पॅकेटसह)
+        // अस्सल नेस्ले मॅगीचे डायरेक्ट CDN व हाय-क्वालिटी पॅकेजिंग चित्र (कधीही न तुटणारे)
+        const MAGGI_OFFICIAL_IMG = "https://images.openfoodfacts.org/images/products/890/105/890/1559/front_en.3.400.jpg";
+        const MAGGI_FALLBACK_SVG = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='12' fill='%23facc15'/><rect x='8' y='8' width='84' height='84' rx='8' fill='%23eab308'/><circle cx='50' cy='48' r='30' fill='%23dc2626'/><text x='50' y='54' font-family='Arial Black,sans-serif' font-size='16' font-weight='900' fill='%23fef08a' text-anchor='middle'>Maggi</text><text x='50' y='76' font-family='Arial,sans-serif' font-size='9' font-weight='bold' fill='%2378350f' text-anchor='middle'>2-MINUTE NOODLES</text></svg>";
+
         const PRESET_PRODUCTS = [
             {
                 keywords: ['maggi', 'maggie', 'मॅगी', 'noodles', 'मॅगी नूडल्स'],
@@ -282,8 +286,7 @@
                 unit: 'Packet',
                 price: 14,
                 mrp: 14,
-                // १००% अस्सल नेस्ले मॅगी पॅकेजिंग इमेज
-                imageUrl: 'https://images.openfoodfacts.org/images/products/890/105/885/2399/front_en.15.400.jpg'
+                imageUrl: MAGGI_OFFICIAL_IMG
             },
             {
                 keywords: ['yippee', 'यिप्पी'],
@@ -325,7 +328,7 @@
             document.getElementById('autoMapSection').style.display = 'none';
         }
 
-        // इनपुट बॉक्समध्ये टाईप करताना अस्सल मॅपिंग
+        // इनपुट बॉक्समध्ये टाईप करताना मॅपिंग
         const nameInput = document.getElementById('modalProductName');
         nameInput.addEventListener('input', async function(e) {
             const val = e.target.value.trim().toLowerCase();
@@ -336,7 +339,7 @@
                 return;
             }
 
-            // १. स्थानिक डेटाबेसमधून शोधणे
+            // १. मॅगी किंवा स्थानिक डेटाबेस तपासणे
             let match = null;
             for (const item of PRESET_PRODUCTS) {
                 if (item.keywords.some(k => val.includes(k) || k.includes(val))) {
@@ -369,7 +372,15 @@
             const autoSection = document.getElementById('autoMapSection');
             autoSection.style.display = 'block';
 
-            document.getElementById('autoMappedImage').src = imgUrl;
+            const imgEl = document.getElementById('autoMappedImage');
+            
+            // जर बाहेरील इमेज सर्व्हरने ब्लॉक केले तर थेट बॅकअप पॅकेट लोड होईल
+            imgEl.onerror = function() {
+                this.onerror = null;
+                this.src = MAGGI_FALLBACK_SVG;
+            };
+            imgEl.src = imgUrl;
+
             document.getElementById('autoMappedCategory').innerText = `✨ Auto-Mapped (${category})`;
             document.getElementById('autoMappedName').innerText = `${name} चे ओरिजिनल चित्र सेट केले आहे.`;
             document.getElementById('finalProductImageUrl').value = imgUrl;
@@ -384,7 +395,7 @@
             e.preventDefault();
             const name = document.getElementById('modalProductName').value;
             const barcode = document.getElementById('modalBarcode').value;
-            const imgUrl = document.getElementById('finalProductImageUrl').value || 'logo.svg';
+            const imgUrl = document.getElementById('finalProductImageUrl').value || MAGGI_FALLBACK_SVG;
             const price = parseFloat(document.getElementById('modalPrice').value);
             const mrp = parseFloat(document.getElementById('modalMrp').value) || price;
             const stock = parseInt(document.getElementById('modalStock').value);
@@ -409,7 +420,7 @@
                     closeProductModal();
                     loadProducts();
                 } else {
-                    alert(`उत्पादन सेव्ह झाले:\nनाव: ${name}\nफोटो: ${imgUrl}`);
+                    alert(`उत्पादन सेव्ह झाले:\nनाव: ${name}\nकिंमत: ₹${price}`);
                     closeProductModal();
                 }
             } catch (err) {
@@ -417,7 +428,6 @@
             }
         }
 
-        // इन्व्हेंटरी लोड करणे
         async function loadProducts() {
             const tbody = document.getElementById('inventoryTableBody');
             try {
