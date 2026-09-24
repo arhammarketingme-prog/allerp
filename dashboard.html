@@ -166,8 +166,8 @@
 
             <form id="productEntryForm" onsubmit="handleProductSubmit(event)">
                 <div class="form-group">
-                    <label>उत्पादनाचे नाव * (उदा. Gemini Sunflower Oil, Classmate Pen, Raymond Shirt)</label>
-                    <input type="text" id="modalProductName" class="form-control" placeholder="उदा. gemini sunflower oil, fortune, classmate pen..." autocomplete="off" required>
+                    <label>उत्पादनाचे नाव * (उदा. Gemini Sunflower Oil, Parle-G, Classmate Pen, Raymond Shirt)</label>
+                    <input type="text" id="modalProductName" class="form-control" placeholder="उदा. parle g, gemini oil, maggi, classmate..." autocomplete="off" required>
                 </div>
 
                 <div class="form-group">
@@ -205,11 +205,11 @@
                     </div>
                     <div class="form-group" style="flex: 1;">
                         <label>विक्री दर (₹) *</label>
-                        <input type="number" id="modalPrice" class="form-control" placeholder="100" step="0.5" required>
+                        <input type="number" id="modalPrice" class="form-control" placeholder="10" step="0.5" required>
                     </div>
                     <div class="form-group" style="flex: 1;">
                         <label>एमआरपी (₹)</label>
-                        <input type="number" id="modalMrp" class="form-control" placeholder="100" step="0.5">
+                        <input type="number" id="modalMrp" class="form-control" placeholder="10" step="0.5">
                     </div>
                 </div>
 
@@ -245,95 +245,95 @@
             const query = e.target.value.trim();
             clearTimeout(searchTimer);
 
-            if (query.length < 3) {
+            if (query.length < 2) {
                 document.getElementById('autoMapSection').style.display = 'none';
                 return;
             }
 
             searchTimer = setTimeout(() => {
-                fetchUltraReliablePhoto(query);
+                fetchIndividualProductPhoto(query);
             }, 300);
         });
 
-        // जेमिनी सूर्यफूल तेलाचे अस्सल स्पष्ट पॅकेट (Unblocked Clean Vector Image)
+        // १. जेमिनी तेलाचे पॅकेट
         const GEMINI_OIL_PACKET = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 120'><rect width='100' height='120' rx='8' fill='%23ffffff' stroke='%23f59e0b' stroke-width='3'/><rect x='6' y='6' width='88' height='108' rx='6' fill='%23fffbeb'/><circle cx='50' cy='45' r='24' fill='%23fef08a' stroke='%23eab308' stroke-width='2'/><path d='M50 25 C45 35 55 35 50 25 Z' fill='%23f59e0b'/><path d='M50 65 C45 55 55 55 50 65 Z' fill='%23f59e0b'/><path d='M30 45 C40 40 40 50 30 45 Z' fill='%23f59e0b'/><path d='M70 45 C60 40 60 50 70 45 Z' fill='%23f59e0b'/><circle cx='50' cy='45' r='12' fill='%2378350f'/><text x='50' y='82' font-family='Arial,sans-serif' font-size='11' font-weight='900' fill='%23b45309' text-anchor='middle'>GEMINI</text><text x='50' y='94' font-family='Arial,sans-serif' font-size='8' font-weight='bold' fill='%2315803d' text-anchor='middle'>SUNFLOWER OIL</text><text x='50' y='105' font-family='Arial,sans-serif' font-size='7' fill='%23334155' text-anchor='middle'>1 Ltr Pouch</text></svg>";
 
-        // १००% लोड होणारे अल्ट्रा-रिलायबल इमेज इंजिन
-        async function fetchUltraReliablePhoto(query) {
+        // २. पारले-जी बिस्किटांचे अस्सल पिवळे पॅकेट
+        const PARLE_G_PACKET = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 90'><rect width='120' height='90' rx='6' fill='%23fef08a' stroke='%23ca8a04' stroke-width='2'/><rect x='5' y='5' width='110' height='80' rx='4' fill='%23fef9c3'/><rect x='10' y='22' width='100' height='28' rx='4' fill='%23dc2626'/><text x='60' y='42' font-family='Arial Black,sans-serif' font-size='18' font-weight='900' fill='%23ffffff' text-anchor='middle'>Parle-G</text><text x='60' y='64' font-family='Arial,sans-serif' font-size='9' font-weight='bold' fill='%23854d0e' text-anchor='middle'>GLUCOSE BISCUITS</text><text x='60' y='76' font-family='Arial,sans-serif' font-size='8' font-weight='bold' fill='%2315803d' text-anchor='middle'>ORIGINAL TASTE</text></svg>";
+
+        // ३. मॅगी नूडल्सचे पिवळे पॅकेट
+        const MAGGI_PACKET = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='10' fill='%23facc15'/><rect x='6' y='6' width='88' height='88' rx='6' fill='%23eab308'/><circle cx='50' cy='48' r='30' fill='%23dc2626'/><text x='50' y='54' font-family='Arial Black,sans-serif' font-size='16' font-weight='900' fill='%23fef08a' text-anchor='middle'>Maggi</text><text x='50' y='76' font-family='Arial,sans-serif' font-size='8' font-weight='bold' fill='%2378350f' text-anchor='middle'>2-MINUTE NOODLES</text></svg>";
+
+        // ४. क्लासमेट पेन
+        const CLASSMATE_PEN = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='10' fill='%230284c7'/><rect x='45' y='15' width='10' height='60' rx='3' fill='%23ffffff'/><polygon points='45,75 55,75 50,88' fill='%2394a3b8'/><text x='50' y='52' font-family='Arial,sans-serif' font-size='6' font-weight='bold' fill='%230284c7' text-anchor='middle' transform='rotate(90 50 52)'>classmate</text></svg>";
+
+        // स्वतंत्र प्रॉडक्ट शोधणारे इंजिन
+        async function fetchIndividualProductPhoto(query) {
             const autoSection = document.getElementById('autoMapSection');
             const clean = query.toLowerCase();
-            let finalImg = null;
+            let currentImg = null;
+            let currentFallback = null;
             let category = "General Store";
 
-            // १. जेमिनी सूर्यफूल तेल (Gemini Sunflower Oil)
-            if (clean.includes('gemini') || (clean.includes('sunflower') && clean.includes('oil'))) {
-                finalImg = GEMINI_OIL_PACKET;
-                category = "Cooking Oil";
-            } 
-            // २. मॅगी नूडल्स
-            else if (clean.includes('maggi')) {
-                finalImg = "https://images.openfoodfacts.org/images/products/890/105/890/1559/front_en.3.400.jpg";
-                category = "Instant Food";
-            } 
-            // ३. पारले-जी बिस्किट्स
-            else if (clean.includes('parle')) {
-                finalImg = "https://images.openfoodfacts.org/images/products/8901719101038/front_en.4.400.jpg";
+            // A. पारले-जी (Parle-G)
+            if (clean.includes('parle')) {
+                currentImg = PARLE_G_PACKET;
+                currentFallback = PARLE_G_PACKET;
                 category = "Biscuits";
+                document.getElementById('modalUnit').value = 'Packet';
+                document.getElementById('modalPrice').value = '10';
+                document.getElementById('modalMrp').value = '10';
             } 
-            // ४. क्लासमेट पेन
+            // B. जेमिनी सूर्यफूल तेल (Gemini Sunflower Oil)
+            else if (clean.includes('gemini') || (clean.includes('sunflower') && clean.includes('oil'))) {
+                currentImg = GEMINI_OIL_PACKET;
+                currentFallback = GEMINI_OIL_PACKET;
+                category = "Cooking Oil";
+                document.getElementById('modalUnit').value = 'Liter';
+                document.getElementById('modalPrice').value = '135';
+                document.getElementById('modalMrp').value = '145';
+            } 
+            // C. मॅगी नूडल्स (Maggi)
+            else if (clean.includes('maggi')) {
+                currentImg = MAGGI_PACKET;
+                currentFallback = MAGGI_PACKET;
+                category = "Instant Food";
+                document.getElementById('modalUnit').value = 'Packet';
+                document.getElementById('modalPrice').value = '14';
+                document.getElementById('modalMrp').value = '14';
+            } 
+            // D. क्लासमेट पेन (Classmate Pen)
             else if (clean.includes('classmate') || clean.includes('pen')) {
-                finalImg = "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Ballpoint-pen-parts.jpg/300px-Ballpoint-pen-parts.jpg";
+                currentImg = CLASSMATE_PEN;
+                currentFallback = CLASSMATE_PEN;
                 category = "Stationery";
+                document.getElementById('modalUnit').value = 'Piece';
+                document.getElementById('modalPrice').value = '10';
+                document.getElementById('modalMrp').value = '10';
             } 
-            // ५. नवनीत वही / बुक्स
-            else if (clean.includes('navneet') || clean.includes('book') || clean.includes('notebook')) {
-                finalImg = "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Various_notebooks.jpg/300px-Various_notebooks.jpg";
-                category = "Stationery / Books";
-            }
-
-            // ६. जर वरील यादीत नसेल तर थेट विकिपीडियाच्या अधिकृत CDN वरून फोटो मिळवणे
-            if (!finalImg) {
-                try {
-                    const wikiRes = await fetch(`https://en.wikipedia.org/w/api.php?action=query&format=json&origin=*&prop=pageimages&pithumbsize=250&generator=prefixsearch&gpssearch=${encodeURIComponent(query)}&gpslimit=1`);
-                    const wikiData = await wikiRes.json();
-                    if (wikiData.query && wikiData.query.pages) {
-                        const page = Object.values(wikiData.query.pages)[0];
-                        if (page && page.thumbnail && page.thumbnail.source) {
-                            finalImg = page.thumbnail.source;
-                            category = "Commercial Brand";
-                        }
-                    }
-                } catch (e) {}
-            }
-
-            // ७. सुरक्षित फॉलबॅक बॅज
-            if (!finalImg) {
-                const label = query.substring(0, 14).toUpperCase();
-                finalImg = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='10' fill='%230284c7'/><text x='50' y='55' font-family='Arial,sans-serif' font-size='10' font-weight='bold' fill='%23ffffff' text-anchor='middle'>${encodeURIComponent(label)}</text></svg>`;
+            // E. इतर कोणत्याही वस्तूसाठी डायनॅमिक बॅज
+            else {
+                const badgeTitle = encodeURIComponent(query.substring(0, 14).toUpperCase());
+                const genericBadge = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='10' fill='%230284c7'/><text x='50' y='55' font-family='Arial,sans-serif' font-size='10' font-weight='bold' fill='%23ffffff' text-anchor='middle'>${badgeTitle}</text></svg>`;
+                currentImg = genericBadge;
+                currentFallback = genericBadge;
+                category = "Universal Product";
             }
 
             // UI मध्ये थेट दाखवणे
             autoSection.style.display = 'block';
             const imgEl = document.getElementById('autoMappedImage');
-            
+
+            // फॉलबॅक फक्त संबंधित उत्पादनाचाच असेल
             imgEl.onerror = function() {
                 this.onerror = null;
-                this.src = GEMINI_OIL_PACKET;
+                this.src = currentFallback;
             };
-            imgEl.src = finalImg;
 
-            document.getElementById('finalProductImageUrl').value = finalImg;
+            imgEl.src = currentImg;
+            document.getElementById('finalProductImageUrl').value = currentImg;
             document.getElementById('autoMappedCategory').innerText = `✨ Auto-Mapped (${category})`;
             document.getElementById('autoMappedName').innerText = `${query} चे अधिकृत चित्र लोड झाले आहे.`;
-
-            // युनिट ऑटो-सिलेक्ट
-            if (clean.includes('oil') || clean.includes('तेल') || clean.includes('milk') || clean.includes('ghee')) {
-                document.getElementById('modalUnit').value = 'Liter';
-            } else if (clean.includes('pen') || clean.includes('shirt') || clean.includes('soap')) {
-                document.getElementById('modalUnit').value = 'Piece';
-            } else if (clean.includes('book') || clean.includes('notebook')) {
-                document.getElementById('modalUnit').value = 'Book';
-            }
         }
 
         async function handleProductSubmit(e) {
