@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AllERP - कॅटलॉग व्यवस्थापन व प्रॉडक्ट ॲड</title>
+    <title>AllERP - कॅटलॉग व्यवस्थापन व अस्सल ब्रँड फोटो</title>
     <link rel="stylesheet" href="css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
@@ -86,6 +86,7 @@
             height: 110px;
             object-fit: contain;
             border-radius: 4px;
+            background: #fff;
         }
         .image-card p {
             margin: 6px 0 0;
@@ -94,6 +95,40 @@
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
+        }
+        .selected-preview {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 12px;
+            padding: 10px;
+            background: #e0f2fe;
+            border-radius: 8px;
+        }
+        .selected-preview-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .selected-preview img {
+            width: 70px;
+            height: 70px;
+            object-fit: contain;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            background: #fff;
+        }
+        .btn-delete-img {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .btn-delete-img:hover {
+            background: #dc2626;
         }
         .btn-submit {
             background: #16a34a;
@@ -110,69 +145,57 @@
         .btn-submit:hover {
             background: #15803d;
         }
-        .selected-preview {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-top: 10px;
-        }
-        .selected-preview img {
-            width: 70px;
-            height: 70px;
-            object-fit: contain;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-        }
     </style>
 </head>
 <body>
 
     <div class="catalog-container">
-        <h2>नवीन प्रॉडक्ट जोडा (स्मार्ट ऑटो-इमेज शोध)</h2>
-        <p style="color: #666; font-size: 14px;">फक्त ब्रँड किंवा प्रॉडक्टचे नाव टाका (उदा. <b>Nestle Maggi</b>, <b>Parle-G</b>), ओरिजिनल फोटो आपोआप लोड होतील.</p>
+        <h2>प्रॉडक्ट कॅटलॉग (ओरिजिनल ब्रँडेड फोटो मॅनेजर)</h2>
+        <p style="color: #666; font-size: 14px;">फक्त <b>Nestle Maggi</b>, <b>Parle-G</b> किंवा बारकोड टाईप करा. भारतीय बाजारपेठेतील मूळ फोटो लोड होतील.</p>
         <hr style="margin-bottom: 20px; border: 0; border-top: 1px solid #eee;">
 
         <form id="productForm" onsubmit="saveProduct(event)">
-            <!-- १. प्रॉडक्टचे नाव व लाइव्ह सर्च -->
             <div class="form-group">
                 <label for="productName">प्रॉडक्टचे नाव / ब्रँड</label>
                 <div class="search-row">
-                    <input type="text" id="productName" class="form-control" placeholder="उदा. Nestle Maggi 70g किंवा अमूल बटर..." required>
-                    <button type="button" class="btn-search" onclick="fetchOriginalImages()">फोटो शोधा 🔍</button>
+                    <input type="text" id="productName" class="form-control" placeholder="उदा. Nestle Maggi 2-Minute Noodles किंवा Parle-G..." required>
+                    <button type="button" class="btn-search" onclick="fetchPreciseImages()">ओरिजिनल फोटो शोधा 🔍</button>
                 </div>
             </div>
 
-            <!-- २. बारकोड (पर्यायी) -->
             <div class="form-group">
-                <label for="productBarcode">बारकोड (EAN / UPC - असल्यास)</label>
-                <input type="text" id="productBarcode" class="form-control" placeholder="उदा. 8901058852399">
+                <label for="productBarcode">बारकोड (EAN / Barcode असल्यास)</label>
+                <input type="text" id="productBarcode" class="form-control" placeholder="उदा. 8901058852399 (मॅगीचा बारकोड)">
             </div>
 
-            <!-- ३. ओरिजिनल इमेज पिकर विभाग -->
             <div class="form-group image-preview-container">
-                <label>ओरिजिनल प्रॉडक्ट फोटो (खालीलपैकी एक निवडा)</label>
-                <div id="searchStatus" style="font-size: 13px; color: #64748b; margin-top: 5px;">प्रॉडक्टचे नाव टाकून "फोटो शोधा" वर क्लिक करा.</div>
+                <label>ओरिजिनल पॅकेजिंग फोटो (खालीलपैकी योग्य फोटो निवडा)</label>
+                <div id="searchStatus" style="font-size: 13px; color: #64748b; margin-top: 5px;">नाव टाकून "ओरिजिनल फोटो शोधा" वर क्लिक करा.</div>
                 
                 <div id="imageGrid" class="image-grid"></div>
 
-                <!-- निवडलेली मुख्य इमेज -->
                 <div id="selectedDisplay" class="selected-preview" style="display: none;">
-                    <img id="mainImagePreview" src="" alt="निवडलेला फोटो">
-                    <div>
-                        <b style="color: #16a34a;">✓ हा फोटो निवडला गेला आहे</b>
-                        <input type="hidden" id="finalImageUrl" required>
+                    <div class="selected-preview-left">
+                        <img id="mainImagePreview" src="" alt="निवडलेला फोटो">
+                        <div>
+                            <b style="color: #0369a1;">हा ओरिजिनल फोटो निवडला आहे</b><br>
+                            <small style="color: #555;">हाच फोटो दुकानात दिसेल</small>
+                            <input type="hidden" id="finalImageUrl" required>
+                        </div>
                     </div>
+                    <button type="button" class="btn-delete-img" onclick="clearSelectedImage()" title="चुकीचा फोटो काढून टाका">
+                        जुना फोटो काढा (Delete 🗑️)
+                    </button>
                 </div>
             </div>
 
-            <!-- ४. किंमत आणि स्टॉक -->
             <div style="display: flex; gap: 15px;">
                 <div class="form-group" style="flex: 1;">
                     <label for="productMRP">एमआरपी (MRP ₹)</label>
                     <input type="number" id="productMRP" class="form-control" placeholder="14" step="0.5" required>
                 </div>
                 <div class="form-group" style="flex: 1;">
-                    <label for="productPrice">विक्री किंमत (Selling Price ₹)</label>
+                    <label for="productPrice">विक्री किंमत (Selling ₹)</label>
                     <input type="number" id="productPrice" class="form-control" placeholder="12" step="0.5" required>
                 </div>
                 <div class="form-group" style="flex: 1;">
@@ -181,43 +204,44 @@
                 </div>
             </div>
 
-            <!-- ५. सेव्ह करा -->
-            <button type="submit" class="btn-submit">दुकानात प्रॉडक्ट ॲड करा</button>
+            <button type="submit" class="btn-submit">प्रॉडक्ट सुरक्षित सेव्ह करा</button>
         </form>
     </div>
 
-    <!-- लॉजिक व API इंटिग्रेशन -->
     <script src="js/supabase-client.js"></script>
     <script>
-        // १. Open Food Facts व मोफत स्त्रोतांवरून इमेज शोधणे
-        async function fetchOriginalImages() {
-            const query = document.getElementById('productName').value.trim();
+        function clearSelectedImage() {
+            document.getElementById('finalImageUrl').value = '';
+            document.getElementById('mainImagePreview').src = '';
+            document.getElementById('selectedDisplay').style.display = 'none';
+            document.querySelectorAll('.image-card').forEach(el => el.classList.remove('selected'));
+            document.getElementById('searchStatus').innerHTML = '<span style="color:#ef4444;">जुनी इमेज काढून टाकली आहे. कृपया पुन्हा योग्य इमेज निवडा.</span>';
+        }
+
+        async function fetchPreciseImages() {
+            let query = document.getElementById('productName').value.trim();
             const barcode = document.getElementById('productBarcode').value.trim();
             const statusDiv = document.getElementById('searchStatus');
             const gridDiv = document.getElementById('imageGrid');
 
             if (!query && !barcode) {
-                alert('कृपया प्रॉडक्टचे नाव किंवा बारकोड प्रविष्ट करा!');
+                alert('कृपया आधी प्रॉडक्टचे नाव किंवा बारकोड टाका!');
                 return;
             }
 
-            statusDiv.innerHTML = 'ओरिजिनल फोटो शोधत आहे... कृपया थांबा...';
+            statusDiv.innerHTML = 'भारतातील अस्सल ब्रँड फोटो शोधत आहे... कृपया थांबा...';
             gridDiv.innerHTML = '';
+            let imagesFound = [];
 
-            let foundImages = [];
-
-            // A. आधी बारकोड असेल तर थेट सर्च करणे
             if (barcode) {
                 try {
-                    const bRes = await fetch(`https://world.openfoodfacts.org/api/v2/product/${barcode}.json`);
+                    const bRes = await fetch(`https://in.openfoodfacts.org/api/v2/product/${barcode}.json`);
                     const bData = await bRes.json();
                     if (bData.status === 1 && bData.product) {
                         const p = bData.product;
-                        if (p.image_front_url || p.image_url) {
-                            foundImages.push({
-                                url: p.image_front_url || p.image_url,
-                                title: p.product_name || query
-                            });
+                        const validImg = p.image_front_url || p.image_url || (p.selected_images && p.selected_images.front && p.selected_images.front.display && p.selected_images.front.display.in);
+                        if (validImg) {
+                            imagesFound.push({ url: validImg, title: p.product_name || query });
                         }
                     }
                 } catch (e) {
@@ -225,73 +249,66 @@
                 }
             }
 
-            // B. नावाने ओपन फूड फॅक्ट्स सर्च करणे
-            if (foundImages.length < 4 && query) {
+            if (query) {
                 try {
-                    const encodedQuery = encodeURIComponent(query);
-                    const res = await fetch(`https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodedQuery}&search_simple=1&action=process&json=1&page_size=6`);
+                    const cleanQuery = encodeURIComponent(query);
+                    const res = await fetch(`https://in.openfoodfacts.org/cgi/search.pl?search_terms=${cleanQuery}&search_simple=1&action=process&json=1&page_size=8`);
                     const data = await res.json();
 
                     if (data.products && data.products.length > 0) {
-                        data.products.forEach(item => {
-                            const img = item.image_front_url || item.image_url;
-                            if (img && !foundImages.some(x => x.url === img)) {
-                                foundImages.push({
+                        data.products.forEach(prod => {
+                            const img = prod.image_front_url || prod.image_url;
+                            if (img && !imagesFound.some(i => i.url === img)) {
+                                imagesFound.push({
                                     url: img,
-                                    title: item.product_name || query
+                                    title: prod.product_name || prod.brands || query
                                 });
                             }
                         });
                     }
-                } catch (e) {
-                    console.warn("ओपन फूड फॅक्ट्स शोध त्रुटी:", e);
+                } catch (err) {
+                    console.warn("Indian catalog त्रुटी:", err);
                 }
             }
 
-            // C. बॅकअप पर्याय: विकिमीडिया कॉमन्स
-            if (foundImages.length === 0 && query) {
+            if (imagesFound.length === 0 && query) {
                 try {
-                    const wikiRes = await fetch(`https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(query)}&gsrlimit=5&prop=imageinfo&iiprop=url&format=json&origin=*`);
-                    const wikiData = await wikiRes.json();
-                    if (wikiData.query && wikiData.query.pages) {
-                        Object.values(wikiData.query.pages).forEach(page => {
-                            if (page.imageinfo && page.imageinfo[0] && page.imageinfo[0].url) {
-                                foundImages.push({
-                                    url: page.imageinfo[0].url,
-                                    title: page.title.replace('File:', '')
-                                });
+                    const resGlobal = await fetch(`https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(query)}&search_simple=1&action=process&json=1&page_size=6`);
+                    const dataGlobal = await resGlobal.json();
+                    if (dataGlobal.products) {
+                        dataGlobal.products.forEach(prod => {
+                            const img = prod.image_front_url || prod.image_url;
+                            if (img && !imagesFound.some(i => i.url === img)) {
+                                imagesFound.push({ url: img, title: prod.product_name || query });
                             }
                         });
                     }
                 } catch (e) {
-                    console.warn("विकिमीडिया शोध त्रुटी:", e);
+                    console.warn("Global catalog त्रुटी:", e);
                 }
             }
 
-            // निकाल UI मध्ये दाखवणे
-            if (foundImages.length > 0) {
-                statusDiv.innerHTML = `<b>${foundImages.length}</b> ओरिजिनल फोटो सापडले. खालील योग्य फोटोवर क्लिक करा:`;
-                foundImages.forEach((imgObj, idx) => {
+            if (imagesFound.length > 0) {
+                statusDiv.innerHTML = `<b>${imagesFound.length} ओरिजिनल फोटो सापडले:</b> खालील अस्सल फोटोवर क्लिक करा.`;
+                imagesFound.forEach((item, index) => {
                     const card = document.createElement('div');
                     card.className = 'image-card';
                     card.innerHTML = `
-                        <img src="${imgObj.url}" alt="${imgObj.title}" onerror="this.parentElement.style.display='none'">
-                        <p title="${imgObj.title}">${imgObj.title}</p>
+                        <img src="${item.url}" alt="${item.title}" onerror="this.parentElement.style.display='none'">
+                        <p title="${item.title}">${item.title}</p>
                     `;
-                    card.onclick = () => selectProductImage(imgObj.url, card);
+                    card.onclick = () => selectProductImage(item.url, card);
                     gridDiv.appendChild(card);
 
-                    // पहिला फोटो आपोआप सिलेक्ट करा
-                    if (idx === 0) {
-                        selectProductImage(imgObj.url, card);
+                    if (index === 0) {
+                        selectProductImage(item.url, card);
                     }
                 });
             } else {
-                statusDiv.innerHTML = '<span style="color: #dc2626;">कोणतीही थेट ओरिजिनल इमेज सापडली नाही. तुम्ही कस्टम इमेज URL टाकू शकता.</span>';
+                statusDiv.innerHTML = '<span style="color: #dc2626;">या नावाचा थेट फोटो सापडला नाही. कृपया बारकोड टाकून बघा.</span>';
             }
         }
 
-        // २. इमेज निवडणे
         function selectProductImage(url, element) {
             document.querySelectorAll('.image-card').forEach(el => el.classList.remove('selected'));
             if (element) element.classList.add('selected');
@@ -301,7 +318,6 @@
             document.getElementById('selectedDisplay').style.display = 'flex';
         }
 
-        // ३. फॉर्म सेव्ह करणे (Supabase मध्ये सेव्ह)
         async function saveProduct(event) {
             event.preventDefault();
 
@@ -318,32 +334,49 @@
             }
 
             try {
-                // Supabase मध्ये प्रॉडक्ट सेव्ह करा (तुमच्या स्कीमानुसार)
                 if (window.supabaseClient) {
-                    const { data, error } = await window.supabaseClient
-                        .from('products')
-                        .insert([
+                    // सिस्टीममधील योग्य टेबल (shop_products किंवा master_products) शोधून सेव्ह करणे
+                    let targetTable = 'shop_products';
+                    
+                    let { error } = await window.supabaseClient
+                        .from(targetTable)
+                        .upsert([
                             {
-                                title: name,
+                                name: name,
                                 barcode: barcode || null,
                                 image_url: imageUrl,
                                 mrp: mrp,
                                 price: price,
-                                stock: stock
+                                stock_qty: stock
                             }
                         ]);
 
+                    // जर shop_products नसेल तर master_products मध्ये सेव्ह करणे
+                    if (error && error.code === '42P01') {
+                        targetTable = 'master_products';
+                        const res = await window.supabaseClient
+                            .from(targetTable)
+                            .upsert([
+                                {
+                                    name: name,
+                                    barcode: barcode || null,
+                                    image_url: imageUrl,
+                                    mrp: mrp
+                                }
+                            ]);
+                        error = res.error;
+                    }
+
                     if (error) throw error;
-                    alert('अभिनंदन! प्रॉडक्ट आणि ओरिजिनल फोटो यशस्वीरीत्या सेव्ह झाले!');
+                    alert('यशस्वी झाले! ओरिजिनल पॅकेजिंग फोटोसह प्रॉडक्ट अपडेट झाले आहे.');
                     document.getElementById('productForm').reset();
+                    clearSelectedImage();
                     document.getElementById('imageGrid').innerHTML = '';
-                    document.getElementById('selectedDisplay').style.display = 'none';
-                    document.getElementById('searchStatus').innerHTML = 'प्रॉडक्टचे नाव टाकून "फोटो शोधा" वर क्लिक करा.';
                 } else {
-                    alert(`प्रॉडक्ट तयार आहे:\nनाव: ${name}\nइमेज URL: ${imageUrl}\nकिंमत: ₹${price}`);
+                    alert(`प्रॉडक्ट तयार आहे!\nनाव: ${name}\nअस्सल इमेज लिंक: ${imageUrl}`);
                 }
             } catch (err) {
-                console.error("सेव्ह करताना अडचण:", err);
+                console.error("सेव्ह त्रुटी:", err);
                 alert("त्रुटी: " + err.message);
             }
         }
