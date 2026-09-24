@@ -3,12 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AllERP - Universal Business Dashboard</title>
+  <title>AllERP — Universal Business OS</title>
+  <!-- मूळ ऑल-ईआरपी डिझाइनसाठी आवश्यक Tailwind व Icons -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="css/style.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    /* Auto-Mapped Exact Visual Box Integration */
-    .auto-map-preview-card {
+    /* ऑटो-मॅप्ड फोटो कार्ड */
+    .auto-map-preview-box {
       display: none;
       align-items: center;
       gap: 14px;
@@ -19,7 +22,7 @@
       margin-top: 10px;
       margin-bottom: 12px;
     }
-    .auto-map-preview-card .thumb-box {
+    .auto-map-preview-box .thumb-frame {
       width: 70px;
       height: 70px;
       min-width: 70px;
@@ -32,127 +35,164 @@
       overflow: hidden;
       padding: 2px;
     }
-    .auto-map-preview-card .thumb-box img {
+    .auto-map-preview-box .thumb-frame img {
       width: 100%;
       height: 100%;
       object-fit: contain;
     }
-    .auto-map-preview-card .info-box {
-      text-align: left;
-    }
-    .auto-map-preview-card .badge-title {
-      font-size: 13px;
-      font-weight: 800;
-      color: #166534;
-    }
-    .auto-map-preview-card .desc-text {
-      font-size: 12px;
-      color: #475569;
-      margin-top: 2px;
-    }
   </style>
 </head>
-<body class="bg-slate-50 text-slate-900 font-sans antialiased">
+<body class="bg-slate-100 text-slate-800 antialiased font-sans">
 
-  <!-- TOP BRAND & NAVIGATION BAR -->
-  <header class="bg-slate-900 text-white border-b border-slate-800 sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <span class="text-xl font-black text-sky-400">🚀 AllERP</span>
-        <span class="text-xs text-slate-400 hidden sm:inline">Smart Marketplace</span>
-      </div>
+  <!-- १. मूळ AllERP टॉप डार्क नेव्हिगेशन बार -->
+  <header class="bg-[#0b1b36] text-white px-4 py-2.5 shadow-md sticky top-0 z-50">
+    <div class="max-w-[1400px] mx-auto flex flex-wrap items-center justify-between gap-3">
       <div class="flex items-center gap-2">
-        <a href="index.html" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800 text-slate-300 hover:bg-slate-700">🏠 Home</a>
-        <a href="advertiser.html" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-600 text-white hover:bg-amber-700">📢 Advertise</a>
-        <a href="b2b-collective.html" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-purple-900 text-purple-200 hover:bg-purple-800">📦 B2B</a>
-        <a href="app-store.html" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800 text-slate-300 hover:bg-slate-700">📱 Apps</a>
-        <a href="delivery-boy.html" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-800 text-emerald-100 hover:bg-emerald-700">🛵 डिलिव्हरी</a>
-        <button class="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800 text-slate-300">🔔</button>
-        <a href="b2b-wholesale.html" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-900 text-blue-100 hover:bg-blue-800">🏢 Wholesale</a>
-        <a href="admin.html" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800 text-slate-300 hover:bg-slate-700">📊 My ERP</a>
-        <button id="logoutBtn" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800 text-slate-400 hover:bg-rose-950 hover:text-rose-300">Logout</button>
+        <span class="text-sky-400 text-lg font-black tracking-wide flex items-center gap-1.5">
+          <i class="fa-solid fa-rocket"></i> AllERP
+        </span>
+        <span class="text-[11px] text-slate-400 font-medium hidden sm:inline">Smart Marketplace</span>
       </div>
+
+      <nav class="flex flex-wrap items-center gap-1.5 text-xs font-bold">
+        <a href="index.html" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded flex items-center gap-1.5">
+          <i class="fa-solid fa-house"></i> Home
+        </a>
+        <a href="advertiser.html" class="bg-amber-600 hover:bg-amber-700 text-white px-3 py-1.5 rounded flex items-center gap-1.5">
+          <i class="fa-solid fa-bullhorn"></i> Advertise
+        </a>
+        <a href="b2b-collective.html" class="bg-purple-900 hover:bg-purple-800 text-purple-200 px-3 py-1.5 rounded flex items-center gap-1.5">
+          <i class="fa-solid fa-boxes-stacked"></i> B2B
+        </a>
+        <a href="app-store.html" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded flex items-center gap-1.5">
+          <i class="fa-solid fa-mobile-screen"></i> Apps
+        </a>
+        <a href="delivery-boy.html" class="bg-emerald-800 hover:bg-emerald-700 text-emerald-100 px-3 py-1.5 rounded flex items-center gap-1.5">
+          <i class="fa-solid fa-motorcycle"></i> डिलिव्हरी
+        </a>
+        <button class="bg-amber-600 hover:bg-amber-700 text-white px-3 py-1.5 rounded">
+          <i class="fa-solid fa-bell"></i>
+        </button>
+        <a href="b2b-wholesale.html" class="bg-blue-900 hover:bg-blue-800 text-blue-100 px-3 py-1.5 rounded flex items-center gap-1.5">
+          <i class="fa-solid fa-warehouse"></i> Wholesale
+        </a>
+        <a href="admin.html" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded flex items-center gap-1.5">
+          <i class="fa-solid fa-chart-line"></i> My ERP
+        </a>
+        <button class="bg-amber-600 hover:bg-amber-700 text-white px-3 py-1.5 rounded font-bold">
+          Logout
+        </button>
+      </nav>
     </div>
   </header>
 
-  <!-- WHATSAPP SPECIAL OFFER AD STRIP -->
-  <div class="bg-amber-100 border-b border-amber-300 px-4 py-2 text-xs font-semibold text-amber-900 flex justify-between items-center">
+  <!-- २. मूळ व्हॉट्सॲप पिवळी जाहिरात पट्टी -->
+  <div class="bg-amber-300 border-b border-amber-400 px-4 py-2 text-xs font-bold text-amber-950 flex flex-wrap items-center justify-between gap-2">
     <div class="flex items-center gap-2">
-      <span class="bg-amber-500 text-white px-2 py-0.5 rounded text-[10px] font-bold">⚡ स्पेशल ऑफर</span>
+      <span class="bg-amber-500 text-white text-[10px] px-2 py-0.5 rounded font-black">⚡ स्पेशल ऑफर</span>
       <span>सुपरफास्ट! आपल्या दुकानाची जाहिरात थेट ग्राहकांच्या मोबाईलवर दाखवा - फक्त ₹९९ पासून सुरू!</span>
     </div>
-    <div class="flex items-center gap-4">
+    <div class="flex items-center gap-3">
       <span>WhatsApp करा: <b>+91 91309 77...</b></span>
-      <button onclick="window.location.href='advertiser.html'" class="bg-emerald-700 hover:bg-emerald-800 text-white px-3 py-1 rounded-full text-xs font-bold">📢 जाहिरात द्या</button>
+      <button onclick="window.location.href='advertiser.html'" class="bg-emerald-700 hover:bg-emerald-800 text-white px-3.5 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+        <i class="fa-solid fa-bullhorn text-[10px]"></i> जाहिरात द्या
+      </button>
     </div>
   </div>
 
-  <!-- MAIN CONTAINER -->
-  <main class="max-w-7xl mx-auto px-4 py-6">
+  <!-- मुख्य कंटेनर -->
+  <main class="max-w-[1400px] mx-auto p-4 sm:p-6 space-y-5">
 
-    <!-- SHOP HEADER CARD -->
-    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <!-- ३. दुकानदाराचे हेडर कार्ड (Nikhil Kirana) -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
       <div>
-        <h1 id="shopTitle" class="text-2xl font-black text-slate-800">Nikhil Kirana</h1>
-        <p class="text-xs text-slate-500 mt-1">Universal Multi-Business Operating System & Local Retail Network</p>
+        <h1 class="text-2xl font-black text-slate-900 tracking-tight">Nikhil Kirana</h1>
+        <p class="text-xs text-slate-500 font-medium mt-0.5">Universal Multi-Business Operating System & Local Retail Network</p>
       </div>
-      <div class="flex flex-wrap items-center gap-3">
-        <button class="bg-amber-600 hover:bg-amber-700 text-white font-bold px-4 py-2 rounded-lg text-xs">🌐 ग्लोबल मार्केटप्लेस</button>
-        <select class="border border-slate-300 rounded-lg px-3 py-1.5 text-xs font-semibold">
+
+      <div class="flex flex-wrap items-center gap-2.5">
+        <button class="bg-amber-600 hover:bg-amber-700 text-white px-3.5 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-sm">
+          <i class="fa-solid fa-globe"></i> ग्लोबल मार्केटप्लेस
+        </button>
+        <select class="bg-white border border-slate-300 text-slate-700 px-3 py-2 rounded-lg text-xs font-bold outline-none">
           <option value="mr" selected>मराठी</option>
           <option value="en">English</option>
           <option value="hi">हिंदी</option>
         </select>
-        <button class="bg-amber-600 hover:bg-amber-700 text-white font-bold px-3 py-2 rounded-lg text-xs">🤖 AI</button>
+        <button class="bg-amber-600 hover:bg-amber-700 text-white px-3.5 py-2 rounded-lg text-xs font-bold flex items-center gap-1 shadow-sm">
+          <i class="fa-solid fa-robot"></i> AI
+        </button>
       </div>
     </div>
 
-    <!-- ERP MODULE TABS BAR -->
-    <div class="flex gap-2 overflow-x-auto pb-2 mb-6">
-      <button class="bg-amber-700 text-white px-4 py-2 rounded-lg font-bold text-xs whitespace-nowrap">📊 डॅशबोर्ड</button>
-      <button class="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-lg font-bold text-xs whitespace-nowrap">📦 इन्व्हेंटरी व स्टॉक</button>
-      <button class="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-lg font-bold text-xs whitespace-nowrap">💰 विक्री व इन्व्हॉइस</button>
-      <button class="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-lg font-bold text-xs whitespace-nowrap">🏗️ प्रकल्प / साईट्स</button>
-      <button class="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-lg font-bold text-xs whitespace-nowrap">⚡ POS काउंटर</button>
-      <button class="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-lg font-bold text-xs whitespace-nowrap">🛒 ऑनलाईन ऑर्डर्स</button>
+    <!-- ४. मूळ ईआरपी टॅब्स बार -->
+    <div class="flex items-center gap-2 overflow-x-auto pb-1 text-xs font-bold">
+      <button class="bg-amber-600 text-white px-4 py-2.5 rounded-lg flex items-center gap-1.5 shadow-sm whitespace-nowrap">
+        <i class="fa-solid fa-chart-pie"></i> डॅशबोर्ड
+      </button>
+      <button class="bg-amber-600 text-white px-4 py-2.5 rounded-lg flex items-center gap-1.5 shadow-sm whitespace-nowrap">
+        <i class="fa-solid fa-box"></i> इन्व्हेंटरी व स्टॉक
+      </button>
+      <button class="bg-amber-600 text-white px-4 py-2.5 rounded-lg flex items-center gap-1.5 shadow-sm whitespace-nowrap">
+        <i class="fa-solid fa-receipt"></i> विक्री व इन्व्हॉइस
+      </button>
+      <button class="bg-amber-600 text-white px-4 py-2.5 rounded-lg flex items-center gap-1.5 shadow-sm whitespace-nowrap">
+        <i class="fa-solid fa-sheet-plastic"></i> प्रकल्प / साईट्स
+      </button>
+      <button class="bg-amber-600 text-white px-4 py-2.5 rounded-lg flex items-center gap-1.5 shadow-sm whitespace-nowrap">
+        <i class="fa-solid fa-bolt"></i> POS काउंटर
+      </button>
+      <button class="bg-amber-600 text-white px-4 py-2.5 rounded-lg flex items-center gap-1.5 shadow-sm whitespace-nowrap">
+        <i class="fa-solid fa-cart-shopping"></i> ऑनलाईन ऑर्डर्स
+      </button>
     </div>
 
-    <!-- INVENTORY CARD -->
-    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100 mb-4">
-        <h2 class="text-lg font-extrabold text-slate-800 flex items-center gap-2">
-          <span>📦 इन्व्हेंटरी व उत्पादने (Universal Inventory)</span>
+    <!-- ५. मूळ इन्व्हेंटरी व उत्पादने कार्ड -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
+        <h2 class="text-base font-extrabold text-slate-800 flex items-center gap-2">
+          <i class="fa-solid fa-box-open text-amber-600"></i> इन्व्हेंटरी व उत्पादने (Universal Inventory)
         </h2>
-        <div class="flex items-center gap-3">
-          <button class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold px-3 py-2 rounded-lg">🌐 ग्लोबल मार्केटप्लेस</button>
-          <button onclick="openProductModal()" class="bg-amber-700 hover:bg-amber-800 text-white text-xs font-bold px-4 py-2 rounded-lg flex items-center gap-1">
-            + नवीन प्रॉडक्ट जोडा
+
+        <div class="flex items-center gap-2">
+          <button class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold px-3.5 py-2 rounded-lg flex items-center gap-1.5 shadow-sm">
+            <i class="fa-solid fa-globe"></i> ग्लोबल मार्केटप्लेस
+          </button>
+          <button onclick="openProductModal()" class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold px-3.5 py-2 rounded-lg flex items-center gap-1.5 shadow-sm">
+            <i class="fa-solid fa-plus"></i> नवीन प्रॉडक्ट जोडा
           </button>
         </div>
       </div>
 
-      <!-- Quick Search Bar -->
-      <div class="flex gap-2 mb-4">
-        <input type="text" placeholder="🔍 इन्व्हॉइस, ग्राहक, उत्पादने किंवा ऑर्डर्स शोधा..." class="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-xs">
-        <button class="bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold px-4 py-2 rounded-lg">शोधा</button>
+      <!-- शोध बार -->
+      <div class="flex gap-2 my-4">
+        <div class="relative flex-1">
+          <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 text-xs">
+            <i class="fa-solid fa-magnifying-glass"></i>
+          </span>
+          <input type="text" placeholder="इन्व्हॉइस, ग्राहक, उत्पादने किंवा ऑर्डर्स शोधा..." class="w-full border border-slate-300 rounded-lg pl-8 pr-3 py-2 text-xs focus:ring-1 focus:ring-amber-500 focus:outline-none">
+        </div>
+        <button class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold px-5 py-2 rounded-lg shadow-sm">
+          शोधा
+        </button>
       </div>
 
-      <!-- Inventory Table -->
+      <!-- इन्व्हेंटरी टेबल -->
       <div class="overflow-x-auto">
         <table class="w-full text-left text-xs text-slate-600">
-          <thead class="bg-slate-50 text-slate-700 font-bold border-b border-slate-200 uppercase tracking-wider text-[11px]">
+          <thead class="bg-slate-50 text-slate-700 font-bold border-b border-slate-200">
             <tr>
               <th class="p-3">फोटो</th>
               <th class="p-3">उत्पादन</th>
-              <th class="p-3">विक्री दर (₹)</th>
+              <th class="p-3">विक्री दर</th>
               <th class="p-3">स्टॉक (थेट एडिट करा)</th>
               <th class="p-3">स्थिती</th>
             </tr>
           </thead>
           <tbody id="inventoryList" class="divide-y divide-slate-100">
             <tr>
-              <td colspan="5" class="p-4 text-center text-slate-400">
-                उत्पादने लोड होत आहेत किंवा इन्व्हेंटरी रिक्त आहे. <b>"+ नवीन प्रॉडक्ट जोडा"</b> वर क्लिक करा.
+              <td colspan="5" class="p-5 text-center text-slate-400">
+                कोणतेही उत्पादन उपलब्ध नाही. वरील <b>"+ नवीन प्रॉडक्ट जोडा"</b> वर क्लिक करा.
               </td>
             </tr>
           </tbody>
@@ -161,39 +201,42 @@
     </div>
   </main>
 
-  <!-- ================= ORIGINAL PRODUCT MODAL + AUTO-MAPPER ================= -->
+  <!-- ================= मूळ पॉप-अप (MODAL) + स्मार्ट ऑटो-मॅपर ================= -->
   <div id="addProductModal" class="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center hidden p-4">
-    <div class="bg-white rounded-xl shadow-2xl border border-slate-200 max-w-xl w-full p-6 max-h-[90vh] overflow-y-auto">
+    <div class="bg-white rounded-xl shadow-2xl border border-slate-200 max-w-xl w-full p-6 max-h-[92vh] overflow-y-auto">
       
+      <!-- Modal Header -->
       <div class="flex items-center justify-between border-b border-slate-200 pb-3 mb-4">
-        <h3 class="font-extrabold text-slate-800 text-base flex items-center gap-2">
-          <span>🎁 नवीन प्रॉडक्ट जोडा (स्कॅनर व ऑटो-मॅपिंग सह)</span>
+        <h3 class="font-black text-slate-800 text-sm sm:text-base flex items-center gap-2">
+          <i class="fa-solid fa-gift text-amber-600"></i> नवीन प्रॉडक्ट जोडा (स्कॅनर व ऑटो-मॅपिंग सह)
         </h3>
-        <button onclick="closeProductModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-1 rounded-md text-xs font-bold">
+        <button onclick="closeProductModal()" class="bg-amber-600 hover:bg-amber-700 text-white px-3 py-1 rounded-md text-xs font-bold flex items-center gap-1">
           ✕ बंद करा
         </button>
       </div>
 
       <form id="productForm" onsubmit="saveProduct(event)">
-        <!-- Name Input -->
+        <!-- प्रॉडक्ट नाव -->
         <div class="mb-3">
           <label class="block text-xs font-bold text-slate-700 mb-1">
-            उत्पादनाचे नाव * (उदा. Turmeric Powder, Basmati Rice, Tata Salt, Gemini Oil)
+            उत्पादनाचे नाव * (उदा. Turmeric Powder, Basmati Rice)
           </label>
           <div class="flex gap-2">
-            <input type="text" id="product_name" class="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-amber-500 focus:outline-none" placeholder="उदा. maggi, parle g, bisleri water, tata solt..." autocomplete="off" required>
-            <button type="button" class="bg-slate-100 border border-slate-300 px-3 py-2 rounded-lg text-xs font-bold text-slate-700 whitespace-nowrap">📷 स्कॅनर</button>
+            <input type="text" id="product_name" class="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-1 focus:ring-amber-500 focus:outline-none" placeholder="उदा. maggi, parle g, bisleri water, tata solt..." autocomplete="off" required>
+            <button type="button" class="bg-slate-50 border border-slate-300 hover:bg-slate-100 px-3 py-2 rounded-lg text-xs font-bold text-slate-700 flex items-center gap-1.5 whitespace-nowrap">
+              <i class="fa-solid fa-camera"></i> स्कॅनर
+            </button>
           </div>
         </div>
 
-        <!-- Barcode Input -->
+        <!-- बारकोड -->
         <div class="mb-3">
           <label class="block text-xs font-bold text-slate-700 mb-1">बारकोड (Barcode)</label>
           <input type="text" id="barcode" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs" placeholder="स्कॅन करा किंवा टाईप करा...">
         </div>
 
-        <!-- Wholesale Details -->
-        <details class="bg-emerald-50/60 border border-emerald-200 rounded-lg p-3 mb-3">
+        <!-- Wholesale भाव -->
+        <details class="bg-emerald-50/70 border border-emerald-200 rounded-lg p-3 mb-3">
           <summary class="text-xs font-bold text-emerald-800 cursor-pointer">📦 Wholesale भाव (ऐच्छिक — फक्त Wholesaler असल्यास)</summary>
           <div class="grid grid-cols-2 gap-3 mt-3">
             <input type="number" id="wholesale_price" class="border border-slate-300 rounded-lg px-3 py-1.5 text-xs bg-white" placeholder="Wholesale भाव ₹">
@@ -201,25 +244,25 @@
           </div>
         </details>
 
-        <!-- Variant Checkbox -->
+        <!-- Variant चेकबॉक्स -->
         <div class="flex items-center gap-2 mb-3">
-          <input type="checkbox" id="is_variant" class="rounded border-slate-300">
+          <input type="checkbox" id="is_variant" class="rounded border-slate-300 text-amber-600 focus:ring-amber-500">
           <label for="is_variant" class="text-xs text-slate-600">हा आधीच्या उत्पादनाचा Variant आहे (उदा. वेगळा साईझ)</label>
         </div>
 
-        <!-- ✨ Auto-Mapped Preview Card -->
-        <div id="autoMapSection" class="auto-map-preview-card">
-          <div class="thumb-box">
+        <!-- ✨ अस्सल ऑटो-मॅप्ड फोटो पूर्वलोकन -->
+        <div id="autoMapSection" class="auto-map-preview-box">
+          <div class="thumb-frame">
             <img id="autoMappedImg" src="" alt="उत्पादन चित्र" referrerpolicy="no-referrer">
           </div>
-          <div class="info-box">
-            <div id="autoMappedCat" class="badge-title">✨ Auto-Mapped</div>
-            <div id="autoMappedDesc" class="desc-text">अधिकृत चित्र व माहिती सेट केली आहे.</div>
+          <div>
+            <div id="autoMappedCat" class="text-xs font-black text-emerald-800">✨ Auto-Mapped</div>
+            <div id="autoMappedDesc" class="text-[11px] text-slate-600 mt-0.5">अधिकृत चित्र व माहिती सेट केली आहे.</div>
             <input type="hidden" id="finalImageUrl">
           </div>
         </div>
 
-        <!-- Units & Prices -->
+        <!-- एकक, दर व एमआरपी -->
         <div class="grid grid-cols-3 gap-3 mb-3">
           <div>
             <label class="block text-xs font-bold text-slate-700 mb-1">एकक (Unit)</label>
@@ -243,21 +286,21 @@
           </div>
         </div>
 
-        <!-- Stock Quantity -->
+        <!-- स्टॉक -->
         <div class="mb-4">
           <label class="block text-xs font-bold text-slate-700 mb-1">स्टॉक प्रमाण (Qty)</label>
           <input type="number" id="stock_qty" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs" value="50" required>
         </div>
 
-        <!-- Submit Button -->
-        <button type="submit" class="w-full bg-amber-700 hover:bg-amber-800 text-white font-bold py-2.5 rounded-lg text-xs tracking-wider">
+        <!-- सेव्ह बटण -->
+        <button type="submit" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-2.5 rounded-lg text-xs shadow-md">
           उत्पादन सुरक्षित सेव्ह करा
         </button>
       </form>
     </div>
   </div>
 
-  <!-- SCRIPT LOGIC (Unbroken Visuals Engine) -->
+  <!-- जावास्क्रिप्ट व स्मार्ट मॅपर -->
   <script src="js/supabase-client.js"></script>
   <script>
     let searchTimer = null;
@@ -273,17 +316,17 @@
       document.getElementById('autoMapSection').style.display = 'none';
     }
 
-    // 🌟 100% Unbroken Official Product Packaging Visuals
-    const VISUAL_PACKS = {
+    // अस्सल आणि सुरक्षित व्हेक्टर व्हिज्युअल्स
+    const PACK_VISUALS = {
       bisleri: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 90 120'><rect width='90' height='120' rx='8' fill='%23ffffff' stroke='%23059669' stroke-width='2'/><path d='M35 15 L55 15 L55 25 L65 35 L65 105 L25 105 L25 35 L35 25 Z' fill='%23e0f2fe' stroke='%230284c7' stroke-width='1.5'/><rect x='38' y='8' width='14' height='8' rx='2' fill='%23059669'/><rect x='25' y='52' width='40' height='28' fill='%23059669'/><text x='45' y='68' font-family='Arial Black,sans-serif' font-size='8' font-weight='900' fill='%23ffffff' text-anchor='middle'>Bisleri</text><text x='45' y='76' font-family='Arial,sans-serif' font-size='5' fill='%23ecfdf5' text-anchor='middle'>with minerals</text><text x='45' y='114' font-family='Arial,sans-serif' font-size='7' font-weight='bold' fill='%23065f46' text-anchor='middle'>1 LITRE</text></svg>",
       salt: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 120'><rect width='100' height='120' rx='8' fill='%23ffffff' stroke='%230284c7' stroke-width='3'/><rect x='6' y='6' width='88' height='40' rx='4' fill='%230284c7'/><text x='50' y='32' font-family='Arial Black,sans-serif' font-size='14' font-weight='900' fill='%23ffffff' text-anchor='middle'>TATA</text><circle cx='50' cy='65' r='18' fill='%23e0f2fe'/><text x='50' y='70' font-family='Arial Black,sans-serif' font-size='13' font-weight='900' fill='%230369a1' text-anchor='middle'>SALT</text><text x='50' y='92' font-family='Arial,sans-serif' font-size='8' font-weight='bold' fill='%23b91c1c' text-anchor='middle'>DESH KA NAMAK</text><text x='50' y='106' font-family='Arial,sans-serif' font-size='7' fill='%23334155' text-anchor='middle'>Vacuum Evaporated 1kg</text></svg>",
-      gemini: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 120'><rect width='100' height='120' rx='8' fill='%23ffffff' stroke='%23f59e0b' stroke-width='3'/><rect x='6' y='6' width='88' height='108' rx='6' fill='%23fffbeb'/><circle cx='50' cy='45' r='24' fill='%23fef08a' stroke='%23eab308' stroke-width='2'/><path d='M50 25 C45 35 55 35 50 25 Z' fill='%23f59e0b'/><path d='M50 65 C45 55 55 55 50 65 Z' fill='%23f59e0b'/><circle cx='50' cy='45' r='12' fill='%2378350f'/><text x='50' y='82' font-family='Arial,sans-serif' font-size='11' font-weight='900' fill='%23b45309' text-anchor='middle'>GEMINI</text><text x='50' y='94' font-family='Arial,sans-serif' font-size='8' font-weight='bold' fill='%2315803d' text-anchor='middle'>SUNFLOWER OIL</text><text x='50' y='105' font-family='Arial,sans-serif' font-size='7' fill='%23334155' text-anchor='middle'>1 Ltr Pouch</text></svg>",
+      gemini: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 120'><rect width='100' height='120' rx='8' fill='%23ffffff' stroke='%23f59e0b' stroke-width='3'/><rect x='6' y='6' width='88' height='108' rx='6' fill='%23fffbeb'/><circle cx='50' cy='45' r='24' fill='%23fef08a' stroke='%23eab308' stroke-width='2'/><path d='M50 25 C45 35 55 35 50 25 Z' fill='%23f59e0b'/><path d='M50 65 C45 55 55 55 50 65 Z' fill='%23f59e0b'/><path d='M30 45 C40 40 40 50 30 45 Z' fill='%23f59e0b'/><path d='M70 45 C60 40 60 50 70 45 Z' fill='%23f59e0b'/><circle cx='50' cy='45' r='12' fill='%2378350f'/><text x='50' y='82' font-family='Arial,sans-serif' font-size='11' font-weight='900' fill='%23b45309' text-anchor='middle'>GEMINI</text><text x='50' y='94' font-family='Arial,sans-serif' font-size='8' font-weight='bold' fill='%2315803d' text-anchor='middle'>SUNFLOWER OIL</text><text x='50' y='105' font-family='Arial,sans-serif' font-size='7' fill='%23334155' text-anchor='middle'>1 Ltr Pouch</text></svg>",
       parle: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 90'><rect width='120' height='90' rx='6' fill='%23fef08a' stroke='%23ca8a04' stroke-width='2'/><rect x='5' y='5' width='110' height='80' rx='4' fill='%23fef9c3'/><rect x='10' y='22' width='100' height='28' rx='4' fill='%23dc2626'/><text x='60' y='42' font-family='Arial Black,sans-serif' font-size='18' font-weight='900' fill='%23ffffff' text-anchor='middle'>Parle-G</text><text x='60' y='64' font-family='Arial,sans-serif' font-size='9' font-weight='bold' fill='%23854d0e' text-anchor='middle'>GLUCOSE BISCUITS</text><text x='60' y='76' font-family='Arial,sans-serif' font-size='8' font-weight='bold' fill='%2315803d' text-anchor='middle'>ORIGINAL TASTE</text></svg>",
       maggi: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='10' fill='%23facc15'/><rect x='6' y='6' width='88' height='88' rx='6' fill='%23eab308'/><circle cx='50' cy='48' r='30' fill='%23dc2626'/><text x='50' y='54' font-family='Arial Black,sans-serif' font-size='16' font-weight='900' fill='%23fef08a' text-anchor='middle'>Maggi</text><text x='50' y='76' font-family='Arial,sans-serif' font-size='8' font-weight='bold' fill='%2378350f' text-anchor='middle'>2-MINUTE NOODLES</text></svg>",
       classmate: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='10' fill='%230284c7'/><rect x='45' y='15' width='10' height='60' rx='3' fill='%23ffffff'/><polygon points='45,75 55,75 50,88' fill='%2394a3b8'/><text x='50' y='52' font-family='Arial,sans-serif' font-size='6' font-weight='bold' fill='%230284c7' text-anchor='middle' transform='rotate(90 50 52)'>classmate</text></svg>"
     };
 
-    // Smart Auto-Mapping Input Listener
+    // इनपुट लिसनर
     const inputName = document.getElementById('product_name');
     inputName.addEventListener('input', function(e) {
       const q = e.target.value.trim();
@@ -305,17 +348,17 @@
       let img = null;
       let cat = "General Store";
 
-      // 1. Bisleri Water
+      // 1. Bisleri
       if (clean.includes('bisleri') || clean.includes('water') || clean.includes('बिसलेरी')) {
-        img = VISUAL_PACKS.bisleri;
+        img = PACK_VISUALS.bisleri;
         cat = "Beverages / Water";
         document.getElementById('unit').value = 'Bottle';
         document.getElementById('price').value = '20';
         document.getElementById('mrp').value = '20';
       }
-      // 2. Tata Salt (with common typos: solt, namak)
+      // 2. Tata Salt (solt, namak)
       else if (clean.includes('salt') || clean.includes('solt') || clean.includes('namak') || (clean.includes('tata') && (clean.includes('sa') || clean.includes('so')))) {
-        img = VISUAL_PACKS.salt;
+        img = PACK_VISUALS.salt;
         cat = "Staples (मीठ)";
         document.getElementById('unit').value = 'Kg';
         document.getElementById('price').value = '28';
@@ -323,15 +366,15 @@
       }
       // 3. Parle-G
       else if (clean.includes('parle')) {
-        img = VISUAL_PACKS.parle;
+        img = PACK_VISUALS.parle;
         cat = "Biscuits";
         document.getElementById('unit').value = 'Packet';
         document.getElementById('price').value = '10';
         document.getElementById('mrp').value = '10';
       }
-      // 4. Gemini Sunflower Oil
+      // 4. Gemini Oil
       else if (clean.includes('gemini') || (clean.includes('sunflower') && clean.includes('oil'))) {
-        img = VISUAL_PACKS.gemini;
+        img = PACK_VISUALS.gemini;
         cat = "Cooking Oil";
         document.getElementById('unit').value = 'Liter';
         document.getElementById('price').value = '135';
@@ -339,7 +382,7 @@
       }
       // 5. Maggi
       else if (clean.includes('maggi') || clean.includes('maggie')) {
-        img = VISUAL_PACKS.maggi;
+        img = PACK_VISUALS.maggi;
         cat = "Instant Food";
         document.getElementById('unit').value = 'Packet';
         document.getElementById('price').value = '14';
@@ -347,13 +390,13 @@
       }
       // 6. Classmate Pen
       else if (clean.includes('classmate') || clean.includes('pen')) {
-        img = VISUAL_PACKS.classmate;
+        img = PACK_VISUALS.classmate;
         cat = "Stationery";
         document.getElementById('unit').value = 'Piece';
         document.getElementById('price').value = '10';
         document.getElementById('mrp').value = '10';
       }
-      // 7. General Custom Badge
+      // 7. Generic
       else {
         const text = encodeURIComponent(query.substring(0, 14).toUpperCase());
         img = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='10' fill='%230284c7'/><text x='50' y='55' font-family='Arial,sans-serif' font-size='10' font-weight='bold' fill='%23ffffff' text-anchor='middle'>${text}</text></svg>`;
@@ -367,7 +410,6 @@
       document.getElementById('autoMappedDesc').innerText = `${query} चे अधिकृत चित्र व माहिती सेट केली आहे.`;
     }
 
-    // Save Product to DB
     async function saveProduct(e) {
       e.preventDefault();
       const name = document.getElementById('product_name').value;
@@ -415,7 +457,7 @@
         data.forEach(p => {
           list.innerHTML += `
             <tr class="hover:bg-slate-50 transition">
-              <td class="p-3"><img src="${p.image_url || 'logo.svg'}" class="w-9 h-9 object-contain rounded border border-slate-200 p-0.5 bg-white"></td>
+              <td class="p-3"><img src="${p.image_url || 'logo.svg'}" class="w-8 h-8 object-contain rounded border border-slate-200 bg-white"></td>
               <td class="p-3 font-bold text-slate-800">${p.name}</td>
               <td class="p-3">₹${p.price}</td>
               <td class="p-3">${p.stock_qty || 0}</td>
