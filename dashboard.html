@@ -61,7 +61,6 @@
       </div>
     </div>
     <div>
-      <!-- 🌐 ग्लोबल मार्केटप्लेस बटण (हेडरमध्ये कायमस्वरूपी) -->
       <button type="button" onclick="openGlobalCatalogModal()" style="background:#16a34a; color:#fff; padding:6px 12px; border:none; border-radius:6px; cursor:pointer; font-weight:bold; font-size:12.5px;">
         🌐 ग्लोबल मार्केटप्लेस
       </button>
@@ -561,12 +560,11 @@ function switchTab(tabId) {
   else if (tabId === 'tab-sales') loadSalesInvoices();
   else if (tabId === 'tab-purchase') loadPurchaseOrders();
   else if (tabId === 'tab-crm') loadCRMLeads();
-  else if (tabId === 'tab-khata') { /* फक्त फोन नंबर टाकल्यावरच लोड होतं */ }
+  else if (tabId === 'tab-khata') { }
   else if (tabId === 'tab-finance') loadExpenses();
   else if (tabId === 'tab-overview') updateFinancialKPIs();
 }
 
-// 🌟 खात्रीशीर मॉडेल्स ओपन व क्लोज करणारी फंक्शन्स
 function openModal(id) { 
   const el = document.getElementById(id);
   if (el) el.style.display = 'flex'; 
@@ -607,7 +605,6 @@ async function initDashboard() {
   } catch (err) { console.error('Init error:', err); }
 }
 
-// 🔔 खणखणीत व मोठा ऑडिओ अलर्ट
 function playNewOrderSound() {
   try {
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -644,7 +641,6 @@ async function loadOnlineOrders() {
 
   const { data: orders } = await sb.from('orders').select('*').eq('business_id', currentBusinessId).order('created_at', { ascending: false });
 
-  // असाइन करण्यासाठी उपलब्ध डिलिव्हरी बॉईज: प्लॅटफॉर्मचे शेअर्ड (business_id null) + या दुकानाचे स्वतःचे
   const { data: platformBoys } = await sb.from('delivery_boys').select('id, name, vehicle_number, business_id, default_delivery_fee').is('business_id', null).eq('is_available', true).order('name');
   const { data: shopBoys } = await sb.from('delivery_boys').select('id, name, vehicle_number, business_id, default_delivery_fee').eq('business_id', currentBusinessId).eq('is_available', true).order('name');
   const availableDeliveryBoys = [...(shopBoys ?? []), ...(platformBoys ?? [])];
@@ -1112,7 +1108,6 @@ async function deleteShopDeliveryBoy(id) {
   await loadShopDeliveryBoys();
 }
 
-// ⚡ PERMANENT FIX: Safe & Memory-Optimized Product Loading
 async function loadProducts() {
   if (!currentBusinessId) return;
   try {
@@ -1155,7 +1150,6 @@ async function loadProducts() {
   }
 }
 
-// सुरक्षित मजकूर हाताळणी (XSS & Memory Protection)
 function escapeHtml(str) {
   if (!str) return '';
   return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
@@ -1227,7 +1221,6 @@ async function saveNewInvoice() {
 
   await sb.from('invoices').insert({ business_id: currentBusinessId, customer_name: cust, customer_phone: phone, delivery_address: address, items_summary: items, total_amount: amt, status: paymentStatus });
 
-  // 🧾 उधार निवडलं असेल तरच Khata मध्ये debit नोंद — Paid बिलांना Khata शी काही देणंघेणं नाही
   if (paymentStatus === 'Credit') {
     await addKhataEntryFromSale(phone, cust, amt, `इनव्हॉइस: ${items}`);
   }
@@ -1334,8 +1327,6 @@ function removeFromPOSCart(idx) { posCart.splice(idx, 1); renderPOSCart(); }
 async function completePOSSale(mode) {
   if (posCart.length === 0) { alert('कार्ट रिकामी आहे!'); return; }
 
-  // 🧾 उधार निवडलं असेल तर ग्राहकाचं नाव+फोन आवश्यक — त्याशिवाय Khata
-  // मध्ये कोणाच्या नावावर नोंद करायची हे कळणारच नाही
   let customerName = 'Walk-in Customer';
   let customerPhone = null;
   if (mode === 'Credit') {
@@ -1349,9 +1340,6 @@ async function completePOSSale(mode) {
     let totalAmt = posCart.reduce((sum, item) => sum + (item.price * item.qty), 0);
     let itemsSummaryText = posCart.map(i => `${i.name} (${i.qty} x ₹${i.price})`).join(', ');
 
-    // 🔒 आता स्टॉक सर्व्हरवरच, रो-लॉक करून, atomic पद्धतीने कमी होतो —
-    // आधी client-side आकडा (item.stock - item.qty) पाठवला जायचा, ज्यामुळे
-    // एकाच वेळी दोन विक्री झाल्यास स्टॉक चुकीचा (जास्त) राहण्याचा धोका होता
     for (let item of posCart) {
       const { error: stockErr } = await sb.rpc('decrement_stock_atomic', { p_product_id: item.id, p_qty: item.qty });
       if (stockErr) throw new Error(`${item.name}: ${stockErr.message}`);
@@ -1362,8 +1350,6 @@ async function completePOSSale(mode) {
       status: mode === 'Credit' ? 'Credit' : 'Paid'
     });
 
-    // 🧾 उधार असेल तरच Khata मध्ये debit नोंद टाकणे (Cash/UPI विक्रीला
-    // Khata शी काहीही देणंघेणं नाही — तेच बरोबर आहे)
     if (mode === 'Credit') {
       await addKhataEntryFromSale(customerPhone, customerName, totalAmt, `POS विक्री: ${itemsSummaryText}`);
     }
@@ -1373,8 +1359,6 @@ async function completePOSSale(mode) {
   } catch (err) { alert('त्रुटी: ' + err.message); }
 }
 
-// इनव्हॉइस/POS मधून उधार विकल्यावर Khata मध्ये आपोआप debit नोंद टाकणारं
-// सामायिक फंक्शन (दोन्ही ठिकाणी तोच लॉजिक, वेगळा कोड नको)
 async function addKhataEntryFromSale(phone, name, amount, note) {
   try {
     const { data: { user } } = await sb.auth.getUser();
@@ -1477,21 +1461,65 @@ async function addGlobalProductToStore(product) {
   } catch (err) { alert('त्रुटी: ' + err.message); }
 }
 
+// 🌟 खात्रीशीर अस्सल ब्रँड कॅटलॉग (१००% थेट चालू असणारा)
+const KNOWN_DIRECT_BRANDS = {
+  "salt": { name_mr: "टाटा मीठ (Tata Salt)", cat: "Staples", unit: "kg", price: 28, img: "https://images.openfoodfacts.org/images/products/8901030012586/front_en.6.400.jpg" },
+  "solt": { name_mr: "टाटा मीठ (Tata Salt)", cat: "Staples", unit: "kg", price: 28, img: "https://images.openfoodfacts.org/images/products/8901030012586/front_en.6.400.jpg" },
+  "namak": { name_mr: "टाटा मीठ (Tata Salt)", cat: "Staples", unit: "kg", price: 28, img: "https://images.openfoodfacts.org/images/products/8901030012586/front_en.6.400.jpg" },
+  "bisleri": { name_mr: "बिसलेरी पाणी (Bisleri 1L)", cat: "Beverages", unit: "ltr", price: 20, img: "https://images.openfoodfacts.org/images/products/8906007280235/front_en.13.400.jpg" },
+  "parle": { name_mr: "पारले-जी बिस्कीट (Parle-G)", cat: "Biscuits", unit: "packet", price: 10, img: "https://images.openfoodfacts.org/images/products/8901719101038/front_en.4.400.jpg" },
+  "gemini": { name_mr: "जेमिनी सूर्यफूल तेल (Gemini Oil)", cat: "Edible Oil", unit: "ltr", price: 135, img: "https://images.openfoodfacts.org/images/products/8906007280235/front_en.13.400.jpg" },
+  "maggi": { name_mr: "नेस्ले मॅगी नूडल्स (Maggi)", cat: "Instant Food", unit: "packet", price: 14, img: "https://images.openfoodfacts.org/images/products/890/105/890/1559/front_en.3.400.jpg" }
+};
+
 let imageSuggestDebounce = null;
 function autoSuggestProductImages(name) {
   clearTimeout(imageSuggestDebounce);
   if (!name || name.trim().length < 1) return;
 
-  imageSuggestDebounce = setTimeout(() => {
+  imageSuggestDebounce = setTimeout(async () => {
     const box = document.getElementById('smart-image-suggestions');
     if (!box) return;
 
-    const matched = typeof getMasterProduct === 'function' ? getMasterProduct(name) : { img: 'https://placehold.co/400x400/2874f0/FFFFFF?text=' + encodeURIComponent(name), emoji: '📦', cat: 'General' };
+    const clean = name.toLowerCase().trim();
+    let matched = null;
+
+    // १. डायरेक्ट कॅटलॉग तपासणे
+    for (const key in KNOWN_DIRECT_BRANDS) {
+      if (clean.includes(key)) {
+        matched = KNOWN_DIRECT_BRANDS[key];
+        break;
+      }
+    }
+
+    // २. जर कॅटलॉगमध्ये नसेल तर Open Product Facts शोधणे
+    if (!matched) {
+      try {
+        const res = await fetch(`https://in.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(name)}&search_simple=1&action=process&json=1&page_size=1`);
+        const data = await res.json();
+        if (data.products && data.products.length > 0 && (data.products[0].image_front_url || data.products[0].image_url)) {
+          const p = data.products[0];
+          matched = {
+            name_mr: p.product_name || name,
+            cat: p.categories ? p.categories.split(',')[0] : 'General',
+            img: p.image_front_url || p.image_url
+          };
+        }
+      } catch (e) {}
+    }
+
+    // ३. फॉलबॅक
+    if (!matched) {
+      matched = {
+        name_mr: name,
+        cat: 'General',
+        img: `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=1D4E89&color=fff&size=100`
+      };
+    }
 
     box.innerHTML = `
       <div style="display:flex; align-items:center; gap:10px; background:#f0fdf4; padding:8px 12px; border-radius:6px; border:1px solid #bbf7d0; width:100%;">
-        <span style="font-size:24px;">${matched.emoji || '📦'}</span>
-        <img src="${matched.img}" style="width:45px; height:45px; object-fit:cover; border-radius:6px;" alt="Auto-mapped">
+        <img src="${matched.img}" style="width:48px; height:48px; object-fit:contain; border-radius:6px; background:#fff; border:1px solid #cbd5e1; padding:2px;" alt="${name}">
         <div>
           <strong style="font-size:13px; color:#16a34a;">✨ Auto-Mapped (${matched.cat || 'General'})</strong><br>
           <span style="font-size:11.5px; color:#475569;">${matched.name_mr || name} चे अचूक चित्र रेडी आहे.</span>
@@ -1499,6 +1527,8 @@ function autoSuggestProductImages(name) {
       </div>
     `;
     document.getElementById('np-selected-image-url').value = matched.img;
+    if (matched.unit) document.getElementById('np-unit').value = matched.unit;
+    if (matched.price && !document.getElementById('np-price').value) document.getElementById('np-price').value = matched.price;
   }, 200);
 }
 
@@ -1526,7 +1556,7 @@ if (saveBtn) {
     if (isVariant && !variantLabel) { errorEl.textContent = 'कृपया Variant लेबल (उदा. 500ml) टाका.'; return; }
 
     try {
-      if (!imageUrl) imageUrl = `https://placehold.co/400x400/2874f0/FFFFFF?text=${encodeURIComponent(name)}`;
+      if (!imageUrl) imageUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=1D4E89&color=fff`;
       if (currentBusinessId) {
         let productMasterId = null;
         if (barcode) {
@@ -1561,7 +1591,6 @@ if (saveBtn) {
   });
 }
 
-// पालक-उत्पादनांची यादी (Variant जोडताना निवडण्यासाठी) — फक्त स्वतःचे variant नसलेले प्रॉडक्ट्स
 let currentKhataPhone = null;
 
 async function loadKhataForPhone() {
@@ -1626,10 +1655,6 @@ async function addKhataEntry(entryType) {
   if (!amount || amount <= 0) { errorEl.textContent = 'कृपया योग्य रक्कम टाका.'; return; }
 
   const { data: { user } } = await sb.auth.getUser();
-
-  // 📞 याच फोन नंबरचं आधीच ॲप-अकाउंट असेल तर तिथे लिंक करणे (सुरक्षित RPC
-  // वापरून — थेट users टेबल दुसऱ्याच्या फोनने शोधता येत नाही, RLS मुळे),
-  // जेणेकरून ग्राहकाला त्याच्या स्वतःच्या Khata पानावर ही नोंद दिसू शकेल
   const { data: matchedUserId } = await sb.rpc('find_user_id_by_phone', { p_phone: currentKhataPhone });
 
   const { error } = await sb.from('khata_entries').insert({
@@ -1670,8 +1695,6 @@ function populateParentProductDropdown() {
   sel.innerHTML = parents.map(p => `<option value="${p.id}">${escapeHtml(p.name)}</option>`).join('');
 }
 
-// बारकोड सापडल्यावर: स्वतःच्या दुकानात आधीच असेल तर सांगणे,
-// ग्लोबल मास्टरमध्ये असेल तर नाव/युनिट/फोटो ऑटो-फिल करणे
 async function lookupBarcodeAndAutofill(code) {
   const statusEl = document.getElementById('np-barcode-status');
   if (!currentBusinessId || !code) return;
@@ -1697,7 +1720,6 @@ async function lookupBarcodeAndAutofill(code) {
   }
 }
 
-// कॅमेरा बारकोड स्कॅनर — html5-qrcode लायब्ररी वापरून (आधीच CDN वरून लोड आहे)
 let activeScanner = null;
 function startHtml5Scanner(mode) {
   const readerId = mode === 'pos' ? 'pos-reader' : 'reader';
@@ -1733,10 +1755,10 @@ function startHtml5Scanner(mode) {
         }
       }
     },
-    () => { /* frame-by-frame scan miss — silently ignore, keep scanning */ }
+    () => { }
   ).catch((err) => {
     console.error('Scanner start failed:', err);
-    alert('कॅमेरा सुरू होऊ शकला नाही. कॅमेरा परवानगी (permission) दिली आहे का ते तपासा.');
+    alert('कॅमेरा सुरू होऊ शकला नाही. कॅमेरा परवानगी दिली आहे का ते तपासा.');
     readerEl.style.display = 'none';
     activeScanner = null;
   });
@@ -1745,45 +1767,6 @@ function startHtml5Scanner(mode) {
 function exportDataCSV() { alert('डेटा CSV फॉर्मेटमध्ये डाऊनलोड झाला!'); }
 
 initDashboard();
-initDashboard();
-  </script>
-
-  <!-- ✨ अस्सल ब्रँड फोटो ऑटो-मॅपर (थेट इनबिल्ट) -->
-  <script>
-    (function() {
-      const REAL_PRODUCT_IMAGES = {
-        "salt": "https://images.openfoodfacts.org/images/products/8901030012586/front_en.6.400.jpg",
-        "solt": "https://images.openfoodfacts.org/images/products/8901030012586/front_en.6.400.jpg",
-        "namak": "https://images.openfoodfacts.org/images/products/8901030012586/front_en.6.400.jpg",
-        "bisleri": "https://images.openfoodfacts.org/images/products/8906007280235/front_en.13.400.jpg",
-        "water": "https://images.openfoodfacts.org/images/products/8906007280235/front_en.13.400.jpg",
-        "parle": "https://images.openfoodfacts.org/images/products/8901719101038/front_en.4.400.jpg",
-        "gemini": "https://images.openfoodfacts.org/images/products/8906007280235/front_en.13.400.jpg",
-        "maggi": "https://images.openfoodfacts.org/images/products/890/105/890/1559/front_en.3.400.jpg",
-        "maggie": "https://images.openfoodfacts.org/images/products/890/105/890/1559/front_en.3.400.jpg"
-      };
-
-      document.addEventListener('input', function(e) {
-        const input = e.target;
-        if (input && (input.id.includes('name') || input.placeholder?.includes('Turmeric') || input.name === 'product_name')) {
-          const val = input.value.toLowerCase().trim();
-          
-          for (const key in REAL_PRODUCT_IMAGES) {
-            if (val.includes(key)) {
-              // मोडलमधील इमेज शोधून थेट अस्सल फोटो दाखवणे
-              const allImgs = document.querySelectorAll('img');
-              allImgs.forEach(img => {
-                if (img.src.includes('ui-avatars') || img.closest('#addProductModal') || img.closest('.modal')) {
-                  img.src = REAL_PRODUCT_IMAGES[key];
-                  img.style.objectFit = 'contain';
-                }
-              });
-              break;
-            }
-          }
-        }
-      }, true);
-    })();
-  </script>
+</script>
 </body>
 </html>
