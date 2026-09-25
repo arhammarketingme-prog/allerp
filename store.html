@@ -152,7 +152,7 @@
 <script src="js/ads.js"></script>
 <script src="js/master-dictionary.js"></script>
 <script>
-// 🌟 तुमची अधिकृत Weavo वेबसाईटची लिंक
+// 🌟 Weavo अधिकृत लिंक
 const WEAVO_BASE_URL = "https://arhammarketingme-prog.github.io/weavo/";
 
 const params = new URLSearchParams(window.location.search);
@@ -160,7 +160,7 @@ const slug = params.get('slug') || params.get('biz') || params.get('id');
 let businessData = null;
 let allStoreProducts = [];
 
-// 🌟 PWA Manifest
+// 🌟 Dynamic PWA Manifest
 function setupDynamicStoreManifest(name) {
   const dynamicManifest = {
     id: "/store-" + (slug || "shop"),
@@ -211,7 +211,7 @@ function triggerStorePWAInstall() {
       deferredStorePrompt = null;
     });
   } else {
-    alert("ॲप इन्स्टॉल करण्यासाठी: ब्राऊझरच्या वरच्या उजव्या कोपऱ्यातील तीन ठिपक्यांवर (⋮) क्लिक करून 'Add to Home screen' किंवा 'Install app' निवडा.");
+    alert("ॲप इन्स्टॉल करण्यासाठी: ब्राऊझरच्या उजव्या कोपऱ्यातील तीन ठिपक्यांवर (⋮) क्लिक करून 'Add to Home screen' किंवा 'Install app' निवडा.");
   }
 }
 
@@ -246,9 +246,6 @@ async function loadStore() {
   setupDynamicStoreManifest(business.name);
 
   const storeShareUrl = window.location.href;
-  
-  // 🌟 थेट तुमच्या Weavo वेबसाईटशी जोडलेली अचूक लिंक
-  const weavoLink = `${WEAVO_BASE_URL}?store=${encodeURIComponent(business.name)}`;
   const waLink = business.contact_phone ? `https://wa.me/91${business.contact_phone.replace(/\D/g,'')}?text=${encodeURIComponent('नमस्कार, मला आपल्या दुकानातून खरेदी करायची आहे.')}` : '#';
 
   document.getElementById('store-info').innerHTML = `
@@ -259,7 +256,7 @@ async function loadStore() {
       ${business.contact_phone ? `<p style="margin:4px 0;">📞 ${business.contact_phone}</p>` : ''}
       
       <div class="store-quick-actions">
-        <a href="${weavoLink}" target="_blank" class="btn-wave">💬 Weavo वर संपर्क करा</a>
+        <button type="button" onclick="openWeavoWithAutoLogin('${escapeHtmlStore(business.name)}')" class="btn-wave">💬 Weavo वर संपर्क करा</button>
         ${business.contact_phone ? `<a href="${waLink}" target="_blank" class="btn-whatsapp">📲 WhatsApp</a>` : ''}
         <button type="button" onclick="shareStoreLink('${escapeHtmlStore(business.name)}', '${storeShareUrl}')" style="background:#f1f5f9; border:1px solid #cbd5e1; border-radius:6px; padding:6px 12px; font-size:12px; font-weight:700; cursor:pointer;">🔗 स्टोअर शेअर करा</button>
       </div>
@@ -274,6 +271,29 @@ async function loadStore() {
 
   allStoreProducts = products ?? [];
   renderProducts();
+}
+
+// 🌟 Weavo वर थेट ऑटो-लॉगिन करून पाठवणारे फंक्शन
+async function openWeavoWithAutoLogin(shopName) {
+  let targetUrl = `${WEAVO_BASE_URL}?store=${encodeURIComponent(shopName)}`;
+
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (session) {
+      // ऑल ईआरपीचे टोकन्स पॅक करणे
+      const payload = {
+        access_token: session.access_token,
+        refresh_token: session.refresh_token,
+        email: session.user?.email || '',
+        name: session.user?.user_metadata?.full_name || ''
+      };
+      targetUrl += `&sso_auth=${encodeURIComponent(JSON.stringify(payload))}`;
+    }
+  } catch(e) {
+    console.error("Session fetch error:", e);
+  }
+
+  window.open(targetUrl, '_blank');
 }
 
 function renderProducts() {
