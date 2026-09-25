@@ -7,39 +7,56 @@
     <!-- Supabase JS Library -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { font-family: Arial, sans-serif; padding: 20px; text-align: center; }
-        .btn { padding: 12px 24px; font-size: 16px; background-color: #2563eb; color: white; border: none; border-radius: 6px; cursor: pointer; margin: 10px; }
-        .btn-weavo { background-color: #059669; }
-        .user-box { margin-top: 20px; padding: 15px; background-color: #f3f4f6; border-radius: 8px; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 20px; text-align: center; background-color: #f9fafb; margin: 0; }
+        .card { max-width: 450px; margin: 40px auto; background: #ffffff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border: 1px solid #e5e7eb; }
+        h2 { color: #1f2937; margin-top: 0; }
+        .btn { display: inline-block; width: 100%; box-sizing: border-box; padding: 14px 20px; font-size: 16px; font-weight: 600; border: none; border-radius: 8px; cursor: pointer; margin-top: 15px; transition: background-color 0.2s; }
+        .btn-google { background-color: #2563eb; color: #ffffff; }
+        .btn-google:hover { background-color: #1d4ed8; }
+        .btn-weavo { background-color: #059669; color: #ffffff; }
+        .btn-weavo:hover { background-color: #047857; }
+        .btn-logout { background-color: #ef4444; color: #ffffff; }
+        .btn-logout:hover { background-color: #dc2626; }
+        .user-tag { background: #ecfdf5; color: #065f46; padding: 8px 12px; border-radius: 6px; font-weight: bold; display: inline-block; word-break: break-all; margin: 10px 0; border: 1px solid #a7f3d0; }
+        .msg { font-size: 14px; color: #6b7280; margin-top: 8px; }
     </style>
 </head>
 <body>
 
-    <h2>AllERP Store</h2>
-    
-    <!-- लॉगिन नसताना दिसणारा विभाग -->
-    <div id="authSection">
-        <button id="loginBtn" class="btn" onclick="signInWithGoogle()">Google वरून लॉगिन करा</button>
-    </div>
+    <div class="card">
+        <h2>AllERP Store</h2>
+        
+        <!-- लॉगिन नसतानाचा विभाग -->
+        <div id="authSection">
+            <p>खरेदी आणि चॅट सुरू करण्यासाठी गुगलने लॉगिन करा:</p>
+            <button class="btn btn-google" onclick="signInWithGoogle()">Continue with Google</button>
+        </div>
 
-    <!-- लॉगिन झाल्यावर दिसणारा विभाग -->
-    <div id="userSection" class="user-box" style="display: none;">
-        <p>लॉगिन खाते: <strong id="userEmail"></strong></p>
-        <button class="btn btn-weavo" onclick="openWeavoWithSSO()">Weavo उघडा (थेट प्रवेश)</button>
-        <br>
-        <button class="btn" style="background-color: #dc2626;" onclick="signOut()">लॉगआउट</button>
+        <!-- लॉगिन झाल्यानंतरचा विभाग -->
+        <div id="userSection" style="display: none;">
+            <p>सध्याचे लॉगिन खाते:</p>
+            <div id="userEmail" class="user-tag"></div>
+            <br>
+            <button class="btn btn-weavo" onclick="openWeavo()">View Chat (Weavo थेट उघडा)</button>
+            <p class="msg">Weavo वर जाताना पुन्हा पासवर्ड किंवा लॉगिन लागणार नाही.</p>
+            <br>
+            <button class="btn btn-logout" onclick="signOut()">लॉगआउट</button>
+        </div>
     </div>
 
     <script>
         const SUPABASE_URL = 'https://flprhrbbllxfcdaornio.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'; // तुमची AllERP ची anon key इथे ठेवा
+        // AllERP Anon Key
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZscHlocmJibGx4ZmNkYW9ybmlvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDAzNTA1MTAsImV4cCI6MjA1NTkyNjUxMH0.a4V_9976cO_VvXgY2gqN0iU6a3l8j9m1e2x4q5z6y7w'; 
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+        // अचूक आणि स्वच्छ URL वर रिडायरेक्ट
         async function signInWithGoogle() {
+            const cleanUrl = window.location.origin + window.location.pathname;
             await supabaseClient.auth.signInWithOAuth({
                 provider: 'google',
                 options: {
-                    redirectTo: window.location.origin + window.location.pathname
+                    redirectTo: cleanUrl
                 }
             });
         }
@@ -49,28 +66,37 @@
             window.location.reload();
         }
 
-        async function checkSession() {
-            const { data: { session } } = await supabaseClient.auth.getSession();
+        // लॉगिन सेशन तपासणे
+        function updateUI(session) {
             if (session && session.user) {
                 document.getElementById('authSection').style.display = 'none';
                 document.getElementById('userSection').style.display = 'block';
                 document.getElementById('userEmail').innerText = session.user.email;
+            } else {
+                document.getElementById('authSection').style.display = 'block';
+                document.getElementById('userSection').style.display = 'none';
             }
         }
 
-        // Weavo उघडताना लॉगिन झालेला ईमेल सुरक्षितपणे सोबत पाठवणे
-        async function openWeavoWithSSO() {
+        supabaseClient.auth.onAuthStateChange((event, session) => {
+            updateUI(session);
+        });
+
+        // Weavo उघडताना लॉगिन झालेला युझर सोबत पाठवणे
+        async function openWeavo() {
             const { data: { session } } = await supabaseClient.auth.getSession();
             if (session && session.user && session.user.email) {
-                const userEmail = encodeURIComponent(session.user.email);
-                // Weavo ची लिंक आणि ईमेल
-                window.location.href = `https://arhammarketingme-prog.github.io/weavo/#user_email=${userEmail}`;
+                const encodedEmail = encodeURIComponent(session.user.email);
+                window.location.href = `https://arhammarketingme-prog.github.io/weavo/#user_email=${encodedEmail}`;
             } else {
-                alert('कृपया आधी AllERP मध्ये Google ने लॉगिन करा!');
+                alert('कृपया आधी गुगल लॉगिन करा!');
             }
         }
 
-        checkSession();
+        // लोड होताच तपासणी
+        supabaseClient.auth.getSession().then(({ data: { session } }) => {
+            updateUI(session);
+        });
     </script>
 </body>
 </html>
