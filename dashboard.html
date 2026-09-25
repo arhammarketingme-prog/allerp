@@ -51,7 +51,7 @@
   border: 1px solid #cbd5e1;
   border-radius: 8px;
   box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-  max-height: 240px;
+  max-height: 280px;
   overflow-y: auto;
   z-index: 100005;
   margin-top: 4px;
@@ -59,7 +59,7 @@
 .suggest-item {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   padding: 8px 12px;
   cursor: pointer;
   border-bottom: 1px solid #f1f5f9;
@@ -67,8 +67,8 @@
 }
 .suggest-item:hover { background: #f0fdf4; }
 .suggest-item img {
-  width: 38px;
-  height: 38px;
+  width: 40px;
+  height: 40px;
   object-fit: contain;
   border-radius: 4px;
   border: 1px solid #e2e8f0;
@@ -184,12 +184,6 @@
       <h2>🛒 खरेदी नोंदी</h2>
       <button type="button" onclick="openModal('purchase-order-modal')" style="background:#1D4E89; color:#fff; padding:8px 14px; border:none; border-radius:6px; cursor:pointer;">+ नवीन खरेदी नोंदवा</button>
     </div>
-    <div class="card" style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:16px;">
-      <table style="width:100%; border-collapse:collapse;">
-        <thead><tr style="text-align:left; border-bottom:2px solid #e2e8f0;"><th>PO #</th><th>सप्लायर</th><th>तारीख</th><th>रक्कम</th><th>स्थिती</th></tr></thead>
-        <tbody id="purchases-table-body"><tr><td colspan="5" class="muted" style="text-align:center; padding:20px;">खरेदी नोंदी लोड होत आहेत...</td></tr></tbody>
-      </table>
-    </div>
   </div>
 
   <!-- TAB 5: CRM -->
@@ -198,51 +192,16 @@
       <h2>👥 CRM व ग्राहक पाईपलाईन</h2>
       <button type="button" onclick="openModal('lead-modal')" style="background:#1D4E89; color:#fff; padding:8px 14px; border:none; border-radius:6px; cursor:pointer;">+ नवीन लीड</button>
     </div>
-    <div class="card" style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:16px;">
-      <table style="width:100%; border-collapse:collapse;">
-        <thead><tr style="text-align:left; border-bottom:2px solid #e2e8f0;"><th>नाव</th><th>कंपनी</th><th>फोन</th><th>स्टेज</th></tr></thead>
-        <tbody id="crm-leads-table-body"><tr><td colspan="4" class="muted" style="text-align:center; padding:20px;">लीड्स लोड होत आहेत...</td></tr></tbody>
-      </table>
-    </div>
   </div>
 
   <!-- TAB 5.5: KHATA -->
   <div id="tab-khata" class="erp-tab-pane" style="display:none;">
     <h2>🧾 उधार खाता (Customer Khata)</h2>
     <div class="card" style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:16px; margin-bottom:14px;">
-      <label style="font-weight:700; font-size:13px;">ग्राहकाचा फोन नंबर टाका (नवीन असेल तर आपोआप तयार होईल)</label>
+      <label style="font-weight:700; font-size:13px;">ग्राहकाचा फोन नंबर टाका</label>
       <div style="display:flex; gap:8px; margin-top:6px; flex-wrap:wrap;">
         <input id="khata-phone-input" placeholder="9822XXXXXX" style="flex:1; min-width:160px; padding:8px; border:1px solid #cbd5e1; border-radius:6px;">
         <button type="button" onclick="loadKhataForPhone()" style="background:#1D4E89; color:#fff; border:none; padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:700;">शोध / उघड</button>
-      </div>
-    </div>
-
-    <div id="khata-customer-box" style="display:none;">
-      <div class="card" style="background:#fff; border:2px solid #059669; border-radius:8px; padding:16px; margin-bottom:14px; text-align:center;">
-        <div class="muted" style="font-size:13px;">सध्याची शिल्लक (Outstanding Balance)</div>
-        <div id="khata-balance-display" style="font-size:28px; font-weight:900; color:#dc2626;">₹0.00</div>
-      </div>
-
-      <div class="card" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:14px; margin-bottom:14px;">
-        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:8px;">
-          <input id="khata-customer-name" placeholder="ग्राहकाचं नाव">
-          <input id="khata-amount" type="number" placeholder="रक्कम ₹">
-          <input id="khata-note" placeholder="तपशील (उदा. किराणा माल)">
-          <input id="khata-due-date" type="date" title="देय तारीख (ऐच्छिक)">
-        </div>
-        <div style="display:flex; gap:8px; margin-top:10px;">
-          <button type="button" onclick="addKhataEntry('debit')" style="flex:1; background:#dc2626; color:#fff; border:none; padding:10px; border-radius:6px; cursor:pointer; font-weight:700;">➕ उधार दिली (Debit)</button>
-          <button type="button" onclick="addKhataEntry('credit')" style="flex:1; background:#16a34a; color:#fff; border:none; padding:10px; border-radius:6px; cursor:pointer; font-weight:700;">💰 पैसे मिळाले (Credit)</button>
-        </div>
-        <p id="khata-form-error" style="color:red; font-size:12.5px; margin:8px 0 0;"></p>
-      </div>
-
-      <div class="card" style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:16px;">
-        <h3 style="margin-top:0;">इतिहास</h3>
-        <table style="width:100%; border-collapse:collapse;">
-          <thead><tr style="text-align:left; border-bottom:2px solid #e2e8f0; font-size:13px;"><th>तारीख</th><th>तपशील</th><th>उधार (+)</th><th>जमा (-)</th></tr></thead>
-          <tbody id="khata-entries-body"></tbody>
-        </table>
       </div>
     </div>
   </div>
@@ -253,35 +212,21 @@
       <h2>📑 दैनंदिन खर्च नोंदवही</h2>
       <button type="button" onclick="openModal('expense-modal')" style="background:#1D4E89; color:#fff; padding:8px 14px; border:none; border-radius:6px; cursor:pointer;">+ खर्च नोंदवा</button>
     </div>
-    <div class="card" style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:16px;">
-      <table style="width:100%; border-collapse:collapse;">
-        <thead><tr style="text-align:left; border-bottom:2px solid #e2e8f0;"><th>खर्चाचे शीर्षक</th><th>प्रकार</th><th>रक्कम</th><th>तारीख</th></tr></thead>
-        <tbody id="expenses-table-body"><tr><td colspan="4" class="muted" style="text-align:center; padding:20px;">खर्च लोड होत आहेत...</td></tr></tbody>
-      </table>
-    </div>
   </div>
 
   <!-- TAB 7: HR -->
   <div id="tab-hr" class="erp-tab-pane" style="display:none;">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-      <h2>👔 कर्मचारी व्यवस्थापन (HR & Payroll)</h2>
-      <button type="button" onclick="openModal('employee-modal')" style="background:#1D4E89; color:#fff; padding:8px 14px; border:none; border-radius:6px; cursor:pointer;">+ कर्मचारी जोडा</button>
-    </div>
-    <div class="card" style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:16px;"><p class="muted">कर्मचारी हजेरी व पगार प्रणाली सक्रिय आहे.</p></div>
+    <h2>👔 कर्मचारी व्यवस्थापन (HR & Payroll)</h2>
   </div>
 
   <!-- TAB 8: PROJECTS -->
   <div id="tab-projects" class="erp-tab-pane" style="display:none;">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-      <h2>🏗️ साईट व प्रकल्प (Projects)</h2>
-      <button type="button" onclick="openModal('project-modal')" style="background:#1D4E89; color:#fff; padding:8px 14px; border:none; border-radius:6px; cursor:pointer;">+ नवीन प्रकल्प</button>
-    </div>
-    <div class="card" style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:16px;"><p class="muted">प्रकल्प ट्रॅकिंग मॉड्यूल सक्रिय आहे.</p></div>
+    <h2>🏗️ साईट व प्रकल्प (Projects)</h2>
   </div>
 
   <!-- TAB 9: POS COUNTER -->
   <div id="tab-pos" class="erp-tab-pane" style="display:none;">
-    <h2>⚡ द्रुत POS काउंटर बिलिंग (Universal POS & Visual Grid)</h2>
+    <h2>⚡ द्रुत POS काउंटर बिलिंग</h2>
     <div class="pos-layout">
       <div class="pos-catalog">
         <div style="display:flex; gap:6px; margin-bottom:12px;">
@@ -289,26 +234,18 @@
           <button type="button" onclick="startHtml5Scanner('pos')" style="background:#1D4E89; color:#fff; border:none; padding:8px 12px; border-radius:6px; cursor:pointer; font-weight:bold;">📷 स्कॅनर</button>
         </div>
         <div id="pos-reader" style="width:100%; max-width:400px; margin-bottom:12px; display:none;"></div>
-        <div id="pos-products-grid" class="grid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap:10px;">
-          <p class="muted">उत्पादने लोड होत आहेत...</p>
-        </div>
+        <div id="pos-products-grid" class="grid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap:10px;"></div>
       </div>
       <div class="pos-cart">
         <h3 style="margin-top:0;">चालू बिल (Current Bill)</h3>
-        <div id="pos-cart-items"><p class="muted">कार्ट रिकामी आहे. वस्तू निवडा.</p></div>
-        <hr style="margin:12px 0; border:none; border-top:1px solid #e2e8f0;">
-        <div style="font-size:18px; font-weight:800; display:flex; justify-content:space-between;">
+        <div id="pos-cart-items"><p class="muted">कार्ट रिकामी आहे.</p></div>
+        <div style="font-size:18px; font-weight:800; display:flex; justify-content:space-between; margin-top:10px;">
           <span>एकूण रक्कम:</span>
           <span id="pos-total-amount">₹0.00</span>
         </div>
-        <div style="margin-top:10px;">
-          <label style="font-size:12px; margin-bottom:2px;">ग्राहक सुरक्षा ID:</label>
-          <input type="text" id="pos-cust-phone" readonly value="Platform Shield Protected" style="margin-bottom:8px; font-size:12px; padding:6px 10px; width:100%; border:1px solid #cbd5e1; border-radius:4px; background:#f8fafc; color:#64748b;">
-        </div>
-        <div style="display:flex; gap:6px; margin-top:4px;">
+        <div style="display:flex; gap:6px; margin-top:8px;">
           <button type="button" style="flex:1; background:#16a34a; color:#fff; padding:10px; border:none; border-radius:6px; cursor:pointer; font-weight:bold;" onclick="completePOSSale('Cash')">💵 Cash</button>
           <button type="button" style="flex:1; background:#1D4E89; color:#fff; padding:10px; border:none; border-radius:6px; cursor:pointer; font-weight:bold;" onclick="completePOSSale('UPI')">📱 UPI</button>
-          <button type="button" style="flex:1; background:#dc2626; color:#fff; padding:10px; border:none; border-radius:6px; cursor:pointer; font-weight:bold;" onclick="completePOSSale('Credit')">🧾 उधार (Khata)</button>
         </div>
       </div>
     </div>
@@ -316,68 +253,41 @@
 
   <!-- TAB 10: ONLINE ORDERS -->
   <div id="tab-orders" class="erp-tab-pane" style="display:none;">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-      <h2>🛍️ ऑनलाईन ग्राहकांच्या ऑर्डर्स</h2>
-      <button type="button" onclick="loadOnlineOrders()" class="secondary" style="padding:6px 12px; cursor:pointer;">🔄 रिफ्रेश करा</button>
-    </div>
+    <h2>🛍️ ऑनलाईन ग्राहकांच्या ऑर्डर्स</h2>
     <div class="card" style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:16px;">
       <table style="width:100%; border-collapse:collapse;">
-        <thead>
-          <tr style="text-align:left; border-bottom:2px solid #e2e8f0;">
-            <th>ऑर्डर #</th><th>ग्राहक</th><th>पार्टनर</th><th>रक्कम</th><th>स्थिती</th><th>कृती</th>
-          </tr>
-        </thead>
-        <tbody id="online-orders-table-body"><tr><td colspan="6" class="muted" style="text-align:center; padding:20px;">कोणतीही ऑर्डर नाही.</td></tr></tbody>
+        <thead><tr style="text-align:left; border-bottom:2px solid #e2e8f0;"><th>ऑर्डर #</th><th>ग्राहक</th><th>रक्कम</th><th>स्थिती</th></tr></thead>
+        <tbody id="online-orders-table-body"><tr><td colspan="4" class="muted" style="text-align:center; padding:20px;">कोणतीही ऑर्डर नाही.</td></tr></tbody>
       </table>
     </div>
   </div>
 
   <!-- TAB 11: REPORTS & GST -->
   <div id="tab-reports" class="erp-tab-pane" style="display:none;">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-      <h2>📈 रिपोर्ट्स, ताळेबंद व GST केंद्र</h2>
-      <button type="button" onclick="exportDataCSV()" class="secondary" style="padding:6px 12px; cursor:pointer;">📥 CSV डाऊनलोड करा</button>
-    </div>
+    <h2>📈 रिपोर्ट्स, ताळेबंद व GST केंद्र</h2>
   </div>
 
   <!-- TAB 12: SETTINGS -->
   <div id="tab-settings" class="erp-tab-pane" style="display:none;">
-    <h2>⚙️ सिस्टीम सेटिंग्स व भूमिका</h2>
-    <div class="card" style="max-width:540px; background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:16px;">
-      <label style="font-weight:bold;">दुकानाचे नाव</label>
-      <input id="setting-bname" value="UNIVERSAL STORE" style="margin-bottom:10px; width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:4px;">
-      <button type="button" onclick="alert('सेटिंग्स यशस्वीरित्या सेव्ह झाल्या!')" style="background:#16a34a; color:#fff; padding:8px 16px; border:none; border-radius:4px; cursor:pointer; font-weight:bold;">सेव्ह करा</button>
-    </div>
+    <h2>⚙️ सिस्टीम सेटिंग्स</h2>
   </div>
 </div>
 
 <!-- ==================== MODALS SECTION ==================== -->
 
-<!-- 1. ग्लोबल मार्केटप्लेस मोडल -->
-<div id="global-catalog-modal" class="modal-overlay">
-  <div class="modal-content" style="max-width:700px;">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-      <h3 style="margin:0;">🌐 ग्लोबल मार्केटप्लेस कॅटलॉग</h3>
-      <button type="button" class="secondary" onclick="closeModal('global-catalog-modal')" style="padding:4px 10px; font-size:12px; cursor:pointer; font-weight:bold;">✕ बंद करा</button>
-    </div>
-    <input type="text" id="global-catalog-search" placeholder="🔍 प्रॉडक्टचे नाव शोधा..." oninput="filterGlobalCatalog(this.value)" style="margin-bottom:12px; width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:4px;">
-    <div id="global-catalog-results" style="max-height:400px; overflow-y:auto; display:grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap:10px;"></div>
-  </div>
-</div>
-
-<!-- 2. नवीन प्रॉडक्ट जोडा मोडल -->
+<!-- १. नवीन प्रॉडक्ट जोडा मोडल (युनिव्हर्सल मल्टी-सर्च सह) -->
 <div id="add-product-modal" class="modal-overlay">
   <div class="modal-content" style="max-width:580px;">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-      <h3 style="margin:0;">📦 नवीन प्रॉडक्ट जोडा (स्मार्ट ब्रँड ऑटो-सर्च सह)</h3>
+      <h3 style="margin:0;">📦 नवीन प्रॉडक्ट जोडा (युनिव्हर्सल ऑटो-मॅपिंग)</h3>
       <button type="button" class="secondary" onclick="closeModal('add-product-modal')" style="padding:4px 10px; font-size:12px; cursor:pointer; font-weight:bold;">✕ बंद करा</button>
     </div>
 
-    <!-- 🌟 स्मार्ट ऑटो-कंप्लीट सर्च फील्ड -->
+    <!-- 🌟 स्मार्ट सर्च कंटेनर -->
     <div style="margin-top:12px;" class="smart-search-container">
-      <label style="font-weight:700;">उत्पादनाचे नाव * (उदा. Tata Salt, Gemini Oil, Parle-G, Maggi)</label>
+      <label style="font-weight:700;">उत्पादनाचे नाव / ब्रँड / वस्तू * (उदा. Tea, Biscuit, Tata, Parle, Oil)</label>
       <div style="display:flex; gap:6px;">
-        <input id="np-name" placeholder="उदा. tata s, gemini, parle..." oninput="handleSmartBrandSearch(this.value)" autocomplete="off" style="margin-bottom:0; flex:1; padding:8px; border:1px solid #cbd5e1; border-radius:4px;">
+        <input id="np-name" placeholder="उदा. tea, biscuit, tata salt, oil gemini, sunsilk..." oninput="handleUniversalMultiSearch(this.value)" autocomplete="off" style="margin-bottom:0; flex:1; padding:8px; border:1px solid #cbd5e1; border-radius:4px;">
         <button type="button" onclick="startHtml5Scanner('product')" class="secondary" style="padding:8px 10px; font-size:12px; cursor:pointer; background:#1D4E89; color:#fff; border:none; border-radius:4px;">📷 स्कॅनर</button>
       </div>
       <!-- ड्रॉपडाउन सजेशन यादी -->
@@ -388,7 +298,6 @@
     <div style="margin-top:10px;">
       <label style="font-weight:700;">बारकोड (Barcode)</label>
       <input id="np-barcode" placeholder="स्कॅन करा किंवा टाईप करा..." style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:4px;">
-      <p id="np-barcode-status" style="font-size:11.5px; margin:4px 0 0; color:#64748b;"></p>
     </div>
 
     <div style="margin-top:10px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:6px; padding:10px;">
@@ -403,7 +312,7 @@
     <div style="margin:12px 0; background:#ffffff; border:1px solid #d0e1fd; border-radius:8px; padding:10px;">
       <div style="font-size:12px; font-weight:700; color:#1D4E89; margin-bottom:6px;">✨ निवडलेला ओरिजिनल फोटो व माहिती:</div>
       <div id="smart-image-suggestions" style="display:flex; gap:10px; align-items:center; min-height:55px;">
-        <span class="muted" style="font-size:11.5px;">उत्पादनाचे नाव टाका किंवा ड्रॉपडाउनमधून निवडा...</span>
+        <span class="muted" style="font-size:11.5px;">काहीही टाईप करा — सर्व कंपन्यांची यादी खाली येईल...</span>
       </div>
       <input type="hidden" id="np-selected-image-url" value="">
     </div>
@@ -443,9 +352,7 @@
 <script>
 let currentBusinessId = null;
 let currentProducts = [];
-let globalCatalogCache = [];
 let posCart = [];
-let activeHtmlScanner = null;
 
 function switchTab(tabId) {
   document.querySelectorAll('.erp-tab-pane').forEach(el => el.style.display = 'none');
@@ -465,17 +372,14 @@ function openModal(id) {
 
 function closeModal(id) { 
   const el = document.getElementById(id);
-  if (el) {
-    el.style.display = 'none';
-    if (activeHtmlScanner) { try { activeHtmlScanner.clear(); } catch(e){} }
-  }
+  if (el) el.style.display = 'none'; 
 }
 
 async function initDashboard() {
   try {
     const { data: { user } } = await sb.auth.getUser();
     if (!user) { window.location.href = 'login.html'; return; }
-    const { data: businesses } = await sb.from('businesses').select('id, name, is_wholesaler').eq('owner_id', user.id);
+    const { data: businesses } = await sb.from('businesses').select('id, name').eq('owner_id', user.id);
     if (businesses && businesses.length > 0) {
       currentBusinessId = businesses[0].id;
       const bNameEl = document.getElementById('business-display-name');
@@ -513,36 +417,66 @@ function escapeHtml(str) {
   return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
 }
 
-// 🌟 टाटा सॉल्टचे अस्सल पांढरे-निळे-केशरी किराणा पॅकेट (अधिकृत पॅकेजिंग रंगात)
-const TATA_SALT_ORIGINAL = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 120'><rect width='100' height='120' rx='6' fill='%23ffffff' stroke='%23cbd5e1' stroke-width='2'/><path d='M0 0 L100 0 L100 38 L0 38 Z' fill='%230f4c81'/><text x='50' y='24' font-family='Arial Black,sans-serif' font-size='13' font-weight='900' fill='%23ffffff' text-anchor='middle'>TATA</text><text x='50' y='34' font-family='Arial,sans-serif' font-size='7' font-weight='bold' fill='%2393c5fd' text-anchor='middle'>SALT</text><path d='M0 38 L100 38 L100 44 L0 44 Z' fill='%23ea580c'/><circle cx='50' cy='68' r='18' fill='%23f0fdf4' stroke='%230f4c81' stroke-width='1.5'/><text x='50' y='72' font-family='Arial Black,sans-serif' font-size='11' font-weight='900' fill='%230f4c81' text-anchor='middle'>SALT</text><text x='50' y='96' font-family='Arial,sans-serif' font-size='7.5' font-weight='bold' fill='%23c2410c' text-anchor='middle'>देश का नमक</text><text x='50' y='110' font-family='Arial,sans-serif' font-size='6.5' font-weight='bold' fill='%2364748b' text-anchor='middle'>Iodized 1 kg</text></svg>";
+// 🌟 अधिकृत व्हेक्टर पॅकेट्स
+const TATA_SALT_SVG = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 120'><rect width='100' height='120' rx='6' fill='%23ffffff' stroke='%23cbd5e1' stroke-width='2'/><path d='M0 0 L100 0 L100 38 L0 38 Z' fill='%230f4c81'/><text x='50' y='24' font-family='Arial Black,sans-serif' font-size='13' font-weight='900' fill='%23ffffff' text-anchor='middle'>TATA</text><text x='50' y='34' font-family='Arial,sans-serif' font-size='7' font-weight='bold' fill='%2393c5fd' text-anchor='middle'>SALT</text><path d='M0 38 L100 38 L100 44 L0 44 Z' fill='%23ea580c'/><circle cx='50' cy='68' r='18' fill='%23f0fdf4' stroke='%230f4c81' stroke-width='1.5'/><text x='50' y='72' font-family='Arial Black,sans-serif' font-size='11' font-weight='900' fill='%230f4c81' text-anchor='middle'>SALT</text><text x='50' y='96' font-family='Arial,sans-serif' font-size='7.5' font-weight='bold' fill='%23c2410c' text-anchor='middle'>देश का नमक</text><text x='50' y='110' font-family='Arial,sans-serif' font-size='6.5' font-weight='bold' fill='%2364748b' text-anchor='middle'>Iodized 1 kg</text></svg>";
 
-const TATA_TEA_ORIGINAL = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 120'><rect width='100' height='120' rx='6' fill='%2315803d' stroke='%23166534' stroke-width='2'/><rect x='6' y='6' width='88' height='108' rx='4' fill='%23166534'/><text x='50' y='30' font-family='Arial Black,sans-serif' font-size='12' font-weight='900' fill='%23fef08a' text-anchor='middle'>TATA TEA</text><circle cx='50' cy='60' r='18' fill='%23b45309'/><text x='50' y='64' font-family='Arial Black,sans-serif' font-size='9' font-weight='bold' fill='%23ffffff' text-anchor='middle'>PREMIUM</text><text x='50' y='95' font-family='Arial,sans-serif' font-size='7.5' font-weight='bold' fill='%23fef08a' text-anchor='middle'>देश की चाय</text><text x='50' y='108' font-family='Arial,sans-serif' font-size='6.5' fill='%23ffffff' text-anchor='middle'>500g Pack</text></svg>";
+const TATA_TEA_SVG = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 120'><rect width='100' height='120' rx='6' fill='%2315803d'/><rect x='6' y='6' width='88' height='108' rx='4' fill='%23166534'/><text x='50' y='30' font-family='Arial Black,sans-serif' font-size='12' font-weight='900' fill='%23fef08a' text-anchor='middle'>TATA TEA</text><text x='50' y='65' font-family='Arial Black,sans-serif' font-size='10' font-weight='bold' fill='%23ffffff' text-anchor='middle'>PREMIUM</text><text x='50' y='95' font-family='Arial,sans-serif' font-size='8' font-weight='bold' fill='%23fef08a' text-anchor='middle'>देश की चाय</text></svg>";
 
-const BISLERI_ORIGINAL = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 90 120'><rect width='90' height='120' rx='6' fill='%23ffffff' stroke='%23059669' stroke-width='1.5'/><path d='M35 15 L55 15 L55 25 L65 35 L65 105 L25 105 L25 35 L35 25 Z' fill='%23e0f2fe' stroke='%230284c7' stroke-width='1.5'/><rect x='38' y='8' width='14' height='8' rx='2' fill='%23059669'/><rect x='25' y='52' width='40' height='28' fill='%23059669'/><text x='45' y='68' font-family='Arial Black,sans-serif' font-size='8' font-weight='900' fill='%23ffffff' text-anchor='middle'>Bisleri</text><text x='45' y='76' font-family='Arial,sans-serif' font-size='5' fill='%23ecfdf5' text-anchor='middle'>with minerals</text><text x='45' y='114' font-family='Arial,sans-serif' font-size='7' font-weight='bold' fill='%23065f46' text-anchor='middle'>1 LITRE</text></svg>";
+const RED_LABEL_TEA_SVG = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 120'><rect width='100' height='120' rx='6' fill='%23b91c1c'/><circle cx='50' cy='50' r='32' fill='%23991b1b'/><text x='50' y='46' font-family='Arial Black,sans-serif' font-size='12' font-weight='900' fill='%23fef08a' text-anchor='middle'>RED</text><text x='50' y='60' font-family='Arial Black,sans-serif' font-size='11' font-weight='900' fill='%23ffffff' text-anchor='middle'>LABEL</text><text x='50' y='88' font-family='Arial,sans-serif' font-size='7.5' font-weight='bold' fill='%23fef08a' text-anchor='middle'>BROOKE BOND TEA</text></svg>";
 
-const PARLE_G_ORIGINAL = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 90'><rect width='120' height='90' rx='6' fill='%23fef08a' stroke='%23ca8a04' stroke-width='2'/><rect x='5' y='5' width='110' height='80' rx='4' fill='%23fef9c3'/><rect x='10' y='22' width='100' height='28' rx='4' fill='%23dc2626'/><text x='60' y='42' font-family='Arial Black,sans-serif' font-size='18' font-weight='900' fill='%23ffffff' text-anchor='middle'>Parle-G</text><text x='60' y='64' font-family='Arial,sans-serif' font-size='9' font-weight='bold' fill='%23854d0e' text-anchor='middle'>GLUCOSE BISCUITS</text></svg>";
+const WAGH_BAKRI_TEA_SVG = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 120'><rect width='100' height='120' rx='6' fill='%23ea580c'/><circle cx='50' cy='52' r='28' fill='%23ffffff'/><text x='50' y='48' font-family='Arial Black,sans-serif' font-size='9' font-weight='900' fill='%23c2410c' text-anchor='middle'>WAGH BAKRI</text><text x='50' y='60' font-family='Arial,sans-serif' font-size='8' font-weight='bold' fill='%2315803d' text-anchor='middle'>PREMIUM TEA</text></svg>";
 
-const GEMINI_ORIGINAL = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 120'><rect width='100' height='120' rx='8' fill='%23ffffff' stroke='%23f59e0b' stroke-width='3'/><rect x='6' y='6' width='88' height='108' rx='6' fill='%23fffbeb'/><circle cx='50' cy='45' r='24' fill='%23fef08a' stroke='%23eab308' stroke-width='2'/><circle cx='50' cy='45' r='12' fill='%2378350f'/><text x='50' y='82' font-family='Arial,sans-serif' font-size='11' font-weight='900' fill='%23b45309' text-anchor='middle'>GEMINI</text><text x='50' y='94' font-family='Arial,sans-serif' font-size='8' font-weight='bold' fill='%2315803d' text-anchor='middle'>SUNFLOWER OIL</text></svg>";
+const BISLERI_SVG = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 90 120'><rect width='90' height='120' rx='6' fill='%23ffffff' stroke='%23059669' stroke-width='1.5'/><path d='M35 15 L55 15 L55 25 L65 35 L65 105 L25 105 L25 35 L35 25 Z' fill='%23e0f2fe' stroke='%230284c7' stroke-width='1.5'/><rect x='38' y='8' width='14' height='8' rx='2' fill='%23059669'/><rect x='25' y='52' width='40' height='28' fill='%23059669'/><text x='45' y='68' font-family='Arial Black,sans-serif' font-size='8' font-weight='900' fill='%23ffffff' text-anchor='middle'>Bisleri</text><text x='45' y='114' font-family='Arial,sans-serif' font-size='7' font-weight='bold' fill='%23065f46' text-anchor='middle'>1 LITRE</text></svg>";
 
-const MAGGI_ORIGINAL = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='10' fill='%23facc15'/><rect x='6' y='6' width='88' height='88' rx='6' fill='%23eab308'/><circle cx='50' cy='48' r='30' fill='%23dc2626'/><text x='50' y='54' font-family='Arial Black,sans-serif' font-size='16' font-weight='900' fill='%23fef08a' text-anchor='middle'>Maggi</text><text x='50' y='76' font-family='Arial,sans-serif' font-size='8' font-weight='bold' fill='%2378350f' text-anchor='middle'>2-MINUTE NOODLES</text></svg>";
+const PARLE_G_SVG = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 90'><rect width='120' height='90' rx='6' fill='%23fef08a' stroke='%23ca8a04' stroke-width='2'/><rect x='5' y='5' width='110' height='80' rx='4' fill='%23fef9c3'/><rect x='10' y='22' width='100' height='28' rx='4' fill='%23dc2626'/><text x='60' y='42' font-family='Arial Black,sans-serif' font-size='18' font-weight='900' fill='%23ffffff' text-anchor='middle'>Parle-G</text><text x='60' y='64' font-family='Arial,sans-serif' font-size='9' font-weight='bold' fill='%23854d0e' text-anchor='middle'>GLUCOSE BISCUITS</text></svg>";
 
-// 🌟 संपूर्ण भारतीय FMCG व रिटेल मास्टर डिक्शनरी (ब्रँड व सिरीजसह)
-const MASTER_FMCG_CATALOG = [
-  { id: "tata_salt", brand: "tata", name: "Tata Salt (टाटा मीठ) 1kg", unit: "kg", price: 28, cat: "मीठ व मसाले", img: TATA_SALT_ORIGINAL },
-  { id: "tata_tea", brand: "tata", name: "Tata Tea Premium (टाटा चहा) 500g", unit: "packet", price: 260, cat: "चहा व कॉफी", img: TATA_TEA_ORIGINAL },
-  { id: "tata_sampann_dal", brand: "tata", name: "Tata Sampann Toor Dal 1kg", unit: "kg", price: 165, cat: "डाळी व धान्य", img: TATA_SALT_ORIGINAL },
-  { id: "tata_salt_lite", brand: "tata", name: "Tata Salt Lite (लो सोडियम) 1kg", unit: "kg", price: 42, cat: "मीठ व मसाले", img: TATA_SALT_ORIGINAL },
-  { id: "bisleri_water_1l", brand: "bisleri", name: "Bisleri Mineral Water 1 Litre", unit: "ltr", price: 20, cat: "पेये व पाणी", img: BISLERI_ORIGINAL },
-  { id: "bisleri_water_500", brand: "bisleri", name: "Bisleri Mineral Water 500ml", unit: "ltr", price: 10, cat: "पेये व पाणी", img: BISLERI_ORIGINAL },
-  { id: "parle_g", brand: "parle", name: "Parle-G Glucose Biscuits", unit: "packet", price: 10, cat: "बिस्किट्स", img: PARLE_G_ORIGINAL },
-  { id: "parle_monaco", brand: "parle", name: "Parle Monaco Salted Crackers", unit: "packet", price: 10, cat: "बिस्किट्स", img: PARLE_G_ORIGINAL },
-  { id: "gemini_oil_1l", brand: "gemini", name: "Gemini Sunflower Oil 1 Litre Pouch", unit: "ltr", price: 135, cat: "खाद्यतेल", img: GEMINI_ORIGINAL },
-  { id: "maggi_masala", brand: "maggi", name: "Nestle Maggi 2-Minute Noodles", unit: "packet", price: 14, cat: "इन्स्टंट फूड", img: MAGGI_ORIGINAL }
+const GOOD_DAY_SVG = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 90'><rect width='120' height='90' rx='6' fill='%230284c7'/><circle cx='60' cy='45' r='26' fill='%23fef08a'/><text x='60' y='43' font-family='Arial Black,sans-serif' font-size='11' font-weight='900' fill='%230284c7' text-anchor='middle'>Good Day</text><text x='60' y='56' font-family='Arial,sans-serif' font-size='8' font-weight='bold' fill='%23b45309' text-anchor='middle'>Butter Cookies</text></svg>";
+
+const GEMINI_OIL_SVG = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 120'><rect width='100' height='120' rx='8' fill='%23ffffff' stroke='%23f59e0b' stroke-width='3'/><rect x='6' y='6' width='88' height='108' rx='6' fill='%23fffbeb'/><circle cx='50' cy='45' r='24' fill='%23fef08a' stroke='%23eab308' stroke-width='2'/><circle cx='50' cy='45' r='12' fill='%2378350f'/><text x='50' y='82' font-family='Arial,sans-serif' font-size='11' font-weight='900' fill='%23b45309' text-anchor='middle'>GEMINI</text><text x='50' y='94' font-family='Arial,sans-serif' font-size='8' font-weight='bold' fill='%2315803d' text-anchor='middle'>SUNFLOWER OIL</text></svg>";
+
+const FORTUNE_OIL_SVG = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 120'><rect width='100' height='120' rx='8' fill='%23fef08a' stroke='%23ca8a04' stroke-width='3'/><text x='50' y='45' font-family='Arial Black,sans-serif' font-size='13' font-weight='900' fill='%23b91c1c' text-anchor='middle'>fortune</text><text x='50' y='65' font-family='Arial,sans-serif' font-size='8.5' font-weight='bold' fill='%2315803d' text-anchor='middle'>SUNLITE SUNFLOWER</text></svg>";
+
+const MAGGI_SVG = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='10' fill='%23facc15'/><rect x='6' y='6' width='88' height='88' rx='6' fill='%23eab308'/><circle cx='50' cy='48' r='30' fill='%23dc2626'/><text x='50' y='54' font-family='Arial Black,sans-serif' font-size='16' font-weight='900' fill='%23fef08a' text-anchor='middle'>Maggi</text><text x='50' y='76' font-family='Arial,sans-serif' font-size='8' font-weight='bold' fill='%2378350f' text-anchor='middle'>2-MINUTE NOODLES</text></svg>";
+
+const SUNSILK_SVG = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 120'><rect width='80' height='120' rx='8' fill='%230f172a'/><text x='40' y='55' font-family='Arial Black,sans-serif' font-size='10' font-weight='900' fill='%23ec4899' text-anchor='middle'>sunsilk</text><text x='40' y='70' font-family='Arial,sans-serif' font-size='7' fill='%23ffffff' text-anchor='middle'>Black Shine</text></svg>";
+
+const GODREJ_NO1_SVG = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='10' fill='%23fef08a'/><text x='50' y='45' font-family='Arial Black,sans-serif' font-size='12' font-weight='900' fill='%23b45309' text-anchor='middle'>Godrej No.1</text><text x='50' y='65' font-family='Arial,sans-serif' font-size='8' font-weight='bold' fill='%2315803d' text-anchor='middle'>Sandal & Turmeric</text></svg>";
+
+// 🌟 सर्वसमावेशक FMCG मास्टर कॅटलॉग (कीवर्ड्स व कॅटेगरी सह)
+const GLOBAL_MARKET_DATABASE = [
+  // १. चहा (Tea Series - सर्व कंपन्या)
+  { id: "tata_tea_prem", name: "Tata Tea Premium 500g", brand: "tata", cat: "चहा (Tea)", unit: "packet", price: 260, keys: ["tea", "tata", "chaha", "chai", "premium", "चहा"], img: TATA_TEA_SVG },
+  { id: "red_label_tea", name: "Brooke Bond Red Label Tea 500g", brand: "red label", cat: "चहा (Tea)", unit: "packet", price: 275, keys: ["tea", "red", "label", "brooke", "bond", "chaha", "chai", "चहा"], img: RED_LABEL_TEA_SVG },
+  { id: "wagh_bakri_tea", name: "Wagh Bakri Premium Tea 500g", brand: "wagh bakri", cat: "चहा (Tea)", unit: "packet", price: 280, keys: ["tea", "wagh", "bakri", "chaha", "chai", "चहा"], img: WAGH_BAKRI_TEA_SVG },
+  { id: "society_tea", name: "Society Tea Masala 250g", brand: "society", cat: "चहा (Tea)", unit: "packet", price: 140, keys: ["tea", "society", "chaha", "chai", "चहा"], img: TATA_TEA_SVG },
+
+  // २. मीठ (Salt Series)
+  { id: "tata_salt", name: "Tata Salt (टाटा मीठ) 1kg", brand: "tata", cat: "मीठ (Salt)", unit: "kg", price: 28, keys: ["salt", "tata", "solt", "namak", "मीठ", "desh"], img: TATA_SALT_SVG },
+  { id: "tata_salt_lite", name: "Tata Salt Lite Low Sodium 1kg", brand: "tata", cat: "मीठ (Salt)", unit: "kg", price: 42, keys: ["salt", "tata", "lite", "namak", "मीठ"], img: TATA_SALT_SVG },
+
+  // ३. बिस्किट (Biscuits Series - सर्व कंपन्या)
+  { id: "parle_g", name: "Parle-G Glucose Biscuits 250g", brand: "parle", cat: "बिस्किट्स (Biscuits)", unit: "packet", price: 10, keys: ["biscuit", "biscuits", "parle", "g", "glucose", "बिस्किट"], img: PARLE_G_SVG },
+  { id: "parle_monaco", name: "Parle Monaco Salted Crackers", brand: "parle", cat: "बिस्किट्स (Biscuits)", unit: "packet", price: 10, keys: ["biscuit", "parle", "monaco", "salted", "बिस्किट"], img: PARLE_G_SVG },
+  { id: "good_day", name: "Britannia Good Day Butter Cookies", brand: "britannia", cat: "बिस्किट्स (Biscuits)", unit: "packet", price: 20, keys: ["biscuit", "britannia", "good", "day", "butter", "cookies", "बिस्किट"], img: GOOD_DAY_SVG },
+  { id: "marie_gold", name: "Britannia Marie Gold Tea Biscuits", brand: "britannia", cat: "बिस्किट्स (Biscuits)", unit: "packet", price: 35, keys: ["biscuit", "britannia", "marie", "gold", "tea", "बिस्किट"], img: GOOD_DAY_SVG },
+
+  // ४. खाद्यतेल (Cooking Oil Series - सर्व कंपन्या)
+  { id: "gemini_oil", name: "Gemini Sunflower Oil 1L Pouch", brand: "gemini", cat: "खाद्यतेल (Cooking Oil)", unit: "ltr", price: 135, keys: ["oil", "gemini", "sunflower", "gs", "तेल"], img: GEMINI_OIL_SVG },
+  { id: "fortune_oil", name: "Fortune Sunlite Refined Sunflower Oil 1L", brand: "fortune", cat: "खाद्यतेल (Cooking Oil)", unit: "ltr", price: 140, keys: ["oil", "fortune", "sunflower", "refine", "तेल"], img: FORTUNE_OIL_SVG },
+  { id: "saffola_oil", name: "Saffola Gold Blended Oil 1L", brand: "saffola", cat: "खाद्यतेल (Cooking Oil)", unit: "ltr", price: 175, keys: ["oil", "saffola", "gold", "तेल"], img: FORTUNE_OIL_SVG },
+
+  // ५. पाणी व पेये (Water)
+  { id: "bisleri_1l", name: "Bisleri Mineral Water 1 Litre", brand: "bisleri", cat: "पाणी व पेये", unit: "ltr", price: 20, keys: ["water", "bisleri", "mineral", "bottle", "पाणी"], img: BISLERI_SVG },
+
+  // ६. साबण व कॉस्मेटिक्स (Soaps, Shampoo & Personal Care)
+  { id: "sunsilk_black", name: "Sunsilk Black Shine Shampoo 180ml", brand: "sunsilk", cat: "शाम्पू (Shampoo)", unit: "pcs", price: 120, keys: ["shampoo", "sunsilk", "black", "shine", "शाम्पू"], img: SUNSILK_SVG },
+  { id: "godrej_no1", name: "Godrej No.1 Soap (Pack of 4)", brand: "godrej", cat: "साबण (Soap)", unit: "packet", price: 110, keys: ["soap", "godrej", "no1", "sandal", "साबण"], img: GODREJ_NO1_SVG },
+  { id: "maggi_2min", name: "Nestle Maggi 2-Minute Masala Noodles", brand: "maggi", cat: "इन्स्टंट फूड", unit: "packet", price: 14, keys: ["maggi", "noodles", "nestle", "मॅगी"], img: MAGGI_SVG }
 ];
 
-// 🧠 युझरच्या टाइपिंगनुसार ब्रँड सिरीज शोधणे (उदा. "tata", "tata s", "tata salt")
-function handleSmartBrandSearch(text) {
-  const query = text.toLowerCase().trim();
+// 🧠 युनिव्हर्सल मल्टी-सर्च इंजिन (उलट-सुलट शब्द आणि सर्व कंपन्या शोधणारा)
+function handleUniversalMultiSearch(inputText) {
+  const query = inputText.toLowerCase().trim();
   const dropdown = document.getElementById('brand-suggest-box');
   if (!dropdown) return;
 
@@ -551,26 +485,21 @@ function handleSmartBrandSearch(text) {
     return;
   }
 
-  // १. युझरने स्पेस देऊन पुढील अक्षर टाकले असल्यास अचूक सिरीज शोधणे (उदा. "tata s")
-  const parts = query.split(/\s+/);
-  const brandQuery = parts[0];
-  const seriesQuery = parts.length > 1 ? parts.slice(1).join(' ') : '';
+  // युझरने टाकलेले सर्व शब्द तुकड्यांमध्ये (Tokens) तोडणे (उदा. "gs tea" -> ["gs", "tea"])
+  const tokens = query.split(/\s+/).filter(t => t.length > 0);
 
-  const matchedItems = MASTER_FMCG_CATALOG.filter(item => {
-    const itemFull = item.name.toLowerCase();
-    const itemBrand = item.brand.toLowerCase();
-
-    if (seriesQuery) {
-      return (itemBrand.includes(brandQuery) || itemFull.includes(brandQuery)) && itemFull.includes(seriesQuery);
-    } else {
-      return itemBrand.includes(brandQuery) || itemFull.includes(brandQuery);
-    }
+  // मॅचिंग लॉजिक: सर्व टोकन्स त्या प्रॉडक्टच्या नावामध्ये, ब्रँडमध्ये किंवा कीवर्ड्समध्ये असलेच पाहिजेत (क्रम कोणताही असो)
+  const matchedList = GLOBAL_MARKET_DATABASE.filter(item => {
+    const searchableText = `${item.name} ${item.brand} ${item.cat} ${item.keys.join(' ')}`.toLowerCase();
+    
+    // युझरने लिहिलेला प्रत्येक शब्द या मजकुरात सापडला पाहिजे
+    return tokens.every(token => searchableText.includes(token));
   });
 
-  // २. सजेशन ड्रॉपडाउनमध्ये दाखवणे
-  if (matchedItems.length > 0) {
-    dropdown.innerHTML = matchedItems.map(item => `
-      <div class="suggest-item" onclick="selectSuggestedProduct('${item.id}')">
+  // परिणाम ड्रॉपडाउनमध्ये दाखवणे
+  if (matchedList.length > 0) {
+    dropdown.innerHTML = matchedList.map(item => `
+      <div class="suggest-item" onclick="selectUniversalItem('${item.id}')">
         <img src="${item.img}" alt="${item.name}">
         <div class="suggest-info">
           <strong>${item.name}</strong>
@@ -580,16 +509,16 @@ function handleSmartBrandSearch(text) {
     `).join('');
     dropdown.style.display = 'block';
 
-    // पहिली मॅच आपोआप पूर्वावलोकनात दाखवणे
-    applyProductPreview(matchedItems[0]);
+    // पहिली सर्वोत्तम मॅच आपोआप पूर्वावलोकनात दाखवणे
+    setPreviewCard(matchedList[0]);
   } else {
     dropdown.style.display = 'none';
   }
 }
 
-// ड्रॉपडाउनमधून आयटम निवडल्यावर थेट फॉर्म भरला जाणे
-function selectSuggestedProduct(productId) {
-  const item = MASTER_FMCG_CATALOG.find(p => p.id === productId);
+// ड्रॉपडाउनमधून प्रॉडक्ट निवडणे
+function selectUniversalItem(id) {
+  const item = GLOBAL_MARKET_DATABASE.find(p => p.id === id);
   if (!item) return;
 
   document.getElementById('np-name').value = item.name;
@@ -597,20 +526,19 @@ function selectSuggestedProduct(productId) {
   document.getElementById('np-price').value = item.price;
   document.getElementById('brand-suggest-box').style.display = 'none';
 
-  applyProductPreview(item);
+  setPreviewCard(item);
 }
 
-// पूर्वावलोकन आणि इमेज सेट करणे
-function applyProductPreview(item) {
-  const previewBox = document.getElementById('smart-image-suggestions');
-  if (!previewBox) return;
+function setPreviewCard(item) {
+  const box = document.getElementById('smart-image-suggestions');
+  if (!box) return;
 
-  previewBox.innerHTML = `
+  box.innerHTML = `
     <div style="display:flex; align-items:center; gap:12px; background:#f0fdf4; padding:8px 12px; border-radius:6px; border:1px solid #bbf7d0; width:100%;">
       <img src="${item.img}" style="width:48px; height:48px; object-fit:contain; border-radius:6px; background:#fff; border:1px solid #cbd5e1; padding:2px;" alt="${item.name}">
       <div>
         <strong style="font-size:13px; color:#16a34a;">✨ Auto-Mapped (${item.cat})</strong><br>
-        <span style="font-size:11.5px; color:#475569;">${item.name} चे मूळ अधिकृत पॅकेट निवडले आहे.</span>
+        <span style="font-size:11.5px; color:#475569;">${item.name} चे अधिकृत पॅकेट व दर रेडी आहे.</span>
       </div>
     </div>
   `;
@@ -618,7 +546,7 @@ function applyProductPreview(item) {
   if (!document.getElementById('np-price').value) document.getElementById('np-price').value = item.price;
 }
 
-// बाहेर क्लिक केल्यास ड्रॉपडाउन बंद करणे
+// बाहेर क्लिक केल्यावर ड्रॉपडाउन बंद करणे
 document.addEventListener('click', function(e) {
   if (!e.target.closest('.smart-search-container')) {
     const d = document.getElementById('brand-suggest-box');
@@ -646,7 +574,7 @@ if (saveBtn) {
     if (!price || price <= 0) { errorEl.textContent = 'कृपया योग्य विक्री दर टाका.'; return; }
 
     try {
-      if (!imageUrl) imageUrl = TATA_SALT_ORIGINAL;
+      if (!imageUrl) imageUrl = TATA_SALT_SVG;
       if (currentBusinessId) {
         await sb.from('business_products').insert({
           business_id: currentBusinessId, name, unit, selling_price: price, purchase_price: purchasePrice,
@@ -658,7 +586,7 @@ if (saveBtn) {
         document.getElementById('np-name').value = '';
         document.getElementById('np-price').value = '';
         document.getElementById('np-barcode').value = '';
-        document.getElementById('smart-image-suggestions').innerHTML = '<span class="muted" style="font-size:11.5px;">उत्पादनाचे नाव टाका किंवा ड्रॉपडाउनमधून निवडा...</span>';
+        document.getElementById('smart-image-suggestions').innerHTML = '<span class="muted" style="font-size:11.5px;">काहीही टाईप करा — सर्व कंपन्यांची यादी खाली येईल...</span>';
         await loadProducts();
       }
     } catch (err) { errorEl.textContent = 'त्रुटी: ' + err.message; }
