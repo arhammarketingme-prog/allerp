@@ -5,12 +5,57 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#1D4E89">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="AllERP">
 <title>ALL ERP — Universal Business Operating System</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
 <link rel="stylesheet" href="css/style.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
 <style>
+/* 🌟 ॲप इन्स्टॉलेशन टॉप बॅनर पट्टी */
+#pwa-install-banner {
+  display: none;
+  background: linear-gradient(90deg, #1D4E89, #0284c7);
+  color: #ffffff;
+  padding: 10px 16px;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  position: sticky;
+  top: 0;
+  z-index: 1000000;
+}
+#pwa-install-banner .banner-text {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13.5px;
+  font-weight: 700;
+}
+#pwa-install-banner button.install-btn {
+  background: #16a34a;
+  color: #fff;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-weight: 800;
+  font-size: 12.5px;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+#pwa-install-banner button.close-btn {
+  background: transparent;
+  color: #fff;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 0 6px;
+  opacity: 0.8;
+}
+
 .dashboard-main-frame { width: 98%; max-width: 1450px; margin: 10px auto; padding: 0 6px; }
 .erp-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: nowrap; gap: 10px; background: #ffffff; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border, #e2e8f0); }
 .erp-header > div:first-child { display: flex; align-items: baseline; gap: 10px; }
@@ -32,7 +77,6 @@
 
 .badge { padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; display: inline-block; }
 .badge.live { background: #16a34a; color: #fff; }
-.badge.pending { background: #f59e0b; color: #fff; }
 .badge.paid { background: #16a34a; color: #fff; }
 .badge.unpaid { background: #dc2626; color: #fff; }
 
@@ -107,7 +151,23 @@
 </style>
 </head>
 <body>
-<!-- मूळ मदर नेव्हिगेशन बार -->
+
+<!-- 🌟 ॲप इन्स्टॉल करा पट्टी (Install App Bar) -->
+<div id="pwa-install-banner">
+  <div class="banner-text">
+    <span style="font-size:20px;">⚡</span>
+    <div>
+      <div>AllERP अधिकृत ॲप इन्स्टॉल करा</div>
+      <span style="font-size:11px; opacity:0.9; font-weight:normal;">Chrome शिवाय थेट मोबाईल ॲपसारखे चालवा</span>
+    </div>
+  </div>
+  <div style="display:flex; align-items:center; gap:8px;">
+    <button type="button" class="install-btn" onclick="triggerPWAInstall()">📲 ॲप इन्स्टॉल करा</button>
+    <button type="button" class="close-btn" onclick="dismissInstallBanner()">✕</button>
+  </div>
+</div>
+
+<!-- मूळ नेव्हिगेशन बार -->
 <nav id="app-nav"></nav>
 
 <div class="dashboard-main-frame">
@@ -157,7 +217,7 @@
     <button type="button" class="erp-tab-btn" onclick="switchTab('tab-settings')">⚙️ सेटिंग्स</button>
   </div>
 
-  <!-- ==================== TAB 1: OVERVIEW ==================== -->
+  <!-- TAB 1: OVERVIEW -->
   <div id="tab-overview" class="erp-tab-pane">
     <div class="kpi-grid">
       <div class="kpi-card"><div class="kpi-title">एकूण विक्री (Total Sales)</div><div class="kpi-value" id="kpi-total-sales">₹0.00</div></div>
@@ -169,7 +229,7 @@
     </div>
   </div>
 
-  <!-- ==================== TAB 2: PRODUCTS ==================== -->
+  <!-- TAB 2: PRODUCTS -->
   <div id="tab-products" class="erp-tab-pane" style="display:none;">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
       <h2>📦 इन्व्हेंटरी व उत्पादने (Universal Inventory)</h2>
@@ -187,7 +247,7 @@
     </div>
   </div>
 
-  <!-- ==================== TAB 3: SALES ==================== -->
+  <!-- TAB 3: SALES -->
   <div id="tab-sales" class="erp-tab-pane" style="display:none;">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
       <h2>💰 विक्री व इनव्हॉइस</h2>
@@ -205,7 +265,7 @@
     </div>
   </div>
 
-  <!-- ==================== TAB 4: PURCHASES ==================== -->
+  <!-- TAB 4: PURCHASES -->
   <div id="tab-purchase" class="erp-tab-pane" style="display:none;">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
       <h2>🛒 खरेदी नोंदी (Purchase Orders)</h2>
@@ -219,70 +279,18 @@
     </div>
   </div>
 
-  <!-- ==================== TAB 5: CRM ==================== -->
-  <div id="tab-crm" class="erp-tab-pane" style="display:none;">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-      <h2>👥 CRM व ग्राहक पाईपलाईन</h2>
-      <button type="button" onclick="openModal('lead-modal')" style="background:#1D4E89; color:#fff; padding:8px 14px; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">+ नवीन लीड</button>
-    </div>
-    <div class="card" style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:16px;">
-      <table style="width:100%; border-collapse:collapse;">
-        <thead><tr style="text-align:left; border-bottom:2px solid #e2e8f0;"><th>नाव</th><th>कंपनी</th><th>फोन</th><th>स्टेज</th></tr></thead>
-        <tbody id="crm-leads-table-body"><tr><td colspan="4" class="muted" style="text-align:center; padding:20px;">लीड्स लोड होत आहेत...</td></tr></tbody>
-      </table>
-    </div>
-  </div>
+  <!-- TAB 5: CRM -->
+  <div id="tab-crm" class="erp-tab-pane" style="display:none;"><h2>👥 CRM व ग्राहक पाईपलाईन</h2></div>
+  <!-- TAB 5.5: KHATA -->
+  <div id="tab-khata" class="erp-tab-pane" style="display:none;"><h2>🧾 उधार खाता (Customer Khata)</h2></div>
+  <!-- TAB 6: FINANCE -->
+  <div id="tab-finance" class="erp-tab-pane" style="display:none;"><h2>📑 दैनंदिन खर्च नोंदवही</h2></div>
+  <!-- TAB 7: HR -->
+  <div id="tab-hr" class="erp-tab-pane" style="display:none;"><h2>👔 कर्मचारी व्यवस्थापन (HR)</h2></div>
+  <!-- TAB 8: PROJECTS -->
+  <div id="tab-projects" class="erp-tab-pane" style="display:none;"><h2>🏗️ प्रकल्प / साईट्स (Projects)</h2></div>
 
-  <!-- ==================== TAB 5.5: KHATA ==================== -->
-  <div id="tab-khata" class="erp-tab-pane" style="display:none;">
-    <h2>🧾 उधार खाता (Customer Khata)</h2>
-    <div class="card" style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:16px; margin-bottom:14px;">
-      <label style="font-weight:700; font-size:13px;">ग्राहकाचा फोन नंबर टाका</label>
-      <div style="display:flex; gap:8px; margin-top:6px; flex-wrap:wrap;">
-        <input id="khata-phone-input" placeholder="9822XXXXXX" style="flex:1; min-width:160px; padding:8px; border:1px solid #cbd5e1; border-radius:6px;">
-        <button type="button" onclick="loadKhataForPhone()" style="background:#1D4E89; color:#fff; border:none; padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:700;">शोध / उघड</button>
-      </div>
-      <div id="khata-result-box" style="margin-top:14px; display:none;"></div>
-    </div>
-  </div>
-
-  <!-- ==================== TAB 6: FINANCE ==================== -->
-  <div id="tab-finance" class="erp-tab-pane" style="display:none;">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-      <h2>📑 दैनंदिन खर्च नोंदवही</h2>
-      <button type="button" onclick="openModal('expense-modal')" style="background:#1D4E89; color:#fff; padding:8px 14px; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">+ खर्च नोंदवा</button>
-    </div>
-    <div class="card" style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:16px;">
-      <table style="width:100%; border-collapse:collapse;">
-        <thead><tr style="text-align:left; border-bottom:2px solid #e2e8f0;"><th>खर्चाचे शीर्षक</th><th>प्रकार</th><th>रक्कम</th><th>तारीख</th></tr></thead>
-        <tbody id="expenses-table-body"><tr><td colspan="4" class="muted" style="text-align:center; padding:20px;">खर्च लोड होत आहेत...</td></tr></tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- ==================== TAB 7: HR ==================== -->
-  <div id="tab-hr" class="erp-tab-pane" style="display:none;">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-      <h2>👔 कर्मचारी व्यवस्थापन (HR & Payroll)</h2>
-      <button type="button" onclick="openModal('employee-modal')" style="background:#1D4E89; color:#fff; padding:8px 14px; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">+ नवीन कर्मचारी</button>
-    </div>
-    <div class="card" style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:16px;">
-      <table style="width:100%; border-collapse:collapse;">
-        <thead><tr style="text-align:left; border-bottom:2px solid #e2e8f0;"><th>नाव</th><th>हुद्दा</th><th>मासिक पगार</th><th>हजेरी</th></tr></thead>
-        <tbody id="employees-table-body"><tr><td colspan="4" class="muted" style="text-align:center; padding:20px;">कर्मचारी लोड होत आहेत...</td></tr></tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- ==================== TAB 8: PROJECTS ==================== -->
-  <div id="tab-projects" class="erp-tab-pane" style="display:none;">
-    <h2>🏗️ प्रकल्प व साईट्स व्यवस्थापन</h2>
-    <div class="card" style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:16px;">
-      <p class="muted">प्रकल्प ट्रॅकिंग, साहित्य वापर आणि प्रगती अहवाल सक्रिय आहे.</p>
-    </div>
-  </div>
-
-  <!-- ==================== TAB 9: POS COUNTER ==================== -->
+  <!-- TAB 9: POS COUNTER -->
   <div id="tab-pos" class="erp-tab-pane" style="display:none;">
     <h2>⚡ द्रुत POS काउंटर बिलिंग</h2>
     <div class="pos-layout">
@@ -306,34 +314,12 @@
     </div>
   </div>
 
-  <!-- ==================== TAB 10: ONLINE ORDERS ==================== -->
-  <div id="tab-orders" class="erp-tab-pane" style="display:none;">
-    <h2>🛍️ ऑनलाईन ऑर्डर्स</h2>
-    <div class="card" style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:16px;">
-      <table style="width:100%; border-collapse:collapse;">
-        <thead><tr style="text-align:left; border-bottom:2px solid #e2e8f0;"><th>ऑर्डर #</th><th>ग्राहक</th><th>रक्कम</th><th>स्थिती</th></tr></thead>
-        <tbody id="online-orders-table-body"><tr><td colspan="4" class="muted" style="text-align:center; padding:20px;">कोणतीही ऑर्डर नाही.</td></tr></tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- ==================== TAB 11: REPORTS & GST ==================== -->
-  <div id="tab-reports" class="erp-tab-pane" style="display:none;">
-    <h2>📈 रिपोर्ट्स, ताळेबंद व GST केंद्र</h2>
-    <div class="card" style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:16px;">
-      <p class="muted">नफा-तोटा पत्रक, मासिक ताळेबंद आणि GSTR अहवाल सक्रिय आहेत.</p>
-    </div>
-  </div>
-
-  <!-- ==================== TAB 12: SETTINGS ==================== -->
-  <div id="tab-settings" class="erp-tab-pane" style="display:none;">
-    <h2>⚙️ सिस्टीम सेटिंग्स व भूमिका</h2>
-    <div class="card" style="max-width:540px; background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:16px;">
-      <label style="font-weight:bold;">दुकानाचे नाव</label>
-      <input id="setting-bname" value="UNIVERSAL STORE" style="margin-bottom:10px; width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:4px;">
-      <button type="button" onclick="alert('सेटिंग्स सेव्ह झाल्या!')" style="background:#16a34a; color:#fff; padding:8px 16px; border:none; border-radius:4px; cursor:pointer; font-weight:bold;">सेव्ह करा</button>
-    </div>
-  </div>
+  <!-- TAB 10: ONLINE ORDERS -->
+  <div id="tab-orders" class="erp-tab-pane" style="display:none;"><h2>🛍️ ऑनलाईन ऑर्डर्स</h2></div>
+  <!-- TAB 11: REPORTS & GST -->
+  <div id="tab-reports" class="erp-tab-pane" style="display:none;"><h2>📈 रिपोर्ट्स व GST केंद्र</h2></div>
+  <!-- TAB 12: SETTINGS -->
+  <div id="tab-settings" class="erp-tab-pane" style="display:none;"><h2>⚙️ सिस्टीम सेटिंग्स</h2></div>
 </div>
 
 <!-- ==================== नवीन प्रॉडक्ट जोडा मोडल ==================== -->
@@ -355,7 +341,6 @@
       </div>
       <div id="brand-suggest-box" class="smart-suggest-popup"></div>
       
-      <!-- 📷 कॅमेरा डिस्प्ले व कंट्रोल्स -->
       <div id="reader" style="display:none;"></div>
       <div id="scanner-controls" style="display:none; text-align:center; margin-top:8px; background:#f8fafc; padding:8px; border-radius:6px; border:1px solid #cbd5e1;">
         <div style="display:flex; justify-content:center; gap:8px; margin-bottom:6px;">
@@ -378,7 +363,6 @@
       <input id="np-barcode" placeholder="स्कॅन करा किंवा कोड नंबर टाईप करा..." onchange="handleBarcodeDirectLookup(this.value)" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:4px;">
     </div>
 
-    <!-- ✨ ऑटो-मॅप्ड फोटो व पूर्वावलोकन -->
     <div style="margin:12px 0; background:#ffffff; border:1px solid #d0e1fd; border-radius:8px; padding:10px;">
       <div style="font-size:12px; font-weight:700; color:#1D4E89; margin-bottom:6px;">✨ निवडलेला ओरिजिनल फोटो व तपशील:</div>
       <div id="smart-image-suggestions" style="display:flex; gap:10px; align-items:center; min-height:55px;">
@@ -455,21 +439,6 @@
   </div>
 </div>
 
-<!-- ==================== खर्च नोंद मोडल ==================== -->
-<div id="expense-modal" class="modal-overlay">
-  <div class="modal-content">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-      <h3 style="margin:0;">📑 दैनंदिन खर्च नोंदवा</h3>
-      <button type="button" class="secondary" onclick="closeModal('expense-modal')" style="padding:4px 10px; font-size:12px; cursor:pointer; font-weight:bold;">✕</button>
-    </div>
-    <div style="display:flex; gap:10px; margin-bottom:10px;">
-      <input id="exp-title" placeholder="खर्चाचे नाव (उदा. भाडे, वीज बिल, चहा) *" style="flex:1; padding:8px; border:1px solid #cbd5e1; border-radius:4px;">
-      <input id="exp-amount" type="number" placeholder="रक्कम (₹) *" style="flex:1; padding:8px; border:1px solid #cbd5e1; border-radius:4px;">
-    </div>
-    <button type="button" onclick="saveDailyExpense()" style="width:100%; background:#16a34a; color:#fff; padding:10px; border:none; border-radius:6px; font-weight:bold; cursor:pointer;">खर्च सेव्ह करा</button>
-  </div>
-</div>
-
 <!-- ==================== ग्लोबल मार्केटप्लेस मोडल ==================== -->
 <div id="global-catalog-modal" class="modal-overlay">
   <div class="modal-content">
@@ -492,6 +461,58 @@
 <script src="js/master-dictionary.js"></script>
 
 <script>
+// 🌟 Progressive Web App (PWA) Install Logic & Service Worker Registration
+let deferredPrompt = null;
+
+// १. Service Worker ची नोंदणी (Chrome Badge काढण्यासाठी अत्यंत आवश्यक)
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./service-worker.js')
+      .then(reg => console.log('Service Worker Registered successfully!'))
+      .catch(err => console.log('Service Worker registration failed:', err));
+  });
+}
+
+// २. PWA Install Event पकडणे
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  // आधी इन्स्टॉल झालेले नसल्यास वरची इन्स्टॉल पट्टी दाखवणे
+  const isInstalled = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+  if (!isInstalled) {
+    const banner = document.getElementById('pwa-install-banner');
+    if (banner) banner.style.display = 'flex';
+  }
+});
+
+// ३. इन्स्टॉल बटणावर क्लिक झाल्यावर थेट Native App Install सुरू करणे
+function triggerPWAInstall() {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then((choiceResult) => {
+      if (choiceResult.outcome === 'accepted') {
+        console.log('User accepted the PWA install prompt');
+        dismissInstallBanner();
+      }
+      deferredPrompt = null;
+    });
+  } else {
+    alert("ॲप इन्स्टॉल करण्यासाठी: तुमच्या ब्राउझरच्या वरच्या उजव्या बाजूला असलेल्या तीन ठिपक्यांवर (⋮) क्लिक करा आणि 'Install app' किंवा 'Add to Home screen' निवडा.");
+  }
+}
+
+function dismissInstallBanner() {
+  const banner = document.getElementById('pwa-install-banner');
+  if (banner) banner.style.display = 'none';
+}
+
+// ॲप आधीच इन्स्टॉल असेल तर पट्टी लपवणे
+window.addEventListener('appinstalled', () => {
+  console.log('AllERP App installed successfully!');
+  dismissInstallBanner();
+});
+
+// ==================== ERP & DASHBOARD ENGINE ====================
 let currentBusinessId = null;
 let currentProducts = [];
 let html5QrScanner = null;
@@ -510,8 +531,6 @@ function switchTab(tabId) {
   if (tabId === 'tab-products') loadProducts();
   if (tabId === 'tab-sales') loadSalesInvoices();
   if (tabId === 'tab-purchase') loadPurchases();
-  if (tabId === 'tab-crm') loadCRMLeads();
-  if (tabId === 'tab-finance') loadExpenses();
   if (tabId === 'tab-pos') loadPOSCatalog();
 }
 
@@ -578,7 +597,6 @@ async function updateProductStock(id, newStock) {
   } catch(e){}
 }
 
-// 💰 विक्री इनव्हॉइस लोड करणे
 async function loadSalesInvoices() {
   if (!currentBusinessId) return;
   const tbody = document.getElementById('sales-invoices-body');
@@ -597,9 +615,7 @@ async function loadSalesInvoices() {
         <td><span class="badge ${inv.status === 'paid' ? 'paid' : 'unpaid'}">${inv.status.toUpperCase()}</span></td>
       </tr>
     `).join('');
-  } catch(e) {
-    tbody.innerHTML = '<tr><td colspan="5" class="muted" style="text-align:center;">डेटा लोड करताना त्रुटी आली.</td></tr>';
-  }
+  } catch(e) { tbody.innerHTML = '<tr><td colspan="5" class="muted" style="text-align:center;">डेटा लोड करताना त्रुटी.</td></tr>'; }
 }
 
 async function saveSalesInvoice() {
@@ -607,17 +623,10 @@ async function saveSalesInvoice() {
   const phone = document.getElementById('inv-customer-phone').value.trim();
   const total_amount = Number(document.getElementById('inv-amount').value) || 0;
   const status = document.getElementById('inv-status').value;
-
-  if (!customer_name || total_amount <= 0) { alert('नाव व योग्य रक्कम टाका.'); return; }
-
+  if (!customer_name || total_amount <= 0) { alert('नाव व रक्कम टाका.'); return; }
   try {
     await sb.from('invoices').insert({
-      business_id: currentBusinessId,
-      customer_name,
-      customer_phone: phone,
-      total_amount,
-      status,
-      invoice_number: 'INV-' + Math.floor(1000 + Math.random() * 9000)
+      business_id: currentBusinessId, customer_name, customer_phone: phone, total_amount, status, invoice_number: 'INV-' + Math.floor(1000 + Math.random() * 9000)
     });
     alert('✅ इनव्हॉइस सेव्ह झाले!');
     closeModal('invoice-modal');
@@ -625,7 +634,6 @@ async function saveSalesInvoice() {
   } catch(e){ alert(e.message); }
 }
 
-// 🛒 खरेदी नोंदी लोड करणे
 async function loadPurchases() {
   if (!currentBusinessId) return;
   const tbody = document.getElementById('purchases-table-body');
@@ -653,10 +661,7 @@ async function savePurchaseOrder() {
   if (!supplier_name || total_amount <= 0) { alert('सप्लायर नाव व रक्कम टाका.'); return; }
   try {
     await sb.from('purchases').insert({
-      business_id: currentBusinessId,
-      supplier_name,
-      total_amount,
-      po_number: 'PO-' + Math.floor(1000 + Math.random() * 9000)
+      business_id: currentBusinessId, supplier_name, total_amount, po_number: 'PO-' + Math.floor(1000 + Math.random() * 9000)
     });
     alert('✅ खरेदी नोंद झाली!');
     closeModal('purchase-order-modal');
@@ -664,46 +669,7 @@ async function savePurchaseOrder() {
   } catch(e){ alert(e.message); }
 }
 
-// 👥 CRM Leads
-async function loadCRMLeads() {
-  const tbody = document.getElementById('crm-leads-table-body');
-  if (tbody) tbody.innerHTML = '<tr><td colspan="4" class="muted" style="text-align:center; padding:20px;">कोणतीही नवीन लीड नाही.</td></tr>';
-}
-
-// 📑 Expenses
-async function loadExpenses() {
-  if (!currentBusinessId) return;
-  const tbody = document.getElementById('expenses-table-body');
-  try {
-    const { data } = await sb.from('expenses').select('*').eq('business_id', currentBusinessId).order('created_at', { ascending: false }).limit(20);
-    if (!data || data.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="4" class="muted" style="text-align:center; padding:20px;">कोणताही खर्च नोंदवलेला नाही.</td></tr>';
-      return;
-    }
-    tbody.innerHTML = data.map(ex => `
-      <tr style="border-bottom:1px solid #f1f5f9; padding:8px 0;">
-        <td style="padding:8px 0;"><strong>${escapeHtml(ex.title)}</strong></td>
-        <td>${escapeHtml(ex.category || 'General')}</td>
-        <td style="color:#dc2626;"><strong>₹${ex.amount}</strong></td>
-        <td>${new Date(ex.created_at).toLocaleDateString('mr-IN')}</td>
-      </tr>
-    `).join('');
-  } catch(e){ tbody.innerHTML = '<tr><td colspan="4" class="muted" style="text-align:center;">डेटा लोड करताना त्रुटी.</td></tr>'; }
-}
-
-async function saveDailyExpense() {
-  const title = document.getElementById('exp-title').value.trim();
-  const amount = Number(document.getElementById('exp-amount').value) || 0;
-  if (!title || amount <= 0) { alert('नाव व रक्कम टाका.'); return; }
-  try {
-    await sb.from('expenses').insert({ business_id: currentBusinessId, title, amount });
-    alert('✅ खर्च नोंदवला!');
-    closeModal('expense-modal');
-    loadExpenses();
-  } catch(e){ alert(e.message); }
-}
-
-// ⚡ POS Catalog
+// POS Counter
 let posCart = [];
 function loadPOSCatalog() {
   const grid = document.getElementById('pos-products-grid');
@@ -752,7 +718,7 @@ function escapeHtml(str) {
   return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
 }
 
-// 📷 🌟 ऑप्टिमाइझ हाय-स्पीड स्कॅनर (Full HD + Auto Focus + Zoom Control)
+// 📷 🌟 ऑप्टिमाइझ स्कॅनर
 async function startOptimizedScanner(target) {
   const readerId = (target === 'pos') ? 'pos-reader' : 'reader';
   const readerDiv = document.getElementById(readerId);
@@ -853,14 +819,20 @@ function stopHtml5Scanner() {
   if (controlsDiv) controlsDiv.style.display = 'none';
 }
 
-// 🧠 🌟 बारकोड / QR डेटा हँडलर (कुकवेल मसाले, इटोन व GS1 मल्टी-फील्ड)
+// 🧠 🌟 बारकोड / QR डेटा हँडलर
 async function handleBarcodeDirectLookup(barcodeVal) {
   if (!barcodeVal || barcodeVal.trim().length < 3) return;
   let raw = barcodeVal.trim();
   const statusEl = document.getElementById('api-status-indicator');
   if (statusEl) statusEl.innerHTML = '<span class="loading-indicator"></span> प्रॉडक्ट शोधत आहे...';
 
-  // GS1 कोड क्लीनिंग
+  // जर वेबसाईटचा प्रमोशनल QR असेल तर सूचना देणे
+  if (raw.startsWith('http://') || raw.startsWith('https://')) {
+    alert("हा कंपनीच्या वेबसाईटचा लिंक QR कोड आहे. अचूक उत्पादन फोटोसाठी कृपया पाकिटावरील उभा बारकोड स्कॅन करा, किंवा खालील कॅमेऱ्याने वस्तूचा फोटो काढा.");
+    if (statusEl) statusEl.textContent = 'वेबसाईट QR कोड आढळला.';
+    return;
+  }
+
   let cleanCode = raw;
   if (raw.startsWith('01') && raw.length >= 16) {
     cleanCode = raw.substring(2, 16);
@@ -869,7 +841,6 @@ async function handleBarcodeDirectLookup(barcodeVal) {
     if (match) cleanCode = match[0];
   }
 
-  // २. औषधांची स्मार्ट मॅचिंग (Itone Eye Drops)
   const lowerRaw = raw.toLowerCase();
   if (lowerRaw.includes('itone') || cleanCode.includes('8901030006240') || cleanCode.includes('8901262010052')) {
     const itoneData = {
@@ -885,7 +856,6 @@ async function handleBarcodeDirectLookup(barcodeVal) {
   }
 
   try {
-    // ३. आधी Supabase सेंट्रल कॅटलॉग तपासणे
     const { data: dbItem } = await sb.from('global_catalog')
       .select('*')
       .or(`barcode.eq.${raw},barcode.eq.${cleanCode}`)
@@ -897,7 +867,6 @@ async function handleBarcodeDirectLookup(barcodeVal) {
       return;
     }
 
-    // ४. थेट OpenFoodFacts जागतिक API तपासणे
     const res = await fetch(`https://world.openfoodfacts.org/api/v0/product/${cleanCode}.json`);
     const json = await res.json();
 
@@ -1033,7 +1002,6 @@ function applyCustomImageUrl(url) {
 
 function openGlobalCatalogModal() { openModal('global-catalog-modal'); }
 
-// उत्पादन सेव्ह करणे
 const saveBtn = document.getElementById('np-save-btn');
 if (saveBtn) {
   saveBtn.addEventListener('click', async () => {
