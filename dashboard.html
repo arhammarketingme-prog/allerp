@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="AllERP">
 <title>ALL ERP — Universal Business Operating System</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
+<link rel="icon" href="icon-192.png">
 <link rel="stylesheet" href="css/style.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
@@ -31,7 +31,7 @@
 #pwa-install-banner .banner-text {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   font-size: 13.5px;
   font-weight: 700;
 }
@@ -58,7 +58,7 @@
 
 .dashboard-main-frame { width: 98%; max-width: 1450px; margin: 10px auto; padding: 0 6px; }
 .erp-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: nowrap; gap: 10px; background: #ffffff; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border, #e2e8f0); }
-.erp-header > div:first-child { display: flex; align-items: baseline; gap: 10px; }
+.erp-header > div:first-child { display: flex; align-items: center; gap: 12px; }
 .erp-header h1 { font-size: 18px !important; margin: 0 !important; white-space: nowrap; }
 .erp-header .muted { font-size: 11px !important; white-space: nowrap; }
 .erp-header > div:last-child { display: flex; gap: 6px; align-items: center; flex-wrap: nowrap; }
@@ -152,10 +152,10 @@
 </head>
 <body>
 
-<!-- 🌟 ॲप इन्स्टॉल करा पट्टी (Install App Bar) -->
+<!-- 🌟 ॲप इन्स्टॉल करा पट्टी (येथे तुमचा अधिकृत लोगो जोडला आहे) -->
 <div id="pwa-install-banner">
   <div class="banner-text">
-    <span style="font-size:20px;">⚡</span>
+    <img src="icon-192.png" alt="AllERP Logo" style="width:34px; height:34px; border-radius:6px; background:#fff; padding:2px; object-fit:contain; box-shadow:0 2px 5px rgba(0,0,0,0.2);">
     <div>
       <div>AllERP अधिकृत ॲप इन्स्टॉल करा</div>
       <span style="font-size:11px; opacity:0.9; font-weight:normal;">Chrome शिवाय थेट मोबाईल ॲपसारखे चालवा</span>
@@ -173,13 +173,16 @@
 <div class="dashboard-main-frame">
   <div class="erp-header">
     <div>
-      <h1 id="business-display-name">ALL ERP Dashboard</h1>
-      <span class="muted">Universal Multi-Business Operating System & Local Marketplace</span>
-      <div style="margin-top:4px;">
-        <label style="font-size:12.5px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:5px;">
-          <input type="checkbox" id="is-wholesaler-toggle" style="width:auto; margin:0;" onchange="toggleWholesalerMode(this.checked)">
-          🤝 मी Wholesaler आहे (इतर दुकानदारांना bulk मध्ये विकतो)
-        </label>
+      <img src="icon-192.png" alt="AllERP Logo" style="width:42px; height:42px; border-radius:8px; object-fit:contain; border:1px solid #e2e8f0; background:#fff; padding:2px; box-shadow:0 1px 3px rgba(0,0,0,0.08);">
+      <div>
+        <h1 id="business-display-name">ALL ERP Dashboard</h1>
+        <span class="muted">Universal Multi-Business Operating System & Local Marketplace</span>
+        <div style="margin-top:2px;">
+          <label style="font-size:12px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:5px;">
+            <input type="checkbox" id="is-wholesaler-toggle" style="width:auto; margin:0;" onchange="toggleWholesalerMode(this.checked)">
+            🤝 मी Wholesaler आहे (इतर दुकानदारांना bulk मध्ये विकतो)
+          </label>
+        </div>
       </div>
     </div>
     <div>
@@ -332,7 +335,7 @@
 
     <div style="margin-top:12px;" class="smart-search-wrapper">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-        <label style="font-weight:700; font-size:12.5px;">उत्पादनाचे नाव / ब्रँड / औषध / मसाले *</label>
+        <label style="font-weight:700; font-size:12.5px;">उत्पादनाचे नाव / ब्रँड (कोणत्याही कॅटेगरीची वस्तू) *</label>
         <span id="api-status-indicator" style="font-size:11px; color:#1D4E89; font-weight:bold;">🌐 Universal Auto-Resolver</span>
       </div>
       <div style="display:flex; gap:6px;">
@@ -464,7 +467,6 @@
 // 🌟 Progressive Web App (PWA) Install Logic & Service Worker Registration
 let deferredPrompt = null;
 
-// १. Service Worker ची नोंदणी (Chrome Badge काढण्यासाठी अत्यंत आवश्यक)
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('./service-worker.js')
@@ -473,11 +475,9 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-// २. PWA Install Event पकडणे
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
-  // आधी इन्स्टॉल झालेले नसल्यास वरची इन्स्टॉल पट्टी दाखवणे
   const isInstalled = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
   if (!isInstalled) {
     const banner = document.getElementById('pwa-install-banner');
@@ -485,13 +485,11 @@ window.addEventListener('beforeinstallprompt', (e) => {
   }
 });
 
-// ३. इन्स्टॉल बटणावर क्लिक झाल्यावर थेट Native App Install सुरू करणे
 function triggerPWAInstall() {
   if (deferredPrompt) {
     deferredPrompt.prompt();
     deferredPrompt.userChoice.then((choiceResult) => {
       if (choiceResult.outcome === 'accepted') {
-        console.log('User accepted the PWA install prompt');
         dismissInstallBanner();
       }
       deferredPrompt = null;
@@ -506,9 +504,7 @@ function dismissInstallBanner() {
   if (banner) banner.style.display = 'none';
 }
 
-// ॲप आधीच इन्स्टॉल असेल तर पट्टी लपवणे
 window.addEventListener('appinstalled', () => {
-  console.log('AllERP App installed successfully!');
   dismissInstallBanner();
 });
 
@@ -669,7 +665,6 @@ async function savePurchaseOrder() {
   } catch(e){ alert(e.message); }
 }
 
-// POS Counter
 let posCart = [];
 function loadPOSCatalog() {
   const grid = document.getElementById('pos-products-grid');
@@ -718,7 +713,6 @@ function escapeHtml(str) {
   return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
 }
 
-// 📷 🌟 ऑप्टिमाइझ स्कॅनर
 async function startOptimizedScanner(target) {
   const readerId = (target === 'pos') ? 'pos-reader' : 'reader';
   const readerDiv = document.getElementById(readerId);
@@ -819,14 +813,12 @@ function stopHtml5Scanner() {
   if (controlsDiv) controlsDiv.style.display = 'none';
 }
 
-// 🧠 🌟 बारकोड / QR डेटा हँडलर
 async function handleBarcodeDirectLookup(barcodeVal) {
   if (!barcodeVal || barcodeVal.trim().length < 3) return;
   let raw = barcodeVal.trim();
   const statusEl = document.getElementById('api-status-indicator');
   if (statusEl) statusEl.innerHTML = '<span class="loading-indicator"></span> प्रॉडक्ट शोधत आहे...';
 
-  // जर वेबसाईटचा प्रमोशनल QR असेल तर सूचना देणे
   if (raw.startsWith('http://') || raw.startsWith('https://')) {
     alert("हा कंपनीच्या वेबसाईटचा लिंक QR कोड आहे. अचूक उत्पादन फोटोसाठी कृपया पाकिटावरील उभा बारकोड स्कॅन करा, किंवा खालील कॅमेऱ्याने वस्तूचा फोटो काढा.");
     if (statusEl) statusEl.textContent = 'वेबसाईट QR कोड आढळला.';
@@ -924,7 +916,6 @@ async function handleCentralCatalogSearch(queryText) {
   clearTimeout(centralSearchTimer);
   const q = queryText.trim();
   const dropdown = document.getElementById('brand-suggest-box');
-  const previewBox = document.getElementById('smart-image-suggestions');
   if (!q || q.length < 2) {
     if (dropdown) dropdown.style.display = 'none';
     return;
