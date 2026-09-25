@@ -81,11 +81,22 @@
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
+/* 🌟 फुल-फ्रेम ऑटो-फोकस कॅमेरा डिस्प्ले */
 #reader, #pos-reader {
-  background: #000;
-  border-radius: 8px;
+  width: 100%;
+  max-width: 440px;
+  margin: 10px auto 0 auto;
+  border-radius: 10px;
   overflow: hidden;
-  margin-top: 8px;
+  border: 2px solid #1D4E89;
+  background: #000;
+  position: relative;
+}
+#reader video, #pos-reader video {
+  width: 100% !important;
+  height: auto !important;
+  object-fit: cover !important;
+  border-radius: 8px;
 }
 </style>
 </head>
@@ -105,7 +116,6 @@
       </div>
     </div>
     <div>
-      <!-- 🌐 ग्लोबल मार्केटप्लेस हेडर बटण -->
       <button type="button" onclick="openGlobalCatalogModal()" style="background:#16a34a; color:#fff; padding:6px 14px; border:none; border-radius:6px; cursor:pointer; font-weight:bold; font-size:13px;">
         🌐 ग्लोबल मार्केटप्लेस
       </button>
@@ -183,16 +193,7 @@
 
   <!-- TAB 4: PURCHASES -->
   <div id="tab-purchase" class="erp-tab-pane" style="display:none;">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-      <h2>🛒 खरेदी नोंदी</h2>
-      <button type="button" onclick="openModal('purchase-order-modal')" style="background:#1D4E89; color:#fff; padding:8px 14px; border:none; border-radius:6px; cursor:pointer;">+ नवीन खरेदी नोंदवा</button>
-    </div>
-    <div class="card" style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:16px;">
-      <table style="width:100%; border-collapse:collapse;">
-        <thead><tr style="text-align:left; border-bottom:2px solid #e2e8f0;"><th>PO #</th><th>सप्लायर</th><th>तारीख</th><th>रक्कम</th><th>स्थिती</th></tr></thead>
-        <tbody id="purchases-table-body"><tr><td colspan="5" class="muted" style="text-align:center; padding:20px;">खरेदी नोंदी लोड होत आहेत...</td></tr></tbody>
-      </table>
-    </div>
+    <h2>🛒 खरेदी नोंदी</h2>
   </div>
 
   <!-- TAB 5: CRM -->
@@ -215,7 +216,7 @@
           <input type="text" id="pos-search-box" placeholder="बारकोड/QR स्कॅन करा किंवा नाव शोधा..." style="flex:1; padding:8px; border:1px solid #cbd5e1; border-radius:6px;">
           <button type="button" onclick="startHtml5Scanner('pos')" style="background:#1D4E89; color:#fff; border:none; padding:8px 12px; border-radius:6px; cursor:pointer; font-weight:bold;">📷 स्कॅनर</button>
         </div>
-        <div id="pos-reader" style="width:100%; max-width:400px; margin-bottom:12px; display:none;"></div>
+        <div id="pos-reader" style="display:none;"></div>
         <div id="pos-products-grid" class="grid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap:10px;"></div>
       </div>
       <div class="pos-cart">
@@ -253,12 +254,16 @@
       </div>
       <div style="display:flex; gap:6px;">
         <input id="np-name" placeholder="उदा. Vivo FlashCharge 2.0, Amul Milk, Oppo Reno..." oninput="handleCentralCatalogSearch(this.value)" autocomplete="off" style="margin-bottom:0; flex:1; padding:8px; border:1px solid #cbd5e1; border-radius:4px;">
-        <button type="button" id="product-scan-btn" onclick="startHtml5Scanner('product')" class="secondary" style="padding:8px 12px; font-size:12px; cursor:pointer; background:#1D4E89; color:#fff; border:none; border-radius:4px; font-weight:bold;">📷 स्कॅनर (Barcode/QR)</button>
+        <button type="button" id="product-scan-btn" onclick="startHtml5Scanner('product')" class="secondary" style="padding:8px 12px; font-size:12px; cursor:pointer; background:#1D4E89; color:#fff; border:none; border-radius:4px; font-weight:bold;">📷 स्कॅनर (Full Frame)</button>
       </div>
       <div id="brand-suggest-box" class="smart-suggest-popup"></div>
       
-      <div id="reader" style="width:100%; max-width:400px; display:none;"></div>
-      <button type="button" id="close-scanner-btn" onclick="stopHtml5Scanner()" style="display:none; width:100%; margin-top:6px; background:#dc2626; color:#fff; border:none; padding:6px; border-radius:4px; cursor:pointer; font-size:12px; font-weight:bold;">✕ कॅमेरा बंद करा</button>
+      <!-- 📷 फुल-फ्रेम डायनॅमिक ऑटो-स्कॅनर डिस्प्ले -->
+      <div id="reader" style="display:none;"></div>
+      <div id="scanner-controls" style="display:none; text-align:center; margin-top:6px;">
+        <span class="muted" style="font-size:11px; display:block; margin-bottom:4px;">⚡ कॅमेऱ्यासमोर QR कुठेही धरा — तो आपोआप डिटेक्ट होईल</span>
+        <button type="button" id="close-scanner-btn" onclick="stopHtml5Scanner()" style="width:100%; background:#dc2626; color:#fff; border:none; padding:7px; border-radius:4px; cursor:pointer; font-size:12px; font-weight:bold;">✕ कॅमेरा बंद करा</button>
+      </div>
     </div>
 
     <div style="margin-top:10px;">
@@ -395,22 +400,22 @@ function escapeHtml(str) {
   return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
 }
 
-// 📷 🌟 क्यूआर कोड + बारकोड हाय-स्पीड स्कॅनर (Omni-Directional Square Scanning Box)
+// 📷 🌟 कोणतीही फिक्स चौकट नसलेला "फुल-फ्रेम ऑटो-डिटेक्ट" स्कॅनर (Full Sensor Scan)
 async function startHtml5Scanner(target) {
   const readerId = (target === 'pos') ? 'pos-reader' : 'reader';
   const readerDiv = document.getElementById(readerId);
-  const closeBtn = document.getElementById('close-scanner-btn');
+  const controlsDiv = document.getElementById('scanner-controls');
   const statusEl = document.getElementById('api-status-indicator');
 
   if (!readerDiv) return;
   stopHtml5Scanner();
 
   readerDiv.style.display = 'block';
-  if (closeBtn) closeBtn.style.display = 'block';
-  if (statusEl) statusEl.innerHTML = '<span class="loading-indicator"></span> कॅमेरा सुरू होत आहे...';
+  if (controlsDiv) controlsDiv.style.display = 'block';
+  if (statusEl) statusEl.innerHTML = '<span class="loading-indicator"></span> फुल-फ्रेम कॅमेरा सुरू होत आहे...';
 
   try {
-    // 🌟 QR कोड + सर्व बारकोड फॉरमॅट्स सपोर्ट
+    // 🌟 सर्व १D आणि २D बारकोड / QR कोड फॉर्मेट्स
     html5QrScanner = new Html5Qrcode(readerId, {
       formatsToSupport: [
         Html5QrcodeSupportedFormats.QR_CODE,
@@ -424,18 +429,22 @@ async function startHtml5Scanner(target) {
       verbose: false
     });
 
-    // चौकोनी स्कॅनिंग बॉक्स (QR व बारकोड दोन्ही तात्काळ पकडण्यासाठी)
+    // 🌟 कोणताही फिक्स बॉक्स नाही (qrbox काढून टाकले आहे!)
+    // संपूर्ण कॅमेरा लेन्स चालू राहील, लहान QR जवळ असो वा लांब, कॅमेरा आपोआप डिटेक्ट करेल!
+    const config = {
+      fps: 25,
+      aspectRatio: 1.333334,
+      videoConstraints: {
+        facingMode: "environment",
+        focusMode: "continuous" // ऑटो मॅक्रो फोकस
+      }
+    };
+
     await html5QrScanner.start(
       { facingMode: "environment" },
-      {
-        fps: 20,
-        qrbox: (viewfinderWidth, viewfinderHeight) => {
-          const edge = Math.floor(Math.min(viewfinderWidth, viewfinderHeight) * 0.75);
-          return { width: edge, height: edge };
-        }
-      },
+      config,
       async (decodedText) => {
-        console.log("Scanned QR/Barcode:", decodedText);
+        console.log("Auto-Detected QR/Barcode:", decodedText);
         stopHtml5Scanner();
 
         if (target === 'pos') {
@@ -449,7 +458,7 @@ async function startHtml5Scanner(target) {
       },
       (err) => {}
     );
-    if (statusEl) statusEl.textContent = '📷 कॅमेऱ्यासमोर QR किंवा बारकोड धरा';
+    if (statusEl) statusEl.textContent = '📷 कॅमेऱ्यासमोर QR कुठेही धरा (Auto-Detect चालू)';
   } catch (err) {
     console.error(err);
     alert("कॅमेरा सुरू करता आला नाही. ब्राऊझरमध्ये कॅमेरा परमिशन तपासा.");
@@ -465,10 +474,10 @@ function stopHtml5Scanner() {
   }
   const r1 = document.getElementById('reader');
   const r2 = document.getElementById('pos-reader');
-  const closeBtn = document.getElementById('close-scanner-btn');
+  const controlsDiv = document.getElementById('scanner-controls');
   if (r1) r1.style.display = 'none';
   if (r2) r2.style.display = 'none';
-  if (closeBtn) closeBtn.style.display = 'none';
+  if (controlsDiv) controlsDiv.style.display = 'none';
   const statusEl = document.getElementById('api-status-indicator');
   if (statusEl) statusEl.textContent = '🌐 Central Cloud Sync';
 }
@@ -503,7 +512,7 @@ async function handleBarcodeDirectLookup(barcodeVal) {
       }
       if (statusEl) statusEl.textContent = '✅ प्रॉडक्ट सापडले!';
     } else {
-      if (statusEl) statusEl.textContent = 'QR/बारकोड नोंदवला. कृपया नाव व फोटो टाका.';
+      if (statusEl) statusEl.textContent = 'QR नोंदवला. कृपया नाव व फोटो टाका.';
     }
   } catch (err) {
     if (statusEl) statusEl.textContent = 'स्थानिक मोड';
@@ -637,7 +646,6 @@ function applyCustomImageUrl(url) {
   setCentralPreview({ name, cat: 'Custom Image', img: url });
 }
 
-// 🌐 ग्लोबल मार्केटप्लेस मोडल फंक्शन्स
 function openGlobalCatalogModal() {
   openModal('global-catalog-modal');
   loadGlobalCatalogList();
@@ -649,7 +657,7 @@ async function loadGlobalCatalogList() {
   try {
     const { data: items } = await sb.from('global_catalog').select('*').limit(20);
     if (!items || items.length === 0) {
-      container.innerHTML = '<p class="muted" style="text-align:center; padding:15px;">ग्लोबल कॅटलॉगमध्ये सध्या कोणतीही उत्पादने नाहीत. नवीन उत्पादने जोडा.</p>';
+      container.innerHTML = '<p class="muted" style="text-align:center; padding:15px;">ग्लोबल कॅटलॉग रिकामे आहे.</p>';
       return;
     }
     container.innerHTML = items.map(it => `
@@ -658,12 +666,10 @@ async function loadGlobalCatalogList() {
           <img src="${it.image_url || ''}" style="width:36px; height:36px; object-fit:contain; border:1px solid #cbd5e1; border-radius:4px; padding:2px;">
           <div><strong>${escapeHtml(it.name)}</strong><br><span style="font-size:11px; color:#64748b;">₹${it.selling_price || 0}/${it.unit || 'pcs'}</span></div>
         </div>
-        <button type="button" onclick="importFromGlobal('${escapeHtml(it.name).replace(/'/g, "\\'")}', '${it.unit || 'pcs'}', ${it.selling_price || 0}, '${encodeURIComponent(it.image_url || '')}', '${it.barcode || ''}')" style="background:#16a34a; color:#fff; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:11.5px; font-weight:bold;">+ इन्व्हेंटरीमध्ये घ्या</button>
+        <button type="button" onclick="importFromGlobal('${escapeHtml(it.name).replace(/'/g, "\\'")}', '${it.unit || 'pcs'}', ${it.selling_price || 0}, '${encodeURIComponent(it.image_url || '')}', '${it.barcode || ''}')" style="background:#16a34a; color:#fff; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:11.5px; font-weight:bold;">+ घ्या</button>
       </div>
     `).join('');
-  } catch(e) {
-    container.innerHTML = '<p class="muted" style="text-align:center;">डेटा लोड करताना त्रुटी आली.</p>';
-  }
+  } catch(e) { container.innerHTML = '<p class="muted" style="text-align:center;">त्रुटी आली.</p>'; }
 }
 
 async function importFromGlobal(name, unit, price, imgEncoded, barcode) {
@@ -673,15 +679,13 @@ async function importFromGlobal(name, unit, price, imgEncoded, barcode) {
     await sb.from('business_products').insert({
       business_id: currentBusinessId, name, unit, selling_price: price, stock: 10, is_active: true, image_url: img, barcode
     });
-    alert(`✅ '${name}' थेट ग्लोबल कॅटलॉगमधून तुमच्या इन्व्हेंटरीमध्ये समाविष्ट झाले!`);
+    alert(`✅ '${name}' इन्व्हेंटरीमध्ये समाविष्ट झाले!`);
     closeModal('global-catalog-modal');
     await loadProducts();
   } catch(e) { alert("त्रुटी: " + e.message); }
 }
 
-function filterGlobalCatalog(term) {
-  // स्थानिक शोध फिल्टर
-}
+function filterGlobalCatalog(term) {}
 
 document.addEventListener('click', function(e) {
   if (!e.target.closest('.smart-search-wrapper')) {
@@ -690,7 +694,6 @@ document.addEventListener('click', function(e) {
   }
 });
 
-// उत्पादन सेव्ह करणे
 const saveBtn = document.getElementById('np-save-btn');
 if (saveBtn) {
   saveBtn.addEventListener('click', async () => {
@@ -701,7 +704,7 @@ if (saveBtn) {
     const barcode = document.getElementById('np-barcode')?.value.trim() || null;
     let imageUrl = document.getElementById('np-selected-image-url')?.value || null;
 
-    if (!name || price <= 0) { alert('कृपया उत्पादनाचे नाव व योग्य विक्री दर टाका.'); return; }
+    if (!name || price <= 0) { alert('कृपया नाव व विक्री दर टाका.'); return; }
 
     try {
       if (currentBusinessId) {
