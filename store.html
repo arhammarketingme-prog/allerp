@@ -79,11 +79,13 @@
             updateUI(session);
         });
 
+        // Weavo उघडताना URL पॅरामीटरसह सुरक्षितपणे रिडायरेक्ट करणे
         async function openWeavo() {
             const { data: { session } } = await supabaseClient.auth.getSession();
             if (session && session.user && session.user.email) {
                 const encodedEmail = encodeURIComponent(session.user.email);
-                window.location.href = `https://arhammarketingme-prog.github.io/weavo/#user_email=${encodedEmail}`;
+                // शेवटी / आणि Query पॅरामीटर जोडून पाठवले आहे जेणेकरून मोबाईल ब्राऊझर डेटा काढून टाकत नाही
+                window.location.href = `https://arhammarketingme-prog.github.io/weavo/?user_email=${encodedEmail}`;
             } else {
                 alert('कृपया आधी गुगल लॉगिन करा!');
             }
