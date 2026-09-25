@@ -83,6 +83,14 @@
   animation: spin 0.6s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* 📷 कॅमेरा स्कॅनर बॉक्स स्टाईल */
+#reader, #pos-reader {
+  background: #000;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-top: 8px;
+}
 </style>
 </head>
 <body>
@@ -177,23 +185,27 @@
       </div>
       <div style="display:flex; gap:6px;">
         <input id="np-name" placeholder="उदा. amul milk, ice cream, maggi, samsung, oppo, parle-g..." oninput="handleCentralCatalogSearch(this.value)" autocomplete="off" style="margin-bottom:0; flex:1; padding:8px; border:1px solid #cbd5e1; border-radius:4px;">
-        <button type="button" onclick="startHtml5Scanner('product')" class="secondary" style="padding:8px 10px; font-size:12px; cursor:pointer; background:#1D4E89; color:#fff; border:none; border-radius:4px;">📷 स्कॅनर</button>
+        <!-- 📷 स्कॅनर बटण -->
+        <button type="button" id="product-scan-btn" onclick="startHtml5Scanner('product')" class="secondary" style="padding:8px 12px; font-size:12px; cursor:pointer; background:#1D4E89; color:#fff; border:none; border-radius:4px; font-weight:bold;">📷 स्कॅनर</button>
       </div>
       <!-- अमॅझॉन/ब्लिंकिट ड्रॉपडाउन यादी -->
       <div id="brand-suggest-box" class="smart-suggest-popup"></div>
-      <div id="reader" style="width:100%; max-width:400px; margin-top:8px; display:none;"></div>
+      
+      <!-- 📷 कॅमेरा व्हिडिओ डिस्प्ले एरिया -->
+      <div id="reader" style="width:100%; max-width:400px; display:none;"></div>
+      <button type="button" id="close-scanner-btn" onclick="stopHtml5Scanner()" style="display:none; width:100%; margin-top:6px; background:#dc2626; color:#fff; border:none; padding:6px; border-radius:4px; cursor:pointer; font-size:12px; font-weight:bold;">✕ कॅमेरा बंद करा</button>
     </div>
 
     <div style="margin-top:10px;">
       <label style="font-weight:700;">बारकोड (Barcode)</label>
-      <input id="np-barcode" placeholder="स्कॅन करा किंवा टाईप करा..." style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:4px;">
+      <input id="np-barcode" placeholder="स्कॅन करा किंवा नंबर टाईप करा..." onchange="handleBarcodeDirectLookup(this.value)" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:4px;">
     </div>
 
     <!-- ✨ ऑटो-मॅप्ड फोटो व पूर्वावलोकन -->
     <div style="margin:12px 0; background:#ffffff; border:1px solid #d0e1fd; border-radius:8px; padding:10px;">
       <div style="font-size:12px; font-weight:700; color:#1D4E89; margin-bottom:6px;">✨ निवडलेला ओरिजिनल फोटो व तपशील:</div>
       <div id="smart-image-suggestions" style="display:flex; gap:10px; align-items:center; min-height:55px;">
-        <span class="muted" style="font-size:11.5px;">नाव टाईप करताच सर्व मॉडेल्स व पाकिटे लोड होतील...</span>
+        <span class="muted" style="font-size:11.5px;">नाव टाईप करा किंवा बारकोड स्कॅन करताच मूळ फोटो रिप्लेस होईल...</span>
       </div>
       <input type="hidden" id="np-selected-image-url" value="">
       
@@ -237,7 +249,7 @@
 <script>
 let currentBusinessId = null;
 let currentProducts = [];
-let activeHtmlScanner = null;
+let html5QrScanner = null;
 let centralSearchTimer = null;
 
 function switchTab(tabId) {
@@ -254,7 +266,7 @@ function switchTab(tabId) {
 function openModal(id) { document.getElementById(id).style.display = 'flex'; }
 function closeModal(id) { 
   document.getElementById(id).style.display = 'none'; 
-  if (activeHtmlScanner) { try { activeHtmlScanner.clear(); } catch(e){} }
+  stopHtml5Scanner();
 }
 
 async function initDashboard() {
@@ -299,27 +311,140 @@ function escapeHtml(str) {
   return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
 }
 
-// 🌟 स्वयंचलित कॅटेगरी व्हिज्युअल जनरेटर (कोणतीही वस्तू अडकणार नाही)
+// 📷 🌟 अस्सल मोबाईल बॅक-कॅमेरा स्कॅनर फंक्शन (HTML5-QRCode)
+async function startHtml5Scanner(target) {
+  const readerId = (target === 'pos') ? 'pos-reader' : 'reader';
+  const readerDiv = document.getElementById(readerId);
+  const closeBtn = document.getElementById('close-scanner-btn');
+  const statusEl = document.getElementById('api-status-indicator');
+
+  if (!readerDiv) return;
+
+  // आधी सुरू असलेला स्कॅनर थांबवणे
+  stopHtml5Scanner();
+
+  readerDiv.style.display = 'block';
+  if (closeBtn) closeBtn.style.display = 'block';
+  if (statusEl) statusEl.innerHTML = '<span class="loading-indicator"></span> कॅमेरा सुरू होत आहे...';
+
+  try {
+    html5QrScanner = new Html5Qrcode(readerId);
+    
+    // मोबाईलच्या मागील (Environment) कॅमेऱ्याने स्कॅनिंग सुरू करणे
+    await html5QrScanner.start(
+      { facingMode: "environment" },
+      {
+        fps: 10,
+        qrbox: { width: 250, height: 160 }
+      },
+      async (decodedText) => {
+        // ✅ बारकोड यशस्वीरित्या स्कॅन झाल्यावर:
+        console.log("Scanned barcode:", decodedText);
+        stopHtml5Scanner();
+
+        if (target === 'pos') {
+          const posBox = document.getElementById('pos-search-box');
+          if (posBox) { posBox.value = decodedText; filterPOSProducts(decodedText); }
+        } else {
+          const bcInput = document.getElementById('np-barcode');
+          if (bcInput) bcInput.value = decodedText;
+          // थेट बारकोडवरून मूळ ओरिजिनल फोटो आणि उत्पादन शोधणे व रिप्लेस करणे
+          await handleBarcodeDirectLookup(decodedText);
+        }
+      },
+      (errorMessage) => {
+        // फ्रेम स्कॅनिंग चालू असताना दुर्लक्ष करणे
+      }
+    );
+
+    if (statusEl) statusEl.textContent = '📷 कॅमेऱ्यासमोर बारकोड धरा';
+  } catch (err) {
+    console.error("Camera error:", err);
+    alert("कॅमेरा सुरू करता आला नाही. कृपया मोबाईल ब्राउझरमध्ये Camera Permission 'Allow' करा.");
+    stopHtml5Scanner();
+  }
+}
+
+// 📷 कॅमेरा सुरक्षित थांबवणे
+function stopHtml5Scanner() {
+  if (html5QrScanner) {
+    try {
+      html5QrScanner.stop().then(() => {
+        html5QrScanner.clear();
+        html5QrScanner = null;
+      }).catch(e => { html5QrScanner = null; });
+    } catch(e) { html5QrScanner = null; }
+  }
+  const r1 = document.getElementById('reader');
+  const r2 = document.getElementById('pos-reader');
+  const closeBtn = document.getElementById('close-scanner-btn');
+  if (r1) r1.style.display = 'none';
+  if (r2) r2.style.display = 'none';
+  if (closeBtn) closeBtn.style.display = 'none';
+  const statusEl = document.getElementById('api-status-indicator');
+  if (statusEl) statusEl.textContent = '🌐 Central Cloud Sync';
+}
+
+// 🌐 🌟 बारकोडवरून थेट मूळ ओरिजिनल पॅकेटचा फोटो आणणे व रिप्लेस करणे
+async function handleBarcodeDirectLookup(barcodeVal) {
+  if (!barcodeVal || barcodeVal.trim().length < 3) return;
+  const bc = barcodeVal.trim();
+  const statusEl = document.getElementById('api-status-indicator');
+  if (statusEl) statusEl.innerHTML = '<span class="loading-indicator"></span> बारकोड उत्पादन शोधत आहे...';
+
+  try {
+    // १. आधी आपल्या Supabase क्लाउडमध्ये शोधणे
+    const { data: dbItem } = await sb.from('global_catalog').select('*').eq('barcode', bc).maybeSingle();
+    if (dbItem && dbItem.image_url) {
+      document.getElementById('np-name').value = dbItem.name;
+      document.getElementById('np-unit').value = dbItem.unit || 'pcs';
+      if (dbItem.selling_price) document.getElementById('np-price').value = dbItem.selling_price;
+      setCentralPreview({ name: dbItem.name, cat: dbItem.category || 'Central Cloud', img: dbItem.image_url, unit: dbItem.unit });
+      if (statusEl) statusEl.textContent = '✅ ओरिजिनल फोटो रिप्लेस झाला!';
+      return;
+    }
+
+    // २. थेट OpenFoodFacts जागतिक बारकोड API वर शोधणे
+    const res = await fetch(`https://world.openfoodfacts.org/api/v0/product/${bc}.json`);
+    const json = await res.json();
+
+    if (json.status === 1 && json.product) {
+      const p = json.product;
+      const realName = (p.product_name || p.brands || 'Product') + (p.quantity ? ' ' + p.quantity : '');
+      const realImg = p.image_front_url || p.image_front_small_url || p.image_url;
+      let unit = 'packet';
+      if (p.quantity && (p.quantity.includes('g') || p.quantity.includes('kg'))) unit = 'kg';
+      else if (p.quantity && (p.quantity.includes('ml') || p.quantity.includes('l'))) unit = 'ltr';
+
+      document.getElementById('np-name').value = realName;
+      document.getElementById('np-unit').value = unit;
+
+      if (realImg) {
+        // ✨ जागेवरच ओरिजिनल फोटो रिप्लेस करणे!
+        setCentralPreview({ name: realName, cat: p.brands || 'Original Product', img: realImg, unit: unit });
+        if (statusEl) statusEl.textContent = '✅ खऱ्या पाकिटाचा मूळ फोटो सेट झाला!';
+      }
+    } else {
+      if (statusEl) statusEl.textContent = 'नवीन बारकोड नोंदवला.';
+    }
+  } catch (err) {
+    if (statusEl) statusEl.textContent = 'बारकोड स्थानिक मोड';
+  }
+}
+
+// स्वयंचलित कॅटेगरी व्हिज्युअल जनरेटर (फॉलबॅक)
 function generateCategoryVector(name, cat) {
   const clean = (name + ' ' + cat).toLowerCase();
-  
-  // दूध व दुग्धजन्य
-  if (clean.includes('milk') || clean.includes('amul') || clean.includes('ताक') || clean.includes('दूध') || clean.includes('paneer') || clean.includes('dahi')) {
+  if (clean.includes('milk') || clean.includes('amul') || clean.includes('दूध') || clean.includes('paneer')) {
     return "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 120'><rect width='100' height='120' rx='8' fill='%23eff6ff' stroke='%233b82f6' stroke-width='2'/><path d='M0 0 L100 0 L100 28 L0 28 Z' fill='%232563eb'/><text x='50' y='20' font-family='Arial Black' font-size='11' fill='%23ffffff' text-anchor='middle'>FRESH DAIRY</text><circle cx='50' cy='60' r='20' fill='%23ffffff' stroke='%233b82f6'/><text x='50' y='64' font-family='Arial Black' font-size='8' fill='%231d4ed8' text-anchor='middle'>MILK</text><text x='50' y='105' font-family='Arial' font-size='7' font-weight='bold' fill='%231e40af' text-anchor='middle'>500ml / 1 Litre</text></svg>";
   }
-  // आईस्क्रीम
-  if (clean.includes('ice') || clean.includes('cream') || clean.includes('cone') || clean.includes('candy') || clean.includes('आईस्क्रीम')) {
-    return "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 120'><rect width='100' height='120' rx='8' fill='%23fff1f2' stroke='%23f43f5e' stroke-width='2'/><path d='M30 50 Q50 15 70 50 Z' fill='%23f43f5e'/><polygon points='30,50 70,50 50,105' fill='%23d97706'/><text x='50' y='42' font-family='Arial Black' font-size='7.5' fill='%23ffffff' text-anchor='middle'>ICE CREAM</text><text x='50' y='114' font-family='Arial' font-size='6.5' font-weight='bold' fill='%23be123c' text-anchor='middle'>Delicious Treat</text></svg>";
+  if (clean.includes('ice') || clean.includes('cream') || clean.includes('आईस्क्रीम')) {
+    return "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 120'><rect width='100' height='120' rx='8' fill='%23fff1f2' stroke='%23f43f5e' stroke-width='2'/><text x='50' y='42' font-family='Arial Black' font-size='8' fill='%23e11d48' text-anchor='middle'>ICE CREAM</text></svg>";
   }
-  // स्मार्टफोन
-  if (clean.includes('samsung') || clean.includes('oppo') || clean.includes('vivo') || clean.includes('phone') || clean.includes('mobile')) {
-    return "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 90 130'><rect width='90' height='130' rx='10' fill='%230f172a' stroke='%2338bdf8' stroke-width='2'/><rect x='6' y='6' width='78' height='118' rx='8' fill='%231e293b'/><circle cx='45' cy='65' r='14' fill='%230284c7'/><text x='45' y='69' font-family='Arial Black' font-size='8' fill='%23fff' text-anchor='middle'>5G</text><text x='45' y='108' font-family='Arial' font-size='6.5' font-weight='bold' fill='%2338bdf8' text-anchor='middle'>SMARTPHONE</text></svg>";
-  }
-  // किराणा व जनरल
   return `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='8' fill='%231D4E89'/><text x='50' y='55' font-family='Arial' font-size='8.5' font-weight='bold' fill='%23ffffff' text-anchor='middle'>${encodeURIComponent(name.substring(0, 14).toUpperCase())}</text></svg>`;
 }
 
-// 🧠 ऑल-ईआरपी सेंट्रल क्लाउड शोध इंजिन (डेटाबेस + ऑटोमॅटिक डायनॅमिक निर्मिती)
+// 🧠 ऑल-ईआरपी सेंट्रल क्लाउड शोध इंजिन
 async function handleCentralCatalogSearch(queryText) {
   clearTimeout(centralSearchTimer);
   const q = queryText.trim();
@@ -329,7 +454,7 @@ async function handleCentralCatalogSearch(queryText) {
 
   if (!q || q.length < 2) {
     if (dropdown) dropdown.style.display = 'none';
-    if (previewBox) previewBox.innerHTML = '<span class="muted" style="font-size:11.5px;">नाव टाईप करताच सर्व मॉडेल्स व पाकिटे लोड होतील...</span>';
+    if (previewBox) previewBox.innerHTML = '<span class="muted" style="font-size:11.5px;">नाव टाईप करा किंवा बारकोड स्कॅन करताच मूळ फोटो रिप्लेस होईल...</span>';
     return;
   }
 
@@ -338,7 +463,6 @@ async function handleCentralCatalogSearch(queryText) {
   centralSearchTimer = setTimeout(async () => {
     let combinedResults = [];
 
-    // १. आधी आपल्या Supabase सेंट्रल कॅटलॉगमध्ये शोधणे
     try {
       const { data: dbItems } = await sb.from('global_catalog')
         .select('*')
@@ -359,49 +483,21 @@ async function handleCentralCatalogSearch(queryText) {
       }
     } catch(e) {}
 
-    // २. डायनॅमिक सिमेंटिक मॅपिंग (दूध, आईस्क्रीम, मोबाईल, तेल काहीही असेल तरी)
     const clean = q.toLowerCase();
-    
-    // अमुल दूध व डेअरी
     if (clean.includes('amul') || clean.includes('milk') || clean.includes('दूध')) {
       const cat = 'डेअरी व दुग्धजन्य (Dairy)';
-      combinedResults.push({ name: "Amul Taaza Homogenised Toned Milk 500ml", cat, unit: "packet", price: 27, img: generateCategoryVector('milk', cat) });
-      combinedResults.push({ name: "Amul Gold Full Cream Fresh Milk 500ml", cat, unit: "packet", price: 33, img: generateCategoryVector('milk', cat) });
-      combinedResults.push({ name: "Amul Taaza Toned Milk 1 Litre Tetra Pack", cat, unit: "ltr", price: 72, img: generateCategoryVector('milk', cat) });
-    }
-    // आईस्क्रीम
-    else if (clean.includes('ice') || clean.includes('cream') || clean.includes('आईस्क्रीम')) {
-      const cat = 'आईस्क्रीम व डेझर्ट्स (Ice Cream)';
-      combinedResults.push({ name: `${q} Chocobar Stick 60ml`, cat, unit: "pcs", price: 25, img: generateCategoryVector('ice cream', cat) });
-      combinedResults.push({ name: `${q} Butterscotch Cone 110ml`, cat, unit: "pcs", price: 40, img: generateCategoryVector('ice cream', cat) });
-      combinedResults.push({ name: `${q} Vanilla Family Tub 750ml`, cat, unit: "box", price: 150, img: generateCategoryVector('ice cream', cat) });
-    }
-    // मॅगी
-    else if (clean.includes('maggi')) {
-      const cat = 'इन्स्टंट नूडल्स (Noodles)';
-      combinedResults.push({ name: "Maggi 2-Minute Masala Noodles 70g", cat, unit: "packet", price: 14, img: "https://images.openfoodfacts.org/images/products/8901058852331/front_en.11.400.jpg" });
-      combinedResults.push({ name: "Maggi 2-Minute Masala Noodles 140g", cat, unit: "packet", price: 28, img: "https://images.openfoodfacts.org/images/products/8901058852331/front_en.11.400.jpg" });
-    }
-    // सॅमसंग / ओप्पो
-    else if (clean.includes('samsung') || clean.includes('oppo') || clean.includes('vivo')) {
-      const cat = 'इलेक्ट्रॉनिक्स (Smartphones)';
-      const brand = clean.includes('samsung') ? 'Samsung Galaxy' : clean.includes('oppo') ? 'Oppo' : 'Vivo';
-      combinedResults.push({ name: `${brand} 5G Smartphone (8GB/128GB)`, cat, unit: "pcs", price: 18999, img: generateCategoryVector('smartphone', cat) });
-      combinedResults.push({ name: `${brand} Pro 5G Camera Edition`, cat, unit: "pcs", price: 29999, img: generateCategoryVector('smartphone', cat) });
-    }
-    // कोणतीही नवीन स्थानिक वस्तू
-    else if (combinedResults.length === 0) {
-      let guessUnit = 'pcs';
-      let guessCat = 'Universal Retail';
-      if (clean.includes('oil') || clean.includes('तेल') || clean.includes('juice')) { guessUnit = 'ltr'; guessCat = 'खाद्यतेल व पेये'; }
-      else if (clean.includes('sugar') || clean.includes('rice') || clean.includes('dal') || clean.includes('पीठ')) { guessUnit = 'kg'; guessCat = 'अन्नधान्य व किराणा'; }
-
+      combinedResults.push({ name: "Amul Taaza Toned Milk 500ml", cat, unit: "packet", price: 27, img: generateCategoryVector('milk', cat) });
+      combinedResults.push({ name: "Amul Gold Full Cream Milk 500ml", cat, unit: "packet", price: 33, img: generateCategoryVector('milk', cat) });
+    } else if (clean.includes('ice') || clean.includes('cream')) {
+      const cat = 'आईस्क्रीम (Ice Cream)';
+      combinedResults.push({ name: `${q} Chocobar 60ml`, cat, unit: "pcs", price: 25, img: generateCategoryVector('ice cream', cat) });
+    } else if (combinedResults.length === 0) {
       combinedResults.push({
         name: `${q} Standard Pack`,
-        cat: guessCat,
-        unit: guessUnit,
+        cat: "Universal Retail",
+        unit: "pcs",
         price: '',
-        img: generateCategoryVector(q, guessCat)
+        img: generateCategoryVector(q, "Universal Retail")
       });
     }
 
@@ -440,10 +536,10 @@ function setCentralPreview(item) {
 
   box.innerHTML = `
     <div style="display:flex; align-items:center; gap:12px; background:#f0fdf4; padding:8px 12px; border-radius:6px; border:1px solid #bbf7d0; width:100%;">
-      <img src="${item.img}" style="width:48px; height:48px; object-fit:contain; border-radius:6px; background:#fff; border:1px solid #cbd5e1; padding:2px;" alt="${item.name}">
+      <img src="${item.img}" style="width:52px; height:52px; object-fit:contain; border-radius:6px; background:#fff; border:1px solid #cbd5e1; padding:2px;" alt="${item.name}">
       <div>
-        <strong style="font-size:13px; color:#16a34a;">✨ Auto-Mapped (${item.cat})</strong><br>
-        <span style="font-size:11.5px; color:#475569;">${item.name} चा अधिकृत फोटो व एकक सेट झाले आहे.</span>
+        <strong style="font-size:13px; color:#16a34a;">✨ Active Photo (${item.cat || 'Product'})</strong><br>
+        <span style="font-size:11.5px; color:#475569;">${item.name} चा अधिकृत फोटो सेट झाला आहे.</span>
       </div>
     </div>
   `;
@@ -451,7 +547,6 @@ function setCentralPreview(item) {
   if (item.unit) document.getElementById('np-unit').value = item.unit;
 }
 
-// थेट कस्टम इमेज लिंक लावण्यासाठी
 function applyCustomImageUrl(url) {
   if (!url || !url.startsWith('http')) return;
   const name = document.getElementById('np-name').value || 'Product';
@@ -465,7 +560,7 @@ document.addEventListener('click', function(e) {
   }
 });
 
-// उत्पादन सेव्ह करणे (स्थानिक दुकानात + सेंट्रल क्लाउडवर एकाच वेळी सेव्ह!)
+// उत्पादन सेव्ह करणे
 const saveBtn = document.getElementById('np-save-btn');
 if (saveBtn) {
   saveBtn.addEventListener('click', async () => {
@@ -480,13 +575,12 @@ if (saveBtn) {
 
     try {
       if (currentBusinessId) {
-        // १. दुकानदाराच्या इन्व्हेंटरीमध्ये सेव्ह
         await sb.from('business_products').insert({
           business_id: currentBusinessId, name, unit, selling_price: price,
           stock, is_active: true, image_url: imageUrl, barcode
         });
 
-        // २. 🌟 सेंट्रल क्लाउडवर कायमस्वरूपी नोंद (Learn Once, Use Everywhere)
+        // सेंट्रल क्लाउडमध्ये सेव्ह
         try {
           await sb.from('global_catalog').insert({
             name, unit, selling_price: price, image_url: imageUrl, barcode
@@ -497,7 +591,7 @@ if (saveBtn) {
         closeModal('add-product-modal');
         document.getElementById('np-name').value = '';
         document.getElementById('np-price').value = '';
-        document.getElementById('smart-image-suggestions').innerHTML = '<span class="muted" style="font-size:11.5px;">नाव टाईप करताच सर्व मॉडेल्स व पाकिटे लोड होतील...</span>';
+        document.getElementById('smart-image-suggestions').innerHTML = '<span class="muted" style="font-size:11.5px;">नाव टाईप करा किंवा बारकोड स्कॅन करताच मूळ फोटो रिप्लेस होईल...</span>';
         await loadProducts();
       }
     } catch (err) { alert('त्रुटी: ' + err.message); }
