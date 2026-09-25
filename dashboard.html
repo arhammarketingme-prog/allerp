@@ -9,8 +9,8 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
 <link rel="stylesheet" href="css/style.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<!-- Robust HTML5-Qrcode Scanner Library -->
-<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+<!-- Reliable Version of HTML5-Qrcode -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
 <style>
 .dashboard-main-frame { width: 98%; max-width: 1450px; margin: 10px auto; padding: 0 6px; }
 .erp-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: nowrap; gap: 10px; background: #ffffff; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border, #e2e8f0); }
@@ -81,7 +81,7 @@
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* 🌟 फुल-फ्रेम ऑटो-फोकस कॅमेरा डिस्प्ले */
+/* 🌟 ऑप्टिमाइझ कॅमेरा डिस्प्ले */
 #reader, #pos-reader {
   width: 100%;
   max-width: 440px;
@@ -90,7 +90,6 @@
   overflow: hidden;
   border: 2px solid #1D4E89;
   background: #000;
-  position: relative;
 }
 #reader video, #pos-reader video {
   width: 100% !important;
@@ -133,7 +132,7 @@
     <button type="button" class="secondary" style="padding:7px 14px; cursor:pointer; font-size:13px;">शोधा</button>
   </div>
 
-  <!-- NAVIGATION TABS (सर्व १३ ईआरपी टॅब्स) -->
+  <!-- सर्व १३ ईआरपी टॅब्स -->
   <div class="erp-tabs-bar" id="erp-navigation-tabs">
     <button type="button" class="erp-tab-btn active" onclick="switchTab('tab-overview')">📊 डॅशबोर्ड</button>
     <button type="button" class="erp-tab-btn" onclick="switchTab('tab-products')">📦 इन्व्हेंटरी व स्टॉक</button>
@@ -214,7 +213,7 @@
       <div class="pos-catalog">
         <div style="display:flex; gap:6px; margin-bottom:12px;">
           <input type="text" id="pos-search-box" placeholder="बारकोड/QR स्कॅन करा किंवा नाव शोधा..." style="flex:1; padding:8px; border:1px solid #cbd5e1; border-radius:6px;">
-          <button type="button" onclick="startHtml5Scanner('pos')" style="background:#1D4E89; color:#fff; border:none; padding:8px 12px; border-radius:6px; cursor:pointer; font-weight:bold;">📷 स्कॅनर</button>
+          <button type="button" onclick="startOptimizedScanner('pos')" style="background:#1D4E89; color:#fff; border:none; padding:8px 12px; border-radius:6px; cursor:pointer; font-weight:bold;">📷 स्कॅनर</button>
         </div>
         <div id="pos-reader" style="display:none;"></div>
         <div id="pos-products-grid" class="grid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap:10px;"></div>
@@ -246,7 +245,7 @@
       <button type="button" class="secondary" onclick="closeModal('add-product-modal')" style="padding:4px 10px; font-size:12px; cursor:pointer; font-weight:bold;">✕ बंद करा</button>
     </div>
 
-    <!-- 🌟 स्मार्ट सर्च फील्ड -->
+    <!-- 🌟 स्मार्ट सर्च व कॅमेरा कंट्रोल्स -->
     <div style="margin-top:12px;" class="smart-search-wrapper">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
         <label style="font-weight:700; font-size:12.5px;">उत्पादनाचे नाव / ब्रँड / वस्तू * (उदा. Vivo Fast Charging 2.0, Amul, Oppo, Samsung)</label>
@@ -254,15 +253,26 @@
       </div>
       <div style="display:flex; gap:6px;">
         <input id="np-name" placeholder="उदा. Vivo FlashCharge 2.0, Amul Milk, Oppo Reno..." oninput="handleCentralCatalogSearch(this.value)" autocomplete="off" style="margin-bottom:0; flex:1; padding:8px; border:1px solid #cbd5e1; border-radius:4px;">
-        <button type="button" id="product-scan-btn" onclick="startHtml5Scanner('product')" class="secondary" style="padding:8px 12px; font-size:12px; cursor:pointer; background:#1D4E89; color:#fff; border:none; border-radius:4px; font-weight:bold;">📷 स्कॅनर (Full Frame)</button>
+        <button type="button" id="product-scan-btn" onclick="startOptimizedScanner('product')" class="secondary" style="padding:8px 12px; font-size:12px; cursor:pointer; background:#1D4E89; color:#fff; border:none; border-radius:4px; font-weight:bold;">📷 स्कॅनर (Auto Scan)</button>
       </div>
       <div id="brand-suggest-box" class="smart-suggest-popup"></div>
       
-      <!-- 📷 फुल-फ्रेम डायनॅमिक ऑटो-स्कॅनर डिस्प्ले -->
+      <!-- 📷 कॅमेरा व्हिडिओ व झूम/कंट्रोल बार -->
       <div id="reader" style="display:none;"></div>
-      <div id="scanner-controls" style="display:none; text-align:center; margin-top:6px;">
-        <span class="muted" style="font-size:11px; display:block; margin-bottom:4px;">⚡ कॅमेऱ्यासमोर QR कुठेही धरा — तो आपोआप डिटेक्ट होईल</span>
-        <button type="button" id="close-scanner-btn" onclick="stopHtml5Scanner()" style="width:100%; background:#dc2626; color:#fff; border:none; padding:7px; border-radius:4px; cursor:pointer; font-size:12px; font-weight:bold;">✕ कॅमेरा बंद करा</button>
+      <div id="scanner-controls" style="display:none; text-align:center; margin-top:8px; background:#f8fafc; padding:8px; border-radius:6px; border:1px solid #cbd5e1;">
+        <div style="display:flex; justify-content:center; gap:8px; margin-bottom:6px;">
+          <button type="button" onclick="setCameraZoom(1.0)" style="padding:4px 10px; font-size:11.5px; border:1px solid #94a3b8; background:#fff; border-radius:4px; cursor:pointer; font-weight:bold;">1X</button>
+          <button type="button" onclick="setCameraZoom(2.0)" style="padding:4px 12px; font-size:11.5px; border:1px solid #1D4E89; background:#e0f2fe; color:#1D4E89; border-radius:4px; cursor:pointer; font-weight:bold;">🔍 2X झूम (लहान QR साठी)</button>
+          <button type="button" onclick="setCameraZoom(3.0)" style="padding:4px 10px; font-size:11.5px; border:1px solid #94a3b8; background:#fff; border-radius:4px; cursor:pointer; font-weight:bold;">3X</button>
+        </div>
+        <span class="muted" style="font-size:11px; display:block; margin-bottom:6px;">💡 टिप: कॅमेरा १५ सेमी लांब ठेवा आणि "2X झूम" दाबा.</span>
+        <div style="display:flex; gap:6px;">
+          <label style="flex:1; background:#0284c7; color:#fff; padding:6px; border-radius:4px; font-size:11.5px; cursor:pointer; font-weight:bold; text-align:center;">
+            📸 QR चा फोटो काढून स्कॅन करा
+            <input type="file" accept="image/*" capture="environment" style="display:none;" onchange="scanQrFromPhoto(event)">
+          </label>
+          <button type="button" onclick="stopHtml5Scanner()" style="background:#dc2626; color:#fff; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-size:11.5px; font-weight:bold;">✕ बंद करा</button>
+        </div>
       </div>
     </div>
 
@@ -340,6 +350,7 @@ let currentBusinessId = null;
 let currentProducts = [];
 let html5QrScanner = null;
 let centralSearchTimer = null;
+let currentCameraTrack = null;
 
 function switchTab(tabId) {
   document.querySelectorAll('.erp-tab-pane').forEach(el => el.style.display = 'none');
@@ -400,8 +411,8 @@ function escapeHtml(str) {
   return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
 }
 
-// 📷 🌟 कोणतीही फिक्स चौकट नसलेला "फुल-फ्रेम ऑटो-डिटेक्ट" स्कॅनर (Full Sensor Scan)
-async function startHtml5Scanner(target) {
+// 📷 🌟 ऑप्टिमाइझ हाय-स्पीड स्कॅनर (Full HD + Auto Focus + Zoom Control)
+async function startOptimizedScanner(target) {
   const readerId = (target === 'pos') ? 'pos-reader' : 'reader';
   const readerDiv = document.getElementById(readerId);
   const controlsDiv = document.getElementById('scanner-controls');
@@ -412,31 +423,26 @@ async function startHtml5Scanner(target) {
 
   readerDiv.style.display = 'block';
   if (controlsDiv) controlsDiv.style.display = 'block';
-  if (statusEl) statusEl.innerHTML = '<span class="loading-indicator"></span> फुल-फ्रेम कॅमेरा सुरू होत आहे...';
+  if (statusEl) statusEl.innerHTML = '<span class="loading-indicator"></span> 1080p कॅमेरा सुरू होत आहे...';
 
   try {
-    // 🌟 सर्व १D आणि २D बारकोड / QR कोड फॉर्मेट्स
+    // Hardware BarcodeDetector सह हायब्रिड सपोर्ट
     html5QrScanner = new Html5Qrcode(readerId, {
-      formatsToSupport: [
-        Html5QrcodeSupportedFormats.QR_CODE,
-        Html5QrcodeSupportedFormats.EAN_13,
-        Html5QrcodeSupportedFormats.EAN_8,
-        Html5QrcodeSupportedFormats.CODE_128,
-        Html5QrcodeSupportedFormats.CODE_39,
-        Html5QrcodeSupportedFormats.UPC_A,
-        Html5QrcodeSupportedFormats.UPC_E
-      ],
+      experimentalFeatures: {
+        useBarCodeDetectorIfSupported: true
+      },
       verbose: false
     });
 
-    // 🌟 कोणताही फिक्स बॉक्स नाही (qrbox काढून टाकले आहे!)
-    // संपूर्ण कॅमेरा लेन्स चालू राहील, लहान QR जवळ असो वा लांब, कॅमेरा आपोआप डिटेक्ट करेल!
     const config = {
-      fps: 25,
-      aspectRatio: 1.333334,
+      fps: 20,
+      qrbox: { width: 280, height: 280 }, // स्पष्ट मार्गदर्शक चौकट
+      aspectRatio: 1.0,
       videoConstraints: {
-        facingMode: "environment",
-        focusMode: "continuous" // ऑटो मॅक्रो फोकस
+        facingMode: { ideal: "environment" },
+        width: { min: 1024, ideal: 1920 },
+        height: { min: 720, ideal: 1080 },
+        focusMode: "continuous"
       }
     };
 
@@ -444,7 +450,7 @@ async function startHtml5Scanner(target) {
       { facingMode: "environment" },
       config,
       async (decodedText) => {
-        console.log("Auto-Detected QR/Barcode:", decodedText);
+        console.log("Scanned successfully:", decodedText);
         stopHtml5Scanner();
 
         if (target === 'pos') {
@@ -458,11 +464,52 @@ async function startHtml5Scanner(target) {
       },
       (err) => {}
     );
-    if (statusEl) statusEl.textContent = '📷 कॅमेऱ्यासमोर QR कुठेही धरा (Auto-Detect चालू)';
+
+    // active track मिळवून झूम क्षमता तपासणे
+    try {
+      const videoEl = readerDiv.querySelector('video');
+      if (videoEl && videoEl.srcObject) {
+        currentCameraTrack = videoEl.srcObject.getVideoTracks()[0];
+      }
+    } catch(e){}
+
+    if (statusEl) statusEl.textContent = '📷 कॅमेऱ्यासमोर QR धरा';
   } catch (err) {
     console.error(err);
     alert("कॅमेरा सुरू करता आला नाही. ब्राऊझरमध्ये कॅमेरा परमिशन तपासा.");
     stopHtml5Scanner();
+  }
+}
+
+// 🔍 डिजिटल झूम सेट करणे (लहान QR साठी वरदान)
+function setCameraZoom(zoomLevel) {
+  if (!currentCameraTrack) return;
+  try {
+    const caps = currentCameraTrack.getCapabilities();
+    if (caps && caps.zoom) {
+      const z = Math.min(Math.max(zoomLevel, caps.zoom.min), caps.zoom.max);
+      currentCameraTrack.applyConstraints({ advanced: [{ zoom: z }] });
+    }
+  } catch(e){}
+}
+
+// 📸 फोटोवरून थेट QR स्कॅन करणे (100% हमी)
+async function scanQrFromPhoto(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const statusEl = document.getElementById('api-status-indicator');
+  if (statusEl) statusEl.innerHTML = '<span class="loading-indicator"></span> फोटो स्कॅन करत आहे...';
+
+  try {
+    const tempScanner = new Html5Qrcode("reader");
+    const decoded = await tempScanner.scanFile(file, true);
+    stopHtml5Scanner();
+    document.getElementById('np-barcode').value = decoded;
+    await handleBarcodeDirectLookup(decoded);
+  } catch(e) {
+    alert("फोटोमध्ये QR कोड सापडला नाही. कृपया कॅमेरा थोडा लांब धरून स्पष्ट फोटो काढा.");
+    if (statusEl) statusEl.textContent = 'स्कॅन अयशस्वी';
   }
 }
 
@@ -472,6 +519,7 @@ function stopHtml5Scanner() {
       html5QrScanner.stop().then(() => { html5QrScanner.clear(); html5QrScanner = null; }).catch(e => { html5QrScanner = null; });
     } catch(e) { html5QrScanner = null; }
   }
+  currentCameraTrack = null;
   const r1 = document.getElementById('reader');
   const r2 = document.getElementById('pos-reader');
   const controlsDiv = document.getElementById('scanner-controls');
