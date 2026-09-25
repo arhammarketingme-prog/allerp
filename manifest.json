@@ -1,27 +1,54 @@
-{
-  "id": "/allerp-business-os",
-  "name": "ALL ERP & Local Marketplace",
-  "short_name": "AllERP",
-  "description": "Universal Business Operating System & Local Marketplace",
-  "start_url": "./dashboard.html",
-  "scope": "./",
-  "display": "standalone",
-  "orientation": "portrait-primary",
-  "background_color": "#1D4E89",
-  "theme_color": "#1D4E89",
-  "categories": ["business", "productivity", "shopping"],
-  "icons": [
-    {
-      "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAMAAABlApw1AAAAGXRFWHRTb2Z0d2FyZQBNYWNyb21lZGlhIEZpcmV3b3JrcyA0LjD757mOAAAAA3NCSVQICAjb4U/gAAAAVFBMVEUAAAA9ToA9ToA9ToA9ToA9ToA9ToA9ToA9ToA9ToA9ToA9ToA9ToA9ToA9ToA9ToA9ToA9ToA9ToA9ToA9ToA9ToA9ToA9ToA9ToA9ToA9ToA9ToDJ2P3RAAAAHnRSTlMAESIzRFVmd4iZqru8zN3e7v////////////////8f9kLAAAAAKUlEQVR4nO3BMQEAAADCoPVPbQ0PoAAAAAAAAAAAAAAAAAAAAAAA/gZ41wAB5p8kFAAAAABJRU5ErkJggg==",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAgAAAAIACAMAAADDpiTIAAAAGXRFWHRTb2Z0d2FyZQBNYWNyb21lZGlhIEZpcmV3b3JrcyA0LjD757mOAAAAA3NCSVQICAjb4U/gAAAAVFBMVEUAAAA9ToA9ToA9ToA9ToA9ToA9ToA9ToA9ToA9ToA9ToA9ToA9ToA9ToA9ToA9ToA9ToA9ToA9ToA9ToA9ToA9ToA9ToA9ToA9ToA9ToA9ToA9ToDJ2P3RAAAAHnRSTlMAESIzRFVmd4iZqru8zN3e7v////////////////8f9kLAAAAAW0lEQVR4nO3BMQEAAADCoPVPbQhfoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAuBv5/AAHRy79NAAAAAElFTkSuQmCC",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
-    }
-  ]
-}
+// Service Worker for ALL ERP PWA WebAPK
+const CACHE_NAME = 'allerp-core-v3';
+const ASSETS_TO_CACHE = [
+  './index.html',
+  './dashboard.html',
+  './manifest.json',
+  './css/style.css',
+  './js/supabase-client.js',
+  './js/erp-engine.js',
+  './js/cart.js',
+  './js/nav.js',
+  './js/tracking.js'
+];
+
+self.addEventListener('install', (e) => {
+  e.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => {
+      return cache.addAll(ASSETS_TO_CACHE);
+    }).catch(() => {})
+  );
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', (e) => {
+  e.waitUntil(
+    caches.keys().then((keys) => {
+      return Promise.all(
+        keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))
+      );
+    })
+  );
+  e.waitUntil(self.clients.claim());
+});
+
+self.addEventListener('fetch', (e) => {
+  const url = new URL(e.request.url);
+
+  // Supabase API कॉल्सना कॅश करू नये
+  if (url.hostname.includes('supabase.co') || e.request.method !== 'GET') {
+    return;
+  }
+
+  e.respondWith(
+    fetch(e.request)
+      .then((res) => {
+        if (res && res.status === 200 && url.origin === self.location.origin) {
+          const resClone = res.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(e.request, resClone));
+        }
+        return res;
+      })
+      .catch(() => caches.match(e.request))
+  );
+});
