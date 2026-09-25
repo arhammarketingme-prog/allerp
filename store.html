@@ -16,20 +16,23 @@
 <body>
 
     <h2>AllERP Store</h2>
+    
+    <!-- लॉगिन नसताना दिसणारा विभाग -->
     <div id="authSection">
         <button id="loginBtn" class="btn" onclick="signInWithGoogle()">Google वरून लॉगिन करा</button>
     </div>
 
+    <!-- लॉगिन झाल्यावर दिसणारा विभाग -->
     <div id="userSection" class="user-box" style="display: none;">
-        <p>लॉगिन ईमेल: <span id="userEmail"></span></p>
-        <button class="btn btn-weavo" onclick="openWeavoWithSSO()">Weavo उघडा (Auto Login)</button>
+        <p>लॉगिन खाते: <strong id="userEmail"></strong></p>
+        <button class="btn btn-weavo" onclick="openWeavoWithSSO()">Weavo उघडा (थेट प्रवेश)</button>
         <br>
         <button class="btn" style="background-color: #dc2626;" onclick="signOut()">लॉगआउट</button>
     </div>
 
     <script>
         const SUPABASE_URL = 'https://flprhrbbllxfcdaornio.supabase.co';
-        const SUPABASE_ANON_KEY = 'YOUR_ALLERP_ANON_KEY'; // हांगा तुमची AllERP anon key घाला
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'; // तुमची AllERP ची anon key इथे ठेवा
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         async function signInWithGoogle() {
@@ -48,22 +51,22 @@
 
         async function checkSession() {
             const { data: { session } } = await supabaseClient.auth.getSession();
-            if (session) {
+            if (session && session.user) {
                 document.getElementById('authSection').style.display = 'none';
                 document.getElementById('userSection').style.display = 'block';
                 document.getElementById('userEmail').innerText = session.user.email;
             }
         }
 
-        // Weavo उकतें करतना सेशन टोकन पास करपाचें मुख्य फंक्शन
+        // Weavo उघडताना लॉगिन झालेला ईमेल सुरक्षितपणे सोबत पाठवणे
         async function openWeavoWithSSO() {
             const { data: { session } } = await supabaseClient.auth.getSession();
-            if (session && session.access_token) {
-                const weavoBaseUrl = 'https://arhammarketingme-prog.github.io/weavo';
-                const ssoUrl = `${weavoBaseUrl}/#access_token=${session.access_token}&refresh_token=${session.refresh_token}&token_type=bearer`;
-                window.location.href = ssoUrl;
+            if (session && session.user && session.user.email) {
+                const userEmail = encodeURIComponent(session.user.email);
+                // Weavo ची लिंक आणि ईमेल
+                window.location.href = `https://arhammarketingme-prog.github.io/weavo/#user_email=${userEmail}`;
             } else {
-                alert('पयलीं लॉगिन करा!');
+                alert('कृपया आधी AllERP मध्ये Google ने लॉगिन करा!');
             }
         }
 
