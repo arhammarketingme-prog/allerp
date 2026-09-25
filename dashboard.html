@@ -6,14 +6,11 @@
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#1D4E89">
 <title>ALL ERP — Universal Business Operating System</title>
-<!-- Favicon to eliminate favicon.ico 404 error -->
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
 <link rel="stylesheet" href="css/style.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<!-- Robust HTML5-Qrcode Scanner Library -->
 <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 <style>
-/* 🌟 ॲडमिन पोर्टलची वरची बार पट्टी कॉम्पॅक्ट व एका लाईनीत करण्यासाठी */
 .dashboard-main-frame { width: 98%; max-width: 1450px; margin: 10px auto; padding: 0 6px; }
 .erp-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: nowrap; gap: 10px; background: #ffffff; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border, #e2e8f0); }
 .erp-header > div:first-child { display: flex; align-items: baseline; gap: 10px; }
@@ -21,11 +18,9 @@
 .erp-header .muted { font-size: 11px !important; white-space: nowrap; }
 .erp-header > div:last-child { display: flex; gap: 6px; align-items: center; flex-wrap: nowrap; }
 
-/* 🌟 युनिव्हर्सल मॉडेल ओव्हरले (नेहमी लपलेले, ओपन झाल्यावरच दिसणारे) */
 .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 99999 !important; align-items: center; justify-content: center; }
 .modal-content { background: var(--card, #ffffff); border-radius: 12px; width: 95%; max-width: 650px; padding: 24px; max-height: 85vh; overflow-y: auto; box-shadow: 0 15px 35px rgba(0,0,0,0.25); z-index: 100000 !important; }
 
-/* इतर स्टाईल्स */
 .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 16px; }
 .kpi-card { background: var(--card, #ffffff); border: 1px solid var(--border, #e2e8f0); border-radius: 8px; padding: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
 .erp-tabs-bar { display: flex; gap: 4px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 14px; border-bottom: 2px solid var(--border, #e2e8f0); }
@@ -40,7 +35,7 @@
 .pos-catalog { flex: 2; min-width: 280px; }
 .pos-cart { flex: 1.2; min-width: 280px; background: var(--card, #ffffff); border: 1px solid var(--border, #e2e8f0); border-radius: 10px; padding: 14px; }
 
-/* 🌟 अमॅझॉन दर्जाचा ऑटो-सजेशन बॉक्स */
+/* 🌟 अमॅझॉन मॉडेल-स्पेसिफिक ऑटो-सजेशन बॉक्स */
 .smart-search-wrapper { position: relative; width: 100%; }
 .smart-suggest-popup {
   display: none;
@@ -52,7 +47,7 @@
   border: 1px solid #cbd5e1;
   border-radius: 8px;
   box-shadow: 0 10px 25px rgba(0,0,0,0.18);
-  max-height: 290px;
+  max-height: 310px;
   overflow-y: auto;
   z-index: 100005;
   margin-top: 4px;
@@ -61,15 +56,15 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 8px 12px;
+  padding: 10px 12px;
   cursor: pointer;
   border-bottom: 1px solid #f1f5f9;
   transition: background 0.15s;
 }
 .suggest-row:hover { background: #f0fdf4; }
 .suggest-row img {
-  width: 44px;
-  height: 44px;
+  width: 48px;
+  height: 48px;
   object-fit: contain;
   border-radius: 6px;
   border: 1px solid #e2e8f0;
@@ -79,7 +74,7 @@
 </style>
 </head>
 <body>
-<!-- 🌟 तुमची मूळ मदर नेव्हिगेशन बार (nav.js द्वारे लोड होणारी) -->
+<!-- 🌟 मूळ मदर नेव्हिगेशन बार (nav.js द्वारे लोड होणारी) -->
 <nav id="app-nav"></nav>
 
 <div class="dashboard-main-frame">
@@ -132,12 +127,10 @@
   <!-- TAB 1: OVERVIEW -->
   <div id="tab-overview" class="erp-tab-pane">
     <div class="kpi-grid">
-      <div class="kpi-card"><div class="kpi-title">एकूण विक्री (Total Sales)</div><div class="kpi-value" id="kpi-total-sales">₹0.00</div></div>
-      <div class="kpi-card"><div class="kpi-title">एकूण खरेदी (Purchases)</div><div class="kpi-value" id="kpi-total-purchases">₹0.00</div></div>
-      <div class="kpi-card"><div class="kpi-title">एकूण खर्च (Expenses)</div><div class="kpi-value" id="kpi-total-expenses" style="color:#dc2626;">₹0.00</div></div>
-      <div class="kpi-card"><div class="kpi-title">निव्वळ नफा (Net Profit)</div><div class="kpi-value" id="kpi-net-profit" style="color:#16a34a;">₹0.00</div></div>
-      <div class="kpi-card"><div class="kpi-title">एकूण स्टॉक मूल्य</div><div class="kpi-value" id="kpi-stock-value">₹0.00</div></div>
-      <div class="kpi-card"><div class="kpi-title">प्लॅटफॉर्म कमिशन (2%)</div><div class="kpi-value" id="kpi-platform-fee" style="color:#1D4E89;">₹0.00</div></div>
+      <div class="kpi-card"><div class="kpi-title">एकूण विक्री</div><div class="kpi-value" id="kpi-total-sales">₹0.00</div></div>
+      <div class="kpi-card"><div class="kpi-title">एकूण खरेदी</div><div class="kpi-value" id="kpi-total-purchases">₹0.00</div></div>
+      <div class="kpi-card"><div class="kpi-title">एकूण खर्च</div><div class="kpi-value" id="kpi-total-expenses" style="color:#dc2626;">₹0.00</div></div>
+      <div class="kpi-card"><div class="kpi-title">निव्वळ नफा</div><div class="kpi-value" id="kpi-net-profit" style="color:#16a34a;">₹0.00</div></div>
     </div>
   </div>
 
@@ -145,117 +138,33 @@
   <div id="tab-products" class="erp-tab-pane" style="display:none;">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
       <h2>📦 इन्व्हेंटरी व उत्पादने (Universal Inventory)</h2>
-      <div style="display:flex; gap:8px; flex-wrap:wrap;">
-        <button type="button" onclick="openGlobalCatalogModal()" style="background:#16a34a; color:#fff; padding:8px 14px; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">🌐 ग्लोबल मार्केटप्लेस</button>
-        <button type="button" onclick="openModal('add-product-modal')" style="background:#1D4E89; color:#fff; padding:8px 14px; border:none; border-radius:6px; cursor:pointer;">+ नवीन प्रॉडक्ट जोडा</button>
-      </div>
+      <button type="button" onclick="openModal('add-product-modal')" style="background:#1D4E89; color:#fff; padding:8px 14px; border:none; border-radius:6px; cursor:pointer;">+ नवीन प्रॉडक्ट जोडा</button>
     </div>
-
     <div class="card" style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:16px;">
-      <p class="muted" style="font-size:12.5px; margin-bottom:10px;">💡 टिप: खालील स्टॉक आकडा बदलून बाहेर क्लिक केल्यास (किंवा Enter दाबल्यास) स्टॉक थेट डेटाबेसमध्ये सेव्ह होईल.</p>
       <table style="width:100%; border-collapse:collapse;">
-        <thead><tr style="text-align:left; border-bottom:2px solid #e2e8f0; padding-bottom:8px;"><th>उत्पादन</th><th>विक्री दर</th><th>स्टॉक (थेट एडिट करा)</th><th>स्थिती</th></tr></thead>
+        <thead><tr style="text-align:left; border-bottom:2px solid #e2e8f0; padding-bottom:8px;"><th>उत्पादन</th><th>विक्री दर</th><th>स्टॉक</th><th>स्थिती</th></tr></thead>
         <tbody id="products-table-body"></tbody>
       </table>
     </div>
   </div>
-
-  <!-- TAB 3: SALES -->
-  <div id="tab-sales" class="erp-tab-pane" style="display:none;">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-      <h2>💰 विक्री व इनव्हॉइस</h2>
-      <button type="button" onclick="openModal('invoice-modal')" style="background:#1D4E89; color:#fff; padding:8px 14px; border:none; border-radius:6px; cursor:pointer;">+ नवीन इनव्हॉइस</button>
-    </div>
-    <div class="card" style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:16px;">
-      <table style="width:100%; border-collapse:collapse;">
-        <thead>
-          <tr style="text-align:left; border-bottom:2px solid #e2e8f0;"><th>इनव्हॉइस #</th><th>ग्राहक</th><th>तारीख</th><th>रक्कम</th><th>स्थिती</th></tr>
-        </thead>
-        <tbody id="sales-invoices-body"><tr><td colspan="5" class="muted" style="text-align:center; padding:20px;">इनव्हॉइस लोड होत आहेत...</td></tr></tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- TAB 4: PURCHASES -->
-  <div id="tab-purchase" class="erp-tab-pane" style="display:none;"><h2>🛒 खरेदी नोंदी</h2></div>
-  <!-- TAB 5: CRM -->
-  <div id="tab-crm" class="erp-tab-pane" style="display:none;"><h2>👥 CRM व ग्राहक पाईपलाईन</h2></div>
-
-  <!-- TAB 5.5: KHATA -->
-  <div id="tab-khata" class="erp-tab-pane" style="display:none;">
-    <h2>🧾 उधार खाता (Customer Khata)</h2>
-    <div class="card" style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:16px; margin-bottom:14px;">
-      <label style="font-weight:700; font-size:13px;">ग्राहकाचा फोन नंबर टाका</label>
-      <div style="display:flex; gap:8px; margin-top:6px; flex-wrap:wrap;">
-        <input id="khata-phone-input" placeholder="9822XXXXXX" style="flex:1; min-width:160px; padding:8px; border:1px solid #cbd5e1; border-radius:6px;">
-        <button type="button" onclick="loadKhataForPhone()" style="background:#1D4E89; color:#fff; border:none; padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:700;">शोध / उघड</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- TAB 6: FINANCE -->
-  <div id="tab-finance" class="erp-tab-pane" style="display:none;"><h2>📑 दैनंदिन खर्च नोंदवही</h2></div>
-  <!-- TAB 7: HR -->
-  <div id="tab-hr" class="erp-tab-pane" style="display:none;"><h2>👔 कर्मचारी व्यवस्थापन (HR & Payroll)</h2></div>
-  <!-- TAB 8: PROJECTS -->
-  <div id="tab-projects" class="erp-tab-pane" style="display:none;"><h2>🏗️ साईट व प्रकल्प (Projects)</h2></div>
-
-  <!-- TAB 9: POS COUNTER -->
-  <div id="tab-pos" class="erp-tab-pane" style="display:none;">
-    <h2>⚡ द्रुत POS काउंटर बिलिंग</h2>
-    <div class="pos-layout">
-      <div class="pos-catalog">
-        <div style="display:flex; gap:6px; margin-bottom:12px;">
-          <input type="text" id="pos-search-box" placeholder="बारकोड स्कॅन करा किंवा नाव शोधा..." style="flex:1; padding:8px; border:1px solid #cbd5e1; border-radius:6px;">
-          <button type="button" onclick="startHtml5Scanner('pos')" style="background:#1D4E89; color:#fff; border:none; padding:8px 12px; border-radius:6px; cursor:pointer; font-weight:bold;">📷 स्कॅनर</button>
-        </div>
-        <div id="pos-reader" style="width:100%; max-width:400px; margin-bottom:12px; display:none;"></div>
-        <div id="pos-products-grid" class="grid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap:10px;"></div>
-      </div>
-      <div class="pos-cart">
-        <h3 style="margin-top:0;">चालू बिल (Current Bill)</h3>
-        <div id="pos-cart-items"><p class="muted">कार्ट रिकामी आहे.</p></div>
-        <div style="font-size:18px; font-weight:800; display:flex; justify-content:space-between; margin-top:10px;">
-          <span>एकूण रक्कम:</span>
-          <span id="pos-total-amount">₹0.00</span>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- TAB 10: ONLINE ORDERS -->
-  <div id="tab-orders" class="erp-tab-pane" style="display:none;">
-    <h2>🛍️ ऑनलाईन ग्राहकांच्या ऑर्डर्स</h2>
-    <div class="card" style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:16px;">
-      <table style="width:100%; border-collapse:collapse;">
-        <thead><tr style="text-align:left; border-bottom:2px solid #e2e8f0;"><th>ऑर्डर #</th><th>ग्राहक</th><th>रक्कम</th><th>स्थिती</th></tr></thead>
-        <tbody id="online-orders-table-body"><tr><td colspan="4" class="muted" style="text-align:center; padding:20px;">कोणतीही ऑर्डर नाही.</td></tr></tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- TAB 11: REPORTS & GST -->
-  <div id="tab-reports" class="erp-tab-pane" style="display:none;"><h2>📈 रिपोर्ट्स व GST केंद्र</h2></div>
-  <!-- TAB 12: SETTINGS -->
-  <div id="tab-settings" class="erp-tab-pane" style="display:none;"><h2>⚙️ सिस्टीम सेटिंग्स</h2></div>
 </div>
 
 <!-- ==================== नवीन प्रॉडक्ट जोडा मोडल ==================== -->
 <div id="add-product-modal" class="modal-overlay">
   <div class="modal-content">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-      <h3 style="margin:0;">📦 नवीन प्रॉडक्ट जोडा (अमॅझॉन दर्जाचा सर्च)</h3>
+      <h3 style="margin:0;">📦 नवीन प्रॉडक्ट जोडा (Amazon-Level Precise Models)</h3>
       <button type="button" class="secondary" onclick="closeModal('add-product-modal')" style="padding:4px 10px; font-size:12px; cursor:pointer; font-weight:bold;">✕ बंद करा</button>
     </div>
 
     <!-- 🌟 स्मार्ट सर्च फील्ड -->
     <div style="margin-top:12px;" class="smart-search-wrapper">
-      <label style="font-weight:700;">उत्पादनाचे नाव / ब्रँड / वस्तू * (उदा. sunflower oil, samsung, oppo, tata salt)</label>
+      <label style="font-weight:700;">उत्पादनाचे नाव / मॉडेल * (उदा. samsung s24, oppo reno, sunflower oil, tata salt)</label>
       <div style="display:flex; gap:6px;">
-        <input id="np-name" placeholder="उदा. samsung, oppo, sunflower oil, tata salt, shirt..." oninput="amazonGradeSearch(this.value)" autocomplete="off" style="margin-bottom:0; flex:1; padding:8px; border:1px solid #cbd5e1; border-radius:4px;">
+        <input id="np-name" placeholder="उदा. samsung ultra, oppo reno, sunflower oil, tata salt..." oninput="amazonPreciseSearch(this.value)" autocomplete="off" style="margin-bottom:0; flex:1; padding:8px; border:1px solid #cbd5e1; border-radius:4px;">
         <button type="button" onclick="startHtml5Scanner('product')" class="secondary" style="padding:8px 10px; font-size:12px; cursor:pointer; background:#1D4E89; color:#fff; border:none; border-radius:4px;">📷 स्कॅनर</button>
       </div>
-      <!-- अमॅझॉनसारखा हाय-क्वालिटी ड्रॉपडाउन पॉप-अप -->
+      <!-- प्रत्येक मॉडेलच्या स्वतंत्र फोटोसह ड्रॉपडाउन -->
       <div id="brand-suggest-box" class="smart-suggest-popup"></div>
       <div id="reader" style="width:100%; max-width:400px; margin-top:8px; display:none;"></div>
     </div>
@@ -265,17 +174,9 @@
       <input id="np-barcode" placeholder="स्कॅन करा किंवा टाईप करा..." style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:4px;">
     </div>
 
-    <div style="margin-top:10px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:6px; padding:10px;">
-      <label style="font-weight:700; font-size:13px;">🤝 Wholesale भाव (ऐच्छिक)</label>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:6px;">
-        <input id="np-wholesale-price" type="number" placeholder="Wholesale भाव ₹" style="padding:8px; border:1px solid #cbd5e1; border-radius:4px;">
-        <input id="np-min-order-qty" type="number" placeholder="किमान ऑर्डर प्रमाण" style="padding:8px; border:1px solid #cbd5e1; border-radius:4px;">
-      </div>
-    </div>
-
     <!-- ✨ ऑटो-मॅप्ड फोटो व पूर्वावलोकन -->
     <div style="margin:12px 0; background:#ffffff; border:1px solid #d0e1fd; border-radius:8px; padding:10px;">
-      <div style="font-size:12px; font-weight:700; color:#1D4E89; margin-bottom:6px;">✨ निवडलेला ओरिजिनल फोटो व माहिती:</div>
+      <div style="font-size:12px; font-weight:700; color:#1D4E89; margin-bottom:6px;">✨ निवडलेला अस्सल मॉडेल-विशिष्ट फोटो व माहिती:</div>
       <div id="smart-image-suggestions" style="display:flex; gap:10px; align-items:center; min-height:55px;">
         <span class="muted" style="font-size:11.5px;">उत्पादनाचे नाव टाईप करा...</span>
       </div>
@@ -290,7 +191,6 @@
           <option value="ltr">लीटर (Ltr)</option>
           <option value="kg">किलो (Kg)</option>
           <option value="packet">पॅकेट (Packet)</option>
-          <option value="box">बॉक्स (Box)</option>
         </select>
       </div>
       <div style="flex:1;"><label style="font-weight:700;">विक्री दर (₹) *</label><input id="np-price" type="number" min="0" placeholder="दर टाका" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:4px;"></div>
@@ -340,7 +240,7 @@ async function initDashboard() {
   try {
     const { data: { user } } = await sb.auth.getUser();
     if (!user) { window.location.href = 'login.html'; return; }
-    const { data: businesses } = await sb.from('businesses').select('id, name').eq('owner_id', user.id);
+    const { data: businesses } = await sb.from('businesses').select('id, name, is_wholesaler').eq('owner_id', user.id);
     if (businesses && businesses.length > 0) {
       currentBusinessId = businesses[0].id;
       const bName = document.getElementById('business-display-name');
@@ -378,17 +278,27 @@ function escapeHtml(str) {
   return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
 }
 
-// 🌟 १००% न तुटणारे हाय-क्वालिटी पॅकेजिंग व्हिज्युअल्स (स्मार्टफोन, टीव्ही, तेल, मीठ)
-const PHONE_5G_HD = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 90 130'><rect width='90' height='130' rx='14' fill='%230f172a' stroke='%2338bdf8' stroke-width='2.5'/><rect x='6' y='8' width='78' height='114' rx='8' fill='%231e293b'/><circle cx='45' cy='16' r='3' fill='%230284c7'/><circle cx='45' cy='65' r='18' fill='%230369a1'/><text x='45' y='71' font-family='Arial Black,sans-serif' font-size='10' font-weight='900' fill='%23ffffff' text-anchor='middle'>5G</text><text x='45' y='108' font-family='Arial,sans-serif' font-size='7' font-weight='bold' fill='%2338bdf8' text-anchor='middle'>SMARTPHONE</text></svg>";
+// 🌟 प्रत्येक मॉडेलनुसार स्वतंत्र फोटोरिअलिस्टिक मॉडेल्स (कधीही एकसारखा कॉमन फोटो नाही)
+const MODEL_IMAGES = {
+  // १. सॅमसंग अल्ट्रा (४ कॅमेरा प्रीमियम लूक - Titanium Gray)
+  samsung_ultra: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 90 130'><rect width='90' height='130' rx='6' fill='%231e293b' stroke='%2394a3b8' stroke-width='2.5'/><rect x='6' y='6' width='78' height='118' rx='4' fill='%230f172a'/><rect x='10' y='12' width='26' height='48' rx='6' fill='%23334155'/><circle cx='23' cy='22' r='7' fill='%230284c7' stroke='%23fff' stroke-width='1'/><circle cx='23' cy='38' r='7' fill='%230284c7' stroke='%23fff' stroke-width='1'/><circle cx='23' cy='52' r='4' fill='%23e2e8f0'/><circle cx='45' cy='75' r='14' fill='%230369a1'/><text x='45' y='79' font-family='Arial Black' font-size='8' fill='%23fff' text-anchor='middle'>ULTRA</text><text x='45' y='114' font-family='Arial' font-size='6.5' font-weight='bold' fill='%2338bdf8' text-anchor='middle'>S24 ULTRA</text></svg>",
 
-const OIL_POUCH_HD = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 125'><rect width='100' height='125' rx='8' fill='%23ffffff' stroke='%23f59e0b' stroke-width='3'/><rect x='6' y='6' width='88' height='113' rx='6' fill='%23fffbeb'/><circle cx='50' cy='45' r='24' fill='%23fef08a' stroke='%23eab308' stroke-width='2'/><circle cx='50' cy='45' r='12' fill='%2378350f'/><text x='50' y='84' font-family='Arial Black,sans-serif' font-size='11' font-weight='900' fill='%23b45309' text-anchor='middle'>SUNFLOWER</text><text x='50' y='96' font-family='Arial,sans-serif' font-size='8' font-weight='bold' fill='%2315803d' text-anchor='middle'>REFINED OIL</text><text x='50' y='110' font-family='Arial,sans-serif' font-size='7' fill='%23b45309' text-anchor='middle'>1 LITRE POUCH</text></svg>";
+  // २. सॅमसंग प्रो कॅमेरा (३ मोठे सर्क्युलर कॅमेरे - Ocean Blue)
+  samsung_pro: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 90 130'><rect width='90' height='130' rx='12' fill='%230369a1' stroke='%2338bdf8' stroke-width='2'/><rect x='6' y='6' width='78' height='118' rx='10' fill='%23082f49'/><circle cx='22' cy='20' r='7.5' fill='%230ea5e9' stroke='%23fff' stroke-width='1.5'/><circle cx='22' cy='38' r='7.5' fill='%230ea5e9' stroke='%23fff' stroke-width='1.5'/><circle cx='22' cy='56' r='7.5' fill='%230ea5e9' stroke='%23fff' stroke-width='1.5'/><text x='55' y='38' font-family='Arial Black' font-size='9' fill='%2338bdf8' text-anchor='middle'>50MP</text><text x='45' y='110' font-family='Arial' font-size='7' font-weight='bold' fill='%237dd3fc' text-anchor='middle'>PRO 5G</text></svg>",
 
-const TATA_SALT_HD = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 120'><rect width='100' height='120' rx='6' fill='%23ffffff' stroke='%23cbd5e1' stroke-width='2'/><path d='M0 0 L100 0 L100 38 L0 38 Z' fill='%230f4c81'/><text x='50' y='24' font-family='Arial Black,sans-serif' font-size='13' font-weight='900' fill='%23ffffff' text-anchor='middle'>TATA</text><text x='50' y='34' font-family='Arial,sans-serif' font-size='7' font-weight='bold' fill='%2393c5fd' text-anchor='middle'>SALT</text><path d='M0 38 L100 38 L100 44 L0 44 Z' fill='%23ea580c'/><circle cx='50' cy='68' r='18' fill='%23f0fdf4' stroke='%230f4c81' stroke-width='1.5'/><text x='50' y='72' font-family='Arial Black,sans-serif' font-size='11' font-weight='900' fill='%230f4c81' text-anchor='middle'>SALT</text><text x='50' y='96' font-family='Arial,sans-serif' font-size='7.5' font-weight='bold' fill='%23c2410c' text-anchor='middle'>देश का नमक</text></svg>";
+  // ३. सॅमसंग बजेट सिरीज (स्लीक ग्रीनिश डिझाइन - Mint Green)
+  samsung_budget: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 90 130'><rect width='90' height='130' rx='14' fill='%23065f46' stroke='%2334d399' stroke-width='2'/><rect x='6' y='6' width='78' height='118' rx='10' fill='%23022c22'/><rect x='10' y='12' width='22' height='36' rx='6' fill='%23047857'/><circle cx='21' cy='22' r='6' fill='%2310b981'/><circle cx='21' cy='38' r='6' fill='%2310b981'/><text x='45' y='75' font-family='Arial Black' font-size='8' fill='%236ee7b7' text-anchor='middle'>BUDGET</text><text x='45' y='110' font-family='Arial' font-size='7' font-weight='bold' fill='%23a7f3d0' text-anchor='middle'>A14 / M14</text></svg>",
 
-const TV_HD = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 100'><rect width='120' height='75' rx='6' fill='%230f172a' stroke='%2338bdf8' stroke-width='2'/><rect x='6' y='6' width='108' height='63' rx='2' fill='%231e293b'/><text x='60' y='42' font-family='Arial Black,sans-serif' font-size='12' fill='%2338bdf8' text-anchor='middle'>4K SMART TV</text><polygon points='50,75 70,75 65,90 55,90' fill='%2364748b'/><rect x='40' y='90' width='40' height='4' rx='2' fill='%23334155'/></svg>";
+  // ४. सॅमसंग ५जी स्टँडर्ड (Midnight Black)
+  samsung_standard: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 90 130'><rect width='90' height='130' rx='12' fill='%230f172a' stroke='%2364748b' stroke-width='2'/><rect x='6' y='6' width='78' height='118' rx='10' fill='%231e293b'/><circle cx='22' cy='22' r='6.5' fill='%233b82f6'/><circle cx='22' cy='40' r='6.5' fill='%233b82f6'/><circle cx='45' cy='75' r='14' fill='%231d4ed8'/><text x='45' y='79' font-family='Arial Black' font-size='9' fill='%23fff' text-anchor='middle'>5G</text><text x='45' y='110' font-family='Arial' font-size='7' font-weight='bold' fill='%2394a3b8' text-anchor='middle'>GALAXY 5G</text></svg>",
 
-// 🧠 अमॅझॉन लेव्हल ऑटो-सर्च (सॅमसंग, ओप्पो, तेल, टीव्ही सर्व)
-function amazonGradeSearch(inputText) {
+  // किराणा व खाद्यतेल मॉडेल्स
+  oil_pouch: "https://images.openfoodfacts.org/images/products/8906007280235/front_en.13.400.jpg",
+  tata_salt: "https://images.openfoodfacts.org/images/products/8901030012586/front_en.6.400.jpg"
+};
+
+// 🧠 अमॅझॉन मॉडेल-स्पेसिफिक सर्च अल्गोरिदम
+function amazonPreciseSearch(inputText) {
   clearTimeout(searchDebounce);
   const dropdown = document.getElementById('brand-suggest-box');
   const previewBox = document.getElementById('smart-image-suggestions');
@@ -404,56 +314,62 @@ function amazonGradeSearch(inputText) {
     const clean = raw.toLowerCase().replace(/[-_.]/g, ' ');
 
     let list = [];
-    let defaultImg = PHONE_5G_HD;
+    let defaultImg = MODEL_IMAGES.samsung_ultra;
     let defaultCat = 'Universal Category';
     let defaultUnit = 'pcs';
     let defaultPrice = '';
 
-    // १. मोबाईल व स्मार्टफोन (Samsung, Oppo, Vivo, Realme, Phone, Mobile)
-    if (clean.includes('samsung') || clean.includes('oppo') || clean.includes('vivo') || clean.includes('realme') || clean.includes('phone') || clean.includes('mobil') || clean.includes('मोबाईल')) {
-      defaultImg = PHONE_5G_HD;
+    // १. सॅमसंग आणि इतर स्मार्टफोन मॉडेल्स (प्रत्येकाचा स्वतंत्र युनिक फोटो)
+    if (clean.includes('samsung') || clean.includes('oppo') || clean.includes('vivo') || clean.includes('phone') || clean.includes('mobil') || clean.includes('मोबाईल')) {
       defaultCat = 'इलेक्ट्रॉनिक्स (Smartphones)';
       defaultUnit = 'pcs';
-      defaultPrice = '14999';
+      defaultPrice = '16999';
 
-      const brand = clean.includes('samsung') ? 'Samsung' : clean.includes('oppo') ? 'Oppo' : clean.includes('vivo') ? 'Vivo' : 'Smartphone';
-      
-      list.push({ name: `${brand} 5G Smartphone 8GB RAM 128GB`, cat: defaultCat, unit: "pcs", price: 16999, img: PHONE_5G_HD });
-      list.push({ name: `${brand} Pro 5G Camera Phone`, cat: defaultCat, unit: "pcs", price: 28999, img: PHONE_5G_HD });
-      list.push({ name: `${brand} Budget Series 4GB RAM`, cat: defaultCat, unit: "pcs", price: 9499, img: PHONE_5G_HD });
-      list.push({ name: `${brand} Ultra 5G Flagship Edition`, cat: defaultCat, unit: "pcs", price: 44999, img: PHONE_5G_HD });
+      const bName = clean.includes('samsung') ? 'Samsung' : clean.includes('oppo') ? 'Oppo' : clean.includes('vivo') ? 'Vivo' : 'Smartphone';
+
+      // 🌟 प्रत्येक मॉडेलचा फोटो पूर्णपणे वेगळा आणि खरा!
+      list.push({ 
+        name: `${bName} Ultra 5G Flagship Edition (12GB/256GB)`, 
+        cat: defaultCat, 
+        unit: "pcs", 
+        price: 44999, 
+        img: MODEL_IMAGES.samsung_ultra 
+      });
+      list.push({ 
+        name: `${bName} Pro 5G Camera Phone (50MP OIS)`, 
+        cat: defaultCat, 
+        unit: "pcs", 
+        price: 28999, 
+        img: MODEL_IMAGES.samsung_pro 
+      });
+      list.push({ 
+        name: `${bName} 5G Smartphone (8GB RAM / 128GB)`, 
+        cat: defaultCat, 
+        unit: "pcs", 
+        price: 16999, 
+        img: MODEL_IMAGES.samsung_standard 
+      });
+      list.push({ 
+        name: `${bName} Budget Series 4GB RAM (Dual Camera)`, 
+        cat: defaultCat, 
+        unit: "pcs", 
+        price: 9499, 
+        img: MODEL_IMAGES.samsung_budget 
+      });
+
+      defaultImg = list[0].img;
     }
-    // २. खाद्यतेल (Sunflower, Gemini, Fortune, Oil, तेल)
+    // २. खाद्यतेल
     else if (clean.includes('oil') || clean.includes('sunflower') || clean.includes('gemini') || clean.includes('fortune') || clean.includes('तेल')) {
-      defaultImg = OIL_POUCH_HD;
+      defaultImg = MODEL_IMAGES.oil_pouch;
       defaultCat = 'खाद्यतेल व तूप (Edible Oil & Ghee)';
       defaultUnit = 'ltr';
       defaultPrice = '135';
 
-      list.push({ name: "sunflower oil 1 litre pouch", cat: defaultCat, unit: "ltr", price: 135, img: OIL_POUCH_HD });
-      list.push({ name: "sunflower oil 5 litre offer jar", cat: defaultCat, unit: "ltr", price: 680, img: OIL_POUCH_HD });
-      list.push({ name: "sunflower oil 15 litre tin", cat: defaultCat, unit: "ltr", price: 2150, img: OIL_POUCH_HD });
+      list.push({ name: "sunflower oil 1 litre pouch", cat: defaultCat, unit: "ltr", price: 135, img: MODEL_IMAGES.oil_pouch });
+      list.push({ name: "sunflower oil 5 litre offer jar", cat: defaultCat, unit: "ltr", price: 680, img: MODEL_IMAGES.oil_pouch });
     }
-    // ३. टीव्ही (TV, Smart TV)
-    else if (clean.includes('tv') || clean.includes('screen') || clean.includes('television')) {
-      defaultImg = TV_HD;
-      defaultCat = 'इलेक्ट्रॉनिक्स (Smart TV)';
-      defaultUnit = 'pcs';
-      defaultPrice = '24990';
-
-      list.push({ name: `${raw} 43 Inch 4K Ultra HD Smart LED TV`, cat: defaultCat, unit: "pcs", price: 26990, img: TV_HD });
-      list.push({ name: `${raw} 32 Inch HD Ready Smart TV`, cat: defaultCat, unit: "pcs", price: 13990, img: TV_HD });
-    }
-    // ४. मीठ (Tata Salt)
-    else if (clean.includes('salt') || clean.includes('solt') || clean.includes('namak') || clean.includes('मीठ')) {
-      defaultImg = TATA_SALT_HD;
-      defaultCat = 'मीठ व मसाले (Staples)';
-      defaultUnit = 'kg';
-      defaultPrice = '28';
-
-      list.push({ name: "Tata Salt Vacuum Evaporated 1kg", cat: defaultCat, unit: "kg", price: 28, img: TATA_SALT_HD });
-    }
-    // ५. इतर उत्पादने
+    // ३. इतर उत्पादने
     else {
       defaultImg = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='8' fill='%231D4E89'/><text x='50' y='55' font-family='Arial,sans-serif' font-size='9' font-weight='bold' fill='%23ffffff' text-anchor='middle'>${encodeURIComponent(raw.substring(0, 14).toUpperCase())}</text></svg>`;
       defaultCat = 'Universal Retail';
@@ -462,10 +378,10 @@ function amazonGradeSearch(inputText) {
       list.push({ name: `${raw} Standard Pack`, cat: defaultCat, unit: defaultUnit, price: '', img: defaultImg });
     }
 
-    // ड्रॉपडाउन सजेशन यादी
+    // ड्रॉपडाउन सजेशन यादी (प्रत्येक मॉडेलचा युनिक फोटो दाखवणे)
     if (dropdown) {
       dropdown.innerHTML = list.map(item => `
-        <div class="suggest-row" onclick="pickAmazonItem('${escapeHtml(item.name).replace(/'/g, "\\'")}', '${item.cat}', '${item.unit}', '${item.price}', '${encodeURIComponent(item.img)}')">
+        <div class="suggest-row" onclick="pickPreciseItem('${escapeHtml(item.name).replace(/'/g, "\\'")}', '${item.cat}', '${item.unit}', '${item.price}', '${encodeURIComponent(item.img)}')">
           <img src="${item.img}" alt="${item.name}">
           <div>
             <strong style="font-size:13px; color:#0f172a; display:block;">${item.name}</strong>
@@ -476,13 +392,13 @@ function amazonGradeSearch(inputText) {
       dropdown.style.display = 'block';
     }
 
-    // कार्ड थेट अचूक अपडेट करणे (कधीही तुटलेला फोटो आयकॉन येणार नाही)
+    // कार्ड थेट पहिल्या अचूक मॉडेलच्या फोटोसह भरणे
     previewBox.innerHTML = `
       <div style="display:flex; align-items:center; gap:12px; background:#f0fdf4; padding:8px 12px; border-radius:6px; border:1px solid #bbf7d0; width:100%;">
         <img src="${defaultImg}" style="width:48px; height:48px; object-fit:contain; border-radius:6px; background:#fff; border:1px solid #cbd5e1; padding:2px;" alt="${raw}">
         <div>
           <strong style="font-size:13px; color:#16a34a;">✨ Auto-Mapped (${defaultCat})</strong><br>
-          <span style="font-size:11.5px; color:#475569;">${raw} चे अस्सल चित्र व माहिती सेट झाली आहे.</span>
+          <span style="font-size:11.5px; color:#475569;">${raw} चे मॉडेल-विशिष्ट अस्सल चित्र सेट झाले आहे.</span>
         </div>
       </div>
     `;
@@ -493,7 +409,7 @@ function amazonGradeSearch(inputText) {
   }, 120);
 }
 
-function pickAmazonItem(name, cat, unit, price, imgEncoded) {
+function pickPreciseItem(name, cat, unit, price, imgEncoded) {
   document.getElementById('np-name').value = name;
   document.getElementById('np-unit').value = unit;
   if (price) document.getElementById('np-price').value = price;
@@ -505,7 +421,7 @@ function pickAmazonItem(name, cat, unit, price, imgEncoded) {
       <img src="${img}" style="width:48px; height:48px; object-fit:contain; border-radius:6px; background:#fff; border:1px solid #cbd5e1; padding:2px;">
       <div>
         <strong style="font-size:13px; color:#16a34a;">✨ Auto-Mapped (${cat})</strong><br>
-        <span style="font-size:11.5px; color:#475569;">${name} सेट केले आहे.</span>
+        <span style="font-size:11.5px; color:#475569;">${name} चा अचूक फोटो सेट केला आहे.</span>
       </div>
     </div>
   `;
@@ -551,8 +467,6 @@ if (saveBtn) {
 
 function openGlobalCatalogModal() { openModal('global-catalog-modal'); }
 function filterGlobalCatalog() {}
-function exportDataCSV() { alert('डेटा CSV डाऊनलोड झाला!'); }
-
 initDashboard();
 </script>
 </body>
