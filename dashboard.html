@@ -57,11 +57,11 @@
 }
 
 .dashboard-main-frame { width: 98%; max-width: 1450px; margin: 10px auto; padding: 0 6px; }
-.erp-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: nowrap; gap: 10px; background: #ffffff; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border, #e2e8f0); }
+.erp-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px; background: #ffffff; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border, #e2e8f0); }
 .erp-header > div:first-child { display: flex; align-items: center; gap: 12px; }
 .erp-header h1 { font-size: 18px !important; margin: 0 !important; white-space: nowrap; }
 .erp-header .muted { font-size: 11px !important; white-space: nowrap; }
-.erp-header > div:last-child { display: flex; gap: 6px; align-items: center; flex-wrap: nowrap; }
+.erp-header > div:last-child { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
 
 .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 99999 !important; align-items: center; justify-content: center; }
 .modal-content { background: var(--card, #ffffff); border-radius: 12px; width: 95%; max-width: 700px; padding: 24px; max-height: 85vh; overflow-y: auto; box-shadow: 0 15px 35px rgba(0,0,0,0.25); z-index: 100000 !important; }
@@ -152,7 +152,7 @@
 </head>
 <body>
 
-<!-- 🌟 ॲप इन्स्टॉल करा पट्टी (येथे तुमचा अधिकृत लोगो जोडला आहे) -->
+<!-- 🌟 ॲप इन्स्टॉल करा पट्टी (अधिकृत AllERP लोगो) -->
 <div id="pwa-install-banner">
   <div class="banner-text">
     <img src="icon-192.png" alt="AllERP Logo" style="width:34px; height:34px; border-radius:6px; background:#fff; padding:2px; object-fit:contain; box-shadow:0 2px 5px rgba(0,0,0,0.2);">
@@ -186,6 +186,10 @@
       </div>
     </div>
     <div>
+      <!-- 🌟 नवीन ग्राहक ॲप शेअर बटण -->
+      <button type="button" onclick="shareCustomerStoreApp()" style="background:#0284c7; color:#fff; padding:6px 14px; border:none; border-radius:6px; cursor:pointer; font-weight:bold; font-size:13px; display:inline-flex; align-items:center; gap:6px; box-shadow:0 2px 4px rgba(2,132,199,0.3);">
+        📲 ग्राहक ॲप शेअर करा
+      </button>
       <button type="button" onclick="openGlobalCatalogModal()" style="background:#16a34a; color:#fff; padding:6px 14px; border:none; border-radius:6px; cursor:pointer; font-weight:bold; font-size:13px;">
         🌐 ग्लोबल मार्केटप्लेस
       </button>
@@ -508,6 +512,30 @@ window.addEventListener('appinstalled', () => {
   dismissInstallBanner();
 });
 
+// 🌟 दुकानदाराचे स्वतःचे ग्राहक ॲप शेअर करण्याचे स्मार्ट फंक्शन
+let currentBusinessSlug = null;
+function shareCustomerStoreApp() {
+  const bName = document.getElementById('business-display-name')?.textContent || 'माझे दुकान';
+  const param = currentBusinessSlug || currentBusinessId || encodeURIComponent(bName);
+  
+  // store.html ची परिपूर्ण लिंक तयार करणे
+  let currentBase = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
+  const storeUrl = `${currentBase}store.html?slug=${param}`;
+  
+  const shareText = `नमस्कार! आमचे *${bName}* चे अधिकृत ऑनलाईन स्टोअर व ॲप आता उपलब्ध आहे.\n\nघरबसल्या किराणा/माल खरेदी करण्यासाठी आणि आमचे स्वतःचे मोबाईल ॲप इन्स्टॉल करण्यासाठी खालील लिंकवर क्लिक करा:\n👉 ${storeUrl}`;
+
+  if (navigator.share) {
+    navigator.share({
+      title: `${bName} Store App`,
+      text: shareText,
+      url: storeUrl
+    }).catch(e => {});
+  } else {
+    // थेट WhatsApp उघडणे
+    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`, '_blank');
+  }
+}
+
 // ==================== ERP & DASHBOARD ENGINE ====================
 let currentBusinessId = null;
 let currentProducts = [];
@@ -540,9 +568,10 @@ async function initDashboard() {
   try {
     const { data: { user } } = await sb.auth.getUser();
     if (!user) { window.location.href = 'login.html'; return; }
-    const { data: businesses } = await sb.from('businesses').select('id, name, is_wholesaler').eq('owner_id', user.id);
+    const { data: businesses } = await sb.from('businesses').select('id, name, slug, is_wholesaler').eq('owner_id', user.id);
     if (businesses && businesses.length > 0) {
       currentBusinessId = businesses[0].id;
+      currentBusinessSlug = businesses[0].slug || businesses[0].id;
       const bName = document.getElementById('business-display-name');
       if (bName) bName.textContent = businesses[0].name;
       await loadProducts();
@@ -577,7 +606,7 @@ async function loadProducts() {
     }
     tbody.innerHTML = currentProducts.map(p => `
       <tr style="border-bottom:1px solid #f1f5f9; padding:8px 0;">
-        <td style="padding:8px 0;"><img src="${p.image_url}" style="width:34px;height:34px;object-fit:contain;vertical-align:middle;margin-right:8px;background:#fff;border:1px solid #e2e8f0;padding:2px;" loading="lazy"><strong>${escapeHtml(p.name)}</strong></td>
+        <td style="padding:8px 0;"><img src="${p.image_url || 'icon-192.png'}" style="width:34px;height:34px;object-fit:contain;vertical-align:middle;margin-right:8px;background:#fff;border:1px solid #e2e8f0;padding:2px;" loading="lazy"><strong>${escapeHtml(p.name)}</strong></td>
         <td>₹${p.selling_price}/${p.unit || 'pcs'}</td>
         <td><input type="number" class="stock-input" value="${p.stock || 0}" onchange="updateProductStock('${p.id}', this.value)"></td>
         <td><span class="badge live">LIVE</span></td>
@@ -672,7 +701,7 @@ function loadPOSCatalog() {
   if (currentProducts.length === 0) { grid.innerHTML = '<p class="muted">उत्पादने नाहीत.</p>'; return; }
   grid.innerHTML = currentProducts.map(p => `
     <div onclick="addToPOSCart('${p.id}')" style="background:#fff; border:1px solid #e2e8f0; border-radius:6px; padding:8px; text-align:center; cursor:pointer;">
-      <img src="${p.image_url}" style="width:40px; height:40px; object-fit:contain; margin-bottom:4px;">
+      <img src="${p.image_url || 'icon-192.png'}" style="width:40px; height:40px; object-fit:contain; margin-bottom:4px;">
       <div style="font-size:12px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(p.name)}</div>
       <div style="font-size:11.5px; color:#16a34a; font-weight:bold;">₹${p.selling_price}</div>
     </div>
