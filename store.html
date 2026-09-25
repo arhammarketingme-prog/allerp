@@ -2,18 +2,54 @@
 <html lang="mr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png">
 <meta name="theme-color" content="#1D4E89">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title id="store-meta-title">Store — Business Super Platform</title>
+<title id="store-meta-title">Nikhil Kirana — Official Store</title>
 <link rel="stylesheet" href="css/style.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-/* 🌟 दुकानदाराचे स्वतःचे PWA इन्स्टॉल बॅनर */
+/* 🌟 फक्त ग्राहकासाठीचे स्वतंत्र आणि सुरक्षित हेडर (No ERP Nav) */
+.customer-app-topbar {
+  background: #1D4E89;
+  color: #ffffff;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  position: sticky;
+  top: 0;
+  z-index: 99999;
+}
+.customer-app-topbar .brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.customer-app-topbar img {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: #fff;
+  padding: 2px;
+  object-fit: contain;
+}
+.customer-app-topbar .title {
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+.customer-app-topbar .sub {
+  font-size: 11px;
+  opacity: 0.85;
+}
+
+/* 🌟 ग्राहक ॲप इन्स्टॉल बॅनर */
 #store-install-banner {
   display: none;
   background: linear-gradient(90deg, #1D4E89, #0284c7);
@@ -21,17 +57,7 @@
   padding: 10px 16px;
   align-items: center;
   justify-content: space-between;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  position: sticky;
-  top: 0;
-  z-index: 1000000;
-}
-#store-install-banner .banner-text {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 13.5px;
-  font-weight: 700;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
 #store-install-banner button.install-btn {
   background: #16a34a;
@@ -40,21 +66,21 @@
   padding: 6px 14px;
   border-radius: 6px;
   font-weight: 800;
-  font-size: 12.5px;
+  font-size: 12px;
   cursor: pointer;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-}
-#store-install-banner button.close-btn {
-  background: transparent;
-  color: #fff;
-  border: none;
-  font-size: 16px;
-  cursor: pointer;
-  padding: 0 6px;
-  opacity: 0.8;
 }
 
-/* वीवो आणि व्हॉट्सॲप स्मार्ट ॲक्शन बटणे */
+/* स्टोअर कार्ड आणि माहिती */
+.store-hero-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin: 12px 0;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+/* वेव आणि व्हॉट्सॲप ऑर्डर बटणे */
 .store-quick-actions {
   display: flex;
   gap: 8px;
@@ -65,7 +91,7 @@
   background: #0284c7;
   color: #fff;
   border: none;
-  padding: 6px 14px;
+  padding: 8px 14px;
   border-radius: 6px;
   font-size: 12.5px;
   font-weight: 700;
@@ -79,7 +105,7 @@
   background: #16a34a;
   color: #fff;
   border: none;
-  padding: 6px 12px;
+  padding: 8px 14px;
   border-radius: 6px;
   font-size: 12.5px;
   font-weight: 700;
@@ -89,46 +115,69 @@
   gap: 4px;
   cursor: pointer;
 }
+
+/* ग्राहकाची फ्लोटिंग कार्ट पट्टी */
+.floating-customer-cart {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  border-top: 2px solid #1D4E89;
+  padding: 10px 16px;
+  z-index: 10000;
+  box-shadow: 0 -4px 15px rgba(0,0,0,0.12);
+  align-items: center;
+  justify-content: space-between;
+}
 </style>
 </head>
-<body>
+<body style="padding-bottom: 75px; background: #f8fafc;">
 
-<!-- 🌟 डायनॅमिक कस्टमर ॲप इन्स्टॉल पट्टी -->
-<div id="store-install-banner">
-  <div class="banner-text">
-    <img id="store-pwa-icon" src="icon-192.png" alt="App Logo" style="width:34px; height:34px; border-radius:6px; background:#fff; padding:2px; object-fit:contain;">
+<!-- 🌟 ग्राहक ॲप स्वतंत्र टॉप बार (यात ERP मेनू किंवा डॅशबोर्ड लॉगिन नाही) -->
+<header class="customer-app-topbar">
+  <div class="brand">
+    <img id="top-shop-icon" src="icon-192.png" alt="Shop Logo">
     <div>
-      <div id="store-pwa-title">अधिकृत ॲप इन्स्टॉल करा</div>
-      <span style="font-size:11px; opacity:0.9; font-weight:normal;">थेट होम स्क्रीनवरून खरेदी करा</span>
+      <div class="title" id="top-shop-name">लोड होत आहे...</div>
+      <div class="sub">अधिकृत ग्राहक ॲप (Customer Storefront)</div>
     </div>
   </div>
-  <div style="display:flex; align-items:center; gap:8px;">
-    <button type="button" class="install-btn" onclick="triggerStorePWAInstall()">📲 ॲप इन्स्टॉल करा</button>
-    <button type="button" class="close-btn" onclick="dismissStoreBanner()">✕</button>
+  <button type="button" onclick="shareStoreLink()" style="background:rgba(255,255,255,0.18); border:none; color:#fff; padding:6px 12px; border-radius:6px; font-size:12px; font-weight:bold; cursor:pointer;">
+    🔗 शेअर करा
+  </button>
+</header>
+
+<!-- 🌟 इन्स्टॉल करा पट्टी -->
+<div id="store-install-banner">
+  <div style="font-size:12.5px; font-weight:bold;" id="banner-text-shop">दुकानाचे अधिकृत ॲप इन्स्टॉल करा</div>
+  <div style="display:flex; gap:8px;">
+    <button type="button" class="install-btn" onclick="triggerStorePWAInstall()">📲 इन्स्टॉल करा</button>
+    <button type="button" onclick="dismissStoreBanner()" style="background:transparent; border:none; color:#fff; cursor:pointer;">✕</button>
   </div>
 </div>
 
-<nav id="app-nav"></nav>
-
 <main class="container page-ad-frame">
-  <!-- 1. TOP AD -->
-  <div id="ad-slot-store-top" class="ad-slot-banner" style="display:none"></div>
+  <!-- 1. TOP SPONSORED AD (स्थानिक जाहिरात) -->
+  <div id="ad-slot-store-top" class="ad-slot-banner" style="display:none; margin-top:10px;"></div>
 
-  <div id="store-info"><p class="muted">Loading store details...</p></div>
+  <!-- दुकानाची माहिती -->
+  <div id="store-info" class="store-hero-card"><p class="muted">दुकान माहिती लोड होत आहे...</p></div>
 
   <div class="center-with-side-ads">
     <!-- 2. LEFT SIDE AD -->
     <aside class="ad-side-column">
       <div class="ad-side-card">
-        <div class="side-ad-title">Sponsored</div>
+        <div class="side-ad-title">Sponsored Offers</div>
         <div id="ad-slot-store-left"></div>
       </div>
     </aside>
 
     <div class="main-center-content">
-      <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:10px; flex-wrap:wrap;">
-        <h2 style="margin:0;">Products</h2>
-        <input type="text" id="store-search" placeholder="🔍 प्रॉडक्ट शोधा..." style="max-width:220px; margin-bottom:0;" oninput="renderProducts()">
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:12px; flex-wrap:wrap;">
+        <h2 style="margin:0; font-size:18px;">🛒 किराणा व उत्पादने</h2>
+        <input type="text" id="store-search" placeholder="🔍 डाळ, तेल, साखर शोधा..." style="max-width:240px; margin-bottom:0; padding:8px 12px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px;" oninput="renderProducts()">
       </div>
       <div id="store-products" class="grid"></div>
     </div>
@@ -136,35 +185,47 @@
     <!-- 3. RIGHT SIDE AD -->
     <aside class="ad-side-column">
       <div class="ad-side-card">
-        <div class="side-ad-title">Featured</div>
+        <div class="side-ad-title">Local Deals</div>
         <div id="ad-slot-store-right"></div>
       </div>
     </aside>
   </div>
 
   <!-- 4. BOTTOM AD -->
-  <div id="ad-slot-store-bottom" class="ad-slot-banner" style="display:none; margin-top:20px"></div>
+  <div id="ad-slot-store-bottom" class="ad-slot-banner" style="display:none; margin-top:20px;"></div>
 </main>
+
+<!-- 🌟 ग्राहकाची खरेदी पट्टी (Floating Cart Bar) -->
+<div class="floating-customer-cart" id="customer-cart-bar">
+  <div>
+    <div id="cart-item-count" style="font-weight:bold; font-size:14px; color:#1D4E89;">0 वस्तू निवडल्या</div>
+    <div id="cart-total-amount" style="font-size:12px; color:#64748b;">एकूण: ₹0.00</div>
+  </div>
+  <div style="display:flex; gap:8px;">
+    <button type="button" class="btn-wave" onclick="openWeavoWithCart()">💬 Weavo वर ऑर्डर द्या</button>
+    <button type="button" class="btn-whatsapp" onclick="openWhatsAppWithCart()">📲 WhatsApp</button>
+  </div>
+</div>
 
 <script src="js/supabase-client.js"></script>
 <script src="js/cart.js"></script>
-<script src="js/nav.js"></script>
 <script src="js/ads.js"></script>
 <script src="js/master-dictionary.js"></script>
 <script>
-// 🌟 Weavo अधिकृत लिंक
+// 🌟 Weavo लिंक
 const WEAVO_BASE_URL = "https://arhammarketingme-prog.github.io/weavo/";
 
 const params = new URLSearchParams(window.location.search);
-const slug = params.get('slug') || params.get('biz') || params.get('id');
+const slug = params.get('slug') || params.get('biz') || params.get('id') || 'Nikhil Kirana';
 let businessData = null;
 let allStoreProducts = [];
+let localCart = {};
 
-// 🌟 Dynamic PWA Manifest
+// 🌟 Dynamic PWA Manifest (ग्राहकाच्या फोनवर फक्त दुकानाचे नाव इन्स्टॉल होईल)
 function setupDynamicStoreManifest(name) {
   const dynamicManifest = {
     id: "/store-" + (slug || "shop"),
-    name: name + " — अधिकृत डिजिटल ॲप",
+    name: name,
     short_name: name,
     start_url: window.location.href,
     scope: "./",
@@ -205,13 +266,11 @@ function triggerStorePWAInstall() {
   if (deferredStorePrompt) {
     deferredStorePrompt.prompt();
     deferredStorePrompt.userChoice.then((choiceResult) => {
-      if (choiceResult.outcome === 'accepted') {
-        dismissStoreBanner();
-      }
+      if (choiceResult.outcome === 'accepted') dismissStoreBanner();
       deferredStorePrompt = null;
     });
   } else {
-    alert("ॲप इन्स्टॉल करण्यासाठी: ब्राऊझरच्या उजव्या कोपऱ्यातील तीन ठिपक्यांवर (⋮) क्लिक करून 'Add to Home screen' किंवा 'Install app' निवडा.");
+    alert("ॲप इन्स्टॉल करण्यासाठी: ब्राऊझरच्या वरच्या उजव्या बाजूला असलेल्या तीन ठिपक्यांवर (⋮) क्लिक करून 'Install app' निवडा.");
   }
 }
 
@@ -221,11 +280,6 @@ function dismissStoreBanner() {
 }
 
 async function loadStore() {
-  if (!slug) {
-    document.getElementById('store-info').innerHTML = '<p class="error-text">Store not found. Please provide a store link.</p>';
-    return;
-  }
-
   let query = sb.from('businesses').select('id, name, about, city, contact_phone');
   if (slug.length > 20 && !slug.includes('-')) {
     query = query.eq('id', slug);
@@ -235,65 +289,37 @@ async function loadStore() {
 
   const { data: business } = await query.maybeSingle();
 
-  if (!business) {
-    document.getElementById('store-info').innerHTML = '<p class="error-text">Store not found.</p>';
-    return;
-  }
-  businessData = business;
+  // दुकानाचे नाव ठरवणे
+  const shopName = business?.name || decodeURIComponent(slug);
+  businessData = business || { id: null, name: shopName, contact_phone: '' };
 
-  document.getElementById('store-meta-title').textContent = `${business.name} — Store`;
-  document.getElementById('store-pwa-title').textContent = `${business.name} चे ॲप इन्स्टॉल करा`;
-  setupDynamicStoreManifest(business.name);
+  document.getElementById('top-shop-name').textContent = shopName;
+  document.getElementById('store-meta-title').textContent = `${shopName} — Official Customer App`;
+  document.getElementById('banner-text-shop').textContent = `📲 ${shopName} चे ॲप इन्स्टॉल करा`;
+  setupDynamicStoreManifest(shopName);
 
-  const storeShareUrl = window.location.href;
-  const waLink = business.contact_phone ? `https://wa.me/91${business.contact_phone.replace(/\D/g,'')}?text=${encodeURIComponent('नमस्कार, मला आपल्या दुकानातून खरेदी करायची आहे.')}` : '#';
+  const waLink = business?.contact_phone ? `https://wa.me/91${business.contact_phone.replace(/\D/g,'')}?text=${encodeURIComponent('नमस्कार, मला सामानाची खरेदी करायची आहे.')}` : '#';
 
   document.getElementById('store-info').innerHTML = `
-    <div class="card" style="position:relative;">
-      <h1 style="margin:0; font-size:22px; color:#1D4E89;">${business.name}</h1>
-      ${business.city ? `<p class="muted" style="margin:4px 0;">📍 ${business.city}</p>` : ''}
-      ${business.about ? `<p style="margin:6px 0;">${business.about}</p>` : ''}
-      ${business.contact_phone ? `<p style="margin:4px 0;">📞 ${business.contact_phone}</p>` : ''}
-      
-      <div class="store-quick-actions">
-        <button type="button" onclick="openWeavoWithAutoLogin('${escapeHtmlStore(business.name)}')" class="btn-wave">💬 Weavo वर संपर्क करा</button>
-        ${business.contact_phone ? `<a href="${waLink}" target="_blank" class="btn-whatsapp">📲 WhatsApp</a>` : ''}
-        <button type="button" onclick="shareStoreLink('${escapeHtmlStore(business.name)}', '${storeShareUrl}')" style="background:#f1f5f9; border:1px solid #cbd5e1; border-radius:6px; padding:6px 12px; font-size:12px; font-weight:700; cursor:pointer;">🔗 स्टोअर शेअर करा</button>
-      </div>
+    <h1 style="margin:0; font-size:22px; color:#1D4E89;">${shopName}</h1>
+    ${business?.city ? `<p class="muted" style="margin:4px 0;">📍 ${business.city}</p>` : ''}
+    ${business?.about ? `<p style="margin:6px 0; font-size:13px;">${business.about}</p>` : ''}
+    ${business?.contact_phone ? `<p style="margin:4px 0; font-size:13px;">📞 ${business.contact_phone}</p>` : ''}
+    
+    <div class="store-quick-actions">
+      <button type="button" onclick="openWeavoWithAutoLogin('${escapeHtmlStore(shopName)}')" class="btn-wave">💬 Weavo चॅट</button>
+      ${business?.contact_phone ? `<a href="${waLink}" target="_blank" class="btn-whatsapp">📲 WhatsApp संपर्क</a>` : ''}
     </div>
   `;
 
-  const { data: products } = await sb
-    .from('business_products')
-    .select('id, name, selling_price, purchase_price, unit, image_url, stock')
-    .eq('business_id', business.id)
-    .order('name');
-
+  // उत्पादने आणणे
+  let pQuery = sb.from('business_products').select('id, name, selling_price, purchase_price, unit, image_url, stock');
+  if (business?.id) {
+    pQuery = pQuery.eq('business_id', business.id);
+  }
+  const { data: products } = await pQuery.order('name');
   allStoreProducts = products ?? [];
   renderProducts();
-}
-
-// 🌟 Weavo वर थेट ऑटो-लॉगिन करून पाठवणारे फंक्शन
-async function openWeavoWithAutoLogin(shopName) {
-  let targetUrl = `${WEAVO_BASE_URL}?store=${encodeURIComponent(shopName)}`;
-
-  try {
-    const { data: { session } } = await sb.auth.getSession();
-    if (session) {
-      // ऑल ईआरपीचे टोकन्स पॅक करणे
-      const payload = {
-        access_token: session.access_token,
-        refresh_token: session.refresh_token,
-        email: session.user?.email || '',
-        name: session.user?.user_metadata?.full_name || ''
-      };
-      targetUrl += `&sso_auth=${encodeURIComponent(JSON.stringify(payload))}`;
-    }
-  } catch(e) {
-    console.error("Session fetch error:", e);
-  }
-
-  window.open(targetUrl, '_blank');
 }
 
 function renderProducts() {
@@ -308,70 +334,119 @@ function renderProducts() {
 
   const container = document.getElementById('store-products');
   if (products.length === 0) {
-    container.innerHTML = '<p class="muted" style="grid-column:1/-1; text-align:center; padding:30px;">कोणतेही प्रॉडक्ट सापडले नाहीत.</p>';
+    container.innerHTML = '<p class="muted" style="grid-column:1/-1; text-align:center; padding:30px;">कोणतीही उत्पादने सापडली नाहीत.</p>';
     return;
   }
 
   container.innerHTML = products.map(p => {
     const hasDiscount = p.purchase_price && Number(p.purchase_price) > Number(p.selling_price);
     const discountPct = hasDiscount ? Math.round((1 - p.selling_price / p.purchase_price) * 100) : 0;
-    const lowStock = p.stock > 0 && p.stock <= 5;
 
     return `
-    <div class="card" style="display:flex; flex-direction:column; justify-content:space-between;">
+    <div class="card" style="display:flex; flex-direction:column; justify-content:space-between; padding:10px;">
       <div>
-        <div class="card-img-wrapper" style="height:120px; display:flex; align-items:center; justify-content:center; background:#fff; border-radius:6px; overflow:hidden;">
+        <div style="height:115px; display:flex; align-items:center; justify-content:center; background:#fff; border-radius:6px; overflow:hidden;">
           ${p.image_url ? `<img src="${p.image_url}" alt="${escapeHtmlStore(p.name)}" style="max-height:100%; max-width:100%; object-fit:contain;" loading="lazy">` : '<div style="font-size:28px;">📦</div>'}
         </div>
-        <div class="product-title" style="font-weight:700; margin-top:8px;">${escapeHtmlStore(p.name)}</div>
-        <div class="product-seller" style="font-size:11px; color:#64748b;">${businessData?.name || ''}</div>
-        <div class="price-row" style="margin:4px 0;">
-          <span class="selling-price" style="font-weight:800; color:#1D4E89; font-size:15px;">₹${Number(p.selling_price).toLocaleString('en-IN')}</span>
-          ${hasDiscount ? `<span class="original-price" style="text-decoration:line-through; font-size:11.5px; color:#94a3b8; margin-left:4px;">₹${Number(p.purchase_price).toLocaleString('en-IN')}</span> <span class="discount-badge" style="font-size:10.5px; background:#dcfce7; color:#16a34a; padding:1px 4px; border-radius:4px;">${discountPct}% off</span>` : ''}
+        <div style="font-weight:700; font-size:13.5px; margin-top:8px; line-height:1.3;">${escapeHtmlStore(p.name)}</div>
+        <div style="margin:4px 0;">
+          <span style="font-weight:800; color:#1D4E89; font-size:15px;">₹${Number(p.selling_price).toLocaleString('en-IN')}</span>
+          ${hasDiscount ? `<span style="text-decoration:line-through; font-size:11.5px; color:#94a3b8; margin-left:4px;">₹${Number(p.purchase_price).toLocaleString('en-IN')}</span> <span style="font-size:10.5px; background:#dcfce7; color:#16a34a; padding:1px 4px; border-radius:4px;">${discountPct}% off</span>` : ''}
         </div>
-        <div style="font-size:11px; color:#64748b; margin-bottom:6px;">प्रति ${p.unit || 'नग'}${lowStock ? ` · <span style="color:#dc2626; font-weight:700;">फक्त ${p.stock} शिल्लक!</span>` : ''}</div>
+        <div style="font-size:11px; color:#64748b; margin-bottom:6px;">प्रति ${p.unit || 'नग'}</div>
       </div>
       <div>
-        <button class="add-cart-btn" data-id="${p.id}" data-name="${escapeHtmlStore(p.name)}" data-price="${p.selling_price}" style="width:100%; background:#1D4E89; color:#fff; border:none; padding:8px; border-radius:6px; font-weight:700; cursor:pointer;">
-          🛒 Add to Cart
+        <button type="button" onclick="addItemToCustomerCart('${p.id}', '${escapeHtmlStore(p.name)}', ${p.selling_price})" style="width:100%; background:#1D4E89; color:#fff; border:none; padding:8px; border-radius:6px; font-weight:700; cursor:pointer;">
+          + खरेदी करा
         </button>
       </div>
     </div>
   `;
   }).join('');
-
-  container.querySelectorAll('.add-cart-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      const target = e.currentTarget;
-      addToCart({
-        business_product_id: target.dataset.id,
-        name: target.dataset.name,
-        business_id: businessData.id,
-        business_name: businessData.name,
-        price: Number(target.dataset.price),
-        quantity: 1
-      });
-      if (typeof renderNav === 'function') renderNav();
-      target.textContent = '✓ कार्टमध्ये जोडले';
-      target.style.background = '#16a34a';
-      setTimeout(() => { 
-        target.textContent = '🛒 Add to Cart'; 
-        target.style.background = '#1D4E89';
-      }, 1200);
-    });
-  });
 }
 
-function shareStoreLink(storeName, link) {
-  if (navigator.share) {
-    navigator.share({
-      title: storeName,
-      text: `${storeName} चे अधिकृत ऑनलाईन ॲप व स्टोअर! घरबसल्या खरेदी करा:`,
-      url: link
-    });
+// 🌟 ग्राहकाची अंतर्गत सोपी कार्ट
+function addItemToCustomerCart(id, name, price) {
+  if (localCart[id]) {
+    localCart[id].qty += 1;
   } else {
-    navigator.clipboard.writeText(link);
-    alert('✅ दुकानाची लिंक कॉपी झाली आहे! तुम्ही WhatsApp किंवा Weavo वर पाठवू शकता.');
+    localCart[id] = { name, price: Number(price), qty: 1 };
+  }
+  updateCartBar();
+}
+
+function updateCartBar() {
+  const bar = document.getElementById('customer-cart-bar');
+  const items = Object.values(localCart);
+  if (items.length === 0) {
+    bar.style.display = 'none';
+    return;
+  }
+  bar.style.display = 'flex';
+  const totalCount = items.reduce((a, b) => a + b.qty, 0);
+  const totalAmount = items.reduce((a, b) => a + (b.qty * b.price), 0);
+
+  document.getElementById('cart-item-count').textContent = `🛒 ${totalCount} वस्तू कार्टमध्ये`;
+  document.getElementById('cart-total-amount').textContent = `एकूण बिल: ₹${totalAmount.toFixed(2)}`;
+}
+
+function generateOrderSummaryText() {
+  const shop = businessData?.name || 'दुकान';
+  let txt = `🛒 *नवीन ऑर्डर - ${shop}*\n----------------------\n`;
+  let total = 0;
+  Object.values(localCart).forEach(it => {
+    const sub = it.qty * it.price;
+    total += sub;
+    txt += `• ${it.name} - ${it.qty} नग = ₹${sub}\n`;
+  });
+  txt += `----------------------\n*एकूण देय रक्कम: ₹${total.toFixed(2)}*\n\nकृपया ही ऑर्डर कन्फर्म करावी!`;
+  return txt;
+}
+
+function openWhatsAppWithCart() {
+  const msg = generateOrderSummaryText();
+  const phone = businessData?.contact_phone ? businessData.contact_phone.replace(/\D/g,'') : '';
+  const url = phone ? `https://wa.me/91${phone}?text=${encodeURIComponent(msg)}` : `https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`;
+  window.open(url, '_blank');
+}
+
+async function openWeavoWithCart() {
+  const msg = generateOrderSummaryText();
+  const shopName = businessData?.name || 'Nikhil Kirana';
+  openWeavoWithAutoLogin(shopName, msg);
+}
+
+// 🌟 Weavo वर थेट ऑटो-लॉगिन आणि सामानाची यादी पाठवणे
+async function openWeavoWithAutoLogin(shopName, cartMessage = '') {
+  let targetUrl = `${WEAVO_BASE_URL}?store=${encodeURIComponent(shopName)}`;
+  if (cartMessage) {
+    targetUrl += `&order=${encodeURIComponent(cartMessage)}`;
+  }
+
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (session) {
+      const payload = {
+        access_token: session.access_token,
+        refresh_token: session.refresh_token,
+        email: session.user?.email || '',
+        name: session.user?.user_metadata?.full_name || ''
+      };
+      targetUrl += `&sso_auth=${encodeURIComponent(JSON.stringify(payload))}`;
+    }
+  } catch(e) {}
+
+  window.open(targetUrl, '_blank');
+}
+
+function shareStoreLink() {
+  const sName = businessData?.name || 'दुकान';
+  const url = window.location.href;
+  if (navigator.share) {
+    navigator.share({ title: sName, text: `${sName} चे अधिकृत ऑनलाईन ॲप! घरबसल्या खरेदी करा:`, url: url });
+  } else {
+    navigator.clipboard.writeText(url);
+    alert('✅ दुकानाची लिंक कॉपी झाली आहे!');
   }
 }
 
@@ -383,6 +458,7 @@ function escapeHtmlStore(str) {
 
 loadStore();
 
+// जाहिराती लोड करणे
 if (typeof renderMultiAdSlots === 'function') {
   renderMultiAdSlots([
     { id: 'ad-slot-store-top', placement: 'top' },
