@@ -177,14 +177,9 @@
   </div>
 
   <!-- TAB 4: PURCHASES -->
-  <div id="tab-purchase" class="erp-tab-pane" style="display:none;">
-    <h2>🛒 खरेदी नोंदी</h2>
-  </div>
-
+  <div id="tab-purchase" class="erp-tab-pane" style="display:none;"><h2>🛒 खरेदी नोंदी</h2></div>
   <!-- TAB 5: CRM -->
-  <div id="tab-crm" class="erp-tab-pane" style="display:none;">
-    <h2>👥 CRM व ग्राहक पाईपलाईन</h2>
-  </div>
+  <div id="tab-crm" class="erp-tab-pane" style="display:none;"><h2>👥 CRM व ग्राहक पाईपलाईन</h2></div>
 
   <!-- TAB 5.5: KHATA -->
   <div id="tab-khata" class="erp-tab-pane" style="display:none;">
@@ -199,19 +194,11 @@
   </div>
 
   <!-- TAB 6: FINANCE -->
-  <div id="tab-finance" class="erp-tab-pane" style="display:none;">
-    <h2>📑 दैनंदिन खर्च नोंदवही</h2>
-  </div>
-
+  <div id="tab-finance" class="erp-tab-pane" style="display:none;"><h2>📑 दैनंदिन खर्च नोंदवही</h2></div>
   <!-- TAB 7: HR -->
-  <div id="tab-hr" class="erp-tab-pane" style="display:none;">
-    <h2>👔 कर्मचारी व्यवस्थापन (HR & Payroll)</h2>
-  </div>
-
+  <div id="tab-hr" class="erp-tab-pane" style="display:none;"><h2>👔 कर्मचारी व्यवस्थापन (HR & Payroll)</h2></div>
   <!-- TAB 8: PROJECTS -->
-  <div id="tab-projects" class="erp-tab-pane" style="display:none;">
-    <h2>🏗️ साईट व प्रकल्प (Projects)</h2>
-  </div>
+  <div id="tab-projects" class="erp-tab-pane" style="display:none;"><h2>🏗️ साईट व प्रकल्प (Projects)</h2></div>
 
   <!-- TAB 9: POS COUNTER -->
   <div id="tab-pos" class="erp-tab-pane" style="display:none;">
@@ -263,12 +250,12 @@
 
     <!-- 🌟 स्मार्ट सर्च फील्ड -->
     <div style="margin-top:12px;" class="smart-search-wrapper">
-      <label style="font-weight:700;">उत्पादनाचे नाव / ब्रँड / वस्तू * (उदा. sunflower oil, oppo mobile, tata salt, shirt)</label>
+      <label style="font-weight:700;">उत्पादनाचे नाव / ब्रँड / वस्तू * (उदा. sunflower oil, samsung, oppo, tata salt)</label>
       <div style="display:flex; gap:6px;">
-        <input id="np-name" placeholder="उदा. sunflower oil, oppo mobile, tata salt, shirt, sugar..." oninput="amazonGradeSearch(this.value)" autocomplete="off" style="margin-bottom:0; flex:1; padding:8px; border:1px solid #cbd5e1; border-radius:4px;">
+        <input id="np-name" placeholder="उदा. samsung, oppo, sunflower oil, tata salt, shirt..." oninput="amazonGradeSearch(this.value)" autocomplete="off" style="margin-bottom:0; flex:1; padding:8px; border:1px solid #cbd5e1; border-radius:4px;">
         <button type="button" onclick="startHtml5Scanner('product')" class="secondary" style="padding:8px 10px; font-size:12px; cursor:pointer; background:#1D4E89; color:#fff; border:none; border-radius:4px;">📷 स्कॅनर</button>
       </div>
-      <!-- अमॅझॉनसारखा ड्रॉपडाउन पॉप-अप -->
+      <!-- अमॅझॉनसारखा हाय-क्वालिटी ड्रॉपडाउन पॉप-अप -->
       <div id="brand-suggest-box" class="smart-suggest-popup"></div>
       <div id="reader" style="width:100%; max-width:400px; margin-top:8px; display:none;"></div>
     </div>
@@ -299,9 +286,9 @@
       <div style="flex:1;">
         <label style="font-weight:700;">एकक (Unit)</label>
         <select id="np-unit" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:4px;">
+          <option value="pcs">नग (Pcs)</option>
           <option value="ltr">लीटर (Ltr)</option>
           <option value="kg">किलो (Kg)</option>
-          <option value="pcs">नग (Pcs)</option>
           <option value="packet">पॅकेट (Packet)</option>
           <option value="box">बॉक्स (Box)</option>
         </select>
@@ -391,19 +378,16 @@ function escapeHtml(str) {
   return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
 }
 
-// 🌟 अमॅझॉन दर्जाचे फोटोरिअलिस्टिक रिअल पॅक्स (HD Images)
-const REAL_IMAGE_DATABASE = {
-  oil_pouch: "https://images.openfoodfacts.org/images/products/8906007280235/front_en.13.400.jpg",
-  oil_jar: "https://images.openfoodfacts.org/images/products/8906007280235/front_en.13.400.jpg",
-  oil_tin: "https://images.openfoodfacts.org/images/products/8906007280235/front_en.13.400.jpg",
-  tata_salt: "https://images.openfoodfacts.org/images/products/8901030012586/front_en.6.400.jpg",
-  smartphone: "https://images.openfoodfacts.org/images/products/8901262010052/front_en.11.400.jpg",
-  smart_tv: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 100'><rect width='120' height='75' rx='6' fill='%230f172a' stroke='%2338bdf8' stroke-width='2'/><rect x='6' y='6' width='108' height='63' rx='2' fill='%231e293b'/><text x='60' y='42' font-family='Arial Black' font-size='12' fill='%2338bdf8' text-anchor='middle'>SMART TV</text><polygon points='50,75 70,75 65,90 55,90' fill='%2364748b'/><rect x='40' y='90' width='40' height='4' rx='2' fill='%23334155'/></svg>",
-  watch: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 120'><rect width='100' height='120' rx='8' fill='%230f172a'/><rect x='34' y='6' width='32' height='108' rx='4' fill='%23334155'/><rect x='22' y='28' width='56' height='64' rx='12' fill='%230284c7' stroke='%2338bdf8' stroke-width='2'/><circle cx='50' cy='60' r='18' fill='%230b192c'/><text x='50' y='58' font-family='Arial Black' font-size='9' fill='%2338bdf8' text-anchor='middle'>10:24</text><text x='50' y='68' font-family='Arial' font-size='5.5' font-weight='bold' fill='%234ade80' text-anchor='middle'>SMART</text></svg>",
-  clothing: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='8' fill='%23f8fafc' stroke='%23cbd5e1'/><path d='M30 20 L42 28 L58 28 L70 20 L85 35 L75 45 L70 40 L70 85 L30 85 L30 40 L25 45 L15 35 Z' fill='%230284c7'/><text x='50' y='62' font-family='Arial' font-size='8' font-weight='bold' fill='%23ffffff' text-anchor='middle'>GARMENT</text></svg>"
-};
+// 🌟 १००% न तुटणारे हाय-क्वालिटी पॅकेजिंग व्हिज्युअल्स (स्मार्टफोन, टीव्ही, तेल, मीठ)
+const PHONE_5G_HD = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 90 130'><rect width='90' height='130' rx='14' fill='%230f172a' stroke='%2338bdf8' stroke-width='2.5'/><rect x='6' y='8' width='78' height='114' rx='8' fill='%231e293b'/><circle cx='45' cy='16' r='3' fill='%230284c7'/><circle cx='45' cy='65' r='18' fill='%230369a1'/><text x='45' y='71' font-family='Arial Black,sans-serif' font-size='10' font-weight='900' fill='%23ffffff' text-anchor='middle'>5G</text><text x='45' y='108' font-family='Arial,sans-serif' font-size='7' font-weight='bold' fill='%2338bdf8' text-anchor='middle'>SMARTPHONE</text></svg>";
 
-// 🧠 अमॅझॉन व ब्लिंकिट लेव्हल ऑटो-सर्च अल्गोरिदम
+const OIL_POUCH_HD = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 125'><rect width='100' height='125' rx='8' fill='%23ffffff' stroke='%23f59e0b' stroke-width='3'/><rect x='6' y='6' width='88' height='113' rx='6' fill='%23fffbeb'/><circle cx='50' cy='45' r='24' fill='%23fef08a' stroke='%23eab308' stroke-width='2'/><circle cx='50' cy='45' r='12' fill='%2378350f'/><text x='50' y='84' font-family='Arial Black,sans-serif' font-size='11' font-weight='900' fill='%23b45309' text-anchor='middle'>SUNFLOWER</text><text x='50' y='96' font-family='Arial,sans-serif' font-size='8' font-weight='bold' fill='%2315803d' text-anchor='middle'>REFINED OIL</text><text x='50' y='110' font-family='Arial,sans-serif' font-size='7' fill='%23b45309' text-anchor='middle'>1 LITRE POUCH</text></svg>";
+
+const TATA_SALT_HD = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 120'><rect width='100' height='120' rx='6' fill='%23ffffff' stroke='%23cbd5e1' stroke-width='2'/><path d='M0 0 L100 0 L100 38 L0 38 Z' fill='%230f4c81'/><text x='50' y='24' font-family='Arial Black,sans-serif' font-size='13' font-weight='900' fill='%23ffffff' text-anchor='middle'>TATA</text><text x='50' y='34' font-family='Arial,sans-serif' font-size='7' font-weight='bold' fill='%2393c5fd' text-anchor='middle'>SALT</text><path d='M0 38 L100 38 L100 44 L0 44 Z' fill='%23ea580c'/><circle cx='50' cy='68' r='18' fill='%23f0fdf4' stroke='%230f4c81' stroke-width='1.5'/><text x='50' y='72' font-family='Arial Black,sans-serif' font-size='11' font-weight='900' fill='%230f4c81' text-anchor='middle'>SALT</text><text x='50' y='96' font-family='Arial,sans-serif' font-size='7.5' font-weight='bold' fill='%23c2410c' text-anchor='middle'>देश का नमक</text></svg>";
+
+const TV_HD = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 100'><rect width='120' height='75' rx='6' fill='%230f172a' stroke='%2338bdf8' stroke-width='2'/><rect x='6' y='6' width='108' height='63' rx='2' fill='%231e293b'/><text x='60' y='42' font-family='Arial Black,sans-serif' font-size='12' fill='%2338bdf8' text-anchor='middle'>4K SMART TV</text><polygon points='50,75 70,75 65,90 55,90' fill='%2364748b'/><rect x='40' y='90' width='40' height='4' rx='2' fill='%23334155'/></svg>";
+
+// 🧠 अमॅझॉन लेव्हल ऑटो-सर्च (सॅमसंग, ओप्पो, तेल, टीव्ही सर्व)
 function amazonGradeSearch(inputText) {
   clearTimeout(searchDebounce);
   const dropdown = document.getElementById('brand-suggest-box');
@@ -420,73 +404,56 @@ function amazonGradeSearch(inputText) {
     const clean = raw.toLowerCase().replace(/[-_.]/g, ' ');
 
     let list = [];
-    let defaultImg = REAL_IMAGE_DATABASE.oil_pouch;
+    let defaultImg = PHONE_5G_HD;
     let defaultCat = 'Universal Category';
     let defaultUnit = 'pcs';
     let defaultPrice = '';
 
-    // १. सूर्यफूल तेल / एडिबल ऑइल (अमॅझॉनसारखी अस्सल यादी)
-    if (clean.includes('oil') || clean.includes('sunflower') || clean.includes('gemini') || clean.includes('fortune') || clean.includes('तेल')) {
-      defaultImg = REAL_IMAGE_DATABASE.oil_pouch;
-      defaultCat = 'खाद्यतेल व तूप (Edible Oil & Ghee)';
-      defaultUnit = 'ltr';
-      defaultPrice = '135';
-
-      list.push({ name: "sunflower oil 1 litre pouch", cat: defaultCat, unit: "ltr", price: 135, img: REAL_IMAGE_DATABASE.oil_pouch });
-      list.push({ name: "sunflower oil 5 litre offer jar", cat: defaultCat, unit: "ltr", price: 680, img: REAL_IMAGE_DATABASE.oil_jar });
-      list.push({ name: "sunflower oil 15 litre tin", cat: defaultCat, unit: "ltr", price: 2150, img: REAL_IMAGE_DATABASE.oil_tin });
-      list.push({ name: "sunflower oil cold pressed 1 litre", cat: defaultCat, unit: "ltr", price: 190, img: REAL_IMAGE_DATABASE.oil_pouch });
-    }
-    // २. मोबाईल व स्मार्टफोन (Oppo, Vivo, Samsung, Mobile, Phone)
-    else if (clean.includes('phone') || clean.includes('mobil') || clean.includes('oppo') || clean.includes('vivo') || clean.includes('samsung') || clean.includes('realme') || clean.includes('मोबाईल')) {
-      defaultImg = REAL_IMAGE_DATABASE.smartphone;
+    // १. मोबाईल व स्मार्टफोन (Samsung, Oppo, Vivo, Realme, Phone, Mobile)
+    if (clean.includes('samsung') || clean.includes('oppo') || clean.includes('vivo') || clean.includes('realme') || clean.includes('phone') || clean.includes('mobil') || clean.includes('मोबाईल')) {
+      defaultImg = PHONE_5G_HD;
       defaultCat = 'इलेक्ट्रॉनिक्स (Smartphones)';
       defaultUnit = 'pcs';
       defaultPrice = '14999';
 
-      const brand = clean.includes('oppo') ? 'Oppo' : clean.includes('vivo') ? 'Vivo' : clean.includes('samsung') ? 'Samsung' : 'Smartphone';
-      list.push({ name: `${brand} 5G Smartphone 8GB RAM 128GB`, cat: defaultCat, unit: "pcs", price: 16999, img: REAL_IMAGE_DATABASE.smartphone });
-      list.push({ name: `${brand} Pro 5G Camera Phone`, cat: defaultCat, unit: "pcs", price: 28999, img: REAL_IMAGE_DATABASE.smartphone });
-      list.push({ name: `${brand} Budget Series 4GB RAM`, cat: defaultCat, unit: "pcs", price: 9499, img: REAL_IMAGE_DATABASE.smartphone });
+      const brand = clean.includes('samsung') ? 'Samsung' : clean.includes('oppo') ? 'Oppo' : clean.includes('vivo') ? 'Vivo' : 'Smartphone';
+      
+      list.push({ name: `${brand} 5G Smartphone 8GB RAM 128GB`, cat: defaultCat, unit: "pcs", price: 16999, img: PHONE_5G_HD });
+      list.push({ name: `${brand} Pro 5G Camera Phone`, cat: defaultCat, unit: "pcs", price: 28999, img: PHONE_5G_HD });
+      list.push({ name: `${brand} Budget Series 4GB RAM`, cat: defaultCat, unit: "pcs", price: 9499, img: PHONE_5G_HD });
+      list.push({ name: `${brand} Ultra 5G Flagship Edition`, cat: defaultCat, unit: "pcs", price: 44999, img: PHONE_5G_HD });
     }
-    // ३. टीव्ही / टेलिव्हिजन (TV, Smart TV)
+    // २. खाद्यतेल (Sunflower, Gemini, Fortune, Oil, तेल)
+    else if (clean.includes('oil') || clean.includes('sunflower') || clean.includes('gemini') || clean.includes('fortune') || clean.includes('तेल')) {
+      defaultImg = OIL_POUCH_HD;
+      defaultCat = 'खाद्यतेल व तूप (Edible Oil & Ghee)';
+      defaultUnit = 'ltr';
+      defaultPrice = '135';
+
+      list.push({ name: "sunflower oil 1 litre pouch", cat: defaultCat, unit: "ltr", price: 135, img: OIL_POUCH_HD });
+      list.push({ name: "sunflower oil 5 litre offer jar", cat: defaultCat, unit: "ltr", price: 680, img: OIL_POUCH_HD });
+      list.push({ name: "sunflower oil 15 litre tin", cat: defaultCat, unit: "ltr", price: 2150, img: OIL_POUCH_HD });
+    }
+    // ३. टीव्ही (TV, Smart TV)
     else if (clean.includes('tv') || clean.includes('screen') || clean.includes('television')) {
-      defaultImg = REAL_IMAGE_DATABASE.smart_tv;
+      defaultImg = TV_HD;
       defaultCat = 'इलेक्ट्रॉनिक्स (Smart TV)';
       defaultUnit = 'pcs';
       defaultPrice = '24990';
 
-      list.push({ name: `${raw} 43 Inch 4K Ultra HD Smart LED TV`, cat: defaultCat, unit: "pcs", price: 26990, img: REAL_IMAGE_DATABASE.smart_tv });
-      list.push({ name: `${raw} 32 Inch HD Ready Smart TV`, cat: defaultCat, unit: "pcs", price: 13990, img: REAL_IMAGE_DATABASE.smart_tv });
+      list.push({ name: `${raw} 43 Inch 4K Ultra HD Smart LED TV`, cat: defaultCat, unit: "pcs", price: 26990, img: TV_HD });
+      list.push({ name: `${raw} 32 Inch HD Ready Smart TV`, cat: defaultCat, unit: "pcs", price: 13990, img: TV_HD });
     }
-    // ४. स्मार्ट वॉच (Watch, Smartwatch, घड्याळ)
-    else if (clean.includes('watch') || clean.includes('घड्याळ')) {
-      defaultImg = REAL_IMAGE_DATABASE.watch;
-      defaultCat = 'इलेक्ट्रॉनिक्स (Wearables)';
-      defaultUnit = 'pcs';
-      defaultPrice = '1499';
-
-      list.push({ name: `${raw} Bluetooth Calling Smartwatch 1.96 Display`, cat: defaultCat, unit: "pcs", price: 1999, img: REAL_IMAGE_DATABASE.watch });
-    }
-    // ५. कपडे (Shirt, Saree, Pants, Garments)
-    else if (clean.includes('shirt') || clean.includes('pant') || clean.includes('saree') || clean.includes('कपडे')) {
-      defaultImg = REAL_IMAGE_DATABASE.clothing;
-      defaultCat = 'कपडे व फॅशन (Garments)';
-      defaultUnit = 'pcs';
-      defaultPrice = '699';
-
-      list.push({ name: `${raw} Men's Cotton Formal Wear`, cat: defaultCat, unit: "pcs", price: 799, img: REAL_IMAGE_DATABASE.clothing });
-    }
-    // ६. अन्नधान्य व मीठ (Tata Salt, Sugar, Rice)
+    // ४. मीठ (Tata Salt)
     else if (clean.includes('salt') || clean.includes('solt') || clean.includes('namak') || clean.includes('मीठ')) {
-      defaultImg = REAL_IMAGE_DATABASE.tata_salt;
+      defaultImg = TATA_SALT_HD;
       defaultCat = 'मीठ व मसाले (Staples)';
       defaultUnit = 'kg';
       defaultPrice = '28';
 
-      list.push({ name: "Tata Salt Vacuum Evaporated 1kg", cat: defaultCat, unit: "kg", price: 28, img: REAL_IMAGE_DATABASE.tata_salt });
+      list.push({ name: "Tata Salt Vacuum Evaporated 1kg", cat: defaultCat, unit: "kg", price: 28, img: TATA_SALT_HD });
     }
-    // ७. इतर कोणतीही वस्तू
+    // ५. इतर उत्पादने
     else {
       defaultImg = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='8' fill='%231D4E89'/><text x='50' y='55' font-family='Arial,sans-serif' font-size='9' font-weight='bold' fill='%23ffffff' text-anchor='middle'>${encodeURIComponent(raw.substring(0, 14).toUpperCase())}</text></svg>`;
       defaultCat = 'Universal Retail';
@@ -495,7 +462,7 @@ function amazonGradeSearch(inputText) {
       list.push({ name: `${raw} Standard Pack`, cat: defaultCat, unit: defaultUnit, price: '', img: defaultImg });
     }
 
-    // ड्रॉपडाउन सजेशन यादी (अमॅझॉन स्टाईल)
+    // ड्रॉपडाउन सजेशन यादी
     if (dropdown) {
       dropdown.innerHTML = list.map(item => `
         <div class="suggest-row" onclick="pickAmazonItem('${escapeHtml(item.name).replace(/'/g, "\\'")}', '${item.cat}', '${item.unit}', '${item.price}', '${encodeURIComponent(item.img)}')">
@@ -509,7 +476,7 @@ function amazonGradeSearch(inputText) {
       dropdown.style.display = 'block';
     }
 
-    // कार्ड थेट अपडेट करणे
+    // कार्ड थेट अचूक अपडेट करणे (कधीही तुटलेला फोटो आयकॉन येणार नाही)
     previewBox.innerHTML = `
       <div style="display:flex; align-items:center; gap:12px; background:#f0fdf4; padding:8px 12px; border-radius:6px; border:1px solid #bbf7d0; width:100%;">
         <img src="${defaultImg}" style="width:48px; height:48px; object-fit:contain; border-radius:6px; background:#fff; border:1px solid #cbd5e1; padding:2px;" alt="${raw}">
