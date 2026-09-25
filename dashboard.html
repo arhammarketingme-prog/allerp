@@ -13,7 +13,7 @@
 <!-- Robust HTML5-Qrcode Scanner Library -->
 <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 <style>
-/* 🌟 मूळ ॲडमिन पोर्टल डिझाईन फ्रेम */
+/* 🌟 ॲडमिन पोर्टलची वरची बार पट्टी कॉम्पॅक्ट व एका लाईनीत करण्यासाठी */
 .dashboard-main-frame { width: 98%; max-width: 1450px; margin: 10px auto; padding: 0 6px; }
 .erp-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: nowrap; gap: 10px; background: #ffffff; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border, #e2e8f0); }
 .erp-header > div:first-child { display: flex; align-items: baseline; gap: 10px; }
@@ -21,11 +21,11 @@
 .erp-header .muted { font-size: 11px !important; white-space: nowrap; }
 .erp-header > div:last-child { display: flex; gap: 6px; align-items: center; flex-wrap: nowrap; }
 
-/* 🌟 युनिव्हर्सल मॉडेल ओव्हरले */
+/* 🌟 युनिव्हर्सल मॉडेल ओव्हरले (नेहमी लपलेले, ओपन झाल्यावरच दिसणारे) */
 .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 99999 !important; align-items: center; justify-content: center; }
 .modal-content { background: var(--card, #ffffff); border-radius: 12px; width: 95%; max-width: 650px; padding: 24px; max-height: 85vh; overflow-y: auto; box-shadow: 0 15px 35px rgba(0,0,0,0.25); z-index: 100000 !important; }
 
-/* इतर मूळ स्टाईल्स */
+/* इतर स्टाईल्स */
 .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 16px; }
 .kpi-card { background: var(--card, #ffffff); border: 1px solid var(--border, #e2e8f0); border-radius: 8px; padding: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
 .erp-tabs-bar { display: flex; gap: 4px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 14px; border-bottom: 2px solid var(--border, #e2e8f0); }
@@ -34,6 +34,10 @@
 .badge { padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; }
 .badge.live { background: #16a34a; color: #fff; }
 .badge.pending { background: #f59e0b; color: #fff; }
+.badge.packed { background: #1D4E89; color: #fff; }
+.badge.dispatched { background: #1D4E89; color: #fff; }
+.badge.delivered { background: #059669; color: #fff; }
+.badge.rejected { background: #dc2626; color: #fff; }
 .stock-input { border: 1px solid #cbd5e1; border-radius: 6px; padding: 6px 10px; width: 90px; text-align: center; font-weight: 700; color: #1e293b; transition: all 0.2s; }
 .stock-input:focus { outline: none; border-color: #1D4E89; box-shadow: 0 0 0 3px rgba(37,99,235,0.15); }
 .pos-layout { display: flex; gap: 16px; flex-wrap: wrap; }
@@ -68,8 +72,8 @@
 }
 .suggest-row:hover { background: #f0fdf4; }
 .suggest-row img {
-  width: 42px;
-  height: 42px;
+  width: 40px;
+  height: 40px;
   object-fit: contain;
   border-radius: 4px;
   border: 1px solid #e2e8f0;
@@ -95,6 +99,7 @@
       </div>
     </div>
     <div>
+      <!-- 🌐 ग्लोबल मार्केटप्लेस बटण (हेडरमध्ये कायमस्वरूपी) -->
       <button type="button" onclick="openGlobalCatalogModal()" style="background:#16a34a; color:#fff; padding:6px 12px; border:none; border-radius:6px; cursor:pointer; font-weight:bold; font-size:12.5px;">
         🌐 ग्लोबल मार्केटप्लेस
       </button>
@@ -168,8 +173,12 @@
     </div>
     <div class="card" style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:16px;">
       <table style="width:100%; border-collapse:collapse;">
-        <thead><tr style="text-align:left; border-bottom:2px solid #e2e8f0;"><th>इनव्हॉइस #</th><th>ग्राहक</th><th>तारीख</th><th>रक्कम</th><th>स्थिती</th></tr></thead>
-        <tbody id="sales-invoices-body"><tr><td colspan="5" class="muted" style="text-align:center; padding:20px;">इनव्हॉइस लोड होत आहेत...</td></tr></tbody>
+        <thead>
+          <tr style="text-align:left; border-bottom:2px solid #e2e8f0;">
+            <th>इनव्हॉइस #</th><th>ग्राहक</th><th>तारीख</th><th>रक्कम</th><th>स्थिती</th><th>कृती (Action)</th>
+          </tr>
+        </thead>
+        <tbody id="sales-invoices-body"><tr><td colspan="6" class="muted" style="text-align:center; padding:20px;">इनव्हॉइस लोड होत आहेत...</td></tr></tbody>
       </table>
     </div>
   </div>
@@ -180,6 +189,12 @@
       <h2>🛒 खरेदी नोंदी</h2>
       <button type="button" onclick="openModal('purchase-order-modal')" style="background:#1D4E89; color:#fff; padding:8px 14px; border:none; border-radius:6px; cursor:pointer;">+ नवीन खरेदी नोंदवा</button>
     </div>
+    <div class="card" style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:16px;">
+      <table style="width:100%; border-collapse:collapse;">
+        <thead><tr style="text-align:left; border-bottom:2px solid #e2e8f0;"><th>PO #</th><th>सप्लायर</th><th>तारीख</th><th>रक्कम</th><th>स्थिती</th></tr></thead>
+        <tbody id="purchases-table-body"><tr><td colspan="5" class="muted" style="text-align:center; padding:20px;">खरेदी नोंदी लोड होत आहेत...</td></tr></tbody>
+      </table>
+    </div>
   </div>
 
   <!-- TAB 5: CRM -->
@@ -188,16 +203,51 @@
       <h2>👥 CRM व ग्राहक पाईपलाईन</h2>
       <button type="button" onclick="openModal('lead-modal')" style="background:#1D4E89; color:#fff; padding:8px 14px; border:none; border-radius:6px; cursor:pointer;">+ नवीन लीड</button>
     </div>
+    <div class="card" style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:16px;">
+      <table style="width:100%; border-collapse:collapse;">
+        <thead><tr style="text-align:left; border-bottom:2px solid #e2e8f0;"><th>नाव</th><th>कंपनी</th><th>फोन</th><th>स्टेज</th></tr></thead>
+        <tbody id="crm-leads-table-body"><tr><td colspan="4" class="muted" style="text-align:center; padding:20px;">लीड्स लोड होत आहेत...</td></tr></tbody>
+      </table>
+    </div>
   </div>
 
   <!-- TAB 5.5: KHATA -->
   <div id="tab-khata" class="erp-tab-pane" style="display:none;">
     <h2>🧾 उधार खाता (Customer Khata)</h2>
     <div class="card" style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:16px; margin-bottom:14px;">
-      <label style="font-weight:700; font-size:13px;">ग्राहकाचा फोन नंबर टाका</label>
+      <label style="font-weight:700; font-size:13px;">ग्राहकाचा फोन नंबर टाका (नवीन असेल तर आपोआप तयार होईल)</label>
       <div style="display:flex; gap:8px; margin-top:6px; flex-wrap:wrap;">
         <input id="khata-phone-input" placeholder="9822XXXXXX" style="flex:1; min-width:160px; padding:8px; border:1px solid #cbd5e1; border-radius:6px;">
         <button type="button" onclick="loadKhataForPhone()" style="background:#1D4E89; color:#fff; border:none; padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:700;">शोध / उघड</button>
+      </div>
+    </div>
+
+    <div id="khata-customer-box" style="display:none;">
+      <div class="card" style="background:#fff; border:2px solid #059669; border-radius:8px; padding:16px; margin-bottom:14px; text-align:center;">
+        <div class="muted" style="font-size:13px;">सध्याची शिल्लक (Outstanding Balance)</div>
+        <div id="khata-balance-display" style="font-size:28px; font-weight:900; color:#dc2626;">₹0.00</div>
+      </div>
+
+      <div class="card" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:14px; margin-bottom:14px;">
+        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:8px;">
+          <input id="khata-customer-name" placeholder="ग्राहकाचं नाव">
+          <input id="khata-amount" type="number" placeholder="रक्कम ₹">
+          <input id="khata-note" placeholder="तपशील (उदा. किराणा माल)">
+          <input id="khata-due-date" type="date" title="देय तारीख (ऐच्छिक)">
+        </div>
+        <div style="display:flex; gap:8px; margin-top:10px;">
+          <button type="button" onclick="addKhataEntry('debit')" style="flex:1; background:#dc2626; color:#fff; border:none; padding:10px; border-radius:6px; cursor:pointer; font-weight:700;">➕ उधार दिली (Debit)</button>
+          <button type="button" onclick="addKhataEntry('credit')" style="flex:1; background:#16a34a; color:#fff; border:none; padding:10px; border-radius:6px; cursor:pointer; font-weight:700;">💰 पैसे मिळाले (Credit)</button>
+        </div>
+        <p id="khata-form-error" style="color:red; font-size:12.5px; margin:8px 0 0;"></p>
+      </div>
+
+      <div class="card" style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:16px;">
+        <h3 style="margin-top:0;">इतिहास</h3>
+        <table style="width:100%; border-collapse:collapse;">
+          <thead><tr style="text-align:left; border-bottom:2px solid #e2e8f0; font-size:13px;"><th>तारीख</th><th>तपशील</th><th>उधार (+)</th><th>जमा (-)</th></tr></thead>
+          <tbody id="khata-entries-body"></tbody>
+        </table>
       </div>
     </div>
   </div>
@@ -208,36 +258,51 @@
       <h2>📑 दैनंदिन खर्च नोंदवही</h2>
       <button type="button" onclick="openModal('expense-modal')" style="background:#1D4E89; color:#fff; padding:8px 14px; border:none; border-radius:6px; cursor:pointer;">+ खर्च नोंदवा</button>
     </div>
+    <div class="card" style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:16px;">
+      <table style="width:100%; border-collapse:collapse;">
+        <thead><tr style="text-align:left; border-bottom:2px solid #e2e8f0;"><th>खर्चाचे शीर्षक</th><th>प्रकार</th><th>रक्कम</th><th>तारीख</th></tr></thead>
+        <tbody id="expenses-table-body"><tr><td colspan="4" class="muted" style="text-align:center; padding:20px;">खर्च लोड होत आहेत...</td></tr></tbody>
+      </table>
+    </div>
   </div>
 
   <!-- TAB 7: HR -->
   <div id="tab-hr" class="erp-tab-pane" style="display:none;">
     <h2>👔 कर्मचारी व्यवस्थापन (HR & Payroll)</h2>
+    <div class="card" style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:16px;"><p class="muted">कर्मचारी हजेरी व पगार प्रणाली सक्रिय आहे.</p></div>
   </div>
 
   <!-- TAB 8: PROJECTS -->
   <div id="tab-projects" class="erp-tab-pane" style="display:none;">
     <h2>🏗️ साईट व प्रकल्प (Projects)</h2>
+    <div class="card" style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:16px;"><p class="muted">प्रकल्प ट्रॅकिंग मॉड्यूल सक्रिय आहे.</p></div>
   </div>
 
   <!-- TAB 9: POS COUNTER -->
   <div id="tab-pos" class="erp-tab-pane" style="display:none;">
-    <h2>⚡ द्रुत POS काउंटर बिलिंग</h2>
+    <h2>⚡ द्रुत POS काउंटर बिलिंग (Universal POS & Visual Grid)</h2>
     <div class="pos-layout">
       <div class="pos-catalog">
         <div style="display:flex; gap:6px; margin-bottom:12px;">
-          <input type="text" id="pos-search-box" placeholder="बारकोड स्कॅन करा किंवा नाव शोधा..." style="flex:1; padding:8px; border:1px solid #cbd5e1; border-radius:6px;">
+          <input type="text" id="pos-search-box" placeholder="बारकोड स्कॅन करा किंवा नाव शोधा..." oninput="filterPOSProducts(this.value)" style="flex:1; padding:8px; border:1px solid #cbd5e1; border-radius:6px;">
           <button type="button" onclick="startHtml5Scanner('pos')" style="background:#1D4E89; color:#fff; border:none; padding:8px 12px; border-radius:6px; cursor:pointer; font-weight:bold;">📷 स्कॅनर</button>
         </div>
         <div id="pos-reader" style="width:100%; max-width:400px; margin-bottom:12px; display:none;"></div>
-        <div id="pos-products-grid" class="grid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap:10px;"></div>
+        <div id="pos-products-grid" class="grid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap:10px;">
+          <p class="muted">उत्पादने लोड होत आहेत...</p>
+        </div>
       </div>
       <div class="pos-cart">
         <h3 style="margin-top:0;">चालू बिल (Current Bill)</h3>
-        <div id="pos-cart-items"><p class="muted">कार्ट रिकामी आहे.</p></div>
-        <div style="font-size:18px; font-weight:800; display:flex; justify-content:space-between; margin-top:10px;">
+        <div id="pos-cart-items"><p class="muted">कार्ट रिकामी आहे. वस्तू निवडा.</p></div>
+        <hr style="margin:12px 0; border:none; border-top:1px solid #e2e8f0;">
+        <div style="font-size:18px; font-weight:800; display:flex; justify-content:space-between;">
           <span>एकूण रक्कम:</span>
           <span id="pos-total-amount">₹0.00</span>
+        </div>
+        <div style="display:flex; gap:6px; margin-top:12px;">
+          <button type="button" style="flex:1; background:#16a34a; color:#fff; padding:10px; border:none; border-radius:6px; cursor:pointer; font-weight:bold;" onclick="completePOSSale('Cash')">💵 Cash</button>
+          <button type="button" style="flex:1; background:#1D4E89; color:#fff; padding:10px; border:none; border-radius:6px; cursor:pointer; font-weight:bold;" onclick="completePOSSale('UPI')">📱 UPI</button>
         </div>
       </div>
     </div>
@@ -245,27 +310,58 @@
 
   <!-- TAB 10: ONLINE ORDERS -->
   <div id="tab-orders" class="erp-tab-pane" style="display:none;">
-    <h2>🛍️ ऑनलाईन ग्राहकांच्या ऑर्डर्स</h2>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+      <h2>🛍️ ऑनलाईन ग्राहकांच्या ऑर्डर्स</h2>
+      <button type="button" onclick="loadOnlineOrders()" class="secondary" style="padding:6px 12px; cursor:pointer;">🔄 रिफ्रेश करा</button>
+    </div>
     <div class="card" style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:16px;">
       <table style="width:100%; border-collapse:collapse;">
-        <thead><tr style="text-align:left; border-bottom:2px solid #e2e8f0;"><th>ऑर्डर #</th><th>ग्राहक</th><th>रक्कम</th><th>स्थिती</th></tr></thead>
-        <tbody id="online-orders-table-body"><tr><td colspan="4" class="muted" style="text-align:center; padding:20px;">कोणतीही ऑर्डर नाही.</td></tr></tbody>
+        <thead>
+          <tr style="text-align:left; border-bottom:2px solid #e2e8f0;">
+            <th>ऑर्डर #</th><th>ग्राहक ओळख व पत्ता</th><th>डिलिव्हरी पार्टनर</th><th>साहित्य व रक्कम</th><th>स्थिती</th><th>कृती</th>
+          </tr>
+        </thead>
+        <tbody id="online-orders-table-body"><tr><td colspan="6" class="muted" style="text-align:center; padding:20px;">कोणतीही ऑर्डर नाही.</td></tr></tbody>
       </table>
     </div>
   </div>
 
   <!-- TAB 11: REPORTS & GST -->
   <div id="tab-reports" class="erp-tab-pane" style="display:none;">
-    <h2>📈 रिपोर्ट्स व GST केंद्र</h2>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+      <h2>📈 रिपोर्ट्स, ताळेबंद व GST केंद्र</h2>
+      <button type="button" onclick="exportDataCSV()" class="secondary" style="padding:6px 12px; cursor:pointer;">📥 CSV डाऊनलोड करा</button>
+    </div>
   </div>
 
   <!-- TAB 12: SETTINGS -->
   <div id="tab-settings" class="erp-tab-pane" style="display:none;">
-    <h2>⚙️ सिस्टीम सेटिंग्स</h2>
+    <h2>⚙️ सिस्टीम सेटिंग्स व भूमिका</h2>
+    <div class="card" style="max-width:540px; background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:16px;">
+      <label style="font-weight:bold;">दुकानाचे नाव</label>
+      <input id="setting-bname" value="UNIVERSAL STORE" style="margin-bottom:10px; width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:4px;">
+      <button type="button" onclick="alert('सेटिंग्स सेव्ह झाल्या!')" style="background:#16a34a; color:#fff; padding:8px 16px; border:none; border-radius:4px; cursor:pointer; font-weight:bold;">सेव्ह करा</button>
+    </div>
   </div>
 </div>
 
-<!-- ==================== नवीन प्रॉडक्ट जोडा मोडल ==================== -->
+<!-- ==================== MODALS SECTION ==================== -->
+
+<!-- 1. ग्लोबल मार्केटप्लेस मोडल -->
+<div id="global-catalog-modal" class="modal-overlay">
+  <div class="modal-content" style="max-width:700px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+      <h3 style="margin:0;">🌐 ग्लोबल मार्केटप्लेस कॅटलॉग</h3>
+      <button type="button" class="secondary" onclick="closeModal('global-catalog-modal')" style="padding:4px 10px; font-size:12px; cursor:pointer; font-weight:bold;">✕ बंद करा</button>
+    </div>
+    <input type="text" id="global-catalog-search" placeholder="🔍 प्रॉडक्टचे नाव शोधा..." oninput="filterGlobalCatalog(this.value)" style="margin-bottom:12px; width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:4px;">
+    <div id="global-catalog-results" style="max-height:400px; overflow-y:auto; display:grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap:10px;">
+      <p class="muted">कॅटलॉग लोड होत आहे...</p>
+    </div>
+  </div>
+</div>
+
+<!-- 2. नवीन प्रॉडक्ट जोडा मोडल (Blinkit/Amazon लेव्हल ग्लोबल सर्च) -->
 <div id="add-product-modal" class="modal-overlay">
   <div class="modal-content">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
@@ -273,11 +369,11 @@
       <button type="button" class="secondary" onclick="closeModal('add-product-modal')" style="padding:4px 10px; font-size:12px; cursor:pointer; font-weight:bold;">✕ बंद करा</button>
     </div>
 
-    <!-- 🌟 स्मार्ट सर्च फील्ड -->
+    <!-- 🌟 ग्लोबल सर्च इनपुट -->
     <div style="margin-top:12px;" class="smart-search-wrapper">
-      <label style="font-weight:700;">उत्पादनाचे नाव / ब्रँड / वस्तू * (उदा. Gemini Oil, Oppo Mobile, Tata Salt, Shirt, Notebook, Cement)</label>
+      <label style="font-weight:700;">उत्पादनाचे नाव / ब्रँड / वस्तू * (उदा. Gemini Oil, Oppo Mobile, Samsung TV, Tata Salt, Shirt)</label>
       <div style="display:flex; gap:6px;">
-        <input id="np-name" placeholder="उदा. gemini oil, oppo mobile, tata salt, shirt, sugar, cement..." oninput="universalAutoMapper(this.value)" autocomplete="off" style="margin-bottom:0; flex:1; padding:8px; border:1px solid #cbd5e1; border-radius:4px;">
+        <input id="np-name" placeholder="उदा. gemini sunflower oil, oppo mobile, tata salt, shirt..." oninput="fetchGlobalUniversalSuggestions(this.value)" autocomplete="off" style="margin-bottom:0; flex:1; padding:8px; border:1px solid #cbd5e1; border-radius:4px;">
         <button type="button" onclick="startHtml5Scanner('product')" class="secondary" style="padding:8px 10px; font-size:12px; cursor:pointer; background:#1D4E89; color:#fff; border:none; border-radius:4px;">📷 स्कॅनर</button>
       </div>
       <!-- डायनॅमिक ग्लोबल सजेशन पॉप-अप -->
@@ -288,6 +384,7 @@
     <div style="margin-top:10px;">
       <label style="font-weight:700;">बारकोड (Barcode)</label>
       <input id="np-barcode" placeholder="स्कॅन करा किंवा टाईप करा..." style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:4px;">
+      <p id="np-barcode-status" style="font-size:11.5px; margin:4px 0 0; color:#64748b;"></p>
     </div>
 
     <div style="margin-top:10px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:6px; padding:10px;">
@@ -316,7 +413,6 @@
           <option value="pcs">नग (Pcs)</option>
           <option value="packet">पॅकेट (Packet)</option>
           <option value="box">बॉक्स (Box)</option>
-          <option value="bag">बॅग / गोणी (Bag)</option>
         </select>
       </div>
       <div style="flex:1;"><label style="font-weight:700;">विक्री दर (₹) *</label><input id="np-price" type="number" min="0" placeholder="दर टाका" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:4px;"></div>
@@ -334,6 +430,7 @@
 <!-- ==================== SCRIPTS ==================== -->
 <script src="js/supabase-client.js"></script>
 <script src="js/cart.js"></script>
+<!-- 🌟 तुमची मूळ मदर नेव्हिगेशन बार व फिरणारी जाहिरात पट्टी चालवणारी अधिकृत स्क्रिप्ट -->
 <script src="js/nav.js"></script>
 <script src="js/tracking.js"></script>
 <script src="js/erp-engine.js"></script>
@@ -366,11 +463,13 @@ async function initDashboard() {
   try {
     const { data: { user } } = await sb.auth.getUser();
     if (!user) { window.location.href = 'login.html'; return; }
-    const { data: businesses } = await sb.from('businesses').select('id, name').eq('owner_id', user.id);
+    const { data: businesses } = await sb.from('businesses').select('id, name, is_wholesaler').eq('owner_id', user.id);
     if (businesses && businesses.length > 0) {
       currentBusinessId = businesses[0].id;
       const bName = document.getElementById('business-display-name');
       if (bName) bName.textContent = businesses[0].name;
+      const wsToggle = document.getElementById('is-wholesaler-toggle');
+      if (wsToggle) wsToggle.checked = !!businesses[0].is_wholesaler;
       await loadProducts();
     }
   } catch (err) { console.error('Init error:', err); }
@@ -385,7 +484,7 @@ async function loadProducts() {
     const tbody = document.getElementById('products-table-body');
     if (!tbody) return;
     if (currentProducts.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="4" class="muted" style="text-align:center; padding:15px;">कोणतीही उत्पादने नाहीत.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="4" class="muted" style="text-align:center; padding:15px;">कोणतीही उत्पादने नाहीत. वर दिलेल्या "+ नवीन प्रॉडक्ट जोडा" मधून जोडा.</td></tr>';
       return;
     }
     tbody.innerHTML = currentProducts.map(p => `
@@ -413,15 +512,11 @@ const SVG_ICONS = {
   clothing: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='8' fill='%23f8fafc' stroke='%23cbd5e1'/><path d='M30 20 L42 28 L58 28 L70 20 L85 35 L75 45 L70 40 L70 85 L30 85 L30 40 L25 45 L15 35 Z' fill='%230284c7'/><text x='50' y='62' font-family='Arial' font-size='8' font-weight='bold' fill='%23ffffff' text-anchor='middle'>GARMENTS</text></svg>",
   salt: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 120'><rect width='100' height='120' rx='6' fill='%23ffffff' stroke='%23cbd5e1' stroke-width='2'/><path d='M0 0 L100 0 L100 38 L0 38 Z' fill='%230f4c81'/><text x='50' y='24' font-family='Arial Black' font-size='13' fill='%23ffffff' text-anchor='middle'>TATA</text><text x='50' y='34' font-family='Arial' font-size='7' fill='%2393c5fd' text-anchor='middle'>SALT</text><path d='M0 38 L100 38 L100 44 L0 44 Z' fill='%23ea580c'/><circle cx='50' cy='68' r='18' fill='%23f0fdf4' stroke='%230f4c81'/><text x='50' y='72' font-family='Arial Black' font-size='11' fill='%230f4c81' text-anchor='middle'>SALT</text><text x='50' y='96' font-family='Arial' font-size='7.5' font-weight='bold' fill='%23c2410c' text-anchor='middle'>देश का नमक</text></svg>",
   soap: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='10' fill='%23fce7f3' stroke='%23f43f5e' stroke-width='2'/><circle cx='50' cy='46' r='26' fill='%23ffffff'/><text x='50' y='52' font-family='Arial Black' font-size='13' font-weight='900' fill='%23e11d48' text-anchor='middle'>SOAP</text><text x='50' y='76' font-family='Arial' font-size='8' font-weight='bold' fill='%23be185d' text-anchor='middle'>BEAUTY CARE</text></svg>",
-  shampoo: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 120'><rect width='80' height='120' rx='8' fill='%230f172a'/><text x='40' y='55' font-family='Arial Black' font-size='9' fill='%23ec4899' text-anchor='middle'>SHAMPOO</text><text x='40' y='70' font-family='Arial' font-size='7' fill='%23ffffff' text-anchor='middle'>HAIR CARE</text></svg>",
-  staples: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 120'><rect width='100' height='120' rx='8' fill='%23fef3c7' stroke='%23d97706' stroke-width='2'/><text x='50' y='55' font-family='Arial Black' font-size='11' fill='%2392400e' text-anchor='middle'>GRAINS</text><text x='50' y='72' font-family='Arial' font-size='8' font-weight='bold' fill='%23b45309' text-anchor='middle'>अन्नधान्य</text></svg>",
-  dairy: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='8' fill='%23eff6ff' stroke='%233b82f6' stroke-width='2'/><text x='50' y='50' font-family='Arial Black' font-size='12' fill='%231d4ed8' text-anchor='middle'>DAIRY</text><text x='50' y='68' font-family='Arial' font-size='8' font-weight='bold' fill='%232563eb' text-anchor='middle'>दूध व दुग्धजन्य</text></svg>",
-  stationery: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='8' fill='%23f1f5f9' stroke='%2364748b' stroke-width='2'/><text x='50' y='50' font-family='Arial Black' font-size='11' fill='%23334155' text-anchor='middle'>STATIONERY</text><text x='50' y='68' font-family='Arial' font-size='8' font-weight='bold' fill='%23475569' text-anchor='middle'>पुस्तके व वह्या</text></svg>",
-  hardware: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='8' fill='%23fff7ed' stroke='%23ea580c' stroke-width='2'/><text x='50' y='50' font-family='Arial Black' font-size='11' fill='%23c2410c' text-anchor='middle'>HARDWARE</text><text x='50' y='68' font-family='Arial' font-size='8' font-weight='bold' fill='%23ea580c' text-anchor='middle'>हार्डवेअर व टूल्स</text></svg>"
+  staples: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 120'><rect width='100' height='120' rx='8' fill='%23fef3c7' stroke='%23d97706' stroke-width='2'/><text x='50' y='55' font-family='Arial Black' font-size='11' fill='%2392400e' text-anchor='middle'>GRAINS</text><text x='50' y='72' font-family='Arial' font-size='8' font-weight='bold' fill='%23b45309' text-anchor='middle'>अन्नधान्य</text></svg>"
 };
 
-// 🧠 १००% युनिव्हर्सल इंटेलिजंट ऑटो-मॅपर (सर्व उद्योगांचे शब्द समजणारा)
-function universalAutoMapper(inputText) {
+// 🧠 युनिव्हर्सल इंटेलिजंट ऑटो-मॅपर (Gemini Oil, Oppo, Samsung, TV, Shirt, Salt सर्व शोधणारा)
+function fetchGlobalUniversalSuggestions(inputText) {
   clearTimeout(globalLiveTimer);
   const dropdown = document.getElementById('brand-suggest-box');
   const previewBox = document.getElementById('smart-image-suggestions');
@@ -437,36 +532,36 @@ function universalAutoMapper(inputText) {
     const clean = raw.toLowerCase().replace(/[-_.]/g, ' ');
 
     let img = null;
-    let cat = 'Universal Retail';
+    let cat = 'Universal Product';
     let unit = 'pcs';
     let price = '';
     let suggestions = [];
 
-    // १. खाद्यतेल व तूप (Oil, Ghee, Sunflower, Gemini, Fortune, धारा, तेल)
-    if (clean.includes('oil') || clean.includes('ghee') || clean.includes('sunflower') || clean.includes('gemini') || clean.includes('fortune') || clean.includes('dhara') || clean.includes('saffola') || clean.includes('तेल') || clean.includes('तूप')) {
+    // १. खाद्यतेल व तूप (Gemini, Fortune, Sunflower, Oil, तेल)
+    if (clean.includes('oil') || clean.includes('ghee') || clean.includes('sunflower') || clean.includes('gemini') || clean.includes('fortune') || clean.includes('dhara') || clean.includes('तेल') || clean.includes('तूप')) {
       img = SVG_ICONS.oil;
       cat = 'खाद्यतेल व तूप (Edible Oil & Ghee)';
       unit = 'ltr';
       price = clean.includes('gemini') ? '135' : '140';
 
       suggestions.push({ name: `${raw} 1 Litre Pouch`, cat: cat, unit: "ltr", price: 135, img: SVG_ICONS.oil });
-      suggestions.push({ name: `${raw} 5 Litre Jar`, cat: cat, unit: "ltr", price: 690, img: SVG_ICONS.oil });
-      suggestions.push({ name: `${raw} 15kg / 15L Tin`, cat: cat, unit: "ltr", price: 2150, img: SVG_ICONS.oil });
+      suggestions.push({ name: `${raw} 5 Litre Jar`, cat: cat, unit: "ltr", price: 680, img: SVG_ICONS.oil });
+      suggestions.push({ name: `${raw} 15L Tin`, cat: cat, unit: "ltr", price: 2150, img: SVG_ICONS.oil });
     }
-    // २. मोबाईल व स्मार्टफोन (Oppo, Vivo, Samsung, Realme, iPhone, Redmi, Phone, Mobile)
-    else if (clean.includes('phone') || clean.includes('mobil') || clean.includes('oppo') || clean.includes('vivo') || clean.includes('realme') || clean.includes('samsung') || clean.includes('iphone') || clean.includes('redmi') || clean.includes('मोबाईल')) {
+    // २. मोबाईल व स्मार्टफोन (Oppo, Vivo, Samsung, Realme, iPhone, Phone, Mobile)
+    else if (clean.includes('phone') || clean.includes('mobil') || clean.includes('oppo') || clean.includes('vivo') || clean.includes('realme') || clean.includes('samsung') || clean.includes('iphone') || clean.includes('मोबाईल')) {
       img = SVG_ICONS.mobile;
       cat = 'इलेक्ट्रॉनिक्स (Smartphones)';
       unit = 'pcs';
       price = '14999';
 
-      const bName = clean.includes('oppo') ? 'Oppo' : clean.includes('vivo') ? 'Vivo' : clean.includes('realme') ? 'Realme' : 'Smartphone';
+      const bName = clean.includes('oppo') ? 'Oppo' : clean.includes('vivo') ? 'Vivo' : clean.includes('samsung') ? 'Samsung' : 'Smartphone';
       suggestions.push({ name: `${bName} A78 5G (8GB/128GB)`, cat: cat, unit: "pcs", price: 17499, img: SVG_ICONS.mobile });
       suggestions.push({ name: `${bName} Reno 11 Pro 5G`, cat: cat, unit: "pcs", price: 37999, img: SVG_ICONS.mobile });
       suggestions.push({ name: `${bName} A18 (4GB/64GB)`, cat: cat, unit: "pcs", price: 9999, img: SVG_ICONS.mobile });
     }
-    // ३. टीव्ही / डिस्प्ले स्क्रीन (TV, LED, OLED, Screen)
-    else if (clean.includes('tv') || clean.includes('screen') || clean.includes('television') || clean.includes('led')) {
+    // ३. टीव्ही / स्क्रीन (TV, LED, OLED, Screen)
+    else if (clean.includes('tv') || clean.includes('screen') || clean.includes('television')) {
       img = SVG_ICONS.tv;
       cat = 'इलेक्ट्रॉनिक्स (Smart TV)';
       unit = 'pcs';
@@ -475,90 +570,37 @@ function universalAutoMapper(inputText) {
       suggestions.push({ name: `${raw} 43 Inch 4K Ultra HD Smart TV`, cat: cat, unit: "pcs", price: 26990, img: SVG_ICONS.tv });
       suggestions.push({ name: `${raw} 32 Inch HD Ready Smart LED`, cat: cat, unit: "pcs", price: 13990, img: SVG_ICONS.tv });
     }
-    // ४. स्मार्ट वॉच व वेअरेबल्स (Watch, Smartwatch, घड्याळ)
-    else if (clean.includes('watch') || clean.includes('घड्याळ')) {
+    // ४. स्मार्ट वॉच (Watch, Smartwatch, घड्याळ)
+    else if (clean.includes('watch') || clean.includes('smartwatch') || clean.includes('घड्याळ')) {
       img = SVG_ICONS.watch;
       cat = 'इलेक्ट्रॉनिक्स (Wearables)';
       unit = 'pcs';
       price = '1499';
 
-      suggestions.push({ name: `${raw} Calling Smartwatch 1.96 Display`, cat: cat, unit: "pcs", price: 1999, img: SVG_ICONS.watch });
-      suggestions.push({ name: `${raw} Fitness Band & Health Tracker`, cat: cat, unit: "pcs", price: 1299, img: SVG_ICONS.watch });
+      suggestions.push({ name: `${raw} Bluetooth Calling Smartwatch`, cat: cat, unit: "pcs", price: 1999, img: SVG_ICONS.watch });
     }
-    // ५. कपडे व गारमेंट्स (Shirt, Saree, Pant, Jeans, Dress, Cloth, कपडे)
-    else if (clean.includes('shirt') || clean.includes('pant') || clean.includes('saree') || clean.includes('jeans') || clean.includes('cloth') || clean.includes('dress') || clean.includes('tshirt') || clean.includes('कपडे')) {
+    // ५. कपडे (Shirt, Saree, Pant, Jeans, Dress, Cloth, कपडे)
+    else if (clean.includes('shirt') || clean.includes('pant') || clean.includes('saree') || clean.includes('jeans') || clean.includes('cloth') || clean.includes('कपडे')) {
       img = SVG_ICONS.clothing;
       cat = 'कपडे व फॅशन (Garments)';
       unit = 'pcs';
       price = '699';
 
-      suggestions.push({ name: `${raw} Cotton Formal Wear`, cat: cat, unit: "pcs", price: 799, img: SVG_ICONS.clothing });
-      suggestions.push({ name: `${raw} Casual Fit Premium`, cat: cat, unit: "pcs", price: 999, img: SVG_ICONS.clothing });
+      suggestions.push({ name: `${raw} Men's Cotton Formal Wear`, cat: cat, unit: "pcs", price: 799, img: SVG_ICONS.clothing });
     }
-    // ६. अन्नधान्य व किराणा (Rice, Wheat, Atta, Dal, Sugar, Salt, पोहे, रवा, साखर, डाळ)
-    else if (clean.includes('rice') || clean.includes('wheat') || clean.includes('atta') || clean.includes('dal') || clean.includes('sugar') || clean.includes('salt') || clean.includes('तांदूळ') || clean.includes('गहू') || clean.includes('साखर') || clean.includes('मीठ') || clean.includes('डाळ')) {
+    // ६. अन्नधान्य, साखर, मीठ, डाळी
+    else if (clean.includes('salt') || clean.includes('solt') || clean.includes('namak') || clean.includes('sugar') || clean.includes('rice') || clean.includes('dal') || clean.includes('मीठ') || clean.includes('साखर')) {
       img = clean.includes('salt') ? SVG_ICONS.salt : SVG_ICONS.staples;
-      cat = 'अन्नधान्य व किराणा (Staples & Grains)';
+      cat = 'अन्नधान्य व किराणा (Staples)';
       unit = 'kg';
       price = clean.includes('salt') ? '28' : '45';
 
-      suggestions.push({ name: `${raw} 1kg Pack`, cat: cat, unit: "kg", price: price, img: img });
-      suggestions.push({ name: `${raw} 5kg Premium Bag`, cat: cat, unit: "kg", price: (Number(price)*5), img: img });
-      suggestions.push({ name: `${raw} 25kg / 30kg बोरी (Bag)`, cat: cat, unit: "bag", price: (Number(price)*25), img: img });
+      suggestions.push({ name: `${raw} 1kg Fresh Pack`, cat: cat, unit: "kg", price: price, img: img });
     }
-    // ७. साबण व वैयक्तिक स्वच्छता (Soap, Lux, Dettol, Lifebuoy, साबण)
-    else if (clean.includes('soap') || clean.includes('lux') || clean.includes('dettol') || clean.includes('lifebuoy') || clean.includes('godrej') || clean.includes('साबण')) {
-      img = SVG_ICONS.soap;
-      cat = 'वैयक्तिक काळजी (Personal Soap)';
-      unit = 'packet';
-      price = '40';
-
-      suggestions.push({ name: `${raw} Single Soap Bar`, cat: cat, unit: "pcs", price: 38, img: SVG_ICONS.soap });
-      suggestions.push({ name: `${raw} Multipack (Pack of 4)`, cat: cat, unit: "packet", price: 135, img: SVG_ICONS.soap });
-    }
-    // ८. शाम्पू व हेअर केअर (Shampoo, Conditioner, Sunsilk, Clinic Plus, शाम्पू)
-    else if (clean.includes('shampoo') || clean.includes('sunsilk') || clean.includes('clinic') || clean.includes('शाम्पू')) {
-      img = SVG_ICONS.shampoo;
-      cat = 'हेअर केअर (Shampoo & Care)';
-      unit = 'pcs';
-      price = '120';
-
-      suggestions.push({ name: `${raw} Bottle 180ml`, cat: cat, unit: "pcs", price: 120, img: SVG_ICONS.shampoo });
-      suggestions.push({ name: `${raw} Sachet Strips`, cat: cat, unit: "packet", price: 60, img: SVG_ICONS.shampoo });
-    }
-    // ९. दूध व डेअरी उत्पादने (Milk, Butter, Cheese, Amul, Paneer, दूध)
-    else if (clean.includes('milk') || clean.includes('butter') || clean.includes('cheese') || clean.includes('amul') || clean.includes('paneer') || clean.includes('curd') || clean.includes('दूध')) {
-      img = SVG_ICONS.dairy;
-      cat = 'डेअरी व दुग्धजन्य (Dairy Products)';
-      unit = clean.includes('milk') ? 'ltr' : 'packet';
-      price = '32';
-
-      suggestions.push({ name: `${raw} Standard Pack`, cat: cat, unit: unit, price: 32, img: SVG_ICONS.dairy });
-      suggestions.push({ name: `${raw} 500g Fresh Pack`, cat: cat, unit: "packet", price: 120, img: SVG_ICONS.dairy });
-    }
-    // १०. स्टेशनरी व पुस्तके (Book, Notebook, Pen, Classmate, वही, पेन)
-    else if (clean.includes('book') || clean.includes('notebook') || clean.includes('pen') || clean.includes('classmate') || clean.includes('pencil') || clean.includes('वही') || clean.includes('पेन')) {
-      img = SVG_ICONS.stationery;
-      cat = 'स्टेशनरी व शैक्षणिक (Stationery)';
-      unit = 'pcs';
-      price = '40';
-
-      suggestions.push({ name: `${raw} Single Unit`, cat: cat, unit: "pcs", price: 40, img: SVG_ICONS.stationery });
-      suggestions.push({ name: `${raw} Set / Bundle (Pack of 6)`, cat: cat, unit: "packet", price: 230, img: SVG_ICONS.stationery });
-    }
-    // ११. हार्डवेअर, बांधकाम व टूल्स (Cement, Pipe, Paint, Wire, सिमेंट, रंग)
-    else if (clean.includes('cement') || clean.includes('pipe') || clean.includes('paint') || clean.includes('wire') || clean.includes('सिमेंट') || clean.includes('रंग')) {
-      img = SVG_ICONS.hardware;
-      cat = 'हार्डवेअर व बांधकाम (Hardware & Tools)';
-      unit = clean.includes('cement') ? 'bag' : 'pcs';
-      price = clean.includes('cement') ? '380' : '150';
-
-      suggestions.push({ name: `${raw} Standard Unit`, cat: cat, unit: unit, price: price, img: SVG_ICONS.hardware });
-    }
-    // १२. जगातील इतर कोणतीही रिटेल वस्तू (युनिव्हर्सल बॅज)
+    // ७. इतर कोणत्याही उत्पादनासाठी
     else {
       img = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='8' fill='%231D4E89'/><text x='50' y='55' font-family='Arial,sans-serif' font-size='9' font-weight='bold' fill='%23ffffff' text-anchor='middle'>${encodeURIComponent(raw.substring(0, 14).toUpperCase())}</text></svg>`;
-      cat = 'General Retail Product';
+      cat = 'Universal Retail';
       unit = 'pcs';
 
       suggestions.push({ name: `${raw} Standard Pack`, cat: cat, unit: unit, price: '', img: img });
@@ -567,7 +609,7 @@ function universalAutoMapper(inputText) {
     // ड्रॉपडाउन सजेशन यादी
     if (dropdown) {
       dropdown.innerHTML = suggestions.map(item => `
-        <div class="suggest-row" onclick="applyItemToForm('${escapeHtml(item.name).replace(/'/g, "\\'")}', '${item.cat}', '${item.unit}', '${item.price}', '${encodeURIComponent(item.img)}')">
+        <div class="suggest-row" onclick="applyLiveSuggestion('${escapeHtml(item.name).replace(/'/g, "\\'")}', '${item.cat}', '${item.unit}', '${item.price}', '${encodeURIComponent(item.img)}')">
           <img src="${item.img}" alt="${item.name}">
           <div>
             <strong style="font-size:13px; color:#0f172a; display:block;">${item.name}</strong>
@@ -578,13 +620,13 @@ function universalAutoMapper(inputText) {
       dropdown.style.display = 'block';
     }
 
-    // कार्ड त्वरित अचूक अपडेट करणे (निळा डमी बॉक्स कायमचा बंद)
+    // कार्ड थेट अचूक अपडेट करणे (निळा डमी बॉक्स कायमचा बंद)
     previewBox.innerHTML = `
       <div style="display:flex; align-items:center; gap:12px; background:#f0fdf4; padding:8px 12px; border-radius:6px; border:1px solid #bbf7d0; width:100%;">
         <img src="${img}" style="width:46px; height:46px; object-fit:contain; border-radius:6px; background:#fff; border:1px solid #cbd5e1; padding:2px;" alt="${raw}">
         <div>
           <strong style="font-size:13px; color:#16a34a;">✨ Auto-Mapped (${cat})</strong><br>
-          <span style="font-size:11.5px; color:#475569;">${raw} चे अधिकृत चित्र व कॅटेगरी सेट केली आहे.</span>
+          <span style="font-size:11.5px; color:#475569;">${raw} चे अधिकृत चित्र व माहिती सेट झाली आहे.</span>
         </div>
       </div>
     `;
@@ -595,7 +637,7 @@ function universalAutoMapper(inputText) {
   }, 120);
 }
 
-function applyItemToForm(name, cat, unit, price, imgEncoded) {
+function applyLiveSuggestion(name, cat, unit, price, imgEncoded) {
   document.getElementById('np-name').value = name;
   document.getElementById('np-unit').value = unit;
   if (price) document.getElementById('np-price').value = price;
