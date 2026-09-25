@@ -358,7 +358,7 @@
   </div>
 </div>
 
-<!-- ==================== MODALS SECTION (FULLY FUNCTIONAL CLOSING) ==================== -->
+<!-- ==================== MODALS SECTION ==================== -->
 
 <!-- 1. ग्लोबल मार्केटप्लेस मोडल -->
 <div id="global-catalog-modal" class="modal-overlay">
@@ -1267,7 +1267,7 @@ async function loadExpenses() {
   const tbody = document.getElementById('expenses-table-body');
   if (!tbody) return;
   const { data } = await sb.from('expenses').select('*').eq('business_id', currentBusinessId).order('created_at', { ascending: false });
-  if (!data || data.length === 0) { tbody.innerHTML = '<tr><td colspan="4" class="muted" style="text-align:center; padding:15px;">कोणताही खर्च नाही.</td></tr>'; return; }
+  if (!data || data.length === 0) { tbody.innerHTML = '<tr><td colspan="4" class="muted" style="text-align:center; padding:20px;">कोणताही खर्च नाही.</td></tr>'; return; }
   tbody.innerHTML = data.map(e => `<tr style="border-bottom:1px solid #f1f5f9;"><td style="padding:8px 0;"><strong>${e.title}</strong></td><td>General</td><td><strong>₹${e.amount}</strong></td><td>${new Date(e.created_at).toLocaleDateString('mr-IN')}</td></tr>`).join('');
 }
 
@@ -1461,15 +1461,26 @@ async function addGlobalProductToStore(product) {
   } catch (err) { alert('त्रुटी: ' + err.message); }
 }
 
-// 🌟 खात्रीशीर अस्सल ब्रँड कॅटलॉग (१००% थेट चालू असणारा)
+// 🌟 १००% अस्सल आणि कधीही न तुटणारे व्हेक्टर व्हिज्युअल्स
+const TATA_SALT_SVG = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 120'><rect width='100' height='120' rx='8' fill='%23ffffff' stroke='%230284c7' stroke-width='3'/><rect x='6' y='6' width='88' height='40' rx='4' fill='%230284c7'/><text x='50' y='32' font-family='Arial Black,sans-serif' font-size='14' font-weight='900' fill='%23ffffff' text-anchor='middle'>TATA</text><circle cx='50' cy='65' r='18' fill='%23e0f2fe'/><text x='50' y='70' font-family='Arial Black,sans-serif' font-size='13' font-weight='900' fill='%230369a1' text-anchor='middle'>SALT</text><text x='50' y='92' font-family='Arial,sans-serif' font-size='8' font-weight='bold' fill='%23b91c1c' text-anchor='middle'>DESH KA NAMAK</text><text x='50' y='106' font-family='Arial,sans-serif' font-size='7' fill='%23334155' text-anchor='middle'>Vacuum Evaporated 1kg</text></svg>";
+
+const BISLERI_SVG = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 90 120'><rect width='90' height='120' rx='8' fill='%23ffffff' stroke='%23059669' stroke-width='2'/><path d='M35 15 L55 15 L55 25 L65 35 L65 105 L25 105 L25 35 L35 25 Z' fill='%23e0f2fe' stroke='%230284c7' stroke-width='1.5'/><rect x='38' y='8' width='14' height='8' rx='2' fill='%23059669'/><rect x='25' y='52' width='40' height='28' fill='%23059669'/><text x='45' y='68' font-family='Arial Black,sans-serif' font-size='8' font-weight='900' fill='%23ffffff' text-anchor='middle'>Bisleri</text><text x='45' y='76' font-family='Arial,sans-serif' font-size='5' fill='%23ecfdf5' text-anchor='middle'>with minerals</text><text x='45' y='114' font-family='Arial,sans-serif' font-size='7' font-weight='bold' fill='%23065f46' text-anchor='middle'>1 LITRE</text></svg>";
+
+const PARLE_G_SVG = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 90'><rect width='120' height='90' rx='6' fill='%23fef08a' stroke='%23ca8a04' stroke-width='2'/><rect x='5' y='5' width='110' height='80' rx='4' fill='%23fef9c3'/><rect x='10' y='22' width='100' height='28' rx='4' fill='%23dc2626'/><text x='60' y='42' font-family='Arial Black,sans-serif' font-size='18' font-weight='900' fill='%23ffffff' text-anchor='middle'>Parle-G</text><text x='60' y='64' font-family='Arial,sans-serif' font-size='9' font-weight='bold' fill='%23854d0e' text-anchor='middle'>GLUCOSE BISCUITS</text></svg>";
+
+const GEMINI_SVG = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 120'><rect width='100' height='120' rx='8' fill='%23ffffff' stroke='%23f59e0b' stroke-width='3'/><rect x='6' y='6' width='88' height='108' rx='6' fill='%23fffbeb'/><circle cx='50' cy='45' r='24' fill='%23fef08a' stroke='%23eab308' stroke-width='2'/><circle cx='50' cy='45' r='12' fill='%2378350f'/><text x='50' y='82' font-family='Arial,sans-serif' font-size='11' font-weight='900' fill='%23b45309' text-anchor='middle'>GEMINI</text><text x='50' y='94' font-family='Arial,sans-serif' font-size='8' font-weight='bold' fill='%2315803d' text-anchor='middle'>SUNFLOWER OIL</text></svg>";
+
+const MAGGI_SVG = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='10' fill='%23facc15'/><rect x='6' y='6' width='88' height='88' rx='6' fill='%23eab308'/><circle cx='50' cy='48' r='30' fill='%23dc2626'/><text x='50' y='54' font-family='Arial Black,sans-serif' font-size='16' font-weight='900' fill='%23fef08a' text-anchor='middle'>Maggi</text><text x='50' y='76' font-family='Arial,sans-serif' font-size='8' font-weight='bold' fill='%2378350f' text-anchor='middle'>2-MINUTE NOODLES</text></svg>";
+
 const KNOWN_DIRECT_BRANDS = {
-  "salt": { name_mr: "टाटा मीठ (Tata Salt)", cat: "Staples", unit: "kg", price: 28, img: "https://images.openfoodfacts.org/images/products/8901030012586/front_en.6.400.jpg" },
-  "solt": { name_mr: "टाटा मीठ (Tata Salt)", cat: "Staples", unit: "kg", price: 28, img: "https://images.openfoodfacts.org/images/products/8901030012586/front_en.6.400.jpg" },
-  "namak": { name_mr: "टाटा मीठ (Tata Salt)", cat: "Staples", unit: "kg", price: 28, img: "https://images.openfoodfacts.org/images/products/8901030012586/front_en.6.400.jpg" },
-  "bisleri": { name_mr: "बिसलेरी पाणी (Bisleri 1L)", cat: "Beverages", unit: "ltr", price: 20, img: "https://images.openfoodfacts.org/images/products/8906007280235/front_en.13.400.jpg" },
-  "parle": { name_mr: "पारले-जी बिस्कीट (Parle-G)", cat: "Biscuits", unit: "packet", price: 10, img: "https://images.openfoodfacts.org/images/products/8901719101038/front_en.4.400.jpg" },
-  "gemini": { name_mr: "जेमिनी सूर्यफूल तेल (Gemini Oil)", cat: "Edible Oil", unit: "ltr", price: 135, img: "https://images.openfoodfacts.org/images/products/8906007280235/front_en.13.400.jpg" },
-  "maggi": { name_mr: "नेस्ले मॅगी नूडल्स (Maggi)", cat: "Instant Food", unit: "packet", price: 14, img: "https://images.openfoodfacts.org/images/products/890/105/890/1559/front_en.3.400.jpg" }
+  "salt": { name_mr: "टाटा मीठ (Tata Salt)", cat: "Staples", unit: "kg", price: 28, img: TATA_SALT_SVG },
+  "solt": { name_mr: "टाटा मीठ (Tata Salt)", cat: "Staples", unit: "kg", price: 28, img: TATA_SALT_SVG },
+  "namak": { name_mr: "टाटा मीठ (Tata Salt)", cat: "Staples", unit: "kg", price: 28, img: TATA_SALT_SVG },
+  "bisleri": { name_mr: "बिसलेरी पाणी (Bisleri 1L)", cat: "Beverages", unit: "ltr", price: 20, img: BISLERI_SVG },
+  "water": { name_mr: "बिसलेरी पाणी (Bisleri 1L)", cat: "Beverages", unit: "ltr", price: 20, img: BISLERI_SVG },
+  "parle": { name_mr: "पारले-जी बिस्कीट (Parle-G)", cat: "Biscuits", unit: "packet", price: 10, img: PARLE_G_SVG },
+  "gemini": { name_mr: "जेमिनी सूर्यफूल तेल (Gemini Oil)", cat: "Edible Oil", unit: "ltr", price: 135, img: GEMINI_SVG },
+  "maggi": { name_mr: "नेस्ले मॅगी नूडल्स (Maggi)", cat: "Instant Food", unit: "packet", price: 14, img: MAGGI_SVG }
 };
 
 let imageSuggestDebounce = null;
@@ -1484,7 +1495,7 @@ function autoSuggestProductImages(name) {
     const clean = name.toLowerCase().trim();
     let matched = null;
 
-    // १. डायरेक्ट कॅटलॉग तपासणे
+    // १. अस्सल डायरेक्ट ब्रँड मॅपिंग
     for (const key in KNOWN_DIRECT_BRANDS) {
       if (clean.includes(key)) {
         matched = KNOWN_DIRECT_BRANDS[key];
@@ -1492,28 +1503,12 @@ function autoSuggestProductImages(name) {
       }
     }
 
-    // २. जर कॅटलॉगमध्ये नसेल तर Open Product Facts शोधणे
-    if (!matched) {
-      try {
-        const res = await fetch(`https://in.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(name)}&search_simple=1&action=process&json=1&page_size=1`);
-        const data = await res.json();
-        if (data.products && data.products.length > 0 && (data.products[0].image_front_url || data.products[0].image_url)) {
-          const p = data.products[0];
-          matched = {
-            name_mr: p.product_name || name,
-            cat: p.categories ? p.categories.split(',')[0] : 'General',
-            img: p.image_front_url || p.image_url
-          };
-        }
-      } catch (e) {}
-    }
-
-    // ३. फॉलबॅक
+    // २. इतर उत्पादनांसाठी
     if (!matched) {
       matched = {
         name_mr: name,
         cat: 'General',
-        img: `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=1D4E89&color=fff&size=100`
+        img: `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='8' fill='%231D4E89'/><text x='50' y='55' font-family='Arial,sans-serif' font-size='10' font-weight='bold' fill='%23ffffff' text-anchor='middle'>${encodeURIComponent(name.substring(0, 14).toUpperCase())}</text></svg>`
       };
     }
 
@@ -1556,7 +1551,7 @@ if (saveBtn) {
     if (isVariant && !variantLabel) { errorEl.textContent = 'कृपया Variant लेबल (उदा. 500ml) टाका.'; return; }
 
     try {
-      if (!imageUrl) imageUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=1D4E89&color=fff`;
+      if (!imageUrl) imageUrl = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='8' fill='%231D4E89'/><text x='50' y='55' font-family='Arial,sans-serif' font-size='10' font-weight='bold' fill='%23ffffff' text-anchor='middle'>${encodeURIComponent(name.substring(0, 14).toUpperCase())}</text></svg>`;
       if (currentBusinessId) {
         let productMasterId = null;
         if (barcode) {
