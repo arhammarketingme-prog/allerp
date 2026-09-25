@@ -49,43 +49,25 @@
   opacity: 0.85;
 }
 
-/* 🌟 लॉगिन बटण (कधीही लपणार नाही) */
+/* 🌟 एका क्लिकवर Google लॉगिन बटण */
 .top-action-btns {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 #auth-state-btn {
-  background: #16a34a !important;
-  color: #ffffff !important;
-  border: none !important;
-  padding: 8px 14px !important;
-  border-radius: 6px !important;
-  font-size: 13px !important;
-  font-weight: 800 !important;
+  background: #ffffff !important;
+  color: #1e293b !important;
+  border: 1px solid #cbd5e1 !important;
+  padding: 7px 12px !important;
+  border-radius: 20px !important;
+  font-size: 12.5px !important;
+  font-weight: 700 !important;
   cursor: pointer !important;
-  display: inline-block !important;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2) !important;
-}
-
-/* ग्राहक लॉगिन पॉपअप */
-.login-modal-overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.65);
-  z-index: 100005;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
-}
-.login-modal-card {
-  background: #ffffff;
-  width: 100%;
-  max-width: 360px;
-  border-radius: 12px;
-  padding: 22px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
 }
 
 /* इन्स्टॉल बॅनर */
@@ -150,7 +132,6 @@
   cursor: pointer;
 }
 
-/* फ्लोटिंग कार्ट */
 .floating-customer-cart {
   display: none;
   position: fixed;
@@ -169,7 +150,6 @@
 </head>
 <body style="padding-bottom: 75px; background: #f8fafc;">
 
-<!-- 🌟 ग्राहक हेडर (यात लॉगिन बटण थेट दिसेल) -->
 <header class="customer-app-topbar">
   <div class="brand">
     <img id="top-shop-icon" src="icon-192.png" alt="Shop Logo">
@@ -179,7 +159,10 @@
     </div>
   </div>
   <div class="top-action-btns">
-    <button type="button" id="auth-state-btn" onclick="handleAuthButtonClick()">👤 लॉगिन</button>
+    <button type="button" id="auth-state-btn" onclick="handleGoogleSignIn()">
+      <svg width="15" height="15" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+      <span id="auth-btn-text">गुगल लॉगिन</span>
+    </button>
     <button type="button" onclick="shareStoreLink()" style="background:rgba(255,255,255,0.2); border:none; color:#fff; padding:7px 10px; border-radius:6px; font-size:13px; font-weight:bold; cursor:pointer;">🔗</button>
   </div>
 </header>
@@ -235,27 +218,6 @@
   </div>
 </div>
 
-<!-- 🌟 ग्राहक लॉगिन पॉपअप -->
-<div class="login-modal-overlay" id="customer-login-modal">
-  <div class="login-modal-card">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-      <h3 style="margin:0; font-size:17px; color:#1D4E89;">ग्राहक लॉगिन (AllERP & Weavo)</h3>
-      <button type="button" onclick="closeCustomerLoginModal()" style="border:none; background:transparent; font-size:18px; cursor:pointer;">✕</button>
-    </div>
-    <p style="font-size:12.5px; color:#64748b; margin-bottom:14px;">एकदा लॉगिन करा आणि AllERP व Weavo दोन्हीमध्ये थेट प्रवेश मिळवा.</p>
-    
-    <div style="margin-bottom:10px;">
-      <label style="font-size:12px; font-weight:bold;">ईमेल पत्ता</label>
-      <input type="email" id="cust-login-email" placeholder="example@gmail.com" style="width:100%; padding:9px; border:1px solid #cbd5e1; border-radius:6px; box-sizing:border-box;">
-    </div>
-    <div style="margin-bottom:14px;">
-      <label style="font-size:12px; font-weight:bold;">पासवर्ड</label>
-      <input type="password" id="cust-login-password" placeholder="••••••••" style="width:100%; padding:9px; border:1px solid #cbd5e1; border-radius:6px; box-sizing:border-box;">
-    </div>
-    <button type="button" onclick="executeCustomerLogin()" style="width:100%; background:#1D4E89; color:#fff; border:none; padding:10px; border-radius:6px; font-weight:bold; cursor:pointer; font-size:14px;">लॉगिन करा</button>
-  </div>
-</div>
-
 <script src="js/supabase-client.js"></script>
 <script src="js/cart.js"></script>
 <script src="js/ads.js"></script>
@@ -263,7 +225,7 @@
 <script>
 const WEAVO_BASE_URL = "https://arhammarketingme-prog.github.io/weavo/";
 const params = new URLSearchParams(window.location.search);
-const slug = params.get('slug') || params.get('biz') || params.get('id') || 'Nikhil Kirana';
+const slug = params.get('slug') || params.get('biz') || params.get('id') || 'nikhil-kirana';
 let businessData = null;
 let allStoreProducts = [];
 let localCart = {};
@@ -326,53 +288,39 @@ function dismissStoreBanner() {
   if (banner) banner.style.display = 'none';
 }
 
+// 🌟 Google एका क्लिकवर लॉगिन
+async function handleGoogleSignIn() {
+  if (currentCustomerSession) {
+    if (confirm("खात्यातून बाहेर पडायचे (Logout) आहे का?")) {
+      await sb.auth.signOut();
+      currentCustomerSession = null;
+      checkAuthStatus();
+    }
+    return;
+  }
+
+  const { data, error } = await sb.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: window.location.href
+    }
+  });
+
+  if (error) alert("लॉगिन त्रुटी: " + error.message);
+}
+
 async function checkAuthStatus() {
   try {
     const { data: { session } } = await sb.auth.getSession();
     currentCustomerSession = session;
-    const btn = document.getElementById('auth-state-btn');
+    const btnText = document.getElementById('auth-btn-text');
     if (session && session.user) {
       const uName = session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'ग्राहक';
-      btn.textContent = `✓ ${uName}`;
-      btn.style.background = '#0284c7';
+      btnText.textContent = `✓ ${uName}`;
     } else {
-      btn.textContent = '👤 लॉगिन';
-      btn.style.background = '#16a34a';
+      btnText.textContent = 'गुगल लॉगिन';
     }
   } catch(e){}
-}
-
-function handleAuthButtonClick() {
-  if (currentCustomerSession) {
-    if (confirm("तुम्हाला खात्यातून बाहेर पडायचे (Logout) आहे का?")) {
-      sb.auth.signOut().then(() => {
-        currentCustomerSession = null;
-        checkAuthStatus();
-      });
-    }
-  } else {
-    document.getElementById('customer-login-modal').style.display = 'flex';
-  }
-}
-
-function closeCustomerLoginModal() {
-  document.getElementById('customer-login-modal').style.display = 'none';
-}
-
-async function executeCustomerLogin() {
-  const email = document.getElementById('cust-login-email').value.trim();
-  const password = document.getElementById('cust-login-password').value.trim();
-  if (!email || !password) { alert('कृपया ईमेल व पासवर्ड भरा.'); return; }
-
-  const { data, error } = await sb.auth.signInWithPassword({ email, password });
-  if (error) {
-    alert('लॉगिन त्रुटी: ' + error.message);
-  } else {
-    currentCustomerSession = data.session;
-    closeCustomerLoginModal();
-    checkAuthStatus();
-    alert('✅ ऑल ईआरपी लॉगिन यशस्वी झाले! आता वीवो चॅट आपोआप उघडेल.');
-  }
 }
 
 async function loadStore() {
@@ -386,7 +334,7 @@ async function loadStore() {
   }
 
   const { data: business } = await query.maybeSingle();
-  const shopName = business?.name || decodeURIComponent(slug);
+  const shopName = business?.name || decodeURIComponent(slug).replace(/-/g, ' ');
   businessData = business || { id: null, name: shopName, contact_phone: '' };
 
   document.getElementById('top-shop-name').textContent = shopName;
@@ -506,15 +454,15 @@ function openWhatsAppWithCart() {
 
 async function openWeavoWithCart() {
   const msg = generateOrderSummaryText();
-  const shopName = businessData?.name || 'Nikhil Kirana';
+  const shopName = businessData?.name || 'nikhil-kirana';
   openWeavoWithAutoLogin(shopName, msg);
 }
 
-// 🌟 Weavo वर थेट ऑटो-लॉगिन करणे
 async function openWeavoWithAutoLogin(shopName, cartMessage = '') {
   if (!currentCustomerSession) {
-    alert("कृपया आधी आपले ऑल ईआरपी खाते लॉगिन करा, जेणेकरून वीवो आपोआप उघडेल.");
-    document.getElementById('customer-login-modal').style.display = 'flex';
+    if (confirm("वीवो चॅट आपोआप उघडण्यासाठी कृपया आधी Google ने लॉगिन करा. आता Google लॉगिन करायचे का?")) {
+      handleGoogleSignIn();
+    }
     return;
   }
 
