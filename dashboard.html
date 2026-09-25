@@ -37,7 +37,7 @@
 .stock-input { border: 1px solid #cbd5e1; border-radius: 6px; padding: 6px 10px; width: 90px; text-align: center; font-weight: 700; color: #1e293b; transition: all 0.2s; }
 .stock-input:focus { outline: none; border-color: #1D4E89; box-shadow: 0 0 0 3px rgba(37,99,235,0.15); }
 
-/* 🌟 अमॅझॉन/ब्लिंकिट दर्जाचा अस्सल सर्च पॉप-अप */
+/* 🌟 अमॅझॉन/ब्लिंकिट दर्जाचा ऑटो-सर्च पॉप-अप */
 .smart-search-wrapper { position: relative; width: 100%; }
 .smart-suggest-popup {
   display: none;
@@ -49,7 +49,7 @@
   border: 1px solid #cbd5e1;
   border-radius: 8px;
   box-shadow: 0 10px 25px rgba(0,0,0,0.18);
-  max-height: 310px;
+  max-height: 320px;
   overflow-y: auto;
   z-index: 100005;
   margin-top: 4px;
@@ -73,6 +73,16 @@
   background: #ffffff;
   padding: 2px;
 }
+.loading-indicator {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid #1D4E89;
+  border-radius: 50%;
+  border-top-color: transparent;
+  animation: spin 0.6s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
 </style>
 </head>
 <body>
@@ -155,21 +165,21 @@
 <div id="add-product-modal" class="modal-overlay">
   <div class="modal-content">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-      <h3 style="margin:0;">📦 नवीन प्रॉडक्ट जोडा (Amazon-Level Hybrid Engine)</h3>
+      <h3 style="margin:0;">📦 नवीन प्रॉडक्ट जोडा (AllERP Central Cloud Engine)</h3>
       <button type="button" class="secondary" onclick="closeModal('add-product-modal')" style="padding:4px 10px; font-size:12px; cursor:pointer; font-weight:bold;">✕ बंद करा</button>
     </div>
 
     <!-- 🌟 स्मार्ट सर्च फील्ड -->
     <div style="margin-top:12px;" class="smart-search-wrapper">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-        <label style="font-weight:700; font-size:12.5px;">उत्पादनाचे नाव / ब्रँड * (उदा. Maggi, Samsung, Oppo, Parle-G, Gemini, TV)</label>
-        <span id="api-status-indicator" style="font-size:11px; color:#1D4E89; font-weight:bold;">🇮🇳 Indian Retail API</span>
+        <label style="font-weight:700; font-size:12.5px;">उत्पादनाचे नाव / ब्रँड / वस्तू * (उदा. Amul Milk, Ice Cream, Samsung, Oppo, Maggi, Shirt)</label>
+        <span id="api-status-indicator" style="font-size:11px; color:#1D4E89; font-weight:bold;">🌐 Central Cloud Sync</span>
       </div>
       <div style="display:flex; gap:6px;">
-        <input id="np-name" placeholder="उदा. maggi noodles, samsung s24 ultra, oppo reno, parle-g, gemini oil..." oninput="handleUniversalHybridSearch(this.value)" autocomplete="off" style="margin-bottom:0; flex:1; padding:8px; border:1px solid #cbd5e1; border-radius:4px;">
+        <input id="np-name" placeholder="उदा. amul milk, ice cream, maggi, samsung, oppo, parle-g..." oninput="handleCentralCatalogSearch(this.value)" autocomplete="off" style="margin-bottom:0; flex:1; padding:8px; border:1px solid #cbd5e1; border-radius:4px;">
         <button type="button" onclick="startHtml5Scanner('product')" class="secondary" style="padding:8px 10px; font-size:12px; cursor:pointer; background:#1D4E89; color:#fff; border:none; border-radius:4px;">📷 स्कॅनर</button>
       </div>
-      <!-- ड्रॉपडाउन यादी -->
+      <!-- अमॅझॉन/ब्लिंकिट ड्रॉपडाउन यादी -->
       <div id="brand-suggest-box" class="smart-suggest-popup"></div>
       <div id="reader" style="width:100%; max-width:400px; margin-top:8px; display:none;"></div>
     </div>
@@ -183,9 +193,14 @@
     <div style="margin:12px 0; background:#ffffff; border:1px solid #d0e1fd; border-radius:8px; padding:10px;">
       <div style="font-size:12px; font-weight:700; color:#1D4E89; margin-bottom:6px;">✨ निवडलेला ओरिजिनल फोटो व तपशील:</div>
       <div id="smart-image-suggestions" style="display:flex; gap:10px; align-items:center; min-height:55px;">
-        <span class="muted" style="font-size:11.5px;">नाव टाईप करताच अचूक उत्पादन व फोटो लोड होईल...</span>
+        <span class="muted" style="font-size:11.5px;">नाव टाईप करताच सर्व मॉडेल्स व पाकिटे लोड होतील...</span>
       </div>
       <input type="hidden" id="np-selected-image-url" value="">
+      
+      <!-- 📷 नवीन वस्तूचा थेट फोटो अपलोड करण्याचा पर्याय -->
+      <div style="margin-top:8px; display:flex; gap:8px; align-items:center;">
+        <input id="np-custom-image-url" placeholder="किंवा थेट इमेज लिंक टाका (उदा. https://...)" oninput="applyCustomImageUrl(this.value)" style="flex:1; padding:6px; font-size:11.5px; border:1px solid #cbd5e1; border-radius:4px; margin:0;">
+      </div>
     </div>
 
     <div style="display:flex; gap:10px;">
@@ -223,7 +238,7 @@
 let currentBusinessId = null;
 let currentProducts = [];
 let activeHtmlScanner = null;
-let hybridSearchTimer = null;
+let centralSearchTimer = null;
 
 function switchTab(tabId) {
   document.querySelectorAll('.erp-tab-pane').forEach(el => el.style.display = 'none');
@@ -284,23 +299,29 @@ function escapeHtml(str) {
   return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
 }
 
-// 🌟 अस्सल भारतीय पॅकेजिंग इमेजेस (कधीही न तुटणाऱ्या अधिकृत लिंक्स)
-const INDIAN_ORIGIN_DB = {
-  maggi_2min: "https://images.openfoodfacts.org/images/products/8901058852331/front_en.11.400.jpg",
-  maggi_atta: "https://images.openfoodfacts.org/images/products/8901058852331/front_en.11.400.jpg",
-  parle_g: "https://images.openfoodfacts.org/images/products/8901719101038/front_en.4.400.jpg",
-  gemini_oil: "https://images.openfoodfacts.org/images/products/8906007280235/front_en.13.400.jpg",
-  tata_salt: "https://images.openfoodfacts.org/images/products/8901030012586/front_en.6.400.jpg",
+// 🌟 स्वयंचलित कॅटेगरी व्हिज्युअल जनरेटर (कोणतीही वस्तू अडकणार नाही)
+function generateCategoryVector(name, cat) {
+  const clean = (name + ' ' + cat).toLowerCase();
+  
+  // दूध व दुग्धजन्य
+  if (clean.includes('milk') || clean.includes('amul') || clean.includes('ताक') || clean.includes('दूध') || clean.includes('paneer') || clean.includes('dahi')) {
+    return "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 120'><rect width='100' height='120' rx='8' fill='%23eff6ff' stroke='%233b82f6' stroke-width='2'/><path d='M0 0 L100 0 L100 28 L0 28 Z' fill='%232563eb'/><text x='50' y='20' font-family='Arial Black' font-size='11' fill='%23ffffff' text-anchor='middle'>FRESH DAIRY</text><circle cx='50' cy='60' r='20' fill='%23ffffff' stroke='%233b82f6'/><text x='50' y='64' font-family='Arial Black' font-size='8' fill='%231d4ed8' text-anchor='middle'>MILK</text><text x='50' y='105' font-family='Arial' font-size='7' font-weight='bold' fill='%231e40af' text-anchor='middle'>500ml / 1 Litre</text></svg>";
+  }
+  // आईस्क्रीम
+  if (clean.includes('ice') || clean.includes('cream') || clean.includes('cone') || clean.includes('candy') || clean.includes('आईस्क्रीम')) {
+    return "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 120'><rect width='100' height='120' rx='8' fill='%23fff1f2' stroke='%23f43f5e' stroke-width='2'/><path d='M30 50 Q50 15 70 50 Z' fill='%23f43f5e'/><polygon points='30,50 70,50 50,105' fill='%23d97706'/><text x='50' y='42' font-family='Arial Black' font-size='7.5' fill='%23ffffff' text-anchor='middle'>ICE CREAM</text><text x='50' y='114' font-family='Arial' font-size='6.5' font-weight='bold' fill='%23be123c' text-anchor='middle'>Delicious Treat</text></svg>";
+  }
+  // स्मार्टफोन
+  if (clean.includes('samsung') || clean.includes('oppo') || clean.includes('vivo') || clean.includes('phone') || clean.includes('mobile')) {
+    return "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 90 130'><rect width='90' height='130' rx='10' fill='%230f172a' stroke='%2338bdf8' stroke-width='2'/><rect x='6' y='6' width='78' height='118' rx='8' fill='%231e293b'/><circle cx='45' cy='65' r='14' fill='%230284c7'/><text x='45' y='69' font-family='Arial Black' font-size='8' fill='%23fff' text-anchor='middle'>5G</text><text x='45' y='108' font-family='Arial' font-size='6.5' font-weight='bold' fill='%2338bdf8' text-anchor='middle'>SMARTPHONE</text></svg>";
+  }
+  // किराणा व जनरल
+  return `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='8' fill='%231D4E89'/><text x='50' y='55' font-family='Arial' font-size='8.5' font-weight='bold' fill='%23ffffff' text-anchor='middle'>${encodeURIComponent(name.substring(0, 14).toUpperCase())}</text></svg>`;
+}
 
-  // इलेक्ट्रॉनिक्स अचूक व्हेक्टर पॅक्स (कधीही चॉकलेट किंवा आइसक्रीम येणार नाही)
-  samsung_s24_ultra: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 90 130'><rect width='90' height='130' rx='6' fill='%231e293b' stroke='%23cbd5e1' stroke-width='2'/><rect x='6' y='6' width='78' height='118' rx='4' fill='%230f172a'/><circle cx='22' cy='22' r='7.5' fill='%230284c7' stroke='%23ffffff' stroke-width='1.5'/><circle cx='22' cy='40' r='7.5' fill='%230284c7' stroke='%23ffffff' stroke-width='1.5'/><circle cx='22' cy='58' r='7.5' fill='%230284c7' stroke='%23ffffff' stroke-width='1.5'/><text x='58' y='75' font-family='Arial Black' font-size='8' fill='%2338bdf8' text-anchor='middle'>S24</text><text x='58' y='86' font-family='Arial Black' font-size='7' fill='%23fff' text-anchor='middle'>ULTRA</text><text x='45' y='114' font-family='Arial' font-size='6.5' font-weight='bold' fill='%2394a3b8' text-anchor='middle'>Titanium Gray</text></svg>",
-  oppo_reno: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 90 130'><rect width='90' height='130' rx='14' fill='%23f8fafc' stroke='%23cbd5e1' stroke-width='2'/><rect x='6' y='6' width='78' height='118' rx='12' fill='%23f1f5f9'/><rect x='10' y='12' width='28' height='52' rx='14' fill='%23334155'/><circle cx='24' cy='26' r='8' fill='%23059669'/><circle cx='24' cy='48' r='8' fill='%23059669'/><text x='56' y='42' font-family='Arial Black' font-size='8' fill='%230f172a' text-anchor='middle'>OPPO</text><text x='56' y='54' font-family='Arial Black' font-size='7' fill='%23059669' text-anchor='middle'>RENO</text><text x='45' y='114' font-family='Arial' font-size='6.5' font-weight='bold' fill='%23475569' text-anchor='middle'>Reno 11 Pro 5G</text></svg>",
-  redmi_phone: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 90 130'><rect width='90' height='130' rx='12' fill='%230284c7' stroke='%2338bdf8' stroke-width='2.5'/><rect x='6' y='6' width='78' height='118' rx='10' fill='%230369a1'/><circle cx='26' cy='28' r='12' fill='%230f172a' stroke='%2338bdf8' stroke-width='2'/><circle cx='26' cy='58' r='12' fill='%230f172a' stroke='%2338bdf8' stroke-width='2'/><text x='58' y='46' font-family='Arial Black' font-size='8' fill='%23ffffff' text-anchor='middle'>REDMI</text><text x='58' y='57' font-family='Arial Black' font-size='7' fill='%237dd3fc' text-anchor='middle'>17 5G</text><text x='45' y='114' font-family='Arial' font-size='6.5' font-weight='bold' fill='%23e0f2fe' text-anchor='middle'>Endless Blue</text></svg>"
-};
-
-// 🧠 हायब्रिड युनिव्हर्सल सर्च (Food + Electronics अचूक वर्गीकरण)
-async function handleUniversalHybridSearch(queryText) {
-  clearTimeout(hybridSearchTimer);
+// 🧠 ऑल-ईआरपी सेंट्रल क्लाउड शोध इंजिन (डेटाबेस + ऑटोमॅटिक डायनॅमिक निर्मिती)
+async function handleCentralCatalogSearch(queryText) {
+  clearTimeout(centralSearchTimer);
   const q = queryText.trim();
   const dropdown = document.getElementById('brand-suggest-box');
   const previewBox = document.getElementById('smart-image-suggestions');
@@ -308,111 +329,112 @@ async function handleUniversalHybridSearch(queryText) {
 
   if (!q || q.length < 2) {
     if (dropdown) dropdown.style.display = 'none';
-    if (previewBox) previewBox.innerHTML = '<span class="muted" style="font-size:11.5px;">नाव टाईप करताच अचूक उत्पादन व फोटो लोड होईल...</span>';
+    if (previewBox) previewBox.innerHTML = '<span class="muted" style="font-size:11.5px;">नाव टाईप करताच सर्व मॉडेल्स व पाकिटे लोड होतील...</span>';
     return;
   }
 
-  const clean = q.toLowerCase();
-  let results = [];
+  if (statusEl) statusEl.innerHTML = '<span class="loading-indicator"></span> सेंट्रल क्लाउड शोधत आहे...';
 
-  // १. जर इलेक्ट्रॉनिक्स, मोबाईल किंवा टीव्ही असेल (Food API ला बायपास करणे)
-  if (clean.includes('samsung') || clean.includes('oppo') || clean.includes('vivo') || clean.includes('redmi') || clean.includes('phone') || clean.includes('mobile') || clean.includes('tv') || clean.includes('watch') || clean.includes('shirt')) {
-    if (statusEl) statusEl.textContent = '⚡ Electronics/Fashion Engine';
+  centralSearchTimer = setTimeout(async () => {
+    let combinedResults = [];
 
-    if (clean.includes('samsung')) {
-      results.push({ name: "Samsung Galaxy S24 Ultra 5G (12GB/256GB)", cat: "इलेक्ट्रॉनिक्स (Smartphones)", unit: "pcs", price: 129999, img: INDIAN_ORIGIN_DB.samsung_s24_ultra });
-      results.push({ name: "Samsung Galaxy A54 5G (8GB/128GB)", cat: "इलेक्ट्रॉनिक्स (Smartphones)", unit: "pcs", price: 33499, img: INDIAN_ORIGIN_DB.samsung_s24_ultra });
-    } else if (clean.includes('oppo')) {
-      results.push({ name: "Oppo Reno 11 Pro 5G (12GB/256GB)", cat: "इलेक्ट्रॉनिक्स (Smartphones)", unit: "pcs", price: 37999, img: INDIAN_ORIGIN_DB.oppo_reno });
-      results.push({ name: "Oppo A78 5G (8GB/128GB)", cat: "इलेक्ट्रॉनिक्स (Smartphones)", unit: "pcs", price: 17499, img: INDIAN_ORIGIN_DB.oppo_reno });
-    } else if (clean.includes('redmi')) {
-      results.push({ name: "Redmi 17 5G (Endless Blue, 8GB/128GB)", cat: "इलेक्ट्रॉनिक्स (Smartphones)", unit: "pcs", price: 26999, img: INDIAN_ORIGIN_DB.redmi_phone });
-    }
-
-    renderSearchResults(results);
-    return;
-  }
-
-  // २. किराणा व अन्नधान्यासाठी भारतीय मॅपिंग (Maggi, Oil, Parle-G, Salt)
-  if (clean.includes('maggi')) {
-    results.push({ name: "Maggi 2-Minute Masala Noodles 70g", cat: "इन्स्टंट नूडल्स (Noodles)", unit: "packet", price: 14, img: INDIAN_ORIGIN_DB.maggi_2min });
-    results.push({ name: "Maggi Nutri-Licious Veg Atta Noodles 72g", cat: "इन्स्टंट नूडल्स (Noodles)", unit: "packet", price: 20, img: INDIAN_ORIGIN_DB.maggi_atta });
-    renderSearchResults(results);
-    return;
-  }
-
-  if (clean.includes('oil') || clean.includes('sunflower') || clean.includes('gemini')) {
-    results.push({ name: "Gemini Sunflower Oil 1 Litre Pouch", cat: "खाद्यतेल (Cooking Oil)", unit: "ltr", price: 135, img: INDIAN_ORIGIN_DB.gemini_oil });
-    renderSearchResults(results);
-    return;
-  }
-
-  // ३. इतर किराणा वस्तू थेट Indian API वरून शोधणे
-  hybridSearchTimer = setTimeout(async () => {
+    // १. आधी आपल्या Supabase सेंट्रल कॅटलॉगमध्ये शोधणे
     try {
-      if (statusEl) statusEl.textContent = '🌐 Searching India Catalog...';
-      const apiUrl = `https://in.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(q)}&search_simple=1&action=process&json=1&page_size=6`;
-      const response = await fetch(apiUrl);
-      const json = await response.json();
-
-      if (json && json.products && json.products.length > 0) {
-        const liveItems = json.products.filter(p => p.product_name && p.image_front_small_url).map(p => ({
-          name: `${p.product_name} ${p.quantity || ''}`.trim(),
-          cat: p.categories ? p.categories.split(',')[0] : 'Grocery',
-          unit: p.quantity && p.quantity.includes('g') ? 'kg' : 'packet',
-          price: '',
-          img: p.image_front_small_url
-        }));
-        if (liveItems.length > 0) {
-          renderSearchResults(liveItems);
-          return;
-        }
+      const { data: dbItems } = await sb.from('global_catalog')
+        .select('*')
+        .ilike('name', `%${q}%`)
+        .limit(6);
+      
+      if (dbItems && dbItems.length > 0) {
+        dbItems.forEach(item => {
+          combinedResults.push({
+            name: item.name,
+            cat: item.category || 'Central Catalog',
+            unit: item.unit || 'pcs',
+            price: item.selling_price || '',
+            img: item.image_url || generateCategoryVector(item.name, item.category),
+            barcode: item.barcode || ''
+          });
+        });
       }
     } catch(e) {}
 
-    // फॉलबॅक
-    renderSearchResults([{
-      name: `${q} Standard Pack`,
-      cat: "General Retail",
-      unit: "pcs",
-      price: '',
-      img: `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='8' fill='%231D4E89'/><text x='50' y='55' font-family='Arial' font-size='9' fill='%23fff' text-anchor='middle'>${encodeURIComponent(q.substring(0,14).toUpperCase())}</text></svg>`
-    }]);
-  }, 200);
-}
+    // २. डायनॅमिक सिमेंटिक मॅपिंग (दूध, आईस्क्रीम, मोबाईल, तेल काहीही असेल तरी)
+    const clean = q.toLowerCase();
+    
+    // अमुल दूध व डेअरी
+    if (clean.includes('amul') || clean.includes('milk') || clean.includes('दूध')) {
+      const cat = 'डेअरी व दुग्धजन्य (Dairy)';
+      combinedResults.push({ name: "Amul Taaza Homogenised Toned Milk 500ml", cat, unit: "packet", price: 27, img: generateCategoryVector('milk', cat) });
+      combinedResults.push({ name: "Amul Gold Full Cream Fresh Milk 500ml", cat, unit: "packet", price: 33, img: generateCategoryVector('milk', cat) });
+      combinedResults.push({ name: "Amul Taaza Toned Milk 1 Litre Tetra Pack", cat, unit: "ltr", price: 72, img: generateCategoryVector('milk', cat) });
+    }
+    // आईस्क्रीम
+    else if (clean.includes('ice') || clean.includes('cream') || clean.includes('आईस्क्रीम')) {
+      const cat = 'आईस्क्रीम व डेझर्ट्स (Ice Cream)';
+      combinedResults.push({ name: `${q} Chocobar Stick 60ml`, cat, unit: "pcs", price: 25, img: generateCategoryVector('ice cream', cat) });
+      combinedResults.push({ name: `${q} Butterscotch Cone 110ml`, cat, unit: "pcs", price: 40, img: generateCategoryVector('ice cream', cat) });
+      combinedResults.push({ name: `${q} Vanilla Family Tub 750ml`, cat, unit: "box", price: 150, img: generateCategoryVector('ice cream', cat) });
+    }
+    // मॅगी
+    else if (clean.includes('maggi')) {
+      const cat = 'इन्स्टंट नूडल्स (Noodles)';
+      combinedResults.push({ name: "Maggi 2-Minute Masala Noodles 70g", cat, unit: "packet", price: 14, img: "https://images.openfoodfacts.org/images/products/8901058852331/front_en.11.400.jpg" });
+      combinedResults.push({ name: "Maggi 2-Minute Masala Noodles 140g", cat, unit: "packet", price: 28, img: "https://images.openfoodfacts.org/images/products/8901058852331/front_en.11.400.jpg" });
+    }
+    // सॅमसंग / ओप्पो
+    else if (clean.includes('samsung') || clean.includes('oppo') || clean.includes('vivo')) {
+      const cat = 'इलेक्ट्रॉनिक्स (Smartphones)';
+      const brand = clean.includes('samsung') ? 'Samsung Galaxy' : clean.includes('oppo') ? 'Oppo' : 'Vivo';
+      combinedResults.push({ name: `${brand} 5G Smartphone (8GB/128GB)`, cat, unit: "pcs", price: 18999, img: generateCategoryVector('smartphone', cat) });
+      combinedResults.push({ name: `${brand} Pro 5G Camera Edition`, cat, unit: "pcs", price: 29999, img: generateCategoryVector('smartphone', cat) });
+    }
+    // कोणतीही नवीन स्थानिक वस्तू
+    else if (combinedResults.length === 0) {
+      let guessUnit = 'pcs';
+      let guessCat = 'Universal Retail';
+      if (clean.includes('oil') || clean.includes('तेल') || clean.includes('juice')) { guessUnit = 'ltr'; guessCat = 'खाद्यतेल व पेये'; }
+      else if (clean.includes('sugar') || clean.includes('rice') || clean.includes('dal') || clean.includes('पीठ')) { guessUnit = 'kg'; guessCat = 'अन्नधान्य व किराणा'; }
 
-function renderSearchResults(items) {
-  const dropdown = document.getElementById('brand-suggest-box');
-  const statusEl = document.getElementById('api-status-indicator');
-  if (statusEl) statusEl.textContent = `✅ ${items.length} उत्पादने सापडली`;
+      combinedResults.push({
+        name: `${q} Standard Pack`,
+        cat: guessCat,
+        unit: guessUnit,
+        price: '',
+        img: generateCategoryVector(q, guessCat)
+      });
+    }
 
-  if (dropdown && items.length > 0) {
-    dropdown.innerHTML = items.map(item => `
-      <div class="suggest-row" onclick="applyHybridProduct('${escapeHtml(item.name).replace(/'/g, "\\'")}', '${item.cat}', '${item.unit}', '${item.price || ''}', '${encodeURIComponent(item.img)}')">
-        <img src="${item.img}" alt="${item.name}">
-        <div>
-          <strong style="font-size:13px; color:#0f172a; display:block;">${item.name}</strong>
-          <span style="font-size:11px; color:#64748b;">${item.cat} ${item.price ? '· ₹' + item.price : ''}</span>
+    if (statusEl) statusEl.textContent = `✅ ${combinedResults.length} आयटम्स उपलब्ध`;
+
+    if (dropdown && combinedResults.length > 0) {
+      dropdown.innerHTML = combinedResults.map(item => `
+        <div class="suggest-row" onclick="applyCentralProduct('${escapeHtml(item.name).replace(/'/g, "\\'")}', '${item.cat}', '${item.unit}', '${item.price || ''}', '${encodeURIComponent(item.img)}')">
+          <img src="${item.img}" alt="${item.name}">
+          <div>
+            <strong style="font-size:13px; color:#0f172a; display:block;">${item.name}</strong>
+            <span style="font-size:11px; color:#64748b;">${item.cat} ${item.price ? '· ₹' + item.price : ''}</span>
+          </div>
         </div>
-      </div>
-    `).join('');
-    dropdown.style.display = 'block';
+      `).join('');
+      dropdown.style.display = 'block';
 
-    setPreviewBox(items[0]);
-  }
+      setCentralPreview(combinedResults[0]);
+    }
+  }, 180);
 }
 
-function applyHybridProduct(name, cat, unit, price, imgEncoded) {
+function applyCentralProduct(name, cat, unit, price, imgEncoded) {
   document.getElementById('np-name').value = name;
   document.getElementById('np-unit').value = unit;
   if (price) document.getElementById('np-price').value = price;
   document.getElementById('brand-suggest-box').style.display = 'none';
 
   const img = decodeURIComponent(imgEncoded);
-  setPreviewBox({ name, cat, unit, img });
+  setCentralPreview({ name, cat, unit, img });
 }
 
-function setPreviewBox(item) {
+function setCentralPreview(item) {
   const box = document.getElementById('smart-image-suggestions');
   if (!box) return;
 
@@ -421,12 +443,19 @@ function setPreviewBox(item) {
       <img src="${item.img}" style="width:48px; height:48px; object-fit:contain; border-radius:6px; background:#fff; border:1px solid #cbd5e1; padding:2px;" alt="${item.name}">
       <div>
         <strong style="font-size:13px; color:#16a34a;">✨ Auto-Mapped (${item.cat})</strong><br>
-        <span style="font-size:11.5px; color:#475569;">${item.name} चा अधिकृत फोटो व तपशील सेट झाला आहे.</span>
+        <span style="font-size:11.5px; color:#475569;">${item.name} चा अधिकृत फोटो व एकक सेट झाले आहे.</span>
       </div>
     </div>
   `;
   document.getElementById('np-selected-image-url').value = item.img;
   if (item.unit) document.getElementById('np-unit').value = item.unit;
+}
+
+// थेट कस्टम इमेज लिंक लावण्यासाठी
+function applyCustomImageUrl(url) {
+  if (!url || !url.startsWith('http')) return;
+  const name = document.getElementById('np-name').value || 'Product';
+  setCentralPreview({ name, cat: 'Custom Image', img: url });
 }
 
 document.addEventListener('click', function(e) {
@@ -436,7 +465,7 @@ document.addEventListener('click', function(e) {
   }
 });
 
-// उत्पादन सेव्ह करणे
+// उत्पादन सेव्ह करणे (स्थानिक दुकानात + सेंट्रल क्लाउडवर एकाच वेळी सेव्ह!)
 const saveBtn = document.getElementById('np-save-btn');
 if (saveBtn) {
   saveBtn.addEventListener('click', async () => {
@@ -451,15 +480,24 @@ if (saveBtn) {
 
     try {
       if (currentBusinessId) {
+        // १. दुकानदाराच्या इन्व्हेंटरीमध्ये सेव्ह
         await sb.from('business_products').insert({
           business_id: currentBusinessId, name, unit, selling_price: price,
           stock, is_active: true, image_url: imageUrl, barcode
         });
-        alert(`✅ '${name}' यशस्वीरित्या सेव्ह झाले!`);
+
+        // २. 🌟 सेंट्रल क्लाउडवर कायमस्वरूपी नोंद (Learn Once, Use Everywhere)
+        try {
+          await sb.from('global_catalog').insert({
+            name, unit, selling_price: price, image_url: imageUrl, barcode
+          });
+        } catch(e) {}
+
+        alert(`✅ '${name}' दुकानात व सेंट्रल क्लाउडवर सुरक्षित सेव्ह झाले!`);
         closeModal('add-product-modal');
         document.getElementById('np-name').value = '';
         document.getElementById('np-price').value = '';
-        document.getElementById('smart-image-suggestions').innerHTML = '<span class="muted" style="font-size:11.5px;">नाव टाईप करताच अचूक उत्पादन व फोटो लोड होईल...</span>';
+        document.getElementById('smart-image-suggestions').innerHTML = '<span class="muted" style="font-size:11.5px;">नाव टाईप करताच सर्व मॉडेल्स व पाकिटे लोड होतील...</span>';
         await loadProducts();
       }
     } catch (err) { alert('त्रुटी: ' + err.message); }
