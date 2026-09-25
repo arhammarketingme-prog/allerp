@@ -1,514 +1,73 @@
 <!DOCTYPE html>
 <html lang="mr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<link rel="manifest" href="manifest.json">
-<link rel="icon" href="icon-192.png">
-<meta name="theme-color" content="#1D4E89">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title id="store-meta-title">Official Store</title>
-<link rel="stylesheet" href="css/style.css">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<style>
-/* 🌟 ग्राहकांसाठीचे स्वतंत्र आणि कायम दिसणारे हेडर */
-.customer-app-topbar {
-  background: #1D4E89;
-  color: #ffffff;
-  padding: 12px 16px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-  position: sticky;
-  top: 0;
-  z-index: 99999;
-}
-.customer-app-topbar .brand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.customer-app-topbar img {
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
-  background: #fff;
-  padding: 2px;
-  object-fit: contain;
-}
-.customer-app-topbar .title {
-  font-size: 15px;
-  font-weight: 800;
-  line-height: 1.2;
-}
-.customer-app-topbar .sub {
-  font-size: 11px;
-  opacity: 0.85;
-}
-
-/* 🌟 एका क्लिकवर Google लॉगिन बटण */
-.top-action-btns {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-#auth-state-btn {
-  background: #ffffff !important;
-  color: #1e293b !important;
-  border: 1px solid #cbd5e1 !important;
-  padding: 7px 12px !important;
-  border-radius: 20px !important;
-  font-size: 12.5px !important;
-  font-weight: 700 !important;
-  cursor: pointer !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 6px !important;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
-}
-
-/* इन्स्टॉल बॅनर */
-#store-install-banner {
-  display: none;
-  background: linear-gradient(90deg, #1D4E89, #0284c7);
-  color: #ffffff;
-  padding: 9px 16px;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 12.5px;
-}
-#store-install-banner button.install-btn {
-  background: #16a34a;
-  color: #fff;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-weight: 700;
-  font-size: 11.5px;
-  cursor: pointer;
-}
-
-.store-hero-card {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  padding: 14px 16px;
-  margin: 12px 0;
-}
-.store-quick-actions {
-  display: flex;
-  gap: 8px;
-  margin-top: 10px;
-  flex-wrap: wrap;
-}
-.btn-wave {
-  background: #0284c7;
-  color: #fff;
-  border: none;
-  padding: 8px 14px;
-  border-radius: 6px;
-  font-size: 12.5px;
-  font-weight: 700;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  cursor: pointer;
-}
-.btn-whatsapp {
-  background: #16a34a;
-  color: #fff;
-  border: none;
-  padding: 8px 14px;
-  border-radius: 6px;
-  font-size: 12.5px;
-  font-weight: 700;
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  cursor: pointer;
-}
-
-.floating-customer-cart {
-  display: none;
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: #ffffff;
-  border-top: 2px solid #1D4E89;
-  padding: 10px 16px;
-  z-index: 10000;
-  box-shadow: 0 -4px 15px rgba(0,0,0,0.12);
-  align-items: center;
-  justify-content: space-between;
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AllERP Store</title>
+    <!-- Supabase JS Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; text-align: center; }
+        .btn { padding: 12px 24px; font-size: 16px; background-color: #2563eb; color: white; border: none; border-radius: 6px; cursor: pointer; margin: 10px; }
+        .btn-weavo { background-color: #059669; }
+        .user-box { margin-top: 20px; padding: 15px; background-color: #f3f4f6; border-radius: 8px; }
+    </style>
 </head>
-<body style="padding-bottom: 75px; background: #f8fafc;">
+<body>
 
-<header class="customer-app-topbar">
-  <div class="brand">
-    <img id="top-shop-icon" src="icon-192.png" alt="Shop Logo">
-    <div>
-      <div class="title" id="top-shop-name">लोड होत आहे...</div>
-      <div class="sub">अधिकृत ग्राहक स्टोअर</div>
-    </div>
-  </div>
-  <div class="top-action-btns">
-    <button type="button" id="auth-state-btn" onclick="handleGoogleSignIn()">
-      <svg width="15" height="15" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
-      <span id="auth-btn-text">गुगल लॉगिन</span>
-    </button>
-    <button type="button" onclick="shareStoreLink()" style="background:rgba(255,255,255,0.2); border:none; color:#fff; padding:7px 10px; border-radius:6px; font-size:13px; font-weight:bold; cursor:pointer;">🔗</button>
-  </div>
-</header>
-
-<div id="store-install-banner">
-  <div style="font-weight:bold;" id="banner-text-shop">दुकानाचे ॲप इन्स्टॉल करा</div>
-  <div style="display:flex; gap:6px;">
-    <button type="button" class="install-btn" onclick="triggerStorePWAInstall()">📲 इन्स्टॉल करा</button>
-    <button type="button" onclick="dismissStoreBanner()" style="background:transparent; border:none; color:#fff; cursor:pointer;">✕</button>
-  </div>
-</div>
-
-<main class="container page-ad-frame">
-  <div id="ad-slot-store-top" class="ad-slot-banner" style="display:none; margin-top:10px;"></div>
-
-  <div id="store-info" class="store-hero-card"><p class="muted">दुकान माहिती लोड होत आहे...</p></div>
-
-  <div class="center-with-side-ads">
-    <aside class="ad-side-column">
-      <div class="ad-side-card">
-        <div class="side-ad-title">Offers</div>
-        <div id="ad-slot-store-left"></div>
-      </div>
-    </aside>
-
-    <div class="main-center-content">
-      <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:12px; flex-wrap:wrap;">
-        <h2 style="margin:0; font-size:18px;">🛒 किराणा व उत्पादने</h2>
-        <input type="text" id="store-search" placeholder="🔍 डाळ, साखर, तेल शोधा..." style="max-width:240px; margin-bottom:0; padding:8px 12px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px;" oninput="renderProducts()">
-      </div>
-      <div id="store-products" class="grid"></div>
+    <h2>AllERP Store</h2>
+    <div id="authSection">
+        <button id="loginBtn" class="btn" onclick="signInWithGoogle()">Google वरून लॉगिन करा</button>
     </div>
 
-    <aside class="ad-side-column">
-      <div class="ad-side-card">
-        <div class="side-ad-title">Local Deals</div>
-        <div id="ad-slot-store-right"></div>
-      </div>
-    </aside>
-  </div>
-
-  <div id="ad-slot-store-bottom" class="ad-slot-banner" style="display:none; margin-top:20px;"></div>
-</main>
-
-<div class="floating-customer-cart" id="customer-cart-bar">
-  <div>
-    <div id="cart-item-count" style="font-weight:bold; font-size:14px; color:#1D4E89;">0 वस्तू निवडल्या</div>
-    <div id="cart-total-amount" style="font-size:12px; color:#64748b;">एकूण: ₹0.00</div>
-  </div>
-  <div style="display:flex; gap:8px;">
-    <button type="button" class="btn-wave" onclick="openWeavoWithCart()">💬 Weavo वर ऑर्डर द्या</button>
-    <button type="button" class="btn-whatsapp" onclick="openWhatsAppWithCart()">📲 WhatsApp</button>
-  </div>
-</div>
-
-<script src="js/supabase-client.js"></script>
-<script src="js/cart.js"></script>
-<script src="js/ads.js"></script>
-<script src="js/master-dictionary.js"></script>
-<script>
-const WEAVO_BASE_URL = "https://arhammarketingme-prog.github.io/weavo/";
-const params = new URLSearchParams(window.location.search);
-const slug = params.get('slug') || params.get('biz') || params.get('id') || 'nikhil-kirana';
-let businessData = null;
-let allStoreProducts = [];
-let localCart = {};
-let currentCustomerSession = null;
-
-function setupDynamicStoreManifest(name) {
-  const dynamicManifest = {
-    id: "/store-" + (slug || "shop"),
-    name: name,
-    short_name: name,
-    start_url: window.location.href,
-    scope: "./",
-    display: "standalone",
-    orientation: "portrait-primary",
-    background_color: "#ffffff",
-    theme_color: "#1D4E89",
-    icons: [
-      { src: "icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
-      { src: "icon-512.png", sizes: "512x512", type: "image/png", purpose: "any maskable" }
-    ]
-  };
-  const stringManifest = JSON.stringify(dynamicManifest);
-  const blob = new Blob([stringManifest], { type: 'application/json' });
-  const manifestURL = URL.createObjectURL(blob);
-  
-  let manifestLink = document.querySelector('link[rel="manifest"]');
-  if (!manifestLink) {
-    manifestLink = document.createElement('link');
-    manifestLink.rel = 'manifest';
-    document.head.appendChild(manifestLink);
-  }
-  manifestLink.href = manifestURL;
-}
-
-let deferredStorePrompt = null;
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredStorePrompt = e;
-  const isInstalled = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
-  if (!isInstalled) {
-    const banner = document.getElementById('store-install-banner');
-    if (banner) banner.style.display = 'flex';
-  }
-});
-
-function triggerStorePWAInstall() {
-  if (deferredStorePrompt) {
-    deferredStorePrompt.prompt();
-    deferredStorePrompt.userChoice.then((choiceResult) => {
-      if (choiceResult.outcome === 'accepted') dismissStoreBanner();
-      deferredStorePrompt = null;
-    });
-  } else {
-    alert("ॲप इन्स्टॉल करण्यासाठी: ब्राऊझरच्या वरच्या उजव्या बाजूला असलेल्या तीन ठिपक्यांवर (⋮) क्लिक करून 'Install app' निवडा.");
-  }
-}
-
-function dismissStoreBanner() {
-  const banner = document.getElementById('store-install-banner');
-  if (banner) banner.style.display = 'none';
-}
-
-// 🌟 Google एका क्लिकवर लॉगिन
-async function handleGoogleSignIn() {
-  if (currentCustomerSession) {
-    if (confirm("खात्यातून बाहेर पडायचे (Logout) आहे का?")) {
-      await sb.auth.signOut();
-      currentCustomerSession = null;
-      checkAuthStatus();
-    }
-    return;
-  }
-
-  const { data, error } = await sb.auth.signInWithOAuth({
-    provider: 'google',
-    options: {
-      redirectTo: window.location.href
-    }
-  });
-
-  if (error) alert("लॉगिन त्रुटी: " + error.message);
-}
-
-async function checkAuthStatus() {
-  try {
-    const { data: { session } } = await sb.auth.getSession();
-    currentCustomerSession = session;
-    const btnText = document.getElementById('auth-btn-text');
-    if (session && session.user) {
-      const uName = session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'ग्राहक';
-      btnText.textContent = `✓ ${uName}`;
-    } else {
-      btnText.textContent = 'गुगल लॉगिन';
-    }
-  } catch(e){}
-}
-
-async function loadStore() {
-  checkAuthStatus();
-
-  let query = sb.from('businesses').select('id, name, about, city, contact_phone');
-  if (slug.length > 20 && !slug.includes('-')) {
-    query = query.eq('id', slug);
-  } else {
-    query = query.or(`slug.eq.${slug},name.ilike.%${slug}%`);
-  }
-
-  const { data: business } = await query.maybeSingle();
-  const shopName = business?.name || decodeURIComponent(slug).replace(/-/g, ' ');
-  businessData = business || { id: null, name: shopName, contact_phone: '' };
-
-  document.getElementById('top-shop-name').textContent = shopName;
-  document.getElementById('store-meta-title').textContent = `${shopName} — Official Customer App`;
-  document.getElementById('banner-text-shop').textContent = `📲 ${shopName} चे ॲप इन्स्टॉल करा`;
-  setupDynamicStoreManifest(shopName);
-
-  const waLink = business?.contact_phone ? `https://wa.me/91${business.contact_phone.replace(/\D/g,'')}?text=${encodeURIComponent('नमस्कार, मला सामानाची खरेदी करायची आहे.')}` : '#';
-
-  document.getElementById('store-info').innerHTML = `
-    <h1 style="margin:0; font-size:22px; color:#1D4E89;">${shopName}</h1>
-    ${business?.city ? `<p class="muted" style="margin:4px 0;">📍 ${business.city}</p>` : ''}
-    ${business?.about ? `<p style="margin:6px 0; font-size:13px;">${business.about}</p>` : ''}
-    ${business?.contact_phone ? `<p style="margin:4px 0; font-size:13px;">📞 ${business.contact_phone}</p>` : ''}
-    
-    <div class="store-quick-actions">
-      <button type="button" onclick="openWeavoWithAutoLogin('${escapeHtmlStore(shopName)}')" class="btn-wave">💬 Weavo चॅट</button>
-      ${business?.contact_phone ? `<a href="${waLink}" target="_blank" class="btn-whatsapp">📲 WhatsApp संपर्क</a>` : ''}
+    <div id="userSection" class="user-box" style="display: none;">
+        <p>लॉगिन ईमेल: <span id="userEmail"></span></p>
+        <button class="btn btn-weavo" onclick="openWeavoWithSSO()">Weavo उघडा (Auto Login)</button>
+        <br>
+        <button class="btn" style="background-color: #dc2626;" onclick="signOut()">लॉगआउट</button>
     </div>
-  `;
 
-  let pQuery = sb.from('business_products').select('id, name, selling_price, purchase_price, unit, image_url, stock');
-  if (business?.id) {
-    pQuery = pQuery.eq('business_id', business.id);
-  }
-  const { data: products } = await pQuery.order('name');
-  allStoreProducts = products ?? [];
-  renderProducts();
-}
+    <script>
+        const SUPABASE_URL = 'https://flprhrbbllxfcdaornio.supabase.co';
+        const SUPABASE_ANON_KEY = 'YOUR_ALLERP_ANON_KEY'; // हांगा तुमची AllERP anon key घाला
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-function renderProducts() {
-  const q = (document.getElementById('store-search')?.value || '').trim().toLowerCase();
-  const synonyms = q && typeof getSearchSynonyms === 'function' ? getSearchSynonyms(q) : (q ? [q] : []);
-  const products = q
-    ? allStoreProducts.filter(p => {
-        const nameLower = p.name.toLowerCase();
-        return synonyms.some(s => nameLower.includes(s)) || nameLower.includes(q);
-      })
-    : allStoreProducts;
+        async function signInWithGoogle() {
+            await supabaseClient.auth.signInWithOAuth({
+                provider: 'google',
+                options: {
+                    redirectTo: window.location.origin + window.location.pathname
+                }
+            });
+        }
 
-  const container = document.getElementById('store-products');
-  if (products.length === 0) {
-    container.innerHTML = '<p class="muted" style="grid-column:1/-1; text-align:center; padding:30px;">कोणतीही उत्पादने सापडली नाहीत.</p>';
-    return;
-  }
+        async function signOut() {
+            await supabaseClient.auth.signOut();
+            window.location.reload();
+        }
 
-  container.innerHTML = products.map(p => {
-    const hasDiscount = p.purchase_price && Number(p.purchase_price) > Number(p.selling_price);
-    const discountPct = hasDiscount ? Math.round((1 - p.selling_price / p.purchase_price) * 100) : 0;
+        async function checkSession() {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (session) {
+                document.getElementById('authSection').style.display = 'none';
+                document.getElementById('userSection').style.display = 'block';
+                document.getElementById('userEmail').innerText = session.user.email;
+            }
+        }
 
-    return `
-    <div class="card" style="display:flex; flex-direction:column; justify-content:space-between; padding:10px;">
-      <div>
-        <div style="height:115px; display:flex; align-items:center; justify-content:center; background:#fff; border-radius:6px; overflow:hidden;">
-          ${p.image_url ? `<img src="${p.image_url}" alt="${escapeHtmlStore(p.name)}" style="max-height:100%; max-width:100%; object-fit:contain;" loading="lazy">` : '<div style="font-size:28px;">📦</div>'}
-        </div>
-        <div style="font-weight:700; font-size:13.5px; margin-top:8px; line-height:1.3;">${escapeHtmlStore(p.name)}</div>
-        <div style="margin:4px 0;">
-          <span style="font-weight:800; color:#1D4E89; font-size:15px;">₹${Number(p.selling_price).toLocaleString('en-IN')}</span>
-          ${hasDiscount ? `<span style="text-decoration:line-through; font-size:11.5px; color:#94a3b8; margin-left:4px;">₹${Number(p.purchase_price).toLocaleString('en-IN')}</span> <span style="font-size:10.5px; background:#dcfce7; color:#16a34a; padding:1px 4px; border-radius:4px;">${discountPct}% off</span>` : ''}
-        </div>
-        <div style="font-size:11px; color:#64748b; margin-bottom:6px;">प्रति ${p.unit || 'नग'}</div>
-      </div>
-      <div>
-        <button type="button" onclick="addItemToCustomerCart('${p.id}', '${escapeHtmlStore(p.name)}', ${p.selling_price})" style="width:100%; background:#1D4E89; color:#fff; border:none; padding:8px; border-radius:6px; font-weight:700; cursor:pointer;">
-          + खरेदी करा
-        </button>
-      </div>
-    </div>
-  `;
-  }).join('');
-}
+        // Weavo उकतें करतना सेशन टोकन पास करपाचें मुख्य फंक्शन
+        async function openWeavoWithSSO() {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (session && session.access_token) {
+                const weavoBaseUrl = 'https://arhammarketingme-prog.github.io/weavo';
+                const ssoUrl = `${weavoBaseUrl}/#access_token=${session.access_token}&refresh_token=${session.refresh_token}&token_type=bearer`;
+                window.location.href = ssoUrl;
+            } else {
+                alert('पयलीं लॉगिन करा!');
+            }
+        }
 
-function addItemToCustomerCart(id, name, price) {
-  if (localCart[id]) {
-    localCart[id].qty += 1;
-  } else {
-    localCart[id] = { name, price: Number(price), qty: 1 };
-  }
-  updateCartBar();
-}
-
-function updateCartBar() {
-  const bar = document.getElementById('customer-cart-bar');
-  const items = Object.values(localCart);
-  if (items.length === 0) {
-    bar.style.display = 'none';
-    return;
-  }
-  bar.style.display = 'flex';
-  const totalCount = items.reduce((a, b) => a + b.qty, 0);
-  const totalAmount = items.reduce((a, b) => a + (b.qty * b.price), 0);
-
-  document.getElementById('cart-item-count').textContent = `🛒 ${totalCount} वस्तू कार्टमध्ये`;
-  document.getElementById('cart-total-amount').textContent = `एकूण बिल: ₹${totalAmount.toFixed(2)}`;
-}
-
-function generateOrderSummaryText() {
-  const shop = businessData?.name || 'दुकान';
-  let txt = `🛒 *नवीन ऑर्डर - ${shop}*\n----------------------\n`;
-  let total = 0;
-  Object.values(localCart).forEach(it => {
-    const sub = it.qty * it.price;
-    total += sub;
-    txt += `• ${it.name} - ${it.qty} नग = ₹${sub}\n`;
-  });
-  txt += `----------------------\n*एकूण देय रक्कम: ₹${total.toFixed(2)}*\n\nकृपया ही ऑर्डर कन्फर्म करावी!`;
-  return txt;
-}
-
-function openWhatsAppWithCart() {
-  const msg = generateOrderSummaryText();
-  const phone = businessData?.contact_phone ? businessData.contact_phone.replace(/\D/g,'') : '';
-  const url = phone ? `https://wa.me/91${phone}?text=${encodeURIComponent(msg)}` : `https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`;
-  window.open(url, '_blank');
-}
-
-async function openWeavoWithCart() {
-  const msg = generateOrderSummaryText();
-  const shopName = businessData?.name || 'nikhil-kirana';
-  openWeavoWithAutoLogin(shopName, msg);
-}
-
-async function openWeavoWithAutoLogin(shopName, cartMessage = '') {
-  if (!currentCustomerSession) {
-    if (confirm("वीवो चॅट आपोआप उघडण्यासाठी कृपया आधी Google ने लॉगिन करा. आता Google लॉगिन करायचे का?")) {
-      handleGoogleSignIn();
-    }
-    return;
-  }
-
-  let targetUrl = `${WEAVO_BASE_URL}?store=${encodeURIComponent(shopName)}`;
-  if (cartMessage) {
-    targetUrl += `&order=${encodeURIComponent(cartMessage)}`;
-  }
-
-  const payload = {
-    access_token: currentCustomerSession.access_token,
-    refresh_token: currentCustomerSession.refresh_token,
-    email: currentCustomerSession.user?.email || '',
-    name: currentCustomerSession.user?.user_metadata?.full_name || ''
-  };
-  targetUrl += `&sso_auth=${encodeURIComponent(JSON.stringify(payload))}`;
-
-  window.open(targetUrl, '_blank');
-}
-
-function shareStoreLink() {
-  const sName = businessData?.name || 'दुकान';
-  const url = window.location.href;
-  if (navigator.share) {
-    navigator.share({ title: sName, text: `${sName} चे अधिकृत ऑनलाईन ॲप! घरबसल्या खरेदी करा:`, url: url });
-  } else {
-    navigator.clipboard.writeText(url);
-    alert('✅ दुकानाची लिंक कॉपी झाली आहे!');
-  }
-}
-
-function escapeHtmlStore(str) {
-  const div = document.createElement('div');
-  div.textContent = str ?? '';
-  return div.innerHTML;
-}
-
-loadStore();
-
-if (typeof renderMultiAdSlots === 'function') {
-  renderMultiAdSlots([
-    { id: 'ad-slot-store-top', placement: 'top' },
-    { id: 'ad-slot-store-left', placement: 'left' },
-    { id: 'ad-slot-store-right', placement: 'right' },
-    { id: 'ad-slot-store-bottom', placement: 'bottom' }
-  ]);
-}
-</script>
+        checkSession();
+    </script>
 </body>
 </html>
