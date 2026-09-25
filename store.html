@@ -9,11 +9,11 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title id="store-meta-title">Nikhil Kirana — Official Store</title>
+<title id="store-meta-title">Official Store</title>
 <link rel="stylesheet" href="css/style.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-/* 🌟 फक्त ग्राहकासाठीचे स्वतंत्र आणि सुरक्षित हेडर (No ERP Nav) */
+/* 🌟 ग्राहकांसाठीचे स्वतंत्र आणि कायम दिसणारे हेडर */
 .customer-app-topbar {
   background: #1D4E89;
   color: #ffffff;
@@ -21,7 +21,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
   position: sticky;
   top: 0;
   z-index: 99999;
@@ -40,7 +40,7 @@
   object-fit: contain;
 }
 .customer-app-topbar .title {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 800;
   line-height: 1.2;
 }
@@ -49,38 +49,73 @@
   opacity: 0.85;
 }
 
-/* 🌟 ग्राहक ॲप इन्स्टॉल बॅनर */
+/* 🌟 लॉगिन बटण (कधीही लपणार नाही) */
+.top-action-btns {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+#auth-state-btn {
+  background: #16a34a !important;
+  color: #ffffff !important;
+  border: none !important;
+  padding: 8px 14px !important;
+  border-radius: 6px !important;
+  font-size: 13px !important;
+  font-weight: 800 !important;
+  cursor: pointer !important;
+  display: inline-block !important;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2) !important;
+}
+
+/* ग्राहक लॉगिन पॉपअप */
+.login-modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  z-index: 100005;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.login-modal-card {
+  background: #ffffff;
+  width: 100%;
+  max-width: 360px;
+  border-radius: 12px;
+  padding: 22px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+}
+
+/* इन्स्टॉल बॅनर */
 #store-install-banner {
   display: none;
   background: linear-gradient(90deg, #1D4E89, #0284c7);
   color: #ffffff;
-  padding: 10px 16px;
+  padding: 9px 16px;
   align-items: center;
   justify-content: space-between;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  font-size: 12.5px;
 }
 #store-install-banner button.install-btn {
   background: #16a34a;
   color: #fff;
   border: none;
-  padding: 6px 14px;
+  padding: 6px 12px;
   border-radius: 6px;
-  font-weight: 800;
-  font-size: 12px;
+  font-weight: 700;
+  font-size: 11.5px;
   cursor: pointer;
 }
 
-/* स्टोअर कार्ड आणि माहिती */
 .store-hero-card {
   background: #ffffff;
   border: 1px solid #e2e8f0;
   border-radius: 10px;
   padding: 14px 16px;
   margin: 12px 0;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
-
-/* वेव आणि व्हॉट्सॲप ऑर्डर बटणे */
 .store-quick-actions {
   display: flex;
   gap: 8px;
@@ -95,7 +130,6 @@
   border-radius: 6px;
   font-size: 12.5px;
   font-weight: 700;
-  text-decoration: none;
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -116,7 +150,7 @@
   cursor: pointer;
 }
 
-/* ग्राहकाची फ्लोटिंग कार्ट पट्टी */
+/* फ्लोटिंग कार्ट */
 .floating-customer-cart {
   display: none;
   position: fixed;
@@ -135,41 +169,38 @@
 </head>
 <body style="padding-bottom: 75px; background: #f8fafc;">
 
-<!-- 🌟 ग्राहक ॲप स्वतंत्र टॉप बार (यात ERP मेनू किंवा डॅशबोर्ड लॉगिन नाही) -->
+<!-- 🌟 ग्राहक हेडर (यात लॉगिन बटण थेट दिसेल) -->
 <header class="customer-app-topbar">
   <div class="brand">
     <img id="top-shop-icon" src="icon-192.png" alt="Shop Logo">
     <div>
       <div class="title" id="top-shop-name">लोड होत आहे...</div>
-      <div class="sub">अधिकृत ग्राहक ॲप (Customer Storefront)</div>
+      <div class="sub">अधिकृत ग्राहक स्टोअर</div>
     </div>
   </div>
-  <button type="button" onclick="shareStoreLink()" style="background:rgba(255,255,255,0.18); border:none; color:#fff; padding:6px 12px; border-radius:6px; font-size:12px; font-weight:bold; cursor:pointer;">
-    🔗 शेअर करा
-  </button>
+  <div class="top-action-btns">
+    <button type="button" id="auth-state-btn" onclick="handleAuthButtonClick()">👤 लॉगिन</button>
+    <button type="button" onclick="shareStoreLink()" style="background:rgba(255,255,255,0.2); border:none; color:#fff; padding:7px 10px; border-radius:6px; font-size:13px; font-weight:bold; cursor:pointer;">🔗</button>
+  </div>
 </header>
 
-<!-- 🌟 इन्स्टॉल करा पट्टी -->
 <div id="store-install-banner">
-  <div style="font-size:12.5px; font-weight:bold;" id="banner-text-shop">दुकानाचे अधिकृत ॲप इन्स्टॉल करा</div>
-  <div style="display:flex; gap:8px;">
+  <div style="font-weight:bold;" id="banner-text-shop">दुकानाचे ॲप इन्स्टॉल करा</div>
+  <div style="display:flex; gap:6px;">
     <button type="button" class="install-btn" onclick="triggerStorePWAInstall()">📲 इन्स्टॉल करा</button>
     <button type="button" onclick="dismissStoreBanner()" style="background:transparent; border:none; color:#fff; cursor:pointer;">✕</button>
   </div>
 </div>
 
 <main class="container page-ad-frame">
-  <!-- 1. TOP SPONSORED AD (स्थानिक जाहिरात) -->
   <div id="ad-slot-store-top" class="ad-slot-banner" style="display:none; margin-top:10px;"></div>
 
-  <!-- दुकानाची माहिती -->
   <div id="store-info" class="store-hero-card"><p class="muted">दुकान माहिती लोड होत आहे...</p></div>
 
   <div class="center-with-side-ads">
-    <!-- 2. LEFT SIDE AD -->
     <aside class="ad-side-column">
       <div class="ad-side-card">
-        <div class="side-ad-title">Sponsored Offers</div>
+        <div class="side-ad-title">Offers</div>
         <div id="ad-slot-store-left"></div>
       </div>
     </aside>
@@ -177,12 +208,11 @@
     <div class="main-center-content">
       <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:12px; flex-wrap:wrap;">
         <h2 style="margin:0; font-size:18px;">🛒 किराणा व उत्पादने</h2>
-        <input type="text" id="store-search" placeholder="🔍 डाळ, तेल, साखर शोधा..." style="max-width:240px; margin-bottom:0; padding:8px 12px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px;" oninput="renderProducts()">
+        <input type="text" id="store-search" placeholder="🔍 डाळ, साखर, तेल शोधा..." style="max-width:240px; margin-bottom:0; padding:8px 12px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px;" oninput="renderProducts()">
       </div>
       <div id="store-products" class="grid"></div>
     </div>
 
-    <!-- 3. RIGHT SIDE AD -->
     <aside class="ad-side-column">
       <div class="ad-side-card">
         <div class="side-ad-title">Local Deals</div>
@@ -191,11 +221,9 @@
     </aside>
   </div>
 
-  <!-- 4. BOTTOM AD -->
   <div id="ad-slot-store-bottom" class="ad-slot-banner" style="display:none; margin-top:20px;"></div>
 </main>
 
-<!-- 🌟 ग्राहकाची खरेदी पट्टी (Floating Cart Bar) -->
 <div class="floating-customer-cart" id="customer-cart-bar">
   <div>
     <div id="cart-item-count" style="font-weight:bold; font-size:14px; color:#1D4E89;">0 वस्तू निवडल्या</div>
@@ -207,21 +235,40 @@
   </div>
 </div>
 
+<!-- 🌟 ग्राहक लॉगिन पॉपअप -->
+<div class="login-modal-overlay" id="customer-login-modal">
+  <div class="login-modal-card">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+      <h3 style="margin:0; font-size:17px; color:#1D4E89;">ग्राहक लॉगिन (AllERP & Weavo)</h3>
+      <button type="button" onclick="closeCustomerLoginModal()" style="border:none; background:transparent; font-size:18px; cursor:pointer;">✕</button>
+    </div>
+    <p style="font-size:12.5px; color:#64748b; margin-bottom:14px;">एकदा लॉगिन करा आणि AllERP व Weavo दोन्हीमध्ये थेट प्रवेश मिळवा.</p>
+    
+    <div style="margin-bottom:10px;">
+      <label style="font-size:12px; font-weight:bold;">ईमेल पत्ता</label>
+      <input type="email" id="cust-login-email" placeholder="example@gmail.com" style="width:100%; padding:9px; border:1px solid #cbd5e1; border-radius:6px; box-sizing:border-box;">
+    </div>
+    <div style="margin-bottom:14px;">
+      <label style="font-size:12px; font-weight:bold;">पासवर्ड</label>
+      <input type="password" id="cust-login-password" placeholder="••••••••" style="width:100%; padding:9px; border:1px solid #cbd5e1; border-radius:6px; box-sizing:border-box;">
+    </div>
+    <button type="button" onclick="executeCustomerLogin()" style="width:100%; background:#1D4E89; color:#fff; border:none; padding:10px; border-radius:6px; font-weight:bold; cursor:pointer; font-size:14px;">लॉगिन करा</button>
+  </div>
+</div>
+
 <script src="js/supabase-client.js"></script>
 <script src="js/cart.js"></script>
 <script src="js/ads.js"></script>
 <script src="js/master-dictionary.js"></script>
 <script>
-// 🌟 Weavo लिंक
 const WEAVO_BASE_URL = "https://arhammarketingme-prog.github.io/weavo/";
-
 const params = new URLSearchParams(window.location.search);
 const slug = params.get('slug') || params.get('biz') || params.get('id') || 'Nikhil Kirana';
 let businessData = null;
 let allStoreProducts = [];
 let localCart = {};
+let currentCustomerSession = null;
 
-// 🌟 Dynamic PWA Manifest (ग्राहकाच्या फोनवर फक्त दुकानाचे नाव इन्स्टॉल होईल)
 function setupDynamicStoreManifest(name) {
   const dynamicManifest = {
     id: "/store-" + (slug || "shop"),
@@ -279,7 +326,58 @@ function dismissStoreBanner() {
   if (banner) banner.style.display = 'none';
 }
 
+async function checkAuthStatus() {
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    currentCustomerSession = session;
+    const btn = document.getElementById('auth-state-btn');
+    if (session && session.user) {
+      const uName = session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'ग्राहक';
+      btn.textContent = `✓ ${uName}`;
+      btn.style.background = '#0284c7';
+    } else {
+      btn.textContent = '👤 लॉगिन';
+      btn.style.background = '#16a34a';
+    }
+  } catch(e){}
+}
+
+function handleAuthButtonClick() {
+  if (currentCustomerSession) {
+    if (confirm("तुम्हाला खात्यातून बाहेर पडायचे (Logout) आहे का?")) {
+      sb.auth.signOut().then(() => {
+        currentCustomerSession = null;
+        checkAuthStatus();
+      });
+    }
+  } else {
+    document.getElementById('customer-login-modal').style.display = 'flex';
+  }
+}
+
+function closeCustomerLoginModal() {
+  document.getElementById('customer-login-modal').style.display = 'none';
+}
+
+async function executeCustomerLogin() {
+  const email = document.getElementById('cust-login-email').value.trim();
+  const password = document.getElementById('cust-login-password').value.trim();
+  if (!email || !password) { alert('कृपया ईमेल व पासवर्ड भरा.'); return; }
+
+  const { data, error } = await sb.auth.signInWithPassword({ email, password });
+  if (error) {
+    alert('लॉगिन त्रुटी: ' + error.message);
+  } else {
+    currentCustomerSession = data.session;
+    closeCustomerLoginModal();
+    checkAuthStatus();
+    alert('✅ ऑल ईआरपी लॉगिन यशस्वी झाले! आता वीवो चॅट आपोआप उघडेल.');
+  }
+}
+
 async function loadStore() {
+  checkAuthStatus();
+
   let query = sb.from('businesses').select('id, name, about, city, contact_phone');
   if (slug.length > 20 && !slug.includes('-')) {
     query = query.eq('id', slug);
@@ -288,8 +386,6 @@ async function loadStore() {
   }
 
   const { data: business } = await query.maybeSingle();
-
-  // दुकानाचे नाव ठरवणे
   const shopName = business?.name || decodeURIComponent(slug);
   businessData = business || { id: null, name: shopName, contact_phone: '' };
 
@@ -312,7 +408,6 @@ async function loadStore() {
     </div>
   `;
 
-  // उत्पादने आणणे
   let pQuery = sb.from('business_products').select('id, name, selling_price, purchase_price, unit, image_url, stock');
   if (business?.id) {
     pQuery = pQuery.eq('business_id', business.id);
@@ -365,7 +460,6 @@ function renderProducts() {
   }).join('');
 }
 
-// 🌟 ग्राहकाची अंतर्गत सोपी कार्ट
 function addItemToCustomerCart(id, name, price) {
   if (localCart[id]) {
     localCart[id].qty += 1;
@@ -416,25 +510,26 @@ async function openWeavoWithCart() {
   openWeavoWithAutoLogin(shopName, msg);
 }
 
-// 🌟 Weavo वर थेट ऑटो-लॉगिन आणि सामानाची यादी पाठवणे
+// 🌟 Weavo वर थेट ऑटो-लॉगिन करणे
 async function openWeavoWithAutoLogin(shopName, cartMessage = '') {
+  if (!currentCustomerSession) {
+    alert("कृपया आधी आपले ऑल ईआरपी खाते लॉगिन करा, जेणेकरून वीवो आपोआप उघडेल.");
+    document.getElementById('customer-login-modal').style.display = 'flex';
+    return;
+  }
+
   let targetUrl = `${WEAVO_BASE_URL}?store=${encodeURIComponent(shopName)}`;
   if (cartMessage) {
     targetUrl += `&order=${encodeURIComponent(cartMessage)}`;
   }
 
-  try {
-    const { data: { session } } = await sb.auth.getSession();
-    if (session) {
-      const payload = {
-        access_token: session.access_token,
-        refresh_token: session.refresh_token,
-        email: session.user?.email || '',
-        name: session.user?.user_metadata?.full_name || ''
-      };
-      targetUrl += `&sso_auth=${encodeURIComponent(JSON.stringify(payload))}`;
-    }
-  } catch(e) {}
+  const payload = {
+    access_token: currentCustomerSession.access_token,
+    refresh_token: currentCustomerSession.refresh_token,
+    email: currentCustomerSession.user?.email || '',
+    name: currentCustomerSession.user?.user_metadata?.full_name || ''
+  };
+  targetUrl += `&sso_auth=${encodeURIComponent(JSON.stringify(payload))}`;
 
   window.open(targetUrl, '_blank');
 }
@@ -458,7 +553,6 @@ function escapeHtmlStore(str) {
 
 loadStore();
 
-// जाहिराती लोड करणे
 if (typeof renderMultiAdSlots === 'function') {
   renderMultiAdSlots([
     { id: 'ad-slot-store-top', placement: 'top' },
