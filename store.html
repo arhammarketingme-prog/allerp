@@ -54,7 +54,7 @@
   opacity: 0.8;
 }
 
-/* वेव आणि व्हॉट्सॲप स्मार्ट ॲक्शन बटणे */
+/* वीवो आणि व्हॉट्सॲप स्मार्ट ॲक्शन बटणे */
 .store-quick-actions {
   display: flex;
   gap: 8px;
@@ -65,14 +65,14 @@
   background: #0284c7;
   color: #fff;
   border: none;
-  padding: 6px 12px;
+  padding: 6px 14px;
   border-radius: 6px;
-  font-size: 12px;
+  font-size: 12.5px;
   font-weight: 700;
   text-decoration: none;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   cursor: pointer;
 }
 .btn-whatsapp {
@@ -81,7 +81,7 @@
   border: none;
   padding: 6px 12px;
   border-radius: 6px;
-  font-size: 12px;
+  font-size: 12.5px;
   font-weight: 700;
   text-decoration: none;
   display: inline-flex;
@@ -152,13 +152,15 @@
 <script src="js/ads.js"></script>
 <script src="js/master-dictionary.js"></script>
 <script>
+// 🌟 तुमची अधिकृत Weavo वेबसाईटची लिंक
+const WEAVO_BASE_URL = "https://arhammarketingme-prog.github.io/weavo/";
+
 const params = new URLSearchParams(window.location.search);
-// slug किंवा biz किंवा id पैकी काहीही दिले तरी चालेल
 const slug = params.get('slug') || params.get('biz') || params.get('id');
 let businessData = null;
 let allStoreProducts = [];
 
-// 🌟 ब्राऊझरला दुकानदाराच्या नावानेच PWA Manifest देणे (Dynamic PWA Engine)
+// 🌟 PWA Manifest
 function setupDynamicStoreManifest(name) {
   const dynamicManifest = {
     id: "/store-" + (slug || "shop"),
@@ -188,7 +190,6 @@ function setupDynamicStoreManifest(name) {
   manifestLink.href = manifestURL;
 }
 
-// 🌟 PWA इन्स्टॉल प्रॉमप्ट
 let deferredStorePrompt = null;
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
@@ -225,7 +226,6 @@ async function loadStore() {
     return;
   }
 
-  // slug ने किंवा business id ने शोधणे
   let query = sb.from('businesses').select('id, name, about, city, contact_phone');
   if (slug.length > 20 && !slug.includes('-')) {
     query = query.eq('id', slug);
@@ -241,14 +241,14 @@ async function loadStore() {
   }
   businessData = business;
 
-  // टायटल आणि Dynamic Manifest सेट करणे
   document.getElementById('store-meta-title').textContent = `${business.name} — Store`;
   document.getElementById('store-pwa-title').textContent = `${business.name} चे ॲप इन्स्टॉल करा`;
   setupDynamicStoreManifest(business.name);
 
-  // दुकानाची माहिती आणि वेव / व्हॉट्सॲप ॲक्शन
   const storeShareUrl = window.location.href;
-  const waveLink = `wave.html?chat=${encodeURIComponent(business.name)}`;
+  
+  // 🌟 थेट तुमच्या Weavo वेबसाईटशी जोडलेली अचूक लिंक
+  const weavoLink = `${WEAVO_BASE_URL}?store=${encodeURIComponent(business.name)}`;
   const waLink = business.contact_phone ? `https://wa.me/91${business.contact_phone.replace(/\D/g,'')}?text=${encodeURIComponent('नमस्कार, मला आपल्या दुकानातून खरेदी करायची आहे.')}` : '#';
 
   document.getElementById('store-info').innerHTML = `
@@ -259,14 +259,13 @@ async function loadStore() {
       ${business.contact_phone ? `<p style="margin:4px 0;">📞 ${business.contact_phone}</p>` : ''}
       
       <div class="store-quick-actions">
-        <a href="${waveLink}" class="btn-wave">💬 Wave वर संपर्क करा</a>
+        <a href="${weavoLink}" target="_blank" class="btn-wave">💬 Weavo वर संपर्क करा</a>
         ${business.contact_phone ? `<a href="${waLink}" target="_blank" class="btn-whatsapp">📲 WhatsApp</a>` : ''}
         <button type="button" onclick="shareStoreLink('${escapeHtmlStore(business.name)}', '${storeShareUrl}')" style="background:#f1f5f9; border:1px solid #cbd5e1; border-radius:6px; padding:6px 12px; font-size:12px; font-weight:700; cursor:pointer;">🔗 स्टोअर शेअर करा</button>
       </div>
     </div>
   `;
 
-  // प्रॉडक्ट्स लोड करणे
   const { data: products } = await sb
     .from('business_products')
     .select('id, name, selling_price, purchase_price, unit, image_url, stock')
@@ -352,7 +351,7 @@ function shareStoreLink(storeName, link) {
     });
   } else {
     navigator.clipboard.writeText(link);
-    alert('✅ दुकानाची लिंक कॉपी झाली आहे! तुम्ही WhatsApp वर ग्राहकांना पाठवू शकता.');
+    alert('✅ दुकानाची लिंक कॉपी झाली आहे! तुम्ही WhatsApp किंवा Weavo वर पाठवू शकता.');
   }
 }
 
@@ -364,7 +363,6 @@ function escapeHtmlStore(str) {
 
 loadStore();
 
-// मूळ ४ बाजूंच्या जाहिराती लोड करणे
 if (typeof renderMultiAdSlots === 'function') {
   renderMultiAdSlots([
     { id: 'ad-slot-store-top', placement: 'top' },
