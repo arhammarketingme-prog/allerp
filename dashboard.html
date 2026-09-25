@@ -79,7 +79,7 @@
 </style>
 </head>
 <body>
-<!-- 🌟 तुमची मूळ मदर नेव्हिगेशन बार (nav.js द्वारे लोड होणारी) -->
+<!-- 🌟 मूळ मदर नेव्हिगेशन बार (nav.js द्वारे लोड होणारी) -->
 <nav id="app-nav"></nav>
 
 <div class="dashboard-main-frame">
@@ -275,9 +275,9 @@
 
     <!-- 🌟 ग्लोबल सर्च इनपुट -->
     <div style="margin-top:12px;" class="smart-search-wrapper">
-      <label style="font-weight:700;">उत्पादनाचे नाव / ब्रँड / वस्तू * (उदा. Oppo Mobile, Samsung TV, Tata Salt, Shirt)</label>
+      <label style="font-weight:700;">उत्पादनाचे नाव / ब्रँड / वस्तू * (उदा. Gemini Oil, Oppo Mobile, Tata Salt, Samsung TV)</label>
       <div style="display:flex; gap:6px;">
-        <input id="np-name" placeholder="उदा. oppo, vivo, samsung tv, shirt, tata salt..." oninput="fetchGlobalUniversalSuggestions(this.value)" autocomplete="off" style="margin-bottom:0; flex:1; padding:8px; border:1px solid #cbd5e1; border-radius:4px;">
+        <input id="np-name" placeholder="उदा. gemini sunflower oil, oppo mobile, tata salt, shirt..." oninput="fetchGlobalUniversalSuggestions(this.value)" autocomplete="off" style="margin-bottom:0; flex:1; padding:8px; border:1px solid #cbd5e1; border-radius:4px;">
         <button type="button" onclick="startHtml5Scanner('product')" class="secondary" style="padding:8px 10px; font-size:12px; cursor:pointer; background:#1D4E89; color:#fff; border:none; border-radius:4px;">📷 स्कॅनर</button>
       </div>
       <!-- डायनॅमिक ग्लोबल सजेशन पॉप-अप -->
@@ -311,10 +311,10 @@
       <div style="flex:1;">
         <label style="font-weight:700;">एकक (Unit)</label>
         <select id="np-unit" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:4px;">
+          <option value="ltr">लीटर (Ltr)</option>
           <option value="pcs">नग (Pcs)</option>
           <option value="packet">पॅकेट (Packet)</option>
           <option value="kg">किलो (Kg)</option>
-          <option value="ltr">लीटर (Ltr)</option>
           <option value="box">बॉक्स (Box)</option>
         </select>
       </div>
@@ -333,7 +333,6 @@
 <!-- ==================== SCRIPTS ==================== -->
 <script src="js/supabase-client.js"></script>
 <script src="js/cart.js"></script>
-<!-- 🌟 मूळ नेव्हिगेशन व फिरणारी जाहिरात बार चालवणारी मदर स्क्रिप्ट -->
 <script src="js/nav.js"></script>
 <script src="js/tracking.js"></script>
 <script src="js/erp-engine.js"></script>
@@ -404,18 +403,20 @@ function escapeHtml(str) {
   return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
 }
 
-// 🌟 अधिकृत अचूक कॅटेगरी व्हिज्युअल्स
-const MOBILE_PHONE_SVG = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 120'><rect width='80' height='120' rx='10' fill='%230f172a' stroke='%23059669' stroke-width='2'/><rect x='6' y='10' width='68' height='100' rx='4' fill='%231e293b'/><circle cx='40' cy='60' r='14' fill='%23059669'/><text x='40' y='64' font-family='Arial Black' font-size='8' fill='%23ffffff' text-anchor='middle'>5G</text><text x='40' y='95' font-family='Arial' font-size='6.5' font-weight='bold' fill='%234ade80' text-anchor='middle'>SMARTPHONE</text></svg>";
+// 🌟 अधिकृत अचूक कॅटेगरी व्हिज्युअल्स (जेमिनी तेल, मोबाईल, टीव्ही, मीठ, कपडे)
+const GEMINI_OIL_SVG = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 120'><rect width='100' height='120' rx='8' fill='%23ffffff' stroke='%23f59e0b' stroke-width='3'/><rect x='6' y='6' width='88' height='108' rx='6' fill='%23fffbeb'/><circle cx='50' cy='45' r='24' fill='%23fef08a' stroke='%23eab308' stroke-width='2'/><circle cx='50' cy='45' r='12' fill='%2378350f'/><text x='50' y='82' font-family='Arial Black,sans-serif' font-size='11' font-weight='900' fill='%23b45309' text-anchor='middle'>GEMINI</text><text x='50' y='94' font-family='Arial,sans-serif' font-size='8' font-weight='bold' fill='%2315803d' text-anchor='middle'>SUNFLOWER OIL</text><text x='50' y='108' font-family='Arial,sans-serif' font-size='7' fill='%23b45309' text-anchor='middle'>1 LITRE POUCH</text></svg>";
 
-const SMART_WATCH_SVG = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 120'><rect width='100' height='120' rx='8' fill='%230f172a'/><rect x='34' y='6' width='32' height='108' rx='4' fill='%23334155'/><rect x='22' y='28' width='56' height='64' rx='12' fill='%230284c7' stroke='%2338bdf8' stroke-width='2'/><circle cx='50' cy='60' r='18' fill='%230b192c'/><text x='50' y='58' font-family='Arial Black' font-size='9' fill='%2338bdf8' text-anchor='middle'>10:24</text><text x='50' y='68' font-family='Arial' font-size='5.5' font-weight='bold' fill='%234ade80' text-anchor='middle'>SMART</text></svg>";
+const MOBILE_PHONE_SVG = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 120'><rect width='80' height='120' rx='10' fill='%230f172a' stroke='%23059669' stroke-width='2'/><rect x='6' y='10' width='68' height='100' rx='4' fill='%231e293b'/><circle cx='40' cy='60' r='14' fill='%23059669'/><text x='40' y='64' font-family='Arial Black' font-size='8' fill='%23ffffff' text-anchor='middle'>5G</text><text x='40' y='95' font-family='Arial' font-size='6.5' font-weight='bold' fill='%234ade80' text-anchor='middle'>SMARTPHONE</text></svg>";
 
 const SMART_TV_SVG = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 100'><rect width='120' height='75' rx='6' fill='%230f172a' stroke='%2338bdf8' stroke-width='2'/><rect x='6' y='6' width='108' height='63' rx='2' fill='%231e293b'/><text x='60' y='42' font-family='Arial Black' font-size='12' fill='%2338bdf8' text-anchor='middle'>SMART TV</text><polygon points='50,75 70,75 65,90 55,90' fill='%2364748b'/><rect x='40' y='90' width='40' height='4' rx='2' fill='%23334155'/></svg>";
 
 const TATA_SALT_SVG = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 120'><rect width='100' height='120' rx='6' fill='%23ffffff' stroke='%23cbd5e1' stroke-width='2'/><path d='M0 0 L100 0 L100 38 L0 38 Z' fill='%230f4c81'/><text x='50' y='24' font-family='Arial Black,sans-serif' font-size='13' font-weight='900' fill='%23ffffff' text-anchor='middle'>TATA</text><text x='50' y='34' font-family='Arial,sans-serif' font-size='7' font-weight='bold' fill='%2393c5fd' text-anchor='middle'>SALT</text><path d='M0 38 L100 38 L100 44 L0 44 Z' fill='%23ea580c'/><circle cx='50' cy='68' r='18' fill='%23f0fdf4' stroke='%230f4c81' stroke-width='1.5'/><text x='50' y='72' font-family='Arial Black,sans-serif' font-size='11' font-weight='900' fill='%230f4c81' text-anchor='middle'>SALT</text><text x='50' y='96' font-family='Arial,sans-serif' font-size='7.5' font-weight='bold' fill='%23c2410c' text-anchor='middle'>देश का नमक</text></svg>";
 
-const CLOTHING_SVG = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='8' fill='%23f8fafc' stroke='%23cbd5e1'/><path d='M30 20 L42 28 L58 28 L70 20 L85 35 L75 45 L70 40 L70 85 L30 85 L30 40 L25 45 L15 35 Z' fill='%230284c7'/><text x='50' y='62' font-family='Arial,sans-serif' font-size='8' font-weight='bold' fill='%23ffffff' text-anchor='middle'>CLOTHING</text></svg>";
+const SMART_WATCH_SVG = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 120'><rect width='100' height='120' rx='8' fill='%230f172a'/><rect x='34' y='6' width='32' height='108' rx='4' fill='%23334155'/><rect x='22' y='28' width='56' height='64' rx='12' fill='%230284c7' stroke='%2338bdf8' stroke-width='2'/><circle cx='50' cy='60' r='18' fill='%230b192c'/><text x='50' y='58' font-family='Arial Black' font-size='9' fill='%2338bdf8' text-anchor='middle'>10:24</text><text x='50' y='68' font-family='Arial' font-size='5.5' font-weight='bold' fill='%234ade80' text-anchor='middle'>SMART</text></svg>";
 
-// 🌐 जगातील कोणत्याही ब्रँडचे सर्व मॉडेल्स डायनॅमिकली जनरेट करणारे ग्लोबल इंजिन
+const CLOTHING_SVG = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='8' fill='%23f8fafc' stroke='%23cbd5e1'/><path d='M30 20 L42 28 L58 28 L70 20 L85 35 L75 45 L70 40 L70 85 L30 85 L30 40 L25 45 L15 35 Z' fill='%230284c7'/><text x='50' y='62' font-family='Arial' font-size='8' font-weight='bold' fill='%23ffffff' text-anchor='middle'>CLOTHING</text></svg>";
+
+// 🌐 युनिव्हर्सल ऑटो-मॅपर (तेल, मोबाईल, किराणा, टीव्ही, कपडे काहीही अडकणार नाही)
 function fetchGlobalUniversalSuggestions(inputText) {
   clearTimeout(globalLiveTimer);
   const dropdown = document.getElementById('brand-suggest-box');
@@ -432,28 +433,36 @@ function fetchGlobalUniversalSuggestions(inputText) {
     const clean = raw.toLowerCase().replace(/[-_.]/g, ' ');
 
     let list = [];
-    let defaultImg = MOBILE_PHONE_SVG;
-    let defaultCat = 'Universal Product';
-    let defaultUnit = 'pcs';
+    let defaultImg = GEMINI_OIL_SVG;
+    let defaultCat = 'खाद्यतेल (Cooking Oil)';
+    let defaultUnit = 'ltr';
     let defaultPrice = '';
 
-    // १. मोबाईल / स्मार्टफोन ब्रँड्स (Oppo, Vivo, Samsung, Realme, Apple, Xiaomi इ.)
-    if (clean.includes('oppo') || clean.includes('vivo') || clean.includes('realme') || clean.includes('samsung') || clean.includes('iphone') || clean.includes('redmi') || clean.includes('mobil') || clean.includes('phone') || clean.includes('मोबाईल')) {
+    // १. खाद्यतेल (Gemini, Fortune, Sunflower, Oil, तेल)
+    if (clean.includes('gemini') || clean.includes('oil') || clean.includes('sunflower') || clean.includes('fortune') || clean.includes('dhara') || clean.includes('तेल')) {
+      defaultImg = GEMINI_OIL_SVG;
+      defaultCat = 'खाद्यतेल (Cooking Oil)';
+      defaultUnit = 'ltr';
+      defaultPrice = clean.includes('gemini') ? '135' : '140';
+
+      list.push({ name: "Gemini Pure Sunflower Oil 1 Litre Pouch", cat: defaultCat, unit: "ltr", price: 135, img: GEMINI_OIL_SVG });
+      list.push({ name: "Gemini Sunflower Oil 5 Litre Jar", cat: defaultCat, unit: "ltr", price: 690, img: GEMINI_OIL_SVG });
+      list.push({ name: "Fortune Sunlite Refined Sunflower Oil 1L", cat: defaultCat, unit: "ltr", price: 140, img: GEMINI_OIL_SVG });
+    }
+    // २. मोबाईल / स्मार्टफोन (Oppo, Vivo, Samsung, Realme, Mobile, Phone)
+    else if (clean.includes('oppo') || clean.includes('vivo') || clean.includes('realme') || clean.includes('samsung') || clean.includes('phone') || clean.includes('mobil') || clean.includes('मोबाईल')) {
       defaultImg = MOBILE_PHONE_SVG;
       defaultCat = 'इलेक्ट्रॉनिक्स (Smartphones)';
       defaultUnit = 'pcs';
       defaultPrice = '14999';
 
-      const brandTitle = clean.includes('oppo') ? 'Oppo' : clean.includes('vivo') ? 'Vivo' : clean.includes('realme') ? 'Realme' : clean.includes('samsung') ? 'Samsung' : 'Smartphone';
-
-      list.push({ name: `${brandTitle} A78 5G (8GB RAM / 128GB)`, cat: defaultCat, unit: "pcs", price: 17499, img: MOBILE_PHONE_SVG });
-      list.push({ name: `${brandTitle} A18 (4GB RAM / 64GB)`, cat: defaultCat, unit: "pcs", price: 9999, img: MOBILE_PHONE_SVG });
-      list.push({ name: `${brandTitle} Reno 11 Pro 5G`, cat: defaultCat, unit: "pcs", price: 37999, img: MOBILE_PHONE_SVG });
-      list.push({ name: `${brandTitle} F25 Pro 5G`, cat: defaultCat, unit: "pcs", price: 23999, img: MOBILE_PHONE_SVG });
-      list.push({ name: `${brandTitle} A59 5G`, cat: defaultCat, unit: "pcs", price: 13999, img: MOBILE_PHONE_SVG });
+      const bName = clean.includes('oppo') ? 'Oppo' : clean.includes('vivo') ? 'Vivo' : clean.includes('realme') ? 'Realme' : 'Smartphone';
+      list.push({ name: `${bName} A78 5G (8GB/128GB)`, cat: defaultCat, unit: "pcs", price: 17499, img: MOBILE_PHONE_SVG });
+      list.push({ name: `${bName} Reno 11 Pro 5G`, cat: defaultCat, unit: "pcs", price: 37999, img: MOBILE_PHONE_SVG });
+      list.push({ name: `${bName} A18 (4GB/64GB)`, cat: defaultCat, unit: "pcs", price: 9999, img: MOBILE_PHONE_SVG });
     }
-    // २. टीव्ही / टेलिव्हिजन (TV, LED, OLED)
-    else if (clean.includes('tv') || clean.includes('screen') || clean.includes('television') || clean.includes('led')) {
+    // ३. टीव्ही / स्क्रीन (TV, LED, OLED)
+    else if (clean.includes('tv') || clean.includes('screen') || clean.includes('television')) {
       defaultImg = SMART_TV_SVG;
       defaultCat = 'इलेक्ट्रॉनिक्स (Smart TV)';
       defaultUnit = 'pcs';
@@ -461,29 +470,26 @@ function fetchGlobalUniversalSuggestions(inputText) {
 
       list.push({ name: `${raw} 43 Inch 4K Ultra HD Smart LED TV`, cat: defaultCat, unit: "pcs", price: 26990, img: SMART_TV_SVG });
       list.push({ name: `${raw} 32 Inch HD Ready Smart TV`, cat: defaultCat, unit: "pcs", price: 13990, img: SMART_TV_SVG });
-      list.push({ name: `${raw} 55 Inch Crystal 4K Smart TV`, cat: defaultCat, unit: "pcs", price: 44990, img: SMART_TV_SVG });
     }
-    // ३. स्मार्ट वॉच (Watch, Wearables)
-    else if (clean.includes('watch') || clean.includes('घड्याळ')) {
+    // ४. स्मार्ट वॉच (Watch, Wearables)
+    else if (clean.includes('watch') || clean.includes('smartwatch') || clean.includes('घड्याळ')) {
       defaultImg = SMART_WATCH_SVG;
       defaultCat = 'इलेक्ट्रॉनिक्स (Wearables)';
       defaultUnit = 'pcs';
       defaultPrice = '1499';
 
       list.push({ name: `${raw} Bluetooth Calling Smartwatch 1.96 Display`, cat: defaultCat, unit: "pcs", price: 1999, img: SMART_WATCH_SVG });
-      list.push({ name: `${raw} Fitness Tracker with Heart Rate Monitor`, cat: defaultCat, unit: "pcs", price: 1299, img: SMART_WATCH_SVG });
     }
-    // ४. कपडे (Shirt, Saree, Pants, Garments)
-    else if (clean.includes('shirt') || clean.includes('pant') || clean.includes('saree') || clean.includes('jeans') || clean.includes('cloth') || clean.includes('कपडे')) {
+    // ५. कपडे (Shirt, Saree, Pants, Garments)
+    else if (clean.includes('shirt') || clean.includes('pant') || clean.includes('saree') || clean.includes('कपडे')) {
       defaultImg = CLOTHING_SVG;
       defaultCat = 'कपडे (Garments)';
       defaultUnit = 'pcs';
       defaultPrice = '699';
 
       list.push({ name: `${raw} Men's Cotton Formal Shirt`, cat: defaultCat, unit: "pcs", price: 799, img: CLOTHING_SVG });
-      list.push({ name: `${raw} Slim Fit Casual Wear`, cat: defaultCat, unit: "pcs", price: 999, img: CLOTHING_SVG });
     }
-    // ५. किराणा (Tata Salt, Oil, Tea, Masale)
+    // ६. मीठ (Tata Salt)
     else if (clean.includes('salt') || clean.includes('solt') || clean.includes('namak') || clean.includes('मीठ')) {
       defaultImg = TATA_SALT_SVG;
       defaultCat = 'मीठ व मसाले (Staples)';
@@ -491,9 +497,8 @@ function fetchGlobalUniversalSuggestions(inputText) {
       defaultPrice = '28';
 
       list.push({ name: "Tata Salt Vacuum Evaporated 1kg", cat: defaultCat, unit: "kg", price: 28, img: TATA_SALT_SVG });
-      list.push({ name: "Tata Salt Lite Low Sodium 1kg", cat: defaultCat, unit: "kg", price: 42, img: TATA_SALT_SVG });
     }
-    // ६. इतर कोणत्याही उत्पादनासाठी
+    // ७. इतर कोणतीही वस्तू
     else {
       defaultImg = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='8' fill='%231D4E89'/><text x='50' y='55' font-family='Arial,sans-serif' font-size='9' font-weight='bold' fill='%23ffffff' text-anchor='middle'>${encodeURIComponent(raw.substring(0, 14).toUpperCase())}</text></svg>`;
       defaultCat = 'Universal Product';
@@ -502,7 +507,7 @@ function fetchGlobalUniversalSuggestions(inputText) {
       list.push({ name: `${raw} Standard Pack`, cat: defaultCat, unit: defaultUnit, price: '', img: defaultImg });
     }
 
-    // ड्रॉपडाउन सजेशन पॉप-अप दाखवणे
+    // ड्रॉपडाउन सजेशन यादी
     if (dropdown) {
       dropdown.innerHTML = list.map(item => `
         <div class="suggest-row" onclick="selectLiveItem('${escapeHtml(item.name).replace(/'/g, "\\'")}', '${item.cat}', '${item.unit}', '${item.price}', '${encodeURIComponent(item.img)}')">
@@ -516,13 +521,13 @@ function fetchGlobalUniversalSuggestions(inputText) {
       dropdown.style.display = 'block';
     }
 
-    // कार्ड त्वरित अपडेट करणे (कधीही जुना डमी बॉक्स राहणार नाही)
+    // कार्ड थेट अपडेट करणे (कधीही जुना डमी बॉक्स राहणार नाही)
     previewBox.innerHTML = `
       <div style="display:flex; align-items:center; gap:12px; background:#f0fdf4; padding:8px 12px; border-radius:6px; border:1px solid #bbf7d0; width:100%;">
         <img src="${defaultImg}" style="width:46px; height:46px; object-fit:contain; border-radius:6px; background:#fff; border:1px solid #cbd5e1; padding:2px;" alt="${raw}">
         <div>
           <strong style="font-size:13px; color:#16a34a;">✨ Auto-Mapped (${defaultCat})</strong><br>
-          <span style="font-size:11.5px; color:#475569;">${raw} चे अचूक चित्र व माहिती सेट झाली आहे.</span>
+          <span style="font-size:11.5px; color:#475569;">${raw} चे अधिकृत चित्र व माहिती सेट झाली आहे.</span>
         </div>
       </div>
     `;
