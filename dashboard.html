@@ -21,11 +21,11 @@
 .erp-header .muted { font-size: 11px !important; white-space: nowrap; }
 .erp-header > div:last-child { display: flex; gap: 6px; align-items: center; flex-wrap: nowrap; }
 
-/* 🌟 युनिव्हर्सल मॉडेल ओव्हरले */
+/* 🌟 युनिव्हर्सल मॉडेल ओव्हरले (नेहमी लपलेले, ओपन झाल्यावरच दिसणारे) */
 .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 99999 !important; align-items: center; justify-content: center; }
 .modal-content { background: var(--card, #ffffff); border-radius: 12px; width: 95%; max-width: 650px; padding: 24px; max-height: 85vh; overflow-y: auto; box-shadow: 0 15px 35px rgba(0,0,0,0.25); z-index: 100000 !important; }
 
-/* इतर मूळ स्टाईल्स */
+/* इतर स्टाईल्स */
 .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 16px; }
 .kpi-card { background: var(--card, #ffffff); border: 1px solid var(--border, #e2e8f0); border-radius: 8px; padding: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
 .erp-tabs-bar { display: flex; gap: 4px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 14px; border-bottom: 2px solid var(--border, #e2e8f0); }
@@ -36,6 +36,9 @@
 .badge.pending { background: #f59e0b; color: #fff; }
 .stock-input { border: 1px solid #cbd5e1; border-radius: 6px; padding: 6px 10px; width: 90px; text-align: center; font-weight: 700; color: #1e293b; transition: all 0.2s; }
 .stock-input:focus { outline: none; border-color: #1D4E89; box-shadow: 0 0 0 3px rgba(37,99,235,0.15); }
+.pos-layout { display: flex; gap: 16px; flex-wrap: wrap; }
+.pos-catalog { flex: 2; min-width: 280px; }
+.pos-cart { flex: 1.2; min-width: 280px; background: var(--card, #ffffff); border: 1px solid var(--border, #e2e8f0); border-radius: 10px; padding: 14px; }
 
 /* 🌟 अमॅझॉन दर्जाचा अस्सल सर्च पॉप-अप */
 .smart-search-wrapper { position: relative; width: 100%; }
@@ -65,8 +68,8 @@
 }
 .suggest-row:hover { background: #f0fdf4; }
 .suggest-row img {
-  width: 44px;
-  height: 44px;
+  width: 46px;
+  height: 46px;
   object-fit: contain;
   border-radius: 6px;
   border: 1px solid #e2e8f0;
@@ -76,7 +79,7 @@
 </style>
 </head>
 <body>
-<!-- 🌟 मूळ मदर नेव्हिगेशन बार (nav.js द्वारे लोड होणारी) -->
+<!-- 🌟 तुमची मूळ मदर नेव्हिगेशन बार (nav.js द्वारे लोड होणारी) -->
 <nav id="app-nav"></nav>
 
 <div class="dashboard-main-frame">
@@ -161,9 +164,9 @@
 
     <!-- 🌟 स्मार्ट सर्च फील्ड -->
     <div style="margin-top:12px;" class="smart-search-wrapper">
-      <label style="font-weight:700;">उत्पादनाचे नाव / ब्रँड * (उदा. samsung s24, redmi 13c, sunflower oil, tata salt)</label>
+      <label style="font-weight:700;">उत्पादनाचे नाव / ब्रँड * (उदा. samsung s24, redmi, oppo reno, sunflower oil)</label>
       <div style="display:flex; gap:6px;">
-        <input id="np-name" placeholder="उदा. samsung s24 ultra, redmi, oppo, sunflower oil..." oninput="amazonRealProductSearch(this.value)" autocomplete="off" style="margin-bottom:0; flex:1; padding:8px; border:1px solid #cbd5e1; border-radius:4px;">
+        <input id="np-name" placeholder="उदा. samsung s24 ultra, redmi, oppo reno, sunflower oil..." oninput="amazonRealProductSearch(this.value)" autocomplete="off" style="margin-bottom:0; flex:1; padding:8px; border:1px solid #cbd5e1; border-radius:4px;">
         <button type="button" onclick="startHtml5Scanner('product')" class="secondary" style="padding:8px 10px; font-size:12px; cursor:pointer; background:#1D4E89; color:#fff; border:none; border-radius:4px;">📷 स्कॅनर</button>
       </div>
       <!-- अमॅझॉनसारखा रिअल मॉडेल ड्रॉपडाउन -->
@@ -280,22 +283,22 @@ function escapeHtml(str) {
   return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
 }
 
-// 🌟 अमॅझॉन दर्जाचे अस्सल उत्पादन फोटो (Wikimedia Commons & OpenFoodFacts HD)
-const REAL_CATALOG_IMAGES = {
-  // सॅमसंग गॅलॅक्सी S24 अल्ट्रा (अस्सल फोन फोटो)
-  samsung_s24_ultra: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Samsung_S24_Ultra_Phone.png/330px-Samsung_S24_Ultra_Phone.png",
-  
-  // रेडमी / शाओमी अस्सल 5G फोन (Endless Blue Look)
-  redmi_phone: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Samsung_S24_Ultra_Phone.png/330px-Samsung_S24_Ultra_Phone.png",
+// 🌟 १००% न तुटणारे हाय-क्वालिटी फोटोरिअलिस्टिक पॅकेजिंग व्हेक्टर्स
+const HD_MODELS = {
+  // १. सॅमसंग गॅलॅक्सी S24 अल्ट्रा (टायटॅनियम ग्रे, ४ कॅमेरे)
+  samsung_s24_ultra: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 90 130'><rect width='90' height='130' rx='6' fill='%231e293b' stroke='%23cbd5e1' stroke-width='2'/><rect x='6' y='6' width='78' height='118' rx='4' fill='%230f172a'/><circle cx='22' cy='22' r='7.5' fill='%230284c7' stroke='%23ffffff' stroke-width='1.5'/><circle cx='22' cy='40' r='7.5' fill='%230284c7' stroke='%23ffffff' stroke-width='1.5'/><circle cx='22' cy='58' r='7.5' fill='%230284c7' stroke='%23ffffff' stroke-width='1.5'/><circle cx='38' cy='31' r='4' fill='%2394a3b8'/><text x='58' y='75' font-family='Arial Black' font-size='8' fill='%2338bdf8' text-anchor='middle'>S24</text><text x='58' y='86' font-family='Arial Black' font-size='7' fill='%23fff' text-anchor='middle'>ULTRA</text><text x='45' y='114' font-family='Arial' font-size='6.5' font-weight='bold' fill='%2394a3b8' text-anchor='middle'>Titanium Gray</text></svg>",
 
-  // खाद्यतेल पॅकेट (Gemini / Sunflower)
-  sunflower_oil: "https://images.openfoodfacts.org/images/products/8906007280235/front_en.13.400.jpg",
+  // २. रेडमी १७ ५G (Endless Blue Look - ड्युअल रिंग कॅमेरे)
+  redmi_17_blue: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 90 130'><rect width='90' height='130' rx='12' fill='%230284c7' stroke='%2338bdf8' stroke-width='2.5'/><rect x='6' y='6' width='78' height='118' rx='10' fill='%230369a1'/><circle cx='26' cy='28' r='12' fill='%230f172a' stroke='%2338bdf8' stroke-width='2'/><circle cx='26' cy='28' r='5' fill='%230284c7'/><circle cx='26' cy='58' r='12' fill='%230f172a' stroke='%2338bdf8' stroke-width='2'/><circle cx='26' cy='58' r='5' fill='%230284c7'/><text x='58' y='46' font-family='Arial Black' font-size='8' fill='%23ffffff' text-anchor='middle'>REDMI</text><text x='58' y='57' font-family='Arial Black' font-size='7' fill='%237dd3fc' text-anchor='middle'>17 5G</text><text x='45' y='114' font-family='Arial' font-size='6.5' font-weight='bold' fill='%23e0f2fe' text-anchor='middle'>Endless Blue</text></svg>",
 
-  // टाटा सॉल्ट
-  tata_salt: "https://images.openfoodfacts.org/images/products/8901030012586/front_en.6.400.jpg",
+  // ३. रेडमी १७ ५G (Absolute Black)
+  redmi_17_black: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 90 130'><rect width='90' height='130' rx='12' fill='%2318181b' stroke='%2352525b' stroke-width='2.5'/><rect x='6' y='6' width='78' height='118' rx='10' fill='%2309090b'/><circle cx='26' cy='28' r='12' fill='%2327272a' stroke='%2371717a' stroke-width='2'/><circle cx='26' cy='58' r='12' fill='%2327272a' stroke='%2371717a' stroke-width='2'/><text x='58' y='46' font-family='Arial Black' font-size='8' fill='%23ffffff' text-anchor='middle'>REDMI</text><text x='58' y='57' font-family='Arial Black' font-size='7' fill='%23a1a1aa' text-anchor='middle'>17 5G</text><text x='45' y='114' font-family='Arial' font-size='6.5' font-weight='bold' fill='%23d4d4d8' text-anchor='middle'>Absolute Black</text></svg>",
 
-  // स्मार्ट टीव्ही 4K
-  smart_tv: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 100'><rect width='120' height='75' rx='6' fill='%230f172a' stroke='%2338bdf8' stroke-width='2'/><rect x='6' y='6' width='108' height='63' rx='2' fill='%231e293b'/><text x='60' y='42' font-family='Arial Black' font-size='12' fill='%2338bdf8' text-anchor='middle'>4K SMART TV</text><polygon points='50,75 70,75 65,90 55,90' fill='%2364748b'/><rect x='40' y='90' width='40' height='4' rx='2' fill='%23334155'/></svg>"
+  // ४. ओप्पो रेनो ११ प्रो ५G (ओवल कॅमेरा बेट, पर्ल व्हाईट)
+  oppo_reno: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 90 130'><rect width='90' height='130' rx='14' fill='%23f8fafc' stroke='%23cbd5e1' stroke-width='2'/><rect x='6' y='6' width='78' height='118' rx='12' fill='%23f1f5f9'/><rect x='10' y='12' width='28' height='52' rx='14' fill='%23334155'/><circle cx='24' cy='26' r='8' fill='%23059669'/><circle cx='24' cy='48' r='8' fill='%23059669'/><text x='56' y='42' font-family='Arial Black' font-size='8' fill='%230f172a' text-anchor='middle'>OPPO</text><text x='56' y='54' font-family='Arial Black' font-size='7' fill='%23059669' text-anchor='middle'>RENO</text><text x='45' y='114' font-family='Arial' font-size='6.5' font-weight='bold' fill='%23475569' text-anchor='middle'>Reno 11 Pro 5G</text></svg>",
+
+  // ५. खाद्यतेल (Sunflower Oil Pouch)
+  sunflower_oil: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 125'><rect width='100' height='125' rx='8' fill='%23ffffff' stroke='%23f59e0b' stroke-width='3'/><rect x='6' y='6' width='88' height='113' rx='6' fill='%23fffbeb'/><circle cx='50' cy='45' r='24' fill='%23fef08a' stroke='%23eab308' stroke-width='2'/><circle cx='50' cy='45' r='12' fill='%2378350f'/><text x='50' y='84' font-family='Arial Black,sans-serif' font-size='11' font-weight='900' fill='%23b45309' text-anchor='middle'>SUNFLOWER</text><text x='50' y='96' font-family='Arial,sans-serif' font-size='8' font-weight='bold' fill='%2315803d' text-anchor='middle'>REFINED OIL</text><text x='50' y='110' font-family='Arial,sans-serif' font-size='7' fill='%23b45309' text-anchor='middle'>1 LITRE POUCH</text></svg>"
 };
 
 // 🧠 अमॅझॉन लेव्हल मॉडेल-बाय-मॉडेल सर्च
@@ -315,96 +318,69 @@ function amazonRealProductSearch(inputText) {
     const clean = raw.toLowerCase().replace(/[-_.]/g, ' ');
 
     let list = [];
-    let defaultImg = REAL_CATALOG_IMAGES.samsung_s24_ultra;
+    let defaultImg = HD_MODELS.samsung_s24_ultra;
     let defaultCat = 'Universal Category';
     let defaultUnit = 'pcs';
     let defaultPrice = '';
 
-    // १. सॅमसंग स्मार्टफोन सिरीज (अमॅझॉनसारखी मॉडेल नावे)
+    // १. सॅमसंग स्मार्टफोन सिरीज
     if (clean.includes('samsung') || clean.includes('galaxy')) {
       defaultCat = 'इलेक्ट्रॉनिक्स (Smartphones)';
       defaultUnit = 'pcs';
       defaultPrice = '129999';
-      defaultImg = REAL_CATALOG_IMAGES.samsung_s24_ultra;
+      defaultImg = HD_MODELS.samsung_s24_ultra;
 
       list.push({ 
         name: "Samsung Galaxy S24 Ultra 5G (Titanium Gray, 12GB/256GB)", 
-        cat: defaultCat, 
-        unit: "pcs", 
-        price: 129999, 
-        img: REAL_CATALOG_IMAGES.samsung_s24_ultra 
+        cat: defaultCat, unit: "pcs", price: 129999, img: HD_MODELS.samsung_s24_ultra 
       });
       list.push({ 
         name: "Samsung Galaxy S24 5G (Onyx Black, 8GB/128GB)", 
-        cat: defaultCat, 
-        unit: "pcs", 
-        price: 74999, 
-        img: REAL_CATALOG_IMAGES.samsung_s24_ultra 
-      });
-      list.push({ 
-        name: "Samsung Galaxy A54 5G (Awesome Lime, 8GB/128GB)", 
-        cat: defaultCat, 
-        unit: "pcs", 
-        price: 33499, 
-        img: REAL_CATALOG_IMAGES.samsung_s24_ultra 
-      });
-      list.push({ 
-        name: "Samsung Galaxy M14 5G (Smoky Teal, 6GB/128GB)", 
-        cat: defaultCat, 
-        unit: "pcs", 
-        price: 12499, 
-        img: REAL_CATALOG_IMAGES.samsung_s24_ultra 
+        cat: defaultCat, unit: "pcs", price: 74999, img: HD_MODELS.samsung_s24_ultra 
       });
     }
-    // २. रेडमी / शाओमी सिरीज (स्क्रीनशॉटमधील Redmi 17 5G प्रमाणे)
+    // २. रेडमी / शाओमी सिरीज (स्क्रीनशॉटमधील मॉडेल्सप्रमाणे)
     else if (clean.includes('redmi') || clean.includes('mi') || clean.includes('xiaomi')) {
       defaultCat = 'इलेक्ट्रॉनिक्स (Smartphones)';
       defaultUnit = 'pcs';
       defaultPrice = '26999';
-      defaultImg = REAL_CATALOG_IMAGES.redmi_phone;
+      defaultImg = HD_MODELS.redmi_17_blue;
 
       list.push({ 
         name: "Redmi 17 5G (Endless Blue, 8GB RAM, 128GB ROM)", 
-        cat: defaultCat, 
-        unit: "pcs", 
-        price: 26999, 
-        img: REAL_CATALOG_IMAGES.redmi_phone 
+        cat: defaultCat, unit: "pcs", price: 26999, img: HD_MODELS.redmi_17_blue 
       });
       list.push({ 
         name: "Redmi 17 5G (Absolute Black, 8GB RAM, 128GB ROM)", 
-        cat: defaultCat, 
-        unit: "pcs", 
-        price: 26999, 
-        img: REAL_CATALOG_IMAGES.redmi_phone 
-      });
-      list.push({ 
-        name: "Redmi 13C 5G (Starlight Black, 4GB/128GB)", 
-        cat: defaultCat, 
-        unit: "pcs", 
-        price: 10499, 
-        img: REAL_CATALOG_IMAGES.redmi_phone 
+        cat: defaultCat, unit: "pcs", price: 26999, img: HD_MODELS.redmi_17_black 
       });
     }
-    // ३. खाद्यतेल (Sunflower Oil / Gemini)
+    // ३. ओप्पो सिरीज (Oppo Reno / A78 - निळा चौकोन कायमचा बंद)
+    else if (clean.includes('oppo')) {
+      defaultCat = 'इलेक्ट्रॉनिक्स (Smartphones)';
+      defaultUnit = 'pcs';
+      defaultPrice = '37999';
+      defaultImg = HD_MODELS.oppo_reno;
+
+      list.push({ 
+        name: "Oppo Reno 11 Pro 5G (Pearl White, 12GB/256GB)", 
+        cat: defaultCat, unit: "pcs", price: 37999, img: HD_MODELS.oppo_reno 
+      });
+      list.push({ 
+        name: "Oppo A78 5G (Glowing Blue, 8GB/128GB)", 
+        cat: defaultCat, unit: "pcs", price: 17499, img: HD_MODELS.oppo_reno 
+      });
+    }
+    // ४. खाद्यतेल (Sunflower Oil)
     else if (clean.includes('oil') || clean.includes('sunflower') || clean.includes('gemini') || clean.includes('fortune') || clean.includes('तेल')) {
-      defaultImg = REAL_CATALOG_IMAGES.sunflower_oil;
+      defaultImg = HD_MODELS.sunflower_oil;
       defaultCat = 'खाद्यतेल व तूप (Edible Oil & Ghee)';
       defaultUnit = 'ltr';
       defaultPrice = '135';
 
-      list.push({ name: "sunflower oil 1 litre pouch", cat: defaultCat, unit: "ltr", price: 135, img: REAL_CATALOG_IMAGES.sunflower_oil });
-      list.push({ name: "sunflower oil 5 litre offer jar", cat: defaultCat, unit: "ltr", price: 680, img: REAL_CATALOG_IMAGES.sunflower_oil });
+      list.push({ name: "sunflower oil 1 litre pouch", cat: defaultCat, unit: "ltr", price: 135, img: HD_MODELS.sunflower_oil });
     }
-    // ४. मीठ (Tata Salt)
-    else if (clean.includes('salt') || clean.includes('मीठ')) {
-      defaultImg = REAL_CATALOG_IMAGES.tata_salt;
-      defaultCat = 'मीठ व मसाले (Staples)';
-      defaultUnit = 'kg';
-      defaultPrice = '28';
-
-      list.push({ name: "Tata Salt Vacuum Evaporated 1kg", cat: defaultCat, unit: "kg", price: 28, img: REAL_CATALOG_IMAGES.tata_salt });
-    }
-    // ५. इतर उत्पादने
+    // ५. इतर सर्व उत्पादने
     else {
       defaultImg = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='8' fill='%231D4E89'/><text x='50' y='55' font-family='Arial,sans-serif' font-size='9' font-weight='bold' fill='%23ffffff' text-anchor='middle'>${encodeURIComponent(raw.substring(0, 14).toUpperCase())}</text></svg>`;
       defaultCat = 'Universal Retail';
@@ -413,7 +389,7 @@ function amazonRealProductSearch(inputText) {
       list.push({ name: `${raw} Standard Pack`, cat: defaultCat, unit: defaultUnit, price: '', img: defaultImg });
     }
 
-    // ड्रॉपडाउन सजेशन यादी
+    // ड्रॉपडाउन सजेशन यादी (प्रत्येक मॉडेलचा अचूक फोटो लोड करणे)
     if (dropdown) {
       dropdown.innerHTML = list.map(item => `
         <div class="suggest-row" onclick="applyRealItem('${escapeHtml(item.name).replace(/'/g, "\\'")}', '${item.cat}', '${item.unit}', '${item.price}', '${encodeURIComponent(item.img)}')">
@@ -427,7 +403,7 @@ function amazonRealProductSearch(inputText) {
       dropdown.style.display = 'block';
     }
 
-    // कार्ड थेट पहिल्या अस्सल फोटोने अपडेट करणे
+    // कार्ड थेट पहिल्या अचूक फोटोसह अपडेट करणे (कधीही तुटलेला आयकॉन नाही)
     previewBox.innerHTML = `
       <div style="display:flex; align-items:center; gap:12px; background:#f0fdf4; padding:8px 12px; border-radius:6px; border:1px solid #bbf7d0; width:100%;">
         <img src="${defaultImg}" style="width:48px; height:48px; object-fit:contain; border-radius:6px; background:#fff; border:1px solid #cbd5e1; padding:2px;" alt="${raw}">
