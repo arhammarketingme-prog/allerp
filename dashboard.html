@@ -9,6 +9,7 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
 <link rel="stylesheet" href="css/style.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- Robust HTML5-Qrcode Scanner Library -->
 <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 <style>
 .dashboard-main-frame { width: 98%; max-width: 1450px; margin: 10px auto; padding: 0 6px; }
@@ -19,7 +20,7 @@
 .erp-header > div:last-child { display: flex; gap: 6px; align-items: center; flex-wrap: nowrap; }
 
 .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 99999 !important; align-items: center; justify-content: center; }
-.modal-content { background: var(--card, #ffffff); border-radius: 12px; width: 95%; max-width: 650px; padding: 24px; max-height: 85vh; overflow-y: auto; box-shadow: 0 15px 35px rgba(0,0,0,0.25); z-index: 100000 !important; }
+.modal-content { background: var(--card, #ffffff); border-radius: 12px; width: 95%; max-width: 700px; padding: 24px; max-height: 85vh; overflow-y: auto; box-shadow: 0 15px 35px rgba(0,0,0,0.25); z-index: 100000 !important; }
 
 .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 16px; }
 .kpi-card { background: var(--card, #ffffff); border: 1px solid var(--border, #e2e8f0); border-radius: 8px; padding: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
@@ -104,7 +105,8 @@
       </div>
     </div>
     <div>
-      <button type="button" onclick="openGlobalCatalogModal()" style="background:#16a34a; color:#fff; padding:6px 12px; border:none; border-radius:6px; cursor:pointer; font-weight:bold; font-size:12.5px;">
+      <!-- 🌐 ग्लोबल मार्केटप्लेस हेडर बटण -->
+      <button type="button" onclick="openGlobalCatalogModal()" style="background:#16a34a; color:#fff; padding:6px 14px; border:none; border-radius:6px; cursor:pointer; font-weight:bold; font-size:13px;">
         🌐 ग्लोबल मार्केटप्लेस
       </button>
       <select id="business-select" style="max-width:180px; margin-bottom:0; display:none;"></select>
@@ -141,10 +143,10 @@
   <!-- TAB 1: OVERVIEW -->
   <div id="tab-overview" class="erp-tab-pane">
     <div class="kpi-grid">
-      <div class="kpi-card"><div class="kpi-title">एकूण विक्री (Total Sales)</div><div class="kpi-value" id="kpi-total-sales">₹0.00</div></div>
-      <div class="kpi-card"><div class="kpi-title">एकूण खरेदी (Purchases)</div><div class="kpi-value" id="kpi-total-purchases">₹0.00</div></div>
-      <div class="kpi-card"><div class="kpi-title">एकूण खर्च (Expenses)</div><div class="kpi-value" id="kpi-total-expenses" style="color:#dc2626;">₹0.00</div></div>
-      <div class="kpi-card"><div class="kpi-title">निव्वळ नफा (Net Profit)</div><div class="kpi-value" id="kpi-net-profit" style="color:#16a34a;">₹0.00</div></div>
+      <div class="kpi-card"><div class="kpi-title">एकूण विक्री</div><div class="kpi-value" id="kpi-total-sales">₹0.00</div></div>
+      <div class="kpi-card"><div class="kpi-title">एकूण खरेदी</div><div class="kpi-value" id="kpi-total-purchases">₹0.00</div></div>
+      <div class="kpi-card"><div class="kpi-title">एकूण खर्च</div><div class="kpi-value" id="kpi-total-expenses" style="color:#dc2626;">₹0.00</div></div>
+      <div class="kpi-card"><div class="kpi-title">निव्वळ नफा</div><div class="kpi-value" id="kpi-net-profit" style="color:#16a34a;">₹0.00</div></div>
     </div>
   </div>
 
@@ -152,7 +154,10 @@
   <div id="tab-products" class="erp-tab-pane" style="display:none;">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
       <h2>📦 इन्व्हेंटरी व उत्पादने (Universal Inventory)</h2>
-      <button type="button" onclick="openModal('add-product-modal')" style="background:#1D4E89; color:#fff; padding:8px 14px; border:none; border-radius:6px; cursor:pointer;">+ नवीन प्रॉडक्ट जोडा</button>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button type="button" onclick="openGlobalCatalogModal()" style="background:#16a34a; color:#fff; padding:8px 14px; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">🌐 ग्लोबल मार्केटप्लेस</button>
+        <button type="button" onclick="openModal('add-product-modal')" style="background:#1D4E89; color:#fff; padding:8px 14px; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">+ नवीन प्रॉडक्ट जोडा</button>
+      </div>
     </div>
     <div class="card" style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:16px;">
       <table style="width:100%; border-collapse:collapse;">
@@ -191,29 +196,15 @@
   </div>
 
   <!-- TAB 5: CRM -->
-  <div id="tab-crm" class="erp-tab-pane" style="display:none;">
-    <h2>👥 CRM व ग्राहक पाईपलाईन</h2>
-  </div>
-
+  <div id="tab-crm" class="erp-tab-pane" style="display:none;"><h2>👥 CRM व ग्राहक पाईपलाईन</h2></div>
   <!-- TAB 5.5: KHATA -->
-  <div id="tab-khata" class="erp-tab-pane" style="display:none;">
-    <h2>🧾 उधार खाता (Customer Khata)</h2>
-  </div>
-
+  <div id="tab-khata" class="erp-tab-pane" style="display:none;"><h2>🧾 उधार खाता (Customer Khata)</h2></div>
   <!-- TAB 6: FINANCE -->
-  <div id="tab-finance" class="erp-tab-pane" style="display:none;">
-    <h2>📑 दैनंदिन खर्च नोंदवही</h2>
-  </div>
-
+  <div id="tab-finance" class="erp-tab-pane" style="display:none;"><h2>📑 दैनंदिन खर्च नोंदवही</h2></div>
   <!-- TAB 7: HR -->
-  <div id="tab-hr" class="erp-tab-pane" style="display:none;">
-    <h2>👔 कर्मचारी व्यवस्थापन (HR)</h2>
-  </div>
-
+  <div id="tab-hr" class="erp-tab-pane" style="display:none;"><h2>👔 कर्मचारी व्यवस्थापन (HR)</h2></div>
   <!-- TAB 8: PROJECTS -->
-  <div id="tab-projects" class="erp-tab-pane" style="display:none;">
-    <h2>🏗️ प्रकल्प / साईट्स (Projects)</h2>
-  </div>
+  <div id="tab-projects" class="erp-tab-pane" style="display:none;"><h2>🏗️ प्रकल्प / साईट्स (Projects)</h2></div>
 
   <!-- TAB 9: POS COUNTER -->
   <div id="tab-pos" class="erp-tab-pane" style="display:none;">
@@ -241,7 +232,7 @@
   <!-- TAB 10: ONLINE ORDERS -->
   <div id="tab-orders" class="erp-tab-pane" style="display:none;"><h2>🛍️ ऑनलाईन ऑर्डर्स</h2></div>
   <!-- TAB 11: REPORTS & GST -->
-  <div id="tab-reports" class="erp-tab-pane" style="display:none;"><h2>📈 रिपोर्ट्स व GST</h2></div>
+  <div id="tab-reports" class="erp-tab-pane" style="display:none;"><h2>📈 रिपोर्ट्स व GST केंद्र</h2></div>
   <!-- TAB 12: SETTINGS -->
   <div id="tab-settings" class="erp-tab-pane" style="display:none;"><h2>⚙️ सिस्टीम सेटिंग्स</h2></div>
 </div>
@@ -262,7 +253,6 @@
       </div>
       <div style="display:flex; gap:6px;">
         <input id="np-name" placeholder="उदा. Vivo FlashCharge 2.0, Amul Milk, Oppo Reno..." oninput="handleCentralCatalogSearch(this.value)" autocomplete="off" style="margin-bottom:0; flex:1; padding:8px; border:1px solid #cbd5e1; border-radius:4px;">
-        <!-- 📷 स्कॅनर बटण -->
         <button type="button" id="product-scan-btn" onclick="startHtml5Scanner('product')" class="secondary" style="padding:8px 12px; font-size:12px; cursor:pointer; background:#1D4E89; color:#fff; border:none; border-radius:4px; font-weight:bold;">📷 स्कॅनर (Barcode/QR)</button>
       </div>
       <div id="brand-suggest-box" class="smart-suggest-popup"></div>
@@ -284,7 +274,6 @@
       </div>
       <input type="hidden" id="np-selected-image-url" value="">
       
-      <!-- 📷 थेट फोटो अपलोड किंवा कॅमेरा फोटो पर्याय -->
       <div style="margin-top:10px; display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
         <label style="background:#f1f5f9; border:1px solid #cbd5e1; padding:6px 10px; border-radius:4px; font-size:11.5px; cursor:pointer; font-weight:bold;">
           📸 मोबाईलने वस्तूचा खरा फोटो काढा
@@ -313,6 +302,22 @@
     <div style="display:flex; gap:8px; margin-top:12px;">
       <button id="np-save-btn" type="button" style="flex:1; background:#16a34a; color:#fff; padding:10px; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">सेव्ह करा</button>
       <button type="button" class="secondary" onclick="closeModal('add-product-modal')" style="cursor:pointer; padding:10px;">रद्द करा</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 🌐 ग्लोबल मार्केटप्लेस मोडल ==================== -->
+<div id="global-catalog-modal" class="modal-overlay">
+  <div class="modal-content">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+      <h3 style="margin:0;">🌐 ग्लोबल मार्केटप्लेस व सेंट्रल प्रॉडक्ट कॅटलॉग</h3>
+      <button type="button" class="secondary" onclick="closeModal('global-catalog-modal')" style="padding:4px 10px; font-size:12px; cursor:pointer; font-weight:bold;">✕ बंद करा</button>
+    </div>
+    <div style="display:flex; gap:8px; margin-bottom:12px;">
+      <input id="gc-search-box" placeholder="कॅटलॉगमधील वस्तू शोधा (उदा. Dairy, Electronics, Snacks)..." oninput="filterGlobalCatalog(this.value)" style="flex:1; padding:8px; border:1px solid #cbd5e1; border-radius:4px; margin-bottom:0;">
+    </div>
+    <div id="global-catalog-list" style="max-height:350px; overflow-y:auto; border:1px solid #e2e8f0; border-radius:6px; padding:8px;">
+      <p class="muted" style="text-align:center; padding:20px;">ग्लोबल कॅटलॉग लोड होत आहे...</p>
     </div>
   </div>
 </div>
@@ -390,7 +395,7 @@ function escapeHtml(str) {
   return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
 }
 
-// 📷 🌟 बारकोड + QR स्कॅनर
+// 📷 🌟 क्यूआर कोड + बारकोड हाय-स्पीड स्कॅनर (Omni-Directional Square Scanning Box)
 async function startHtml5Scanner(target) {
   const readerId = (target === 'pos') ? 'pos-reader' : 'reader';
   const readerDiv = document.getElementById(readerId);
@@ -405,12 +410,34 @@ async function startHtml5Scanner(target) {
   if (statusEl) statusEl.innerHTML = '<span class="loading-indicator"></span> कॅमेरा सुरू होत आहे...';
 
   try {
-    html5QrScanner = new Html5Qrcode(readerId);
+    // 🌟 QR कोड + सर्व बारकोड फॉरमॅट्स सपोर्ट
+    html5QrScanner = new Html5Qrcode(readerId, {
+      formatsToSupport: [
+        Html5QrcodeSupportedFormats.QR_CODE,
+        Html5QrcodeSupportedFormats.EAN_13,
+        Html5QrcodeSupportedFormats.EAN_8,
+        Html5QrcodeSupportedFormats.CODE_128,
+        Html5QrcodeSupportedFormats.CODE_39,
+        Html5QrcodeSupportedFormats.UPC_A,
+        Html5QrcodeSupportedFormats.UPC_E
+      ],
+      verbose: false
+    });
+
+    // चौकोनी स्कॅनिंग बॉक्स (QR व बारकोड दोन्ही तात्काळ पकडण्यासाठी)
     await html5QrScanner.start(
       { facingMode: "environment" },
-      { fps: 15, qrbox: { width: 260, height: 180 } },
+      {
+        fps: 20,
+        qrbox: (viewfinderWidth, viewfinderHeight) => {
+          const edge = Math.floor(Math.min(viewfinderWidth, viewfinderHeight) * 0.75);
+          return { width: edge, height: edge };
+        }
+      },
       async (decodedText) => {
+        console.log("Scanned QR/Barcode:", decodedText);
         stopHtml5Scanner();
+
         if (target === 'pos') {
           const posBox = document.getElementById('pos-search-box');
           if (posBox) { posBox.value = decodedText; }
@@ -422,9 +449,10 @@ async function startHtml5Scanner(target) {
       },
       (err) => {}
     );
-    if (statusEl) statusEl.textContent = '📷 बारकोड किंवा QR कोड समोर धरा';
+    if (statusEl) statusEl.textContent = '📷 कॅमेऱ्यासमोर QR किंवा बारकोड धरा';
   } catch (err) {
-    alert("कॅमेरा सुरू करता आला नाही. ब्राऊझर परमिशन तपासा.");
+    console.error(err);
+    alert("कॅमेरा सुरू करता आला नाही. ब्राऊझरमध्ये कॅमेरा परमिशन तपासा.");
     stopHtml5Scanner();
   }
 }
@@ -445,7 +473,7 @@ function stopHtml5Scanner() {
   if (statusEl) statusEl.textContent = '🌐 Central Cloud Sync';
 }
 
-// 🌐 🌟 बारकोड / QR डेटा हँडलर
+// 🌐 बारकोड / QR डेटा हँडलर
 async function handleBarcodeDirectLookup(barcodeVal) {
   if (!barcodeVal || barcodeVal.trim().length < 3) return;
   const bc = barcodeVal.trim();
@@ -475,24 +503,22 @@ async function handleBarcodeDirectLookup(barcodeVal) {
       }
       if (statusEl) statusEl.textContent = '✅ प्रॉडक्ट सापडले!';
     } else {
-      if (statusEl) statusEl.textContent = 'कोड नोंदवला. कृपया नाव व फोटो टाका.';
+      if (statusEl) statusEl.textContent = 'QR/बारकोड नोंदवला. कृपया नाव व फोटो टाका.';
     }
   } catch (err) {
     if (statusEl) statusEl.textContent = 'स्थानिक मोड';
   }
 }
 
-// 🌟 अस्सल कॅटेगरी व्हिज्युअल जनरेटर (Vivo Fast Charger साठी ॲडॉप्टर व केबल अचूक डिझाइन)
+// 🌟 Vivo Fast Charger / ॲडॉप्टर व केबल अचूक डिझाइन
 function generateCategoryVector(name, cat) {
   const clean = (name + ' ' + cat).toLowerCase();
 
-  // ⚡ Vivo FlashCharge / Fast Charger (ॲडॉप्टर + टाईप सी केबल, कोणताही स्टँड नाही!)
-  if (clean.includes('charger') || clean.includes('charging') || clean.includes('adaptor') || clean.includes('cable') || clean.includes('flashcharge')) {
+  if (clean.includes('charger') || clean.includes('charging') || clean.includes('adaptor') || clean.includes('flashcharge')) {
     return "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 120'><rect width='100' height='120' rx='8' fill='%23ffffff' stroke='%230284c7' stroke-width='2'/><rect x='25' y='18' width='50' height='46' rx='6' fill='%23f8fafc' stroke='%23cbd5e1' stroke-width='2'/><rect x='34' y='6' width='6' height='12' fill='%2364748b'/><rect x='60' y='6' width='6' height='12' fill='%2364748b'/><circle cx='50' cy='41' r='10' fill='%230284c7'/><polygon points='50,34 45,43 49,43 47,49 55,40 51,40' fill='%23ffffff'/><path d='M30 84 Q50 68 70 84 T90 98' fill='none' stroke='%230284c7' stroke-width='3.5' stroke-linecap='round'/><rect x='20' y='80' width='12' height='8' rx='2' fill='%23334155'/><text x='50' y='112' font-family='Arial Black' font-size='7.5' fill='%230284c7' text-anchor='middle'>FAST CHARGER</text></svg>";
   }
-  // दूध व दुग्धजन्य
   if (clean.includes('milk') || clean.includes('amul') || clean.includes('दूध') || clean.includes('paneer')) {
-    return "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 120'><rect width='100' height='120' rx='8' fill='%23eff6ff' stroke='%233b82f6' stroke-width='2'/><path d='M0 0 L100 0 L100 28 L0 28 Z' fill='%232563eb'/><text x='50' y='20' font-family='Arial Black' font-size='11' fill='%23ffffff' text-anchor='middle'>FRESH DAIRY</text><circle cx='50' cy='60' r='20' fill='%23ffffff' stroke='%233b82f6'/><text x='50' y='64' font-family='Arial Black' font-size='8' fill='%231d4ed8' text-anchor='middle'>MILK</text><text x='50' y='105' font-family='Arial' font-size='7' font-weight='bold' fill='%231e40af' text-anchor='middle'>500ml / 1 Litre</text></svg>";
+    return "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 120'><rect width='100' height='120' rx='8' fill='%23eff6ff' stroke='%233b82f6' stroke-width='2'/><path d='M0 0 L100 0 L100 28 L0 28 Z' fill='%232563eb'/><text x='50' y='20' font-family='Arial Black' font-size='11' fill='%23ffffff' text-anchor='middle'>FRESH DAIRY</text><circle cx='50' cy='60' r='20' fill='%23ffffff' stroke='%233b82f6'/><text x='50' y='64' font-family='Arial Black' font-size='8' fill='%231d4ed8' text-anchor='middle'>MILK</text></svg>";
   }
   return `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='8' fill='%231D4E89'/><text x='50' y='55' font-family='Arial' font-size='8.5' font-weight='bold' fill='%23ffffff' text-anchor='middle'>${encodeURIComponent(name.substring(0, 14).toUpperCase())}</text></svg>`;
 }
@@ -529,17 +555,13 @@ async function handleCentralCatalogSearch(queryText) {
     } catch(e) {}
 
     const clean = q.toLowerCase();
-    
-    // ⚡ Vivo FlashCharge / Fast Charging
     if (clean.includes('vivo') && (clean.includes('charg') || clean.includes('flash'))) {
       const cat = 'मोबाईल ॲक्सेसरीज (Fast Chargers)';
       combinedResults.push({ name: "Vivo FlashCharge 2.0 44W Fast Charger (Adapter + Type-C Cable)", cat, unit: "pcs", price: 1299, img: generateCategoryVector('charger', cat) });
       combinedResults.push({ name: "Vivo 80W FlashCharge Power Adapter with Type-C Cable", cat, unit: "pcs", price: 1999, img: generateCategoryVector('charger', cat) });
-      combinedResults.push({ name: "Vivo 33W Flash Charger 2.0 (Type-C Fast Sync Cable)", cat, unit: "pcs", price: 999, img: generateCategoryVector('charger', cat) });
     } else if (clean.includes('amul') || clean.includes('milk')) {
       const cat = 'डेअरी (Dairy)';
       combinedResults.push({ name: "Amul Taaza Toned Milk 500ml", cat, unit: "packet", price: 27, img: generateCategoryVector('milk', cat) });
-      combinedResults.push({ name: "Amul Gold Milk 500ml", cat, unit: "packet", price: 33, img: generateCategoryVector('milk', cat) });
     } else if (combinedResults.length === 0) {
       combinedResults.push({
         name: `${q} Standard Pack`,
@@ -596,7 +618,6 @@ function setCentralPreview(item) {
   if (item.unit) document.getElementById('np-unit').value = item.unit;
 }
 
-// 📸 थेट मोबाईल कॅमेऱ्याने फोटो काढून जागेवर सेट करणे
 function handleDirectPhotoUpload(event) {
   const file = event.target.files[0];
   if (!file) return;
@@ -604,7 +625,7 @@ function handleDirectPhotoUpload(event) {
   const reader = new FileReader();
   reader.onload = function(e) {
     const photoBase64 = e.target.result;
-    const name = document.getElementById('np-name').value || 'Vivo Fast Charger';
+    const name = document.getElementById('np-name').value || 'Captured Product';
     setCentralPreview({ name, cat: 'Captured Photo', img: photoBase64, unit: 'pcs' });
   };
   reader.readAsDataURL(file);
@@ -614,6 +635,52 @@ function applyCustomImageUrl(url) {
   if (!url || !url.startsWith('http')) return;
   const name = document.getElementById('np-name').value || 'Product';
   setCentralPreview({ name, cat: 'Custom Image', img: url });
+}
+
+// 🌐 ग्लोबल मार्केटप्लेस मोडल फंक्शन्स
+function openGlobalCatalogModal() {
+  openModal('global-catalog-modal');
+  loadGlobalCatalogList();
+}
+
+async function loadGlobalCatalogList() {
+  const container = document.getElementById('global-catalog-list');
+  if (!container) return;
+  try {
+    const { data: items } = await sb.from('global_catalog').select('*').limit(20);
+    if (!items || items.length === 0) {
+      container.innerHTML = '<p class="muted" style="text-align:center; padding:15px;">ग्लोबल कॅटलॉगमध्ये सध्या कोणतीही उत्पादने नाहीत. नवीन उत्पादने जोडा.</p>';
+      return;
+    }
+    container.innerHTML = items.map(it => `
+      <div style="display:flex; justify-content:space-between; align-items:center; padding:8px; border-bottom:1px solid #f1f5f9;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <img src="${it.image_url || ''}" style="width:36px; height:36px; object-fit:contain; border:1px solid #cbd5e1; border-radius:4px; padding:2px;">
+          <div><strong>${escapeHtml(it.name)}</strong><br><span style="font-size:11px; color:#64748b;">₹${it.selling_price || 0}/${it.unit || 'pcs'}</span></div>
+        </div>
+        <button type="button" onclick="importFromGlobal('${escapeHtml(it.name).replace(/'/g, "\\'")}', '${it.unit || 'pcs'}', ${it.selling_price || 0}, '${encodeURIComponent(it.image_url || '')}', '${it.barcode || ''}')" style="background:#16a34a; color:#fff; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:11.5px; font-weight:bold;">+ इन्व्हेंटरीमध्ये घ्या</button>
+      </div>
+    `).join('');
+  } catch(e) {
+    container.innerHTML = '<p class="muted" style="text-align:center;">डेटा लोड करताना त्रुटी आली.</p>';
+  }
+}
+
+async function importFromGlobal(name, unit, price, imgEncoded, barcode) {
+  if (!currentBusinessId) return;
+  const img = decodeURIComponent(imgEncoded);
+  try {
+    await sb.from('business_products').insert({
+      business_id: currentBusinessId, name, unit, selling_price: price, stock: 10, is_active: true, image_url: img, barcode
+    });
+    alert(`✅ '${name}' थेट ग्लोबल कॅटलॉगमधून तुमच्या इन्व्हेंटरीमध्ये समाविष्ट झाले!`);
+    closeModal('global-catalog-modal');
+    await loadProducts();
+  } catch(e) { alert("त्रुटी: " + e.message); }
+}
+
+function filterGlobalCatalog(term) {
+  // स्थानिक शोध फिल्टर
 }
 
 document.addEventListener('click', function(e) {
@@ -659,8 +726,6 @@ if (saveBtn) {
   });
 }
 
-function openGlobalCatalogModal() { openModal('global-catalog-modal'); }
-function filterGlobalCatalog() {}
 initDashboard();
 </script>
 </body>
