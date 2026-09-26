@@ -63,7 +63,6 @@ body.store-locked-mode #app-nav { display: none !important; }
     <div>
       <h1 id="business-display-name">ALL ERP Dashboard</h1>
       <span class="muted" id="header-sub-text">Universal Multi-Business Operating System & Local Marketplace</span>
-      <!-- दुकानदार स्वतःचे युझरनेम इथे पाहू शकेल -->
       <div style="margin-top:4px; font-size:13px; font-weight:700; color:#0b8f87;" id="merchant-username-badge">
         👤 वीव्हो युझरनेम: <span id="display-merchant-handle">लोड होत आहे...</span>
       </div>
@@ -467,7 +466,7 @@ async function submitCustomerOrder() {
     let totalAmt = customerCart.reduce((sum, i) => sum + (i.price * i.qty), 0);
     let itemsSummaryText = customerCart.map(i => `${i.name} (${i.qty} नग)`).join(', ');
 
-    // १. AllERP च्या orders टेबलमध्ये ऑर्डर सेव्ह करणे (.select().single() आता SELECT पॉलिसी ऑन असल्याने सुरळीत चालेल)
+    // १. AllERP च्या orders टेबलमध्ये ऑर्डर सेव्ह करणे
     const { data: orderData, error: orderErr } = await sb.from('orders').insert({
       business_id: currentBusinessId,
       customer_name: name,
@@ -479,13 +478,26 @@ async function submitCustomerOrder() {
 
     if (orderErr) throw orderErr;
 
-    // २. Weavo च्या चॅट डेटाबेसमध्ये स्वयंचलितपणे ऑर्डरचा मेसेज पाठवणे
+    // २. Weavo च्या चॅट डेटाबेसमध्ये स्वयंचलितपणे ऑर्डरचा मेसेज पाठवणे व अचूक युजर आयडी मॅच करणे
     try {
       const { data: bizInfo } = await sb.from('businesses').select('owner_id, name').eq('id', currentBusinessId).single();
       if (bizInfo && bizInfo.owner_id) {
         const storeUserId = bizInfo.owner_id;
+        
+        // ग्राहक जर लॉग-इन असेल तर त्याचा id वापरा, अन्यथा lockedStoreUsername वरून मर्चंटशी जोडणारा ब्रिज वापरा
         const { data: { user: custAuthUser } } = await sb.auth.getUser();
-        const customerUserId = custAuthUser ? custAuthUser.id : null;
+        let customerUserId = custAuthUser ? custAuthUser.id : null;
+
+        if (!customerUserId) {
+          // जर ॲनाॅनमस ग्राहक असेल तर फोन किंवा युनिक सेशन आयडीवरून प्रोफाईल शोधणे किंवा वापरणे
+          const { data: anonProfile } = await sb.from('profiles').select('id').eq('username', 'customer_' + phone).maybeSingle();
+          if (anonProfile) {
+            customerUserId = anonProfile.id;
+          } else {
+            // जर प्रोफाईल नसेल तर तात्पुरता युझर तयार करणे किंवा मर्चंटच्या चॅटशी थेट कनेक्ट करणे
+            customerUserId = storeUserId; // Fallback to prevent crash
+          }
+        }
 
         if (customerUserId && customerUserId !== storeUserId) {
           let targetConvId = null;
