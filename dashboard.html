@@ -36,7 +36,6 @@
 </style>
 </head>
 <body>
-<!-- 🔒 ग्राहक मोडमध्ये वरची नेव्हिगेशन पट्टी लपवली जाईल -->
 <nav id="app-nav"></nav>
 
 <div class="dashboard-main-frame">
@@ -51,12 +50,12 @@
         </label>
       </div>
     </div>
-    <div>
+    <div id="header-action-buttons">
       <!-- 📢 WhatsApp शेअर बटण (फक्त दुकानदारासाठी) -->
       <button type="button" id="whatsapp-share-btn" onclick="shareStoreOnWhatsApp()" class="whatsapp-share-btn">
         📢 WhatsApp शेअर
       </button>
-      <!-- 💬 Weavo चॅट बटण -->
+      <!-- 💬 Weavo चॅट बटण (ग्राहक आणि दुकानदार दोघांसाठी) -->
       <button type="button" id="weavo-chat-btn" onclick="openWeavoChat()" class="weavo-header-btn">
         💬 Weavo चॅट
       </button>
@@ -140,9 +139,9 @@ async function initDashboard() {
     lockedStoreUsername = urlParams.get('store');
 
     if (lockedStoreUsername) {
-      // 🔒 ग्राहक WhatsApp लिंकवरून आला आहे (Exclusive Store View for Customer)
+      // 🔒 ग्राहक WhatsApp लिंकवरून आला आहे — सर्व ॲडमिन कंट्रोल्स व नेव्हिगेशन लपवणे
       const navBar = document.getElementById('app-nav');
-      if (navBar) navBar.style.display = 'none'; // वरची ऑल ईआरपी पट्टी लपवणे
+      if (navBar) navBar.style.display = 'none';
       const tabsBar = document.getElementById('erp-navigation-tabs');
       if (tabsBar) tabsBar.style.display = 'none';
       const kpiGrid = document.getElementById('kpi-grid-section');
@@ -153,15 +152,16 @@ async function initDashboard() {
       if (globalBtn) globalBtn.style.display = 'none';
       const toggleBox = document.getElementById('wholesaler-toggle-box');
       if (toggleBox) toggleBox.style.display = 'none';
+      const langSelect = document.getElementById('lang-select');
+      if (langSelect) langSelect.style.display = 'none';
       
       const noticeBox = document.getElementById('customer-store-notice');
       if (noticeBox) noticeBox.style.display = 'block';
       const prodSection = document.getElementById('customer-products-section');
       if (prodSection) prodSection.style.display = 'block';
 
-      // दुकानाचे नाव जुळवून डेटाबेसवरून दुकान शोधणे
       const cleanStoreName = lockedStoreUsername.replace(/_/g, ' ').trim();
-      const { data: storeInfo, error } = await sb.from('businesses').select('*').ilike('name', cleanStoreName).maybeSingle();
+      const { data: storeInfo } = await sb.from('businesses').select('*').ilike('name', cleanStoreName).maybeSingle();
       
       if (storeInfo) {
         currentBusinessId = storeInfo.id;
