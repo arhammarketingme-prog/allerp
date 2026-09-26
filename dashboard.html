@@ -67,8 +67,9 @@ body.store-locked-mode #app-nav { display: none !important; }
       <h1 id="business-display-name">ALL ERP Dashboard</h1>
       <span class="muted" id="header-sub-text">Universal Multi-Business Operating System & Local Marketplace</span>
       
+      <!-- दुकानदार किंवा ग्राहकांसाठी स्वयंचलित (Dynamic) वीव्हो युझरनेम -->
       <div style="margin-top:6px; font-size:13px; font-weight:700; color:#0b8f87; background:#e0f2fe; padding:4px 10px; border-radius:6px; display:inline-block;" id="merchant-weavo-info">
-        💬 Weavo चॅट युझरनेम: <span id="display-merchant-handle" style="user-select:all; font-weight:800;">@abhinaygandhi5151</span>
+        💬 Weavo चॅट युझरनेम: <span id="display-merchant-handle" style="user-select:all; font-weight:800;">लोड होत आहे...</span>
       </div>
 
       <div style="margin-top:6px;" id="wholesaler-toggle-box">
@@ -227,7 +228,7 @@ let lockedStoreUsername = null;
 let customerCart = [];
 let lastKnownOrderCount = 0;
 let audioCtx = null;
-let currentMerchantUsername = 'abhinaygandhi5151';
+let currentMerchantUsername = 'abhinaygandhi';
 let loggedInCustomer = null;
 
 function enableAudioContextOnce() {
@@ -289,7 +290,25 @@ async function initDashboard() {
     lockedStoreUsername = urlParams.get('store');
 
     const merchantHandleEl = document.getElementById('display-merchant-handle');
-    if (merchantHandleEl) merchantHandleEl.textContent = '@abhinaygandhi5151';
+    if (merchantHandleEl) {
+      if (lockedStoreUsername) {
+        merchantHandleEl.textContent = '@' + lockedStoreUsername;
+        currentMerchantUsername = lockedStoreUsername;
+      } else {
+        // मर्चंट स्वतःच्या डॅशबोर्डवर असताना त्याच्या प्रोफाइलवरून युझरनेम स्वयंचलितपणे (Automatically) घेणे
+        const { data: { user } } = await sb.auth.getUser();
+        if (user) {
+          const { data: profile } = await sb.from('profiles').select('username').eq('id', user.id).maybeSingle();
+          if (profile && profile.username) {
+            currentMerchantUsername = profile.username;
+            merchantHandleEl.textContent = '@' + currentMerchantUsername;
+          } else {
+            currentMerchantUsername = user.email.split('@')[0];
+            merchantHandleEl.textContent = '@' + currentMerchantUsername;
+          }
+        }
+      }
+    }
 
     if (lockedStoreUsername) {
       document.body.classList.add('store-locked-mode');
@@ -335,6 +354,16 @@ async function initDashboard() {
         currentBusinessId = storeInfo.id;
         document.getElementById('business-display-name').textContent = storeInfo.name;
         document.getElementById('header-sub-text').textContent = 'अधिकृत ग्राहक स्टोअर व थेट संवाद मंच';
+        
+        // जर स्टोअर माहितीमध्ये owner असेल तर त्याचे खरे युझरनेम ऑटोमॅटिक फेच करणे
+        if (storeInfo.owner_id) {
+          const { data: ownerProf } = await sb.from('profiles').select('username').eq('id', storeInfo.owner_id).maybeSingle();
+          if (ownerProf && ownerProf.username) {
+            currentMerchantUsername = ownerProf.username;
+            if (merchantHandleEl) merchantHandleEl.textContent = '@' + currentMerchantUsername;
+          }
+        }
+
         await loadCustomerStoreProducts();
       } else {
         document.getElementById('business-display-name').textContent = 'स्टोअर सापडले नाही';
@@ -403,7 +432,7 @@ function shareStoreOnWhatsApp() {
 }
 
 async function openWeavoChat() {
-  let storeUsername = 'abhinaygandhi5151';
+  let storeUsername = lockedStoreUsername || currentMerchantUsername || 'abhinaygandhi';
   localStorage.setItem('weavo_target_store', storeUsername);
 
   try {
@@ -535,7 +564,7 @@ async function submitCustomerOrder() {
     updateCustomerCartUI();
     closeModal('customer-cart-modal');
 
-    let storeUsername = 'abhinaygandhi5151';
+    let storeUsername = lockedStoreUsername || currentMerchantUsername || 'abhinaygandhi';
     localStorage.setItem('weavo_target_store', storeUsername);
 
     const orderMessageText = encodeURIComponent(`📦 नवीन ऑनलाईन ऑर्डर:\n👤 ग्राहक: ${name}\n📞 संपर्क: ${phone}\n🛒 तपशील: ${itemsSummaryText}\n💰 एकूण: ₹${totalAmt}`);
