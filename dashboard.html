@@ -11,7 +11,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 <style>
-/* 🔒 जर URL मध्ये store असेल तर वरची ऑल ईआरपी नेव्हिगेशन पट्टी तातडीने लपवणे */
+/* 🔒 फक्त ग्राहक स्टोअर लिंकवर असतानाच ऑल ईआरपीची वरची पट्टी लपवणे */
 body.store-locked-mode #app-nav { display: none !important; }
 
 .dashboard-main-frame { width: 98%; max-width: 1450px; margin: 10px auto; padding: 0 6px; }
@@ -77,11 +77,19 @@ body.store-locked-mode #app-nav { display: none !important; }
     <button type="button" class="erp-tab-btn active" onclick="switchTab('tab-overview')">📊 डॅशबोर्ड</button>
     <button type="button" class="erp-tab-btn" onclick="switchTab('tab-products')">📦 इन्व्हेंटरी व स्टॉक</button>
     <button type="button" class="erp-tab-btn" onclick="switchTab('tab-sales')">💰 विक्री व इनव्हॉइस</button>
+    <button type="button" class="erp-tab-btn" onclick="switchTab('tab-purchase')">🛒 खरेदी</button>
+    <button type="button" class="erp-tab-btn" onclick="switchTab('tab-crm')">👥 CRM व ग्राहक</button>
+    <button type="button" class="erp-tab-btn" onclick="switchTab('tab-khata')">🧾 उधार खाता (Khata)</button>
+    <button type="button" class="erp-tab-btn" onclick="switchTab('tab-finance')">📑 खर्च व फायनान्स</button>
+    <button type="button" class="erp-tab-btn" onclick="switchTab('tab-hr')">👔 कर्मचारी (HR)</button>
+    <button type="button" class="erp-tab-btn" onclick="switchTab('tab-projects')">🏗️ प्रकल्प / साईट्स</button>
     <button type="button" class="erp-tab-btn" onclick="switchTab('tab-pos')">⚡ POS काउंटर</button>
     <button type="button" class="erp-tab-btn" onclick="switchTab('tab-orders')">🛍️ ऑनलाईन ऑर्डर्स</button>
+    <button type="button" class="erp-tab-btn" onclick="switchTab('tab-reports')">📈 रिपोर्ट्स व GST</button>
+    <button type="button" class="erp-tab-btn" onclick="switchTab('tab-settings')">⚙️ सेटिंग्स</button>
   </div>
 
-  <!-- TAB 1: OVERVIEW & STORE PRODUCTS -->
+  <!-- TAB 1: OVERVIEW -->
   <div id="tab-overview" class="erp-tab-pane">
     <div id="customer-store-notice" style="display:none; background:#e0f2fe; border:1px solid #7dd3fc; padding:16px; border-radius:8px; margin-bottom:16px; color:#0369a1; font-weight:bold; text-align:center;">
       🔒 स्टोअर मोड: खालील प्रॉडक्ट्स निवडून कार्टमध्ये टाका आणि थेट दुकानदाराला ऑर्डर पाठवा.
@@ -103,17 +111,38 @@ body.store-locked-mode #app-nav { display: none !important; }
     <div class="kpi-grid" id="kpi-grid-section">
       <div class="kpi-card"><div class="kpi-title">एकूण विक्री (Total Sales)</div><div class="kpi-value" id="kpi-total-sales">₹0.00</div></div>
       <div class="kpi-card"><div class="kpi-title">एकूण खरेदी (Purchases)</div><div class="kpi-value" id="kpi-total-purchases">₹0.00</div></div>
+      <div class="kpi-card"><div class="kpi-title">एकूण खर्च (Expenses)</div><div class="kpi-value" id="kpi-total-expenses" style="color:#dc2626;">₹0.00</div></div>
       <div class="kpi-card"><div class="kpi-title">निव्वळ नफा (Net Profit)</div><div class="kpi-value" id="kpi-net-profit" style="color:#16a34a;">₹0.00</div></div>
+      <div class="kpi-card"><div class="kpi-title">एकूण स्टॉक मूल्य</div><div class="kpi-value" id="kpi-stock-value">₹0.00</div></div>
+      <div class="kpi-card"><div class="kpi-title">प्लॅटफॉर्म कमिशन (2%)</div><div class="kpi-value" id="kpi-platform-fee" style="color:#1D4E89;">₹0.00</div></div>
     </div>
   </div>
 
-  <!-- TAB 2: PRODUCTS (Admin View) -->
+  <!-- TAB 2: PRODUCTS -->
   <div id="tab-products" class="erp-tab-pane" style="display:none;">
     <h2>📦 इन्व्हेंटरी व उत्पादने</h2>
     <div class="card" style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:16px;">
       <table style="width:100%; border-collapse:collapse;">
         <thead><tr style="text-align:left; border-bottom:2px solid #e2e8f0; padding-bottom:8px;"><th>उत्पादन</th><th>विक्री दर</th><th>स्टॉक</th><th>स्थिती</th></tr></thead>
         <tbody id="products-table-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- TAB 10: ONLINE ORDERS (मर्चंटसाठी ऑर्डर पाहण्याची जागा) -->
+  <div id="tab-orders" class="erp-tab-pane" style="display:none;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+      <h2>🛍️ ऑनलाईन ग्राहकांच्या ऑर्डर्स</h2>
+      <button type="button" onclick="loadOnlineOrders()" class="secondary" style="padding:6px 12px; cursor:pointer;">🔄 रिफ्रेश करा</button>
+    </div>
+    <div class="card" style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:16px;">
+      <table style="width:100%; border-collapse:collapse;">
+        <thead>
+          <tr style="text-align:left; border-bottom:2px solid #e2e8f0;">
+            <th>ऑर्डर #</th><th>ग्राहक नाव</th><th>फोन नंबर</th><th>तपशील (Items)</th><th>रक्कम</th><th>स्थिती</th>
+          </tr>
+        </thead>
+        <tbody id="online-orders-table-body"><tr><td colspan="6" class="muted" style="text-align:center; padding:20px;">कोणतीही ऑर्डर नाही.</td></tr></tbody>
       </table>
     </div>
   </div>
@@ -168,21 +197,22 @@ function switchTab(tabId) {
   document.querySelectorAll('.erp-tab-btn').forEach(btn => {
     if (btn.getAttribute('onclick') && btn.getAttribute('onclick').includes(tabId)) btn.classList.add('active');
   });
+
+  if (tabId === 'tab-orders') loadOnlineOrders();
 }
 
 function openModal(id) { const el = document.getElementById(id); if (el) el.style.display = 'flex'; }
 function closeModal(id) { const el = document.getElementById(id); if (el) el.style.display = 'none'; }
 
-// 🌟 मुख्य इनिशिलायझेशन
+// 🌟 इनिशिलायझेशन (ग्राहक मोड वि. मर्चंट मोड)
 async function initDashboard() {
   try {
     const urlParams = new URLSearchParams(window.location.search);
     lockedStoreUsername = urlParams.get('store');
 
     if (lockedStoreUsername) {
-      // 🔒 ग्राहक मोड: body ला क्लास जोडून वरची nav पट्टी आणि ॲडमिन कंट्रोल्स कायमचे लपवणे
+      // 🔒 ग्राहक मोड: वरची ऑल ईआरपी नेव्हिगेशन पट्टी लपवणे
       document.body.classList.add('store-locked-mode');
-
       const tabsBar = document.getElementById('erp-navigation-tabs');
       if (tabsBar) tabsBar.style.display = 'none';
       const kpiGrid = document.getElementById('kpi-grid-section');
@@ -213,7 +243,7 @@ async function initDashboard() {
         document.getElementById('business-display-name').textContent = 'स्टोअर सापडले नाही';
       }
     } else {
-      // 👨‍💼 मर्चंट (दुकानदार) मोड
+      // 👨‍💼 मर्चंट (दुकानदार) मोड: सर्व बटणे आणि नेव्हिगेशन पट्टी दिसेल
       document.body.classList.remove('store-locked-mode');
       const { data: { user } } = await sb.auth.getUser();
       if (!user) { window.location.href = 'login.html'; return; }
@@ -223,6 +253,7 @@ async function initDashboard() {
         currentBusinessId = businesses[0].id;
         document.getElementById('business-display-name').textContent = businesses[0].name;
         await loadProducts();
+        await loadOnlineOrders();
       }
     }
   } catch (err) { console.error('Init error:', err); }
@@ -325,6 +356,7 @@ function openCustomerCartModal() {
   openModal('customer-cart-modal');
 }
 
+// 🛍️ ग्राहकाने ऑर्डर सबमिट केल्यावर थेट Supabase मध्ये सेव्ह करणारे अचूक फंक्शन
 async function submitCustomerOrder() {
   if (customerCart.length === 0) { alert('कार्ट रिकामी आहे!'); return; }
   const name = document.getElementById('cust-order-name').value.trim();
@@ -347,7 +379,7 @@ async function submitCustomerOrder() {
 
     if (error) throw error;
 
-    alert('🎉 तुमची ऑर्डर यशस्वीरित्या दुकानदाराला पाठवली गेली आहे! आता दुकानदाराच्या डॅशबोर्डवर ती दिसेल.');
+    alert('🎉 तुमची ऑर्डर यशस्वीरित्या दुकानदाराला पाठवली गेली आहे!');
     customerCart = [];
     updateCustomerCartUI();
     closeModal('customer-cart-modal');
@@ -355,6 +387,30 @@ async function submitCustomerOrder() {
   } catch (err) {
     alert('ऑर्डर पाठवताना त्रुटी आली: ' + err.message);
   }
+}
+
+// 👨‍💼 मर्चंटसाठी ऑनलाईन ऑर्डर्स लोड करणारे फंक्शन
+async function loadOnlineOrders() {
+  if (!currentBusinessId) return;
+  const tbody = document.getElementById('online-orders-table-body');
+  if (!tbody) return;
+  
+  const { data: orders, error } = await sb.from('orders').select('*').eq('business_id', currentBusinessId).order('created_at', { ascending: false });
+  if (error || !orders || orders.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" class="muted" style="text-align:center; padding:20px;">कोणतीही ऑनलाईन ऑर्डर आलेली नाही.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = orders.map(o => `
+    <tr style="border-bottom:1px solid #f1f5f9; padding:8px 0;">
+      <td><strong>#${o.id.toString().substring(0,8)}</strong></td>
+      <td>${escapeHtml(o.customer_name || 'Customer')}</td>
+      <td>${escapeHtml(o.customer_phone || '-')}</td>
+      <td>${escapeHtml(o.items_summary || '-')}</td>
+      <td style="font-weight:bold; color:#16a34a;">₹${o.total_amount || 0}</td>
+      <td><span class="badge pending">${o.status || 'pending'}</span></td>
+    </tr>
+  `).join('');
 }
 
 async function loadProducts() {
