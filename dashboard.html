@@ -84,7 +84,7 @@ body.store-locked-mode #app-nav { display: none !important; }
       <button type="button" id="global-market-btn" onclick="openGlobalCatalogModal()" style="background:#16a34a; color:#fff; padding:8px 14px; border:none; border-radius:6px; cursor:pointer; font-weight:bold; font-size:12.5px;">
         🌐 ग्लोबल मार्केटप्लेस
       </button>
-      <select id="lang-select" style="max-width:95px; margin-bottom:0; font-size:12px;" onchange="ALL_ERP.setLanguage(this.value)">
+      <select id="lang-select" style="max-width:95px; margin-bottom:0; font-size:12px;" onchange="if(typeof ALL_ERP !== 'undefined' && ALL_ERP.setLanguage) ALL_ERP.setLanguage(this.value)">
         <option value="mr">मराठी</option>
         <option value="en">English</option>
       </select>
@@ -224,12 +224,13 @@ function switchTab(tabId) {
   const target = document.getElementById(tabId);
   if (target) target.style.display = 'block';
   document.querySelectorAll('.erp-tab-btn').forEach(btn => {
-    if (btn.getAttribute('onclick') && btn.getAttribute('onclick'].includes(tabId)) btn.classList.add('active');
+    if (btn.getAttribute('onclick') && btn.getAttribute('onclick').includes(tabId)) btn.classList.add('active');
   });
 
   if (tabId === 'tab-orders') {
     loadOnlineOrders();
-    document.getElementById('new-order-alert-banner').style.display = 'none';
+    const alertBanner = document.getElementById('new-order-alert-banner');
+    if (alertBanner) alertBanner.style.display = 'none';
   }
 }
 
@@ -304,22 +305,35 @@ async function initDashboard() {
       }
     } else {
       document.body.classList.remove('store-locked-mode');
-      const { data: { user } } = await sb.auth.getUser();
-      if (!user) { window.location.href = 'login.html'; return; }
+      
+      if (typeof sb === 'undefined' || !sb.auth) {
+        console.error('Supabase client not initialized properly.');
+        return;
+      }
 
+      const { data: { user }, error: authErr } = await sb.auth.getUser();
+      if (authErr || !user) { 
+        window.location.href = 'login.html'; 
+        return; 
+      }
+
+      // मर्चंटचे युझरनेम profiles मधून शोधून दाखवणे
       const { data: profile } = await sb.from('profiles').select('username').eq('id', user.id).maybeSingle();
       if (profile && profile.username) {
         currentMerchantUsername = profile.username;
-        document.getElementById('display-merchant-handle').textContent = '@' + currentMerchantUsername;
+        const handleEl = document.getElementById('display-merchant-handle');
+        if (handleEl) handleEl.textContent = '@' + currentMerchantUsername;
       } else {
         currentMerchantUsername = user.email.split('@')[0];
-        document.getElementById('display-merchant-handle').textContent = '@' + currentMerchantUsername;
+        const handleEl = document.getElementById('display-merchant-handle');
+        if (handleEl) handleEl.textContent = '@' + currentMerchantUsername;
       }
 
       const { data: businesses } = await sb.from('businesses').select('id, name').eq('owner_id', user.id);
       if (businesses && businesses.length > 0) {
         currentBusinessId = businesses[0].id;
-        document.getElementById('business-display-name').textContent = businesses[0].name;
+        const nameEl = document.getElementById('business-display-name');
+        if (nameEl) nameEl.textContent = businesses[0].name;
         await loadProducts();
         await checkNewOrdersBackground();
         setInterval(checkNewOrdersBackground, 10000);
@@ -337,6 +351,7 @@ function shareStoreOnWhatsApp() {
   window.open(`https://api.whatsapp.com/send?text=${message}`, '_blank');
 }
 
+// 💬 Weavo चॅट उघडणारे अचूक मर्चंट व कस्टमर ब्रिज फंक्शन
 async function openWeavoChat() {
   let storeUsername = lockedStoreUsername;
   if (!storeUsername) {
@@ -416,11 +431,15 @@ function addToCustomerCart(productId) {
 function updateCustomerCartUI() {
   let count = 0, total = 0;
   customerCart.forEach(i => { count += i.qty; total += (i.price * i.qty); });
-  document.getElementById('cart-count').textContent = count;
-  document.getElementById('cart-total').textContent = total.toFixed(2);
-  document.getElementById('modal-cart-total').textContent = total.toFixed(2);
+  const countEl = document.getElementById('cart-count');
+  if (countEl) countEl.textContent = count;
+  const totalEl = document.getElementById('cart-total');
+  if (totalEl) totalEl.textContent = total.toFixed(2);
+  const modalTotal = document.getElementById('modal-cart-total');
+  if (modalTotal) modalTotal.textContent = total.toFixed(2);
 
   const itemsBox = document.getElementById('customer-cart-items');
+  if (!itemsBox) return;
   if (customerCart.length === 0) {
     itemsBox.innerHTML = '<p class="muted" style="text-align:center;">कार्ट रिकामी आहे.</p>';
     return;
