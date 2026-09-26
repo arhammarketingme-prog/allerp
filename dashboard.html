@@ -14,11 +14,11 @@
 body.store-locked-mode #app-nav { display: none !important; }
 
 .dashboard-main-frame { width: 98%; max-width: 1450px; margin: 10px auto; padding: 0 6px; }
-.erp-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px; background: #ffffff; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border, #e2e8f0); position: relative; z-index: 50; }
+.erp-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px; background: #ffffff; padding: 12px 18px; border-radius: 8px; border: 1px solid var(--border, #e2e8f0); position: relative; z-index: 50; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
 .erp-header > div:first-child { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
-.erp-header h1 { font-size: 18px !important; margin: 0 !important; }
-.erp-header .muted { font-size: 11px !important; }
-.erp-header > div:last-child { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; position: relative; z-index: 100; }
+.erp-header h1 { font-size: 19px !important; margin: 0 !important; color: #1D4E89; }
+.erp-header .muted { font-size: 12px !important; color: #64748b; }
+.erp-header > div:last-child { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; position: relative; z-index: 100; }
 
 .weavo-header-btn { background: linear-gradient(135deg, #0b8f87, #16b8a9); color: #fff; padding: 8px 14px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12.5px; display: inline-flex; align-items: center; gap: 5px; text-decoration: none; box-shadow: 0 2px 8px rgba(11,143,135,0.2); }
 .whatsapp-share-btn { background: #25D366; color: #fff; padding: 8px 14px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12.5px; display: inline-flex; align-items: center; gap: 5px; text-decoration: none; }
@@ -67,11 +67,12 @@ body.store-locked-mode #app-nav { display: none !important; }
       <h1 id="business-display-name">ALL ERP Dashboard</h1>
       <span class="muted" id="header-sub-text">Universal Multi-Business Operating System & Local Marketplace</span>
       
-      <div style="margin-top:4px; font-size:13px; font-weight:700; color:#0b8f87;" id="merchant-username-badge">
-        👤 युझरनेम: <span id="display-merchant-handle">लोड होत आहे...</span>
+      <!-- दुकानदार किंवा ग्राहकांसाठी वीव्हो युझरनेम स्पष्टपणे दर्शवणारा भाग -->
+      <div style="margin-top:6px; font-size:13px; font-weight:700; color:#0b8f87; background:#e0f2fe; padding:4px 10px; border-radius:6px; display:inline-block;" id="merchant-weavo-info">
+        💬 Weavo चॅट युझरनेम: <span id="display-merchant-handle" style="user-select:all; font-weight:800;">लोड होत आहे...</span>
       </div>
 
-      <div style="margin-top:4px;" id="wholesaler-toggle-box">
+      <div style="margin-top:6px;" id="wholesaler-toggle-box">
         <label style="font-size:12.5px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:5px;">
           <input type="checkbox" id="is-wholesaler-toggle" style="width:auto; margin:0;" onchange="toggleWholesalerMode(this.checked)">
           🤝 मी Wholesaler आहे (इतर दुकानदारांना bulk मध्ये विकतो)
@@ -304,8 +305,9 @@ async function initDashboard() {
       if (langSelect) langSelect.style.display = 'none';
       const unlockBanner = document.getElementById('audio-unlock-banner');
       if (unlockBanner) unlockBanner.style.display = 'none';
-      const merchantBadge = document.getElementById('merchant-username-badge');
-      if (merchantBadge) merchantBadge.style.display = 'none';
+      
+      const merchantHandleEl = document.getElementById('display-merchant-handle');
+      if (merchantHandleEl) merchantHandleEl.textContent = '@' + lockedStoreUsername;
 
       const custGoogleBtn = document.getElementById('customer-google-login-btn');
       if (custGoogleBtn) custGoogleBtn.style.display = 'inline-flex';
@@ -317,7 +319,6 @@ async function initDashboard() {
       const myOrdersBox = document.getElementById('customer-my-orders-box');
       if (myOrdersBox) myOrdersBox.style.display = 'block';
 
-      // ग्राहकाची गुगल लॉगिन माहिती तपासणे
       const { data: { user } } = await sb.auth.getUser();
       if (user) {
         loggedInCustomer = user;
@@ -335,6 +336,14 @@ async function initDashboard() {
         currentBusinessId = storeInfo.id;
         document.getElementById('business-display-name').textContent = storeInfo.name;
         document.getElementById('header-sub-text').textContent = 'अधिकृत ग्राहक स्टोअर व थेट संवाद मंच';
+        
+        if (storeInfo.owner_id) {
+          const { data: ownerProf } = await sb.from('profiles').select('username').eq('id', storeInfo.owner_id).maybeSingle();
+          if (ownerProf && ownerProf.username) {
+            if (merchantHandleEl) merchantHandleEl.textContent = '@' + ownerProf.username;
+          }
+        }
+        
         await loadCustomerStoreProducts();
       } else {
         document.getElementById('business-display-name').textContent = 'स्टोअर सापडले नाही';
@@ -342,16 +351,10 @@ async function initDashboard() {
     } else {
       document.body.classList.remove('store-locked-mode');
       
-      if (typeof sb === 'undefined' || !sb.auth) {
-        console.error('Supabase client not initialized properly.');
-        return;
-      }
+      if (typeof sb === 'undefined' || !sb.auth) return;
 
       const { data: { user }, error: authErr } = await sb.auth.getUser();
-      if (authErr || !user) { 
-        window.location.href = 'login.html'; 
-        return; 
-      }
+      if (authErr || !user) { window.location.href = 'login.html'; return; }
 
       const { data: profile } = await sb.from('profiles').select('username').eq('id', user.id).maybeSingle();
       if (profile && profile.username) {
@@ -422,9 +425,11 @@ function shareStoreOnWhatsApp() {
 async function openWeavoChat() {
   let storeUsername = lockedStoreUsername;
   if (!storeUsername) {
+    storeUsername = currentMerchantUsername;
+  }
+  if (!storeUsername) {
     const bNameEl = document.getElementById('business-display-name');
-    const storeName = bNameEl ? bNameEl.textContent.trim() : 'nikhil_kirana';
-    storeUsername = storeName.replace(/\s+/g, '_').toLowerCase();
+    storeUsername = bNameEl ? bNameEl.textContent.trim().replace(/\s+/g, '_').toLowerCase() : 'nikhil_kirana';
   }
 
   localStorage.setItem('weavo_target_store', storeUsername);
@@ -528,7 +533,6 @@ function openCustomerCartModal() {
   openModal('customer-cart-modal');
 }
 
-// 🛍️ ग्राहकाने ऑर्डर सबमिट केल्यावर ती AllERP मध्ये सेव्ह होऊन थेट Weavo चॅटमध्ये प्री-फिल्ड मजकुरासह उघडणारे फंक्शन
 async function submitCustomerOrder() {
   if (customerCart.length === 0) { alert('कार्ट रिकामी आहे!'); return; }
   
@@ -542,7 +546,6 @@ async function submitCustomerOrder() {
     let totalAmt = customerCart.reduce((sum, i) => sum + (i.price * i.qty), 0);
     let itemsSummaryText = customerCart.map(i => `${i.name} (${i.qty} नग)`).join(', ');
 
-    // १. AllERP च्या orders टेबलमध्ये ऑर्डर सुरक्षितपणे सेव्ह करणे
     const { error: orderErr } = await sb.from('orders').insert({
       business_id: currentBusinessId,
       customer_name: name,
@@ -560,8 +563,7 @@ async function submitCustomerOrder() {
     updateCustomerCartUI();
     closeModal('customer-cart-modal');
 
-    // २. Weavo चॅट विंडो प्री-फिल्ड ऑर्डर मेसेजसह उघडणे
-    let storeUsername = lockedStoreUsername || 'nikhil_kirana';
+    let storeUsername = lockedStoreUsername || currentMerchantUsername || 'nikhil_kirana';
     localStorage.setItem('weavo_target_store', storeUsername);
 
     const orderMessageText = encodeURIComponent(`📦 नवीन ऑनलाईन ऑर्डर:\n👤 ग्राहक: ${name}\n📞 संपर्क: ${phone}\n🛒 तपशील: ${itemsSummaryText}\n💰 एकूण: ₹${totalAmt}`);
