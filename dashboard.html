@@ -63,7 +63,7 @@ body.store-locked-mode #app-nav { display: none !important; }
     <div>
       <h1 id="business-display-name">ALL ERP Dashboard</h1>
       <span class="muted" id="header-sub-text">Universal Multi-Business Operating System & Local Marketplace</span>
-      <!-- दुकानदार स्वतःची ओळख (युझरनेम) इथे पाहू शकेल -->
+      <!-- दुकानदार स्वतःचे युझरनेम इथे पाहू शकेल -->
       <div style="margin-top:4px; font-size:13px; font-weight:700; color:#0b8f87;" id="merchant-username-badge">
         👤 वीव्हो युझरनेम: <span id="display-merchant-handle">लोड होत आहे...</span>
       </div>
@@ -317,7 +317,6 @@ async function initDashboard() {
         return; 
       }
 
-      // मर्चंटचे युझरनेम profiles मधून शोधून दाखवणे
       const { data: profile } = await sb.from('profiles').select('username').eq('id', user.id).maybeSingle();
       if (profile && profile.username) {
         currentMerchantUsername = profile.username;
@@ -351,7 +350,6 @@ function shareStoreOnWhatsApp() {
   window.open(`https://api.whatsapp.com/send?text=${message}`, '_blank');
 }
 
-// 💬 Weavo चॅट उघडणारे अचूक मर्चंट व कस्टमर ब्रिज फंक्शन
 async function openWeavoChat() {
   let storeUsername = lockedStoreUsername;
   if (!storeUsername) {
@@ -469,7 +467,7 @@ async function submitCustomerOrder() {
     let totalAmt = customerCart.reduce((sum, i) => sum + (i.price * i.qty), 0);
     let itemsSummaryText = customerCart.map(i => `${i.name} (${i.qty} नग)`).join(', ');
 
-    // १. AllERP च्या orders टेबलमध्ये ऑर्डर सेव्ह करणे
+    // १. AllERP च्या orders टेबलमध्ये ऑर्डर सेव्ह करणे (.select().single() आता SELECT पॉलिसी ऑन असल्याने सुरळीत चालेल)
     const { data: orderData, error: orderErr } = await sb.from('orders').insert({
       business_id: currentBusinessId,
       customer_name: name,
