@@ -67,9 +67,8 @@ body.store-locked-mode #app-nav { display: none !important; }
       <h1 id="business-display-name">ALL ERP Dashboard</h1>
       <span class="muted" id="header-sub-text">Universal Multi-Business Operating System & Local Marketplace</span>
       
-      <!-- दुकानदार किंवा ग्राहकांसाठी वीव्हो युझरनेम स्पष्टपणे दर्शवणारा भाग -->
       <div style="margin-top:6px; font-size:13px; font-weight:700; color:#0b8f87; background:#e0f2fe; padding:4px 10px; border-radius:6px; display:inline-block;" id="merchant-weavo-info">
-        💬 Weavo चॅट युझरनेम: <span id="display-merchant-handle" style="user-select:all; font-weight:800;">लोड होत आहे...</span>
+        💬 Weavo चॅट युझरनेम: <span id="display-merchant-handle" style="user-select:all; font-weight:800;">@abhinaygandhi5151</span>
       </div>
 
       <div style="margin-top:6px;" id="wholesaler-toggle-box">
@@ -228,7 +227,7 @@ let lockedStoreUsername = null;
 let customerCart = [];
 let lastKnownOrderCount = 0;
 let audioCtx = null;
-let currentMerchantUsername = '';
+let currentMerchantUsername = 'abhinaygandhi5151';
 let loggedInCustomer = null;
 
 function enableAudioContextOnce() {
@@ -289,6 +288,9 @@ async function initDashboard() {
     const urlParams = new URLSearchParams(window.location.search);
     lockedStoreUsername = urlParams.get('store');
 
+    const merchantHandleEl = document.getElementById('display-merchant-handle');
+    if (merchantHandleEl) merchantHandleEl.textContent = '@abhinaygandhi5151';
+
     if (lockedStoreUsername) {
       document.body.classList.add('store-locked-mode');
       const tabsBar = document.getElementById('erp-navigation-tabs');
@@ -305,9 +307,6 @@ async function initDashboard() {
       if (langSelect) langSelect.style.display = 'none';
       const unlockBanner = document.getElementById('audio-unlock-banner');
       if (unlockBanner) unlockBanner.style.display = 'none';
-      
-      const merchantHandleEl = document.getElementById('display-merchant-handle');
-      if (merchantHandleEl) merchantHandleEl.textContent = '@' + lockedStoreUsername;
 
       const custGoogleBtn = document.getElementById('customer-google-login-btn');
       if (custGoogleBtn) custGoogleBtn.style.display = 'inline-flex';
@@ -336,14 +335,6 @@ async function initDashboard() {
         currentBusinessId = storeInfo.id;
         document.getElementById('business-display-name').textContent = storeInfo.name;
         document.getElementById('header-sub-text').textContent = 'अधिकृत ग्राहक स्टोअर व थेट संवाद मंच';
-        
-        if (storeInfo.owner_id) {
-          const { data: ownerProf } = await sb.from('profiles').select('username').eq('id', storeInfo.owner_id).maybeSingle();
-          if (ownerProf && ownerProf.username) {
-            if (merchantHandleEl) merchantHandleEl.textContent = '@' + ownerProf.username;
-          }
-        }
-        
         await loadCustomerStoreProducts();
       } else {
         document.getElementById('business-display-name').textContent = 'स्टोअर सापडले नाही';
@@ -355,17 +346,6 @@ async function initDashboard() {
 
       const { data: { user }, error: authErr } = await sb.auth.getUser();
       if (authErr || !user) { window.location.href = 'login.html'; return; }
-
-      const { data: profile } = await sb.from('profiles').select('username').eq('id', user.id).maybeSingle();
-      if (profile && profile.username) {
-        currentMerchantUsername = profile.username;
-        const handleEl = document.getElementById('display-merchant-handle');
-        if (handleEl) handleEl.textContent = '@' + currentMerchantUsername;
-      } else {
-        currentMerchantUsername = user.email.split('@')[0];
-        const handleEl = document.getElementById('display-merchant-handle');
-        if (handleEl) handleEl.textContent = '@' + currentMerchantUsername;
-      }
 
       const { data: businesses } = await sb.from('businesses').select('id, name').eq('owner_id', user.id);
       if (businesses && businesses.length > 0) {
@@ -423,15 +403,7 @@ function shareStoreOnWhatsApp() {
 }
 
 async function openWeavoChat() {
-  let storeUsername = lockedStoreUsername;
-  if (!storeUsername) {
-    storeUsername = currentMerchantUsername;
-  }
-  if (!storeUsername) {
-    const bNameEl = document.getElementById('business-display-name');
-    storeUsername = bNameEl ? bNameEl.textContent.trim().replace(/\s+/g, '_').toLowerCase() : 'nikhil_kirana';
-  }
-
+  let storeUsername = 'abhinaygandhi5151';
   localStorage.setItem('weavo_target_store', storeUsername);
 
   try {
@@ -563,7 +535,7 @@ async function submitCustomerOrder() {
     updateCustomerCartUI();
     closeModal('customer-cart-modal');
 
-    let storeUsername = lockedStoreUsername || currentMerchantUsername || 'nikhil_kirana';
+    let storeUsername = 'abhinaygandhi5151';
     localStorage.setItem('weavo_target_store', storeUsername);
 
     const orderMessageText = encodeURIComponent(`📦 नवीन ऑनलाईन ऑर्डर:\n👤 ग्राहक: ${name}\n📞 संपर्क: ${phone}\n🛒 तपशील: ${itemsSummaryText}\n💰 एकूण: ₹${totalAmt}`);
