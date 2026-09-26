@@ -67,7 +67,6 @@ body.store-locked-mode #app-nav { display: none !important; }
       <h1 id="business-display-name">ALL ERP Dashboard</h1>
       <span class="muted" id="header-sub-text">Universal Multi-Business Operating System & Local Marketplace</span>
       
-      <!-- दुकानदार किंवा ग्राहक ओळख बॅज -->
       <div style="margin-top:4px; font-size:13px; font-weight:700; color:#0b8f87;" id="merchant-username-badge">
         👤 युझरनेम: <span id="display-merchant-handle">लोड होत आहे...</span>
       </div>
@@ -81,10 +80,10 @@ body.store-locked-mode #app-nav { display: none !important; }
     </div>
 
     <div id="header-action-buttons">
-      <!-- ग्राहकांसाठी Google लॉगिन बटण (स्टोअर मोडमध्ये दिसणार) -->
+      <!-- ग्राहकांसाठी Google लॉगिन बटण -->
       <button type="button" id="customer-google-login-btn" onclick="loginCustomerWithGoogle()" class="google-login-customer-btn" style="display:none;">
         <svg width="16" height="16" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
-        <span>Google ने लॉगिन करा</span>
+        <span id="google-login-btn-text">Google ने लॉगिन करा</span>
       </button>
 
       <button type="button" id="whatsapp-share-btn" onclick="shareStoreOnWhatsApp()" class="whatsapp-share-btn">
@@ -130,7 +129,7 @@ body.store-locked-mode #app-nav { display: none !important; }
     <div id="customer-my-orders-box" style="display:none; background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:16px; margin-bottom:20px;">
       <h3 style="margin-top:0; color:#1D4E89;">📦 तुमच्या मागील ऑर्डर्स व डिलिव्हरी स्टेटस</h3>
       <div id="customer-my-orders-list">
-        <p class="muted">तुमच्या ऑर्डर्स लोड होत आहेत...</p>
+        <p class="muted">कृपया तुमच्या Google खात्याने लॉगिन करा म्हणजे तुम्हाला तुमच्या ऑर्डर्स दिसतील.</p>
       </div>
     </div>
 
@@ -206,8 +205,8 @@ body.store-locked-mode #app-nav { display: none !important; }
       <input id="cust-order-name" placeholder="नाव टाईप करा" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:4px; margin-top:4px;">
     </div>
     <div style="margin-bottom:12px;">
-      <label style="font-weight:700; font-size:12px;">मोबाईल नंबर (WhatsApp साठी) *</label>
-      <input id="cust-order-phone" placeholder="9822XXXXXX" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:4px; margin-top:4px;">
+      <label style="font-weight:700; font-size:12px;">मोबाईल नंबर / ईमेल *</label>
+      <input id="cust-order-phone" placeholder="9822XXXXXX किंवा email" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:4px; margin-top:4px;">
     </div>
     <button type="button" onclick="submitCustomerOrder()" style="width:100%; background:#16a34a; color:#fff; padding:12px; border:none; border-radius:6px; font-weight:bold; font-size:15px; cursor:pointer;">
       ✅ दुकानदाराला ऑर्डर पाठवा (Place Order)
@@ -308,7 +307,6 @@ async function initDashboard() {
       const merchantBadge = document.getElementById('merchant-username-badge');
       if (merchantBadge) merchantBadge.style.display = 'none';
 
-      // ग्राहकांसाठी Google लॉगिन बटण दाखवणे
       const custGoogleBtn = document.getElementById('customer-google-login-btn');
       if (custGoogleBtn) custGoogleBtn.style.display = 'inline-flex';
       
@@ -319,13 +317,14 @@ async function initDashboard() {
       const myOrdersBox = document.getElementById('customer-my-orders-box');
       if (myOrdersBox) myOrdersBox.style.display = 'block';
 
-      // तपासा की ग्राहक आधीच Google ने लॉग्ड-इन आहे का
+      // ग्राहकाची गुगल लॉगिन माहिती तपणे
       const { data: { user } } = await sb.auth.getUser();
       if (user) {
         loggedInCustomer = user;
-        if (custGoogleBtn) custGoogleBtn.style.display = 'none';
-        const nameField = document.getElementById('cust-order-name');
-        if (nameField && user.user_metadata?.full_name) nameField.value = user.user_metadata.full_name;
+        if (custGoogleBtn) {
+          const btnText = document.getElementById('google-login-btn-text');
+          if (btnText) btnText.textContent = '👤 ' + (user.user_metadata?.full_name || user.email);
+        }
         loadCustomerMyOrders(user.email);
       }
 
@@ -378,7 +377,6 @@ async function initDashboard() {
   } catch (err) { console.error('Init error:', err); }
 }
 
-// 🌐 ग्राहकासाठी Google द्वारे लॉगिन फंक्शन
 async function loginCustomerWithGoogle() {
   const cleanUrl = window.location.href;
   await sb.auth.signInWithOAuth({
@@ -387,7 +385,6 @@ async function loginCustomerWithGoogle() {
   });
 }
 
-// 📦 ग्राहकाच्या स्वतःच्या मागील ऑर्डर्स लोड करणे
 async function loadCustomerMyOrders(email) {
   if (!currentBusinessId || !email) return;
   const listEl = document.getElementById('customer-my-orders-list');
@@ -395,7 +392,7 @@ async function loadCustomerMyOrders(email) {
 
   const { data: orders, error } = await sb.from('orders').select('*').eq('business_id', currentBusinessId).eq('customer_phone', email).order('created_at', { ascending: false });
   if (error || !orders || orders.length === 0) {
-    listEl.innerHTML = '<p class="muted">तुम्ही अजून कोणतीही ऑर्डर दिलेली नाही किंवा फोन नंबर जुळत नाही.</p>';
+    listEl.innerHTML = '<p class="muted">तुमच्या या ईमेलवर अजून कोणतीही ऑर्डर सापडली नाही.</p>';
     return;
   }
 
@@ -403,7 +400,7 @@ async function loadCustomerMyOrders(email) {
     <div style="border-bottom:1px solid #f1f5f9; padding:8px 0; font-size:13px; display:flex; justify-content:space-between; align-items:center;">
       <div>
         <strong>ऑर्डर #${o.id.toString().substring(0,8)}</strong><br>
-        <span class="muted">वस्तू: ${escapeHtml(o.items_summary)}</span>
+        <span class="muted">तपशील: ${escapeHtml(o.items_summary)}</span>
       </div>
       <div style="text-align:right;">
         <strong style="color:#16a34a;">₹${o.total_amount}</strong><br>
@@ -524,15 +521,30 @@ function updateCustomerCartUI() {
 
 function openCustomerCartModal() {
   if (customerCart.length === 0) { alert('तुमची कार्ट रिकामी आहे!'); return; }
+  
+  // जर ग्राहक गुगल लॉग्ड-इन असेल, तर त्याचे नाव आणि ईमेल ऑटोमॅटिक भरा
+  if (loggedInCustomer) {
+    const nameField = document.getElementById('cust-order-name');
+    const phoneField = document.getElementById('cust-order-phone');
+    if (nameField && loggedInCustomer.user_metadata?.full_name) {
+      nameField.value = loggedInCustomer.user_metadata.full_name;
+    }
+    if (phoneField && loggedInCustomer.email) {
+      phoneField.value = loggedInCustomer.email;
+    }
+  }
+
   openModal('customer-cart-modal');
 }
 
 // 🛍️ ग्राहकाने ऑर्डर सबमिट केल्यावर ती AllERP मध्ये सेव्ह होऊन थेट Weavo चॅटमध्ये मेसेज म्हणून पाठवणारे मुख्य फंक्शन
 async function submitCustomerOrder() {
   if (customerCart.length === 0) { alert('कार्ट रिकामी आहे!'); return; }
-  const name = document.getElementById('cust-order-name').value.trim();
-  const phone = document.getElementById('cust-order-phone').value.trim();
-  if (!name || !phone) { alert('कृपया तुमचे नाव आणि मोबाईल नंबर टाका!'); return; }
+  
+  const name = loggedInCustomer ? (loggedInCustomer.user_metadata?.full_name || 'Customer') : document.getElementById('cust-order-name').value.trim();
+  const phone = loggedInCustomer ? loggedInCustomer.email : document.getElementById('cust-order-phone').value.trim();
+
+  if (!name || !phone) { alert('कृपया तुमचे नाव आणि मोबाईल नंबर/ईमेल टाका!'); return; }
   if (!currentBusinessId) { alert('त्रुटी: स्टोअर आयडी सापडला नाही!'); return; }
 
   try {
@@ -551,7 +563,49 @@ async function submitCustomerOrder() {
 
     if (orderErr) throw orderErr;
 
-    alert('🎉 तुमची ऑर्डर यशस्वीरित्या दुकानदाराला पाठवली गेली आहे! आता चॅट उघडत आहे...');
+    // २. Weavo च्या चॅट डेटाबेसमध्ये स्वयंचलितपणे ऑर्डरचा मेसेज पाठवणे व कन्वर्सेशन तयार करणे
+    try {
+      const { data: bizInfo } = await sb.from('businesses').select('owner_id, name').eq('id', currentBusinessId).single();
+      if (bizInfo && bizInfo.owner_id) {
+        const storeUserId = bizInfo.owner_id;
+        const customerUserId = loggedInCustomer ? loggedInCustomer.id : null;
+
+        if (customerUserId && customerUserId !== storeUserId) {
+          let targetConvId = null;
+          const { data: myConvs } = await sb.from('conversation_members').select('conversation_id').eq('user_id', customerUserId);
+          const myIds = (myConvs || []).map(r => r.conversation_id);
+
+          if (myIds.length) {
+            const { data: theirConvs } = await sb.from('conversation_members').select('conversation_id').eq('user_id', storeUserId).in('conversation_id', myIds);
+            if (theirConvs && theirConvs.length) targetConvId = theirConvs[0].conversation_id;
+          }
+
+          if (!targetConvId) {
+            const { data: newConv } = await sb.from('conversations').insert({ type: 'direct', created_by: customerUserId }).select().single();
+            if (newConv) {
+              targetConvId = newConv.id;
+              await sb.from('conversation_members').insert([
+                { conversation_id: targetConvId, user_id: customerUserId },
+                { conversation_id: targetConvId, user_id: storeUserId },
+              ]);
+            }
+          }
+
+          if (targetConvId) {
+            const orderMessageText = `📦 **नवीन ऑनलाईन ऑर्डर प्राप्त!**\n\n👤 ग्राहक: ${name}\n📞 ईमेल/संपर्क: ${phone}\n🛒 तपशील: ${itemsSummaryText}\n💰 एकूण रक्कम: ₹${totalAmt}\n\nडुकानदार महोदय, कृपया ही ऑर्डर तपासा.`;
+            await sb.from('messages').insert({
+              conversation_id: targetConvId,
+              sender_id: customerUserId,
+              content: orderMessageText
+            });
+          }
+        }
+      }
+    } catch (chatSyncErr) {
+      console.log('Weavo chat auto-sync note:', chatSyncErr);
+    }
+
+    alert('🎉 तुमची ऑर्डर यशस्वीरित्या ऑल ईआरपी आणि वीव्हो चॅट दोन्हीकडे पाठवली गेली आहे!');
     customerCart = [];
     updateCustomerCartUI();
     closeModal('customer-cart-modal');
