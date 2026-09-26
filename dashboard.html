@@ -11,7 +11,6 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 <style>
-/* 🔒 फक्त ग्राहक स्टोअर लिंकवर असतानाच ऑल ईआरपीची वरची पट्टी लपवणे */
 body.store-locked-mode #app-nav { display: none !important; }
 
 .dashboard-main-frame { width: 98%; max-width: 1450px; margin: 10px auto; padding: 0 6px; }
@@ -35,13 +34,28 @@ body.store-locked-mode #app-nav { display: none !important; }
 .erp-tab-btn.active { color: var(--secondary, #1D4E89); border-bottom-color: var(--secondary, #1D4E89); }
 .badge { padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; }
 .badge.live { background: #16a34a; color: #fff; }
-.badge.pending { background: #f59e0b; color: #fff; }
+.badge.pending { background: #f59e0b; color: #fff; animation: pulse 1.5s infinite; }
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.4; }
+  100% { opacity: 1; }
+}
+
+/* नवीन ऑर्डर आल्यावर नोटिफिकेशन बॅनर */
+#new-order-alert-banner { display: none; background: #fee2e2; border: 2px solid #ef4444; color: #991b1b; padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
 </style>
 </head>
 <body>
 <nav id="app-nav"></nav>
 
 <div class="dashboard-main-frame">
+  <!-- नवीन ऑर्डर आल्यावर दिसणारा ठळक लाल बॅनर्स व साऊंड कंट्रोल -->
+  <div id="new-order-alert-banner" style="display:none;">
+    <span>🚨 अलर्ट: नवीन ऑनलाईन ऑर्डर प्राप्त झाली आहे! कृपया 'ऑनलाईन ऑर्डर्स' टॅब तपासा.</span>
+    <button onclick="switchTab('tab-orders')" style="background:#dc2626; color:#fff; border:none; padding:6px 12px; border-radius:4px; font-weight:bold; cursor:pointer;">ऑर्डर पहा</button>
+  </div>
+
   <div class="erp-header">
     <div>
       <h1 id="business-display-name">ALL ERP Dashboard</h1>
@@ -54,11 +68,9 @@ body.store-locked-mode #app-nav { display: none !important; }
       </div>
     </div>
     <div id="header-action-buttons">
-      <!-- 📢 WhatsApp शेअर बटण -->
       <button type="button" id="whatsapp-share-btn" onclick="shareStoreOnWhatsApp()" class="whatsapp-share-btn">
         📢 WhatsApp शेअर
       </button>
-      <!-- 💬 Weavo चॅट बटण -->
       <button type="button" id="weavo-chat-btn" onclick="openWeavoChat()" class="weavo-header-btn">
         💬 Weavo चॅट
       </button>
@@ -84,7 +96,7 @@ body.store-locked-mode #app-nav { display: none !important; }
     <button type="button" class="erp-tab-btn" onclick="switchTab('tab-hr')">👔 कर्मचारी (HR)</button>
     <button type="button" class="erp-tab-btn" onclick="switchTab('tab-projects')">🏗️ प्रकल्प / साईट्स</button>
     <button type="button" class="erp-tab-btn" onclick="switchTab('tab-pos')">⚡ POS काउंटर</button>
-    <button type="button" class="erp-tab-btn" onclick="switchTab('tab-orders')">🛍️ ऑनलाईन ऑर्डर्स</button>
+    <button type="button" class="erp-tab-btn" onclick="switchTab('tab-orders')">🛍️ ऑनलाईन ऑर्डर्स <span id="order-badge-count" style="background:#dc2626; color:#fff; padding:1px 6px; border-radius:10px; font-size:10px; display:none;">0</span></button>
     <button type="button" class="erp-tab-btn" onclick="switchTab('tab-reports')">📈 रिपोर्ट्स व GST</button>
     <button type="button" class="erp-tab-btn" onclick="switchTab('tab-settings')">⚙️ सेटिंग्स</button>
   </div>
@@ -95,7 +107,6 @@ body.store-locked-mode #app-nav { display: none !important; }
       🔒 स्टोअर मोड: खालील प्रॉडक्ट्स निवडून कार्टमध्ये टाका आणि थेट दुकानदाराला ऑर्डर पाठवा.
     </div>
 
-    <!-- ग्राहकासाठी दिसणारी उत्पादनांची यादी व कार्ट -->
     <div id="customer-products-section" style="display:none; margin-bottom:30px;">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
         <h2 style="color:#1D4E89; margin:0;">📦 या दुकानातील उपलब्ध वस्तू</h2>
@@ -129,7 +140,7 @@ body.store-locked-mode #app-nav { display: none !important; }
     </div>
   </div>
 
-  <!-- TAB 10: ONLINE ORDERS (मर्चंटसाठी ऑर्डर पाहण्याची जागा) -->
+  <!-- TAB 10: ONLINE ORDERS -->
   <div id="tab-orders" class="erp-tab-pane" style="display:none;">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
       <h2>🛍️ ऑनलाईन ग्राहकांच्या ऑर्डर्स</h2>
@@ -142,7 +153,7 @@ body.store-locked-mode #app-nav { display: none !important; }
             <th>ऑर्डर #</th><th>ग्राहक नाव</th><th>फोन नंबर</th><th>तपशील (Items)</th><th>रक्कम</th><th>स्थिती</th>
           </tr>
         </thead>
-        <tbody id="online-orders-table-body"><tr><td colspan="6" class="muted" style="text-align:center; padding:20px;">कोणतीही ऑर्डर नाही.</td></tr></tbody>
+        <tbody id="online-orders-table-body"><tr><td colspan="6" class="muted" style="text-align:center; padding:20px;">कोणतीही ऑनलाईन ऑर्डर आलेली नाही.</td></tr></tbody>
       </table>
     </div>
   </div>
@@ -188,6 +199,7 @@ let currentBusinessId = null;
 let currentProducts = [];
 let lockedStoreUsername = null;
 let customerCart = [];
+let lastKnownOrderCount = 0;
 
 function switchTab(tabId) {
   document.querySelectorAll('.erp-tab-pane').forEach(el => el.style.display = 'none');
@@ -198,20 +210,52 @@ function switchTab(tabId) {
     if (btn.getAttribute('onclick') && btn.getAttribute('onclick').includes(tabId)) btn.classList.add('active');
   });
 
-  if (tabId === 'tab-orders') loadOnlineOrders();
+  if (tabId === 'tab-orders') {
+    loadOnlineOrders();
+    // टॅब उघडल्यावर बॅनर्स लपवणे
+    document.getElementById('new-order-alert-banner').style.display = 'none';
+  }
 }
 
 function openModal(id) { const el = document.getElementById(id); if (el) el.style.display = 'flex'; }
 function closeModal(id) { const el = document.getElementById(id); if (el) el.style.display = 'none'; }
 
-// 🌟 इनिशिलायझेशन (ग्राहक मोड वि. मर्चंट मोड)
+// 🔔 नवीन ऑर्डर आल्यावर साऊंड वाजवणारे फंक्शन (Web Audio API Beep)
+function playOrderAlertSound() {
+  try {
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(880, audioCtx.currentTime); // High pitch beep
+    gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + 0.4); // 400ms sound
+
+    // दुसरा बीप टोन
+    setTimeout(() => {
+      const osc2 = audioCtx.createOscillator();
+      const gain2 = audioCtx.createGain();
+      osc2.type = 'sine';
+      osc2.frequency.setValueAtTime(1320, audioCtx.currentTime);
+      gain2.gain.setValueAtTime(0.3, audioCtx.currentTime);
+      osc2.connect(gain2);
+      gain2.connect(audioCtx.destination);
+      osc2.start();
+      osc2.stop(audioCtx.currentTime + 0.4);
+    }, 500);
+  } catch (e) { console.log('Audio error:', e); }
+}
+
+// 🌟 इनिशिलायझेशन
 async function initDashboard() {
   try {
     const urlParams = new URLSearchParams(window.location.search);
     lockedStoreUsername = urlParams.get('store');
 
     if (lockedStoreUsername) {
-      // 🔒 ग्राहक मोड: वरची ऑल ईआरपी नेव्हिगेशन पट्टी लपवणे
       document.body.classList.add('store-locked-mode');
       const tabsBar = document.getElementById('erp-navigation-tabs');
       if (tabsBar) tabsBar.style.display = 'none';
@@ -243,7 +287,6 @@ async function initDashboard() {
         document.getElementById('business-display-name').textContent = 'स्टोअर सापडले नाही';
       }
     } else {
-      // 👨‍💼 मर्चंट (दुकानदार) मोड: सर्व बटणे आणि नेव्हिगेशन पट्टी दिसेल
       document.body.classList.remove('store-locked-mode');
       const { data: { user } } = await sb.auth.getUser();
       if (!user) { window.location.href = 'login.html'; return; }
@@ -253,7 +296,10 @@ async function initDashboard() {
         currentBusinessId = businesses[0].id;
         document.getElementById('business-display-name').textContent = businesses[0].name;
         await loadProducts();
-        await loadOnlineOrders();
+        await checkNewOrdersBackground();
+        
+        // दर १० सेकंदांनी बॅकग्राउंडला नवीन ऑर्डर तपासणे (Real-time polling & sound alert)
+        setInterval(checkNewOrdersBackground, 10000);
       }
     }
   } catch (err) { console.error('Init error:', err); }
@@ -356,7 +402,6 @@ function openCustomerCartModal() {
   openModal('customer-cart-modal');
 }
 
-// 🛍️ ग्राहकाने ऑर्डर सबमिट केल्यावर थेट Supabase मध्ये सेव्ह करणारे अचूक फंक्शन
 async function submitCustomerOrder() {
   if (customerCart.length === 0) { alert('कार्ट रिकामी आहे!'); return; }
   const name = document.getElementById('cust-order-name').value.trim();
@@ -389,7 +434,27 @@ async function submitCustomerOrder() {
   }
 }
 
-// 👨‍💼 मर्चंटसाठी ऑनलाईन ऑर्डर्स लोड करणारे फंक्शन
+// 🔄 बॅकग्राउंडला नवीन ऑर्डर सतत तपासणारे आणि साऊंड वाजवणारे फंक्शन
+async function checkNewOrdersBackground() {
+  if (!currentBusinessId) return;
+  const { count, error } = await sb.from('orders').select('*', { count: 'exact', head: true }).eq('business_id', currentBusinessId);
+  if (!error && count !== null) {
+    if (lastKnownOrderCount > 0 && count > lastKnownOrderCount) {
+      // 🚨 नवीन ऑर्डर आली! साऊंड वाजवणे व बॅनर दाखवणे
+      playOrderAlertSound();
+      const banner = document.getElementById('new-order-alert-banner');
+      if (banner) banner.style.display = 'flex';
+      
+      const badge = document.getElementById('order-badge-count');
+      if (badge) {
+        badge.textContent = (count - lastKnownOrderCount);
+        badge.style.display = 'inline-block';
+      }
+    }
+    lastKnownOrderCount = count;
+  }
+}
+
 async function loadOnlineOrders() {
   if (!currentBusinessId) return;
   const tbody = document.getElementById('online-orders-table-body');
@@ -400,6 +465,10 @@ async function loadOnlineOrders() {
     tbody.innerHTML = '<tr><td colspan="6" class="muted" style="text-align:center; padding:20px;">कोणतीही ऑनलाईन ऑर्डर आलेली नाही.</td></tr>';
     return;
   }
+
+  lastKnownOrderCount = orders.length;
+  const badge = document.getElementById('order-badge-count');
+  if (badge) badge.style.display = 'none';
 
   tbody.innerHTML = orders.map(o => `
     <tr style="border-bottom:1px solid #f1f5f9; padding:8px 0;">
