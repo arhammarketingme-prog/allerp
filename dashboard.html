@@ -11,6 +11,9 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 <style>
+/* 🔒 जर URL मध्ये store असेल तर वरची ऑल ईआरपी नेव्हिगेशन पट्टी तातडीने लपवणे */
+body.store-locked-mode #app-nav { display: none !important; }
+
 .dashboard-main-frame { width: 98%; max-width: 1450px; margin: 10px auto; padding: 0 6px; }
 .erp-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px; background: #ffffff; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border, #e2e8f0); position: relative; z-index: 50; }
 .erp-header > div:first-child { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
@@ -36,7 +39,6 @@
 </style>
 </head>
 <body>
-<!-- 🔒 ग्राहक मोडमध्ये वरची ऑल ईआरपी नेव्हिगेशन पट्टी पूर्णपणे लपवली जाईल -->
 <nav id="app-nav"></nav>
 
 <div class="dashboard-main-frame">
@@ -52,7 +54,7 @@
       </div>
     </div>
     <div id="header-action-buttons">
-      <!-- 📢 WhatsApp शेअर बटण (फक्त दुकानदारासाठी) -->
+      <!-- 📢 WhatsApp शेअर बटण -->
       <button type="button" id="whatsapp-share-btn" onclick="shareStoreOnWhatsApp()" class="whatsapp-share-btn">
         📢 WhatsApp शेअर
       </button>
@@ -171,16 +173,16 @@ function switchTab(tabId) {
 function openModal(id) { const el = document.getElementById(id); if (el) el.style.display = 'flex'; }
 function closeModal(id) { const el = document.getElementById(id); if (el) el.style.display = 'none'; }
 
-// 🌟 मुख्य इनिशिलायझेशन (स्टोअर लॉक आणि मर्चंट मोड अचूक हाताळणारी)
+// 🌟 मुख्य इनिशिलायझेशन
 async function initDashboard() {
   try {
     const urlParams = new URLSearchParams(window.location.search);
     lockedStoreUsername = urlParams.get('store');
 
     if (lockedStoreUsername) {
-      // 🔒 1. ग्राहक मोड: जेव्हा ग्राहक WhatsApp लिंकवरून येईल
-      const navBar = document.getElementById('app-nav');
-      if (navBar) navBar.style.display = 'none'; // वरची ऑल ईआरपी नेव्हिगेशन पट्टी पूर्णपणे लपवणे
+      // 🔒 ग्राहक मोड: body ला क्लास जोडून वरची nav पट्टी आणि ॲडमिन कंट्रोल्स कायमचे लपवणे
+      document.body.classList.add('store-locked-mode');
+
       const tabsBar = document.getElementById('erp-navigation-tabs');
       if (tabsBar) tabsBar.style.display = 'none';
       const kpiGrid = document.getElementById('kpi-grid-section');
@@ -200,7 +202,7 @@ async function initDashboard() {
       if (prodSection) prodSection.style.display = 'block';
 
       const cleanStoreName = lockedStoreUsername.replace(/_/g, ' ').trim();
-      const { data: storeInfo, error } = await sb.from('businesses').select('*').ilike('name', cleanStoreName).maybeSingle();
+      const { data: storeInfo } = await sb.from('businesses').select('*').ilike('name', cleanStoreName).maybeSingle();
       
       if (storeInfo) {
         currentBusinessId = storeInfo.id;
@@ -211,7 +213,8 @@ async function initDashboard() {
         document.getElementById('business-display-name').textContent = 'स्टोअर सापडले नाही';
       }
     } else {
-      // 👨‍💼 2. मर्चंट मोड: जेव्हा दुकानदार स्वतः लॉगिन करून डॅशबोर्ड उघडेईल
+      // 👨‍💼 मर्चंट (दुकानदार) मोड
+      document.body.classList.remove('store-locked-mode');
       const { data: { user } } = await sb.auth.getUser();
       if (!user) { window.location.href = 'login.html'; return; }
 
@@ -225,7 +228,6 @@ async function initDashboard() {
   } catch (err) { console.error('Init error:', err); }
 }
 
-// 📢 WhatsApp वर स्टोअर लिंक शेअर करण्याची सोय
 function shareStoreOnWhatsApp() {
   const bNameEl = document.getElementById('business-display-name');
   const storeName = bNameEl ? bNameEl.textContent.trim() : 'my_store';
@@ -235,7 +237,6 @@ function shareStoreOnWhatsApp() {
   window.open(`https://api.whatsapp.com/send?text=${message}`, '_blank');
 }
 
-// 💬 Weavo चॅट डायनॅमिक ब्रिज (ऑटो-लॉगिन करून थेट चॅट उघडणे)
 function openWeavoChat() {
   let storeUsername = lockedStoreUsername;
   if (!storeUsername) {
@@ -258,7 +259,6 @@ function openWeavoChat() {
   }
 }
 
-// ग्राहकासाठी दुकानातील प्रॉडक्ट्स दाखवणारे आणि ॲड-टू-कार्ट देणारे फंक्शन
 async function loadCustomerStoreProducts() {
   if (!currentBusinessId) return;
   const gridEl = document.getElementById('customer-products-grid');
@@ -325,7 +325,6 @@ function openCustomerCartModal() {
   openModal('customer-cart-modal');
 }
 
-// 🛍️ ग्राहकाने टाकलेली ऑर्डर थेट Supabase मधील orders टेबलमध्ये पाठवणारे अचूक फंक्शन
 async function submitCustomerOrder() {
   if (customerCart.length === 0) { alert('कार्ट रिकामी आहे!'); return; }
   const name = document.getElementById('cust-order-name').value.trim();
@@ -337,7 +336,6 @@ async function submitCustomerOrder() {
     let totalAmt = customerCart.reduce((sum, i) => sum + (i.price * i.qty), 0);
     let itemsSummaryText = customerCart.map(i => `${i.name} (${i.qty} नग)`).join(', ');
 
-    // अचूक currentBusinessId सोबत orders टेबलमध्ये डेटा सेव्ह करणे
     const { error } = await sb.from('orders').insert({
       business_id: currentBusinessId,
       customer_name: name,
@@ -353,8 +351,6 @@ async function submitCustomerOrder() {
     customerCart = [];
     updateCustomerCartUI();
     closeModal('customer-cart-modal');
-
-    // वीव्हो चॅट स्वयंचलितपणे उघडणे
     openWeavoChat();
   } catch (err) {
     alert('ऑर्डर पाठवताना त्रुटी आली: ' + err.message);
