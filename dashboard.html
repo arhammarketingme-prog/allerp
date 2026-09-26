@@ -63,6 +63,10 @@ body.store-locked-mode #app-nav { display: none !important; }
     <div>
       <h1 id="business-display-name">ALL ERP Dashboard</h1>
       <span class="muted" id="header-sub-text">Universal Multi-Business Operating System & Local Marketplace</span>
+      <!-- दुकानदार स्वतःची ओळख (युझरनेम) इथे पाहू शकेल -->
+      <div style="margin-top:4px; font-size:13px; font-weight:700; color:#0b8f87;" id="merchant-username-badge">
+        👤 वीव्हो युझरनेम: <span id="display-merchant-handle">लोड होत आहे...</span>
+      </div>
       <div style="margin-top:4px;" id="wholesaler-toggle-box">
         <label style="font-size:12.5px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:5px;">
           <input type="checkbox" id="is-wholesaler-toggle" style="width:auto; margin:0;" onchange="toggleWholesalerMode(this.checked)">
@@ -204,6 +208,7 @@ let lockedStoreUsername = null;
 let customerCart = [];
 let lastKnownOrderCount = 0;
 let audioCtx = null;
+let currentMerchantUsername = '';
 
 function enableAudioContextOnce() {
   if (!audioCtx) {
@@ -278,6 +283,8 @@ async function initDashboard() {
       if (langSelect) langSelect.style.display = 'none';
       const unlockBanner = document.getElementById('audio-unlock-banner');
       if (unlockBanner) unlockBanner.style.display = 'none';
+      const merchantBadge = document.getElementById('merchant-username-badge');
+      if (merchantBadge) merchantBadge.style.display = 'none';
       
       const noticeBox = document.getElementById('customer-store-notice');
       if (noticeBox) noticeBox.style.display = 'block';
@@ -300,6 +307,16 @@ async function initDashboard() {
       const { data: { user } } = await sb.auth.getUser();
       if (!user) { window.location.href = 'login.html'; return; }
 
+      // मर्चंटचे युझरनेम profiles मधून शोधून दाखवणे
+      const { data: profile } = await sb.from('profiles').select('username').eq('id', user.id).maybeSingle();
+      if (profile && profile.username) {
+        currentMerchantUsername = profile.username;
+        document.getElementById('display-merchant-handle').textContent = '@' + currentMerchantUsername;
+      } else {
+        currentMerchantUsername = user.email.split('@')[0];
+        document.getElementById('display-merchant-handle').textContent = '@' + currentMerchantUsername;
+      }
+
       const { data: businesses } = await sb.from('businesses').select('id, name').eq('owner_id', user.id);
       if (businesses && businesses.length > 0) {
         currentBusinessId = businesses[0].id;
@@ -321,7 +338,7 @@ function shareStoreOnWhatsApp() {
   window.open(`https://api.whatsapp.com/send?text=${message}`, '_blank');
 }
 
-// 💬 Weavo चॅट डायनॅमिक ब्रिज (दुकानदारासाठी merchant_mode आणि ग्राहकासाठी customer view हाताळणारा)
+// 💬 Weavo चॅट उघडणारे अचूक मर्चंट व कस्टमर ब्रिज फंक्शन
 async function openWeavoChat() {
   let storeUsername = lockedStoreUsername;
   if (!storeUsername) {
@@ -333,16 +350,15 @@ async function openWeavoChat() {
   try {
     const { data: { user } } = await sb.auth.getUser();
     
-    // जर डॅशबोर्ड उघडणारा व्यक्ती हा दुकानदार असेल (कोणतीही store लिंक नाही)
+    // जर डॅशबोर्डवर स्वतः दुकानदार असेल तर त्याच्या खऱ्या युझरनेमसह वीव्हो उघडा
     if (!lockedStoreUsername && user) {
-      const { data: profile } = await sb.from('profiles').select('username').eq('id', user.id).maybeSingle();
-      const merchantUsername = profile?.username || storeUsername;
-      const weavoMerchantUrl = `https://arhammarketingme-prog.github.io/weavo/?store=${merchantUsername}&merchant_mode=true`;
+      const merchantHandle = currentMerchantUsername || user.email.split('@')[0];
+      const weavoMerchantUrl = `https://arhammarketingme-prog.github.io/weavo/?store=${merchantHandle}`;
       window.open(weavoMerchantUrl, '_blank');
       return;
     }
 
-    // जर ग्राहक असेल
+    // जर ग्राहक असेल तर
     if (typeof sb !== 'undefined' && sb.auth) {
       sb.auth.getUser().then(({ data: { user } }) => {
         const customerEmail = user?.email || 'customer@example.com';
