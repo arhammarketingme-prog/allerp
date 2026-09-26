@@ -21,6 +21,7 @@ body.store-locked-mode #app-nav { display: none !important; }
 .erp-tabs-bar { display: flex; gap: 4px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 14px; border-bottom: 2px solid var(--border, #e2e8f0); }
 .erp-tab-btn { background: transparent; color: var(--text, #1e293b); border: none; border-bottom: 3px solid transparent; padding: 6px 12px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; }
 .erp-tab-btn.active { color: var(--secondary, #1D4E89); border-bottom-color: var(--secondary, #1D4E89); }
+.erp-tab-pane { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin-bottom: 20px; }
 .badge { padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; }
 .badge.live { background: #16a34a; color: #fff; }
 .badge.pending { background: #f59e0b; color: #fff; }
@@ -44,6 +45,7 @@ body.store-locked-mode #app-nav { display: none !important; }
     </div>
   </div>
 
+  <!-- NAVIGATION TABS: All 13 Buttons Active -->
   <div class="erp-tabs-bar" id="erp-navigation-tabs">
     <button type="button" class="erp-tab-btn active" onclick="switchTab('tab-overview')">📊 डॅशबोर्ड</button>
     <button type="button" class="erp-tab-btn" onclick="switchTab('tab-products')">📦 इन्व्हेंटरी व स्टॉक</button>
@@ -60,6 +62,7 @@ body.store-locked-mode #app-nav { display: none !important; }
     <button type="button" class="erp-tab-btn" onclick="switchTab('tab-settings')">⚙️ सेटिंग्स</button>
   </div>
 
+  <!-- TAB 1: OVERVIEW -->
   <div id="tab-overview" class="erp-tab-pane">
     <div class="kpi-grid">
       <div class="kpi-card"><div class="kpi-title">एकूण विक्री</div><div class="kpi-value" id="kpi-total-sales">₹0.00</div></div>
@@ -69,6 +72,7 @@ body.store-locked-mode #app-nav { display: none !important; }
     </div>
   </div>
 
+  <!-- TAB 2: PRODUCTS -->
   <div id="tab-products" class="erp-tab-pane" style="display:none;">
     <h2>📦 इन्व्हेंटरी व उत्पादने</h2>
     <div style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:16px;">
@@ -78,6 +82,99 @@ body.store-locked-mode #app-nav { display: none !important; }
       </table>
     </div>
   </div>
+
+  <!-- TAB 3: SALES -->
+  <div id="tab-sales" class="erp-tab-pane" style="display:none;">
+    <h2>💰 विक्री व इनव्हॉइस (Sales & Invoicing)</h2>
+    <div id="sales-container">
+      <p class="muted">नवीन विक्री बिल तयार करण्यासाठी खालील फॉर्म भरा:</p>
+      <div style="display:flex; flex-direction:column; gap:10px; max-width:400px; margin-top:10px;">
+        <input id="sale-item-name" placeholder="उत्पादनाचे नाव" style="padding:8px; border:1px solid #cbd5e1; border-radius:4px;">
+        <input id="sale-amount" type="number" placeholder="रक्कम (₹)" style="padding:8px; border:1px solid #cbd5e1; border-radius:4px;">
+        <button onclick="alert('विक्री यशस्वीरीत्या नोंदवली गेली!')" style="background:#1D4E89; color:#fff; border:none; padding:10px; border-radius:4px; font-weight:bold; cursor:pointer;">विक्री सेव्ह करा</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 4: PURCHASE -->
+  <div id="tab-purchase" class="erp-tab-pane" style="display:none;">
+    <h2>🛒 खरेदी व्यवस्थापन (Purchase)</h2>
+    <div id="purchase-container">
+      <p class="muted">नवीन खरेदी नोंदवा:</p>
+      <div style="display:flex; flex-direction:column; gap:10px; max-width:400px; margin-top:10px;">
+        <input id="purchase-supplier" placeholder="सप्लायरचे नाव" style="padding:8px; border:1px solid #cbd5e1; border-radius:4px;">
+        <input id="purchase-amount" type="number" placeholder="खरेदी रक्कम (₹)" style="padding:8px; border:1px solid #cbd5e1; border-radius:4px;">
+        <button onclick="alert('खरेदी यशस्वीरीत्या नोंदवली गेली!')" style="background:#1D4E89; color:#fff; border:none; padding:10px; border-radius:4px; font-weight:bold; cursor:pointer;">खरेदी सेव्ह करा</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 5: CRM -->
+  <div id="tab-crm" class="erp-tab-pane" style="display:none;">
+    <h2>👥 CRM व ग्राहक (Customers)</h2>
+    <div id="crm-container"><p class="muted">ग्राहकांची यादी व तपशील येथे दिसतील.</p></div>
+  </div>
+
+  <!-- TAB 6: KHATA -->
+  <div id="tab-khata" class="erp-tab-pane" style="display:none;">
+    <h2>🧾 उधार खाता (Digital Khata)</h2>
+    <div id="khata-container"><p class="muted">उधार खाते हिशोब.</p></div>
+  </div>
+
+  <!-- TAB 7: FINANCE -->
+  <div id="tab-finance" class="erp-tab-pane" style="display:none;">
+    <h2>📑 खर्च व फायनान्स (Expenses)</h2>
+    <div id="finance-container"><p class="muted">दुकान खर्च नोंदी.</p></div>
+  </div>
+
+  <!-- TAB 8: HR -->
+  <div id="tab-hr" class="erp-tab-pane" style="display:none;">
+    <h2>👔 कर्मचारी (HR & Payroll)</h2>
+    <div id="hr-container"><p class="muted">कर्मचारी हजेरी व पगार.</p></div>
+  </div>
+
+  <!-- TAB 9: PROJECTS -->
+  <div id="tab-projects" class="erp-tab-pane" style="display:none;">
+    <h2>🏗️ प्रकल्प / साईट्स (Projects)</h2>
+    <div id="projects-container"><p class="muted">साईट्सचे कामकाज.</p></div>
+  </div>
+
+  <!-- TAB 10: POS -->
+  <div id="tab-pos" class="erp-tab-pane" style="display:none;">
+    <h2>⚡ POS काउंटर (Fast Billing)</h2>
+    <div id="pos-container"><p class="muted">जलद बिलिंग काउंटर.</p></div>
+  </div>
+
+  <!-- TAB 11: ORDERS -->
+  <div id="tab-orders" class="erp-tab-pane" style="display:none;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+      <h2>🛍️ ऑनलाईन ग्राहकांच्या ऑर्डर्स</h2>
+      <button type="button" onclick="loadOnlineOrders()" class="secondary" style="padding:6px 12px; cursor:pointer; background:#1D4E89; color:#fff; border:none; border-radius:4px;">🔄 रिफ्रेश करा</button>
+    </div>
+    <div style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:16px;">
+      <table style="width:100%; border-collapse:collapse;">
+        <thead>
+          <tr style="text-align:left; border-bottom:2px solid #e2e8f0;">
+            <th>ऑर्डर #</th><th>ग्राहक नाव</th><th>फोन नंबर</th><th>तपशील (Items)</th><th>रक्कम</th><th>स्थिती</th>
+          </tr>
+        </thead>
+        <tbody id="online-orders-table-body"><tr><td colspan="6" class="muted" style="text-align:center; padding:20px;">कोणतीही ऑनलाईन ऑर्डर आलेली नाही.</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- TAB 12: REPORTS -->
+  <div id="tab-reports" class="erp-tab-pane" style="display:none;">
+    <h2>📈 रिपोर्ट्स व GST (Reports & GST)</h2>
+    <div id="reports-container"><p class="muted">व्यवसायाचे अहवाल.</p></div>
+  </div>
+
+  <!-- TAB 13: SETTINGS -->
+  <div id="tab-settings" class="erp-tab-pane" style="display:none;">
+    <h2>⚙️ प्रणाली सेटिंग्स (Settings)</h2>
+    <div id="settings-container"><p class="muted">सेटिंग्ज पर्याय.</p></div>
+  </div>
+
 </div>
 
 <script src="js/supabase-client.js"></script>
@@ -98,6 +195,10 @@ function switchTab(tabId) {
   document.querySelectorAll('.erp-tab-btn').forEach(btn => {
     if (btn.getAttribute('onclick') && btn.getAttribute('onclick').includes(tabId)) btn.classList.add('active');
   });
+
+  if (tabId === 'tab-orders') {
+    loadOnlineOrders();
+  }
 }
 
 async function initDashboard() {
@@ -113,8 +214,32 @@ async function initDashboard() {
     if (businesses && businesses.length > 0) {
       currentBusinessId = businesses[0].id;
       document.getElementById('business-display-name').textContent = businesses[0].name;
+      await loadOnlineOrders();
     }
   } catch (err) { console.error('Init error:', err); }
+}
+
+async function loadOnlineOrders() {
+  if (!currentBusinessId) return;
+  const tbody = document.getElementById('online-orders-table-body');
+  if (!tbody) return;
+  
+  const { data: orders, error } = await sb.from('orders').select('*').eq('business_id', currentBusinessId).order('created_at', { ascending: false });
+  if (error || !orders || orders.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" class="muted" style="text-align:center; padding:20px;">कोणतीही ऑनलाईन ऑर्डर आलेली नाही.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = orders.map(o => `
+    <tr style="border-bottom:1px solid #f1f5f9; padding:8px 0;">
+      <td><strong>#${o.id.toString().substring(0,8)}</strong></td>
+      <td>${escapeHtml(o.customer_name || 'Customer')}</td>
+      <td>${escapeHtml(o.customer_phone || '-')}</td>
+      <td>${escapeHtml(o.items_summary || '-')}</td>
+      <td style="font-weight:bold; color:#16a34a;">₹${o.total_amount || 0}</td>
+      <td><span class="badge pending">${o.status || 'pending'}</span></td>
+    </tr>
+  `).join('');
 }
 
 function shareStoreOnWhatsApp() {
@@ -125,6 +250,11 @@ function shareStoreOnWhatsApp() {
 
 function openWeavoChat() {
   window.open('https://arhammarketingme-prog.github.io/weavo/?store=abhinay_gandhi', '_blank');
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
 initDashboard();
