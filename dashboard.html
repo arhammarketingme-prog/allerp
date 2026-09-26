@@ -317,7 +317,7 @@ async function initDashboard() {
       const myOrdersBox = document.getElementById('customer-my-orders-box');
       if (myOrdersBox) myOrdersBox.style.display = 'block';
 
-      // ग्राहकाची गुगल लॉगिन माहिती तपणे
+      // ग्राहकाची गुगल लॉगिन माहिती तपासणे
       const { data: { user } } = await sb.auth.getUser();
       if (user) {
         loggedInCustomer = user;
@@ -522,7 +522,6 @@ function updateCustomerCartUI() {
 function openCustomerCartModal() {
   if (customerCart.length === 0) { alert('तुमची कार्ट रिकामी आहे!'); return; }
   
-  // जर ग्राहक गुगल लॉग्ड-इन असेल, तर त्याचे नाव आणि ईमेल ऑटोमॅटिक भरा
   if (loggedInCustomer) {
     const nameField = document.getElementById('cust-order-name');
     const phoneField = document.getElementById('cust-order-phone');
@@ -537,7 +536,7 @@ function openCustomerCartModal() {
   openModal('customer-cart-modal');
 }
 
-// 🛍️ ग्राहकाने ऑर्डर सबमिट केल्यावर ती AllERP मध्ये सेव्ह होऊन थेट Weavo चॅटमध्ये मेसेज म्हणून पाठवणारे मुख्य फंक्शन
+// 🛍️ ग्राहकाने ऑर्डर सबमिट केल्यावर ती AllERP मध्ये सेव्ह होऊन थेट Weavo चॅटमध्ये प्री-फिल्ड मजकुरासह उघडणारे फंक्शन
 async function submitCustomerOrder() {
   if (customerCart.length === 0) { alert('कार्ट रिकामी आहे!'); return; }
   
@@ -551,7 +550,7 @@ async function submitCustomerOrder() {
     let totalAmt = customerCart.reduce((sum, i) => sum + (i.price * i.qty), 0);
     let itemsSummaryText = customerCart.map(i => `${i.name} (${i.qty} नग)`).join(', ');
 
-    // १. AllERP च्या orders टेबलमध्ये ऑर्डर सेव्ह करणे
+    // १. AllERP च्या orders टेबलमध्ये ऑर्डर सुरक्षितपणे सेव्ह करणे
     const { error: orderErr } = await sb.from('orders').insert({
       business_id: currentBusinessId,
       customer_name: name,
@@ -563,53 +562,18 @@ async function submitCustomerOrder() {
 
     if (orderErr) throw orderErr;
 
-    // २. Weavo च्या चॅट डेटाबेसमध्ये स्वयंचलितपणे ऑर्डरचा मेसेज पाठवणे व कन्वर्सेशन तयार करणे
-    try {
-      const { data: bizInfo } = await sb.from('businesses').select('owner_id, name').eq('id', currentBusinessId).single();
-      if (bizInfo && bizInfo.owner_id) {
-        const storeUserId = bizInfo.owner_id;
-        const customerUserId = loggedInCustomer ? loggedInCustomer.id : null;
-
-        if (customerUserId && customerUserId !== storeUserId) {
-          let targetConvId = null;
-          const { data: myConvs } = await sb.from('conversation_members').select('conversation_id').eq('user_id', customerUserId);
-          const myIds = (myConvs || []).map(r => r.conversation_id);
-
-          if (myIds.length) {
-            const { data: theirConvs } = await sb.from('conversation_members').select('conversation_id').eq('user_id', storeUserId).in('conversation_id', myIds);
-            if (theirConvs && theirConvs.length) targetConvId = theirConvs[0].conversation_id;
-          }
-
-          if (!targetConvId) {
-            const { data: newConv } = await sb.from('conversations').insert({ type: 'direct', created_by: customerUserId }).select().single();
-            if (newConv) {
-              targetConvId = newConv.id;
-              await sb.from('conversation_members').insert([
-                { conversation_id: targetConvId, user_id: customerUserId },
-                { conversation_id: targetConvId, user_id: storeUserId },
-              ]);
-            }
-          }
-
-          if (targetConvId) {
-            const orderMessageText = `📦 **नवीन ऑनलाईन ऑर्डर प्राप्त!**\n\n👤 ग्राहक: ${name}\n📞 ईमेल/संपर्क: ${phone}\n🛒 तपशील: ${itemsSummaryText}\n💰 एकूण रक्कम: ₹${totalAmt}\n\nडुकानदार महोदय, कृपया ही ऑर्डर तपासा.`;
-            await sb.from('messages').insert({
-              conversation_id: targetConvId,
-              sender_id: customerUserId,
-              content: orderMessageText
-            });
-          }
-        }
-      }
-    } catch (chatSyncErr) {
-      console.log('Weavo chat auto-sync note:', chatSyncErr);
-    }
-
-    alert('🎉 तुमची ऑर्डर यशस्वीरित्या ऑल ईआरपी आणि वीव्हो चॅट दोन्हीकडे पाठवली गेली आहे!');
+    alert('🎉 तुमची ऑर्डर ऑल ईआरपीमध्ये यशस्वीरीत्या नोंदवली गेली आहे! आता दुकानदाराशी संवाद साधण्यासाठी चॅट उघडत आहे.');
+    
     customerCart = [];
     updateCustomerCartUI();
     closeModal('customer-cart-modal');
-    openWeavoChat();
+
+    // २. Weavo चॅट विंडो प्री-फिल्ड ऑर्डर मेसेजसह उघडणे
+    let storeUsername = lockedStoreUsername || 'nikhil_kirana';
+    const orderMessageText = encodeURIComponent(`📦 नवीन ऑनलाईन ऑर्डर:\n👤 ग्राहक: ${name}\n📞 संपर्क: ${phone}\n🛒 तपशील: ${itemsSummaryText}\n💰 एकूण: ₹${totalAmt}`);
+    const weavoUrl = `https://arhammarketingme-prog.github.io/weavo/?store=${storeUsername}&prefill=${orderMessageText}`;
+    
+    window.open(weavoUrl, '_blank');
   } catch (err) {
     alert('ऑर्डर पाठवताना त्रुटी आली: ' + err.message);
   }
