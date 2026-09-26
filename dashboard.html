@@ -224,7 +224,7 @@ function switchTab(tabId) {
   const target = document.getElementById(tabId);
   if (target) target.style.display = 'block';
   document.querySelectorAll('.erp-tab-btn').forEach(btn => {
-    if (btn.getAttribute('onclick') && btn.getAttribute('onclick').includes(tabId)) btn.classList.add('active');
+    if (btn.getAttribute('onclick') && btn.getAttribute('onclick'].includes(tabId)) btn.classList.add('active');
   });
 
   if (tabId === 'tab-orders') {
@@ -307,7 +307,6 @@ async function initDashboard() {
       const { data: { user } } = await sb.auth.getUser();
       if (!user) { window.location.href = 'login.html'; return; }
 
-      // मर्चंटचे युझरनेम profiles मधून शोधून दाखवणे
       const { data: profile } = await sb.from('profiles').select('username').eq('id', user.id).maybeSingle();
       if (profile && profile.username) {
         currentMerchantUsername = profile.username;
@@ -338,7 +337,6 @@ function shareStoreOnWhatsApp() {
   window.open(`https://api.whatsapp.com/send?text=${message}`, '_blank');
 }
 
-// 💬 Weavo चॅट उघडणारे अचूक मर्चंट व कस्टमर ब्रिज फंक्शन
 async function openWeavoChat() {
   let storeUsername = lockedStoreUsername;
   if (!storeUsername) {
@@ -350,7 +348,6 @@ async function openWeavoChat() {
   try {
     const { data: { user } } = await sb.auth.getUser();
     
-    // जर डॅशबोर्डवर स्वतः दुकानदार असेल तर त्याच्या खऱ्या युझरनेमसह वीव्हो उघडा
     if (!lockedStoreUsername && user) {
       const merchantHandle = currentMerchantUsername || user.email.split('@')[0];
       const weavoMerchantUrl = `https://arhammarketingme-prog.github.io/weavo/?store=${merchantHandle}`;
@@ -358,7 +355,6 @@ async function openWeavoChat() {
       return;
     }
 
-    // जर ग्राहक असेल तर
     if (typeof sb !== 'undefined' && sb.auth) {
       sb.auth.getUser().then(({ data: { user } }) => {
         const customerEmail = user?.email || 'customer@example.com';
@@ -442,6 +438,7 @@ function openCustomerCartModal() {
   openModal('customer-cart-modal');
 }
 
+// 🛍️ ग्राहकाने ऑर्डर सबमिट केल्यावर ती AllERP मध्ये सेव्ह होऊन थेट Weavo चॅटमध्ये मेसेज म्हणून पाठवणारे मुख्य फंक्शन
 async function submitCustomerOrder() {
   if (customerCart.length === 0) { alert('कार्ट रिकामी आहे!'); return; }
   const name = document.getElementById('cust-order-name').value.trim();
@@ -453,18 +450,62 @@ async function submitCustomerOrder() {
     let totalAmt = customerCart.reduce((sum, i) => sum + (i.price * i.qty), 0);
     let itemsSummaryText = customerCart.map(i => `${i.name} (${i.qty} नग)`).join(', ');
 
-    const { error } = await sb.from('orders').insert({
+    // १. AllERP च्या orders टेबलमध्ये ऑर्डर सेव्ह करणे
+    const { data: orderData, error: orderErr } = await sb.from('orders').insert({
       business_id: currentBusinessId,
       customer_name: name,
       customer_phone: phone,
       items_summary: itemsSummaryText,
       total_amount: totalAmt,
       status: 'pending'
-    });
+    }).select().single();
 
-    if (error) throw error;
+    if (orderErr) throw orderErr;
 
-    alert('🎉 तुमची ऑर्डर यशस्वीरित्या दुकानदाराला पाठवली गेली आहे!');
+    // २. Weavo च्या चॅट डेटाबेसमध्ये स्वयंचलितपणे ऑर्डरचा मेसेज पाठवणे
+    try {
+      const { data: bizInfo } = await sb.from('businesses').select('owner_id, name').eq('id', currentBusinessId).single();
+      if (bizInfo && bizInfo.owner_id) {
+        const storeUserId = bizInfo.owner_id;
+        const { data: { user: custAuthUser } } = await sb.auth.getUser();
+        const customerUserId = custAuthUser ? custAuthUser.id : null;
+
+        if (customerUserId && customerUserId !== storeUserId) {
+          let targetConvId = null;
+          const { data: myConvs } = await sb.from('conversation_members').select('conversation_id').eq('user_id', customerUserId);
+          const myIds = (myConvs || []).map(r => r.conversation_id);
+
+          if (myIds.length) {
+            const { data: theirConvs } = await sb.from('conversation_members').select('conversation_id').eq('user_id', storeUserId).in('conversation_id', myIds);
+            if (theirConvs && theirConvs.length) targetConvId = theirConvs[0].conversation_id;
+          }
+
+          if (!targetConvId) {
+            const { data: newConv } = await sb.from('conversations').insert({ type: 'direct', created_by: customerUserId }).select().single();
+            if (newConv) {
+              targetConvId = newConv.id;
+              await sb.from('conversation_members').insert([
+                { conversation_id: targetConvId, user_id: customerUserId },
+                { conversation_id: targetConvId, user_id: storeUserId },
+              ]);
+            }
+          }
+
+          if (targetConvId) {
+            const orderMessageText = `📦 **नवीन ऑनलाईन ऑर्डर प्राप्त!**\n\n👤 ग्राहक: ${name}\n📞 फोन: ${phone}\n🛒 तपशील: ${itemsSummaryText}\n💰 एकूण रक्कम: ₹${totalAmt}\n\nडुकानदार महोदय, कृपया ही ऑर्डर तपासा.`;
+            await sb.from('messages').insert({
+              conversation_id: targetConvId,
+              sender_id: customerUserId,
+              content: orderMessageText
+            });
+          }
+        }
+      }
+    } catch (chatSyncErr) {
+      console.log('Weavo chat auto-sync note:', chatSyncErr);
+    }
+
+    alert('🎉 तुमची ऑर्डर यशस्वीरित्या दुकानदाराला आणि वीव्हो चॅटमध्ये पाठवली गेली आहे!');
     customerCart = [];
     updateCustomerCartUI();
     closeModal('customer-cart-modal');
