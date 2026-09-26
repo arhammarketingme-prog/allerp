@@ -35,7 +35,7 @@ body.store-locked-mode #app-nav { display: none !important; }
       <h1 id="business-display-name">ALL ERP Dashboard</h1>
       <span class="muted" id="header-sub-text">Universal Multi-Business Operating System & Local Marketplace</span>
       <div style="margin-top:4px; font-size:13px; font-weight:700; color:#0b8f87;" id="merchant-username-badge">
-        👤 युझरनेम: <span id="display-merchant-handle">লোড होत आहे...</span>
+        👤 युझरनेम: <span id="display-merchant-handle">@abhinay_gandhi</span>
       </div>
     </div>
     <div>
@@ -96,19 +96,19 @@ function switchTab(tabId) {
   const target = document.getElementById(tabId);
   if (target) target.style.display = 'block';
   document.querySelectorAll('.erp-tab-btn').forEach(btn => {
-    if (btn.getAttribute('onclick') && btn.getAttribute('onclick'].includes(tabId)) btn.classList.add('active');
+    if (btn.getAttribute('onclick') && btn.getAttribute('onclick').includes(tabId)) btn.classList.add('active');
   });
 }
 
 async function initDashboard() {
   try {
+    const handleEl = document.getElementById('display-merchant-handle');
+    if (handleEl) handleEl.textContent = '@abhinay_gandhi';
+
     if (typeof sb === 'undefined' || !sb.auth) return;
     const { data: { user } } = await sb.auth.getUser();
     if (!user) { window.location.href = 'login.html'; return; }
     
-    const handleEl = document.getElementById('display-merchant-handle');
-    if (handleEl) handleEl.textContent = '@' + (user.email ? user.email.split('@')[0] : 'merchant');
-
     const { data: businesses } = await sb.from('businesses').select('id, name').eq('owner_id', user.id);
     if (businesses && businesses.length > 0) {
       currentBusinessId = businesses[0].id;
@@ -124,7 +124,7 @@ function shareStoreOnWhatsApp() {
 }
 
 function openWeavoChat() {
-  window.open('https://arhammarketingme-prog.github.io/weavo/', '_blank');
+  window.open('https://arhammarketingme-prog.github.io/weavo/?store=abhinay_gandhi', '_blank');
 }
 
 initDashboard();
