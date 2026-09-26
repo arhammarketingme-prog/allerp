@@ -427,28 +427,20 @@ async function openWeavoChat() {
     storeUsername = storeName.replace(/\s+/g, '_').toLowerCase();
   }
 
+  localStorage.setItem('weavo_target_store', storeUsername);
+
   try {
     const { data: { user } } = await sb.auth.getUser();
+    const customerEmail = user?.email || loggedInCustomer?.email || 'customer@example.com';
+    const customerName = user?.user_metadata?.full_name || loggedInCustomer?.user_metadata?.full_name || 'Customer';
     
-    if (!lockedStoreUsername && user) {
-      const merchantHandle = currentMerchantUsername || user.email.split('@')[0];
-      const weavoMerchantUrl = `https://arhammarketingme-prog.github.io/weavo/?store=${merchantHandle}`;
-      window.open(weavoMerchantUrl, '_blank');
-      return;
-    }
+    let itemsSummaryText = customerCart.length > 0 ? customerCart.map(i => `${i.name} (${i.qty} नग)`).join(', ') : '';
+    let prefillMsg = itemsSummaryText ? encodeURIComponent(`📦 नवीन ऑनलाईन ऑर्डर चौकशी:\n🛒 तपशील: ${itemsSummaryText}`) : '';
 
-    if (typeof sb !== 'undefined' && sb.auth) {
-      sb.auth.getUser().then(({ data: { user } }) => {
-        const customerEmail = user?.email || 'customer@example.com';
-        const customerName = user?.user_metadata?.full_name || user?.user_metadata?.name || 'Customer';
-        const weavoUrl = `https://arhammarketingme-prog.github.io/weavo/?store=${storeUsername}&customer_email=${encodeURIComponent(customerEmail)}&customer_name=${encodeURIComponent(customerName)}`;
-        window.open(weavoUrl, '_blank');
-      }).catch(() => {
-        window.open(`https://arhammarketingme-prog.github.io/weavo/?store=${storeUsername}`, '_blank');
-      });
-    } else {
-      window.open(`https://arhammarketingme-prog.github.io/weavo/?store=${storeUsername}`, '_blank');
-    }
+    let weavoUrl = `https://arhammarketingme-prog.github.io/weavo/?store=${storeUsername}&customer_email=${encodeURIComponent(customerEmail)}&customer_name=${encodeURIComponent(customerName)}`;
+    if (prefillMsg) weavoUrl += `&prefill=${prefillMsg}`;
+
+    window.open(weavoUrl, '_blank');
   } catch (err) {
     window.open(`https://arhammarketingme-prog.github.io/weavo/?store=${storeUsername}`, '_blank');
   }
@@ -570,6 +562,8 @@ async function submitCustomerOrder() {
 
     // २. Weavo चॅट विंडो प्री-फिल्ड ऑर्डर मेसेजसह उघडणे
     let storeUsername = lockedStoreUsername || 'nikhil_kirana';
+    localStorage.setItem('weavo_target_store', storeUsername);
+
     const orderMessageText = encodeURIComponent(`📦 नवीन ऑनलाईन ऑर्डर:\n👤 ग्राहक: ${name}\n📞 संपर्क: ${phone}\n🛒 तपशील: ${itemsSummaryText}\n💰 एकूण: ₹${totalAmt}`);
     const weavoUrl = `https://arhammarketingme-prog.github.io/weavo/?store=${storeUsername}&prefill=${orderMessageText}`;
     
