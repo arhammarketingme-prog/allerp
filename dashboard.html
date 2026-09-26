@@ -51,11 +51,11 @@
       </div>
     </div>
     <div id="header-action-buttons">
-      <!-- 📢 WhatsApp शेअर बटण (फक्त दुकानदारासाठी) -->
+      <!-- 📢 WhatsApp शेअर बटण -->
       <button type="button" id="whatsapp-share-btn" onclick="shareStoreOnWhatsApp()" class="whatsapp-share-btn">
         📢 WhatsApp शेअर
       </button>
-      <!-- 💬 Weavo चॅट बटण (ग्राहक आणि दुकानदार दोघांसाठी) -->
+      <!-- 💬 Weavo चॅट बटण -->
       <button type="button" id="weavo-chat-btn" onclick="openWeavoChat()" class="weavo-header-btn">
         💬 Weavo चॅट
       </button>
@@ -81,12 +81,17 @@
   <!-- TAB 1: OVERVIEW & STORE PRODUCTS -->
   <div id="tab-overview" class="erp-tab-pane">
     <div id="customer-store-notice" style="display:none; background:#e0f2fe; border:1px solid #7dd3fc; padding:16px; border-radius:8px; margin-bottom:16px; color:#0369a1; font-weight:bold; text-align:center;">
-      🔒 तुम्ही विशिष्ट स्टोअर लिंकवरून प्रवेश केला आहे. या दुकानातील उत्पादने खालीलप्रमाणे आहेत. थेट संवाद साधण्यासाठी वर "Weavo चॅट" बटण वापरा.
+      🔒 स्टोअर मोड: खालील प्रॉडक्ट्स निवडून कार्टमध्ये टाका आणि थेट दुकानदाराला ऑर्डर पाठवा.
     </div>
 
-    <!-- ग्राहकासाठी दिसणारी उत्पादनांची यादी (Store Lock View) -->
-    <div id="customer-products-section" style="display:none; margin-bottom:20px;">
-      <h2 style="color:#1D4E89; margin-bottom:12px;">📦 या दुकानातील उपलब्ध वस्तू व प्रॉडक्ट्स</h2>
+    <!-- ग्राहकासाठी दिसणारी उत्पादनांची यादी व फ्लोटिंग कार्ट -->
+    <div id="customer-products-section" style="display:none; margin-bottom:30px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <h2 style="color:#1D4E89; margin:0;">📦 या दुकानातील उपलब्ध वस्तू</h2>
+        <div id="cart-summary-badge" style="background:#16a34a; color:#fff; padding:6px 14px; border-radius:20px; font-weight:bold; font-size:13px; cursor:pointer;" onclick="openCustomerCartModal()">
+          🛒 कार्ट: <span id="cart-count">0</span> वस्तू (₹<span id="cart-total">0</span>)
+        </div>
+      </div>
       <div id="customer-products-grid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap:14px;">
         <p class="muted">प्रॉडक्ट्स लोड होत आहेत...</p>
       </div>
@@ -111,6 +116,35 @@
   </div>
 </div>
 
+<!-- 🛒 ग्राहकाचे कार्ट व ऑर्डर मोडल -->
+<div id="customer-cart-modal" class="modal-overlay">
+  <div class="modal-content">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+      <h3 style="margin:0;">🛒 तुमची चालू ऑर्डर (Cart)</h3>
+      <button type="button" class="secondary" onclick="closeModal('customer-cart-modal')" style="padding:4px 10px; font-size:12px; cursor:pointer; font-weight:bold;">✕ बंद करा</button>
+    </div>
+    <div id="customer-cart-items" style="max-height:250px; overflow-y:auto; margin-bottom:12px;">
+      <p class="muted">कार्ट रिकामी आहे.</p>
+    </div>
+    <hr style="border:none; border-top:1px solid #e2e8f0; margin:10px 0;">
+    <div style="display:flex; justify-content:space-between; font-size:16px; font-weight:bold; margin-bottom:12px;">
+      <span>एकूण रक्कम:</span>
+      <span style="color:#16a34a;">₹<span id="modal-cart-total">0.00</span></span>
+    </div>
+    <div style="margin-bottom:10px;">
+      <label style="font-weight:700; font-size:12px;">तुमचे नाव *</label>
+      <input id="cust-order-name" placeholder="नाव टाईप करा" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:4px; margin-top:4px;">
+    </div>
+    <div style="margin-bottom:12px;">
+      <label style="font-weight:700; font-size:12px;">मोबाईल नंबर (WhatsApp साठी) *</label>
+      <input id="cust-order-phone" placeholder="9822XXXXXX" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:4px; margin-top:4px;">
+    </div>
+    <button type="button" onclick="submitCustomerOrder()" style="width:100%; background:#16a34a; color:#fff; padding:12px; border:none; border-radius:6px; font-weight:bold; font-size:15px; cursor:pointer;">
+      ✅ दुकानदाराला ऑर्डर पाठवा (Place Order)
+    </button>
+  </div>
+</div>
+
 <script src="js/supabase-client.js"></script>
 <script src="js/cart.js"></script>
 <script src="js/nav.js"></script>
@@ -121,6 +155,7 @@
 let currentBusinessId = null;
 let currentProducts = [];
 let lockedStoreUsername = null;
+let customerCart = [];
 
 function switchTab(tabId) {
   document.querySelectorAll('.erp-tab-pane').forEach(el => el.style.display = 'none');
@@ -132,14 +167,17 @@ function switchTab(tabId) {
   });
 }
 
-// 🌟 इनिशिलायझेशन (स्टोअर लॉक आणि मर्चंट मोड हाताळणारी)
+function openModal(id) { const el = document.getElementById(id); if (el) el.style.display = 'flex'; }
+function closeModal(id) { const el = document.getElementById(id); if (el) el.style.display = 'none'; }
+
+// 🌟 इनिशिलायझेशन
 async function initDashboard() {
   try {
     const urlParams = new URLSearchParams(window.location.search);
     lockedStoreUsername = urlParams.get('store');
 
     if (lockedStoreUsername) {
-      // 🔒 ग्राहक WhatsApp लिंकवरून आला आहे — सर्व ॲडमिन कंट्रोल्स व नेव्हिगेशन लपवणे
+      // 🔒 ग्राहक मोड
       const navBar = document.getElementById('app-nav');
       if (navBar) navBar.style.display = 'none';
       const tabsBar = document.getElementById('erp-navigation-tabs');
@@ -172,7 +210,7 @@ async function initDashboard() {
         document.getElementById('business-display-name').textContent = 'स्टोअर सापडले नाही';
       }
     } else {
-      // 👨‍💼 दुकानदार स्वतःचा डॅशबोर्ड उघडून बसला आहे (Admin View)
+      // 👨‍💼 मर्चंट (दुकानदार) मोड
       const { data: { user } } = await sb.auth.getUser();
       if (!user) { window.location.href = 'login.html'; return; }
 
@@ -186,7 +224,6 @@ async function initDashboard() {
   } catch (err) { console.error('Init error:', err); }
 }
 
-// 📢 WhatsApp वर स्टोअर लिंक शेअर करण्याची सोय
 function shareStoreOnWhatsApp() {
   const bNameEl = document.getElementById('business-display-name');
   const storeName = bNameEl ? bNameEl.textContent.trim() : 'my_store';
@@ -196,7 +233,6 @@ function shareStoreOnWhatsApp() {
   window.open(`https://api.whatsapp.com/send?text=${message}`, '_blank');
 }
 
-// 💬 Weavo चॅट डायनॅमिक ब्रिज (ऑटो-लॉगिन करून थेट चॅट उघडणे)
 function openWeavoChat() {
   let storeUsername = lockedStoreUsername;
   if (!storeUsername) {
@@ -219,7 +255,7 @@ function openWeavoChat() {
   }
 }
 
-// ग्राहकासाठी दुकानातील प्रॉडक्ट्स थेट ग्रिडमध्ये दाखवणारे फंक्शन
+// ग्राहकासाठी प्रॉडक्ट्स दाखवणारे आणि ॲड-टू-कार्ट देणारे फंक्शन
 async function loadCustomerStoreProducts() {
   if (!currentBusinessId) return;
   const gridEl = document.getElementById('customer-products-grid');
@@ -231,14 +267,94 @@ async function loadCustomerStoreProducts() {
     return;
   }
 
+  currentProducts = products;
+
   gridEl.innerHTML = products.map(p => `
-    <div style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:12px; text-align:center; box-shadow:0 1px 3px rgba(0,0,0,0.05);">
-      <img src="${p.image_url || 'https://placehold.co/120x120?text=Product'}" style="width:100px; height:100px; object-fit:cover; border-radius:6px; margin-bottom:8px;" loading="lazy">
-      <div style="font-weight:700; font-size:14px; color:#1e293b; margin-bottom:4px;">${escapeHtml(p.name)}</div>
-      <div style="color:#16a34a; font-weight:800; font-size:15px; margin-bottom:8px;">₹${p.selling_price} / ${p.unit || 'pcs'}</div>
-      <button onclick="openWeavoChat()" style="background:#0b8f87; color:#fff; border:none; padding:6px 12px; border-radius:5px; font-size:12px; font-weight:bold; cursor:pointer; width:100%;">💬 ऑर्डर / चौकशी करा</button>
+    <div style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:12px; text-align:center; box-shadow:0 1px 3px rgba(0,0,0,0.05); display:flex; flex-direction:column; justify-content:space-between;">
+      <div>
+        <img src="${p.image_url || 'https://placehold.co/120x120?text=Product'}" style="width:100px; height:100px; object-fit:cover; border-radius:6px; margin-bottom:8px;" loading="lazy">
+        <div style="font-weight:700; font-size:14px; color:#1e293b; margin-bottom:4px;">${escapeHtml(p.name)}</div>
+        <div style="color:#16a34a; font-weight:800; font-size:15px; margin-bottom:8px;">₹${p.selling_price} / ${p.unit || 'pcs'}</div>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:6px;">
+        <button onclick="addToCustomerCart('${p.id}')" style="background:#16a34a; color:#fff; border:none; padding:7px; border-radius:5px; font-size:12px; font-weight:bold; cursor:pointer;">🛒 ॲड टू कार्ट</button>
+        <button onclick="openWeavoChat()" style="background:#0b8f87; color:#fff; border:none; padding:6px; border-radius:5px; font-size:11px; font-weight:bold; cursor:pointer;">💬 चौकशी करा</button>
+      </div>
     </div>
   `).join('');
+}
+
+function addToCustomerCart(productId) {
+  const product = currentProducts.find(p => p.id === productId);
+  if (!product) return;
+  const existing = customerCart.find(item => item.id === productId);
+  if (existing) {
+    existing.qty++;
+  } else {
+    customerCart.push({ id: product.id, name: product.name, price: product.selling_price, qty: 1 });
+  }
+  updateCustomerCartUI();
+  alert(`✅ "${product.name}" कार्टमध्ये जोडले गेले!`);
+}
+
+function updateCustomerCartUI() {
+  let count = 0, total = 0;
+  customerCart.forEach(i => { count += i.qty; total += (i.price * i.qty); });
+  document.getElementById('cart-count').textContent = count;
+  document.getElementById('cart-total').textContent = total.toFixed(2);
+  document.getElementById('modal-cart-total').textContent = total.toFixed(2);
+
+  const itemsBox = document.getElementById('customer-cart-items');
+  if (customerCart.length === 0) {
+    itemsBox.innerHTML = '<p class="muted" style="text-align:center;">कार्ट रिकामी आहे.</p>';
+    return;
+  }
+  itemsBox.innerHTML = customerCart.map(i => `
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; font-size:13px; border-bottom:1px solid #f1f5f9; padding-bottom:6px;">
+      <div><strong>${escapeHtml(i.name)}</strong><br><span class="muted">₹${i.price} × ${i.qty}</span></div>
+      <div style="font-weight:bold; color:#16a34a;">₹${(i.price * i.qty).toFixed(2)}</div>
+    </div>
+  `).join('');
+}
+
+function openCustomerCartModal() {
+  if (customerCart.length === 0) { alert('तुमची कार्ट रिकामी आहे!'); return; }
+  openModal('customer-cart-modal');
+}
+
+// 🛍️ दुकानदाराच्या ऑर्डर्स टेबलमध्ये ऑर्डर पाठवण्याचे मुख्य फंक्शन
+async function submitCustomerOrder() {
+  if (customerCart.length === 0) { alert('कार्ट रिकामी आहे!'); return; }
+  const name = document.getElementById('cust-order-name').value.trim();
+  const phone = document.getElementById('cust-order-phone').value.trim();
+  if (!name || !phone) { alert('कृपया तुमचे नाव आणि मोबाईल नंबर टाका!'); return; }
+
+  try {
+    let totalAmt = customerCart.reduce((sum, i) => sum + (i.price * i.qty), 0);
+    let itemsSummaryText = customerCart.map(i => `${i.name} (${i.qty} नग)`).join(', ');
+
+    // Supabase मधील orders टेबलमध्ये थेट इन्सर्ट करणे
+    const { error } = await sb.from('orders').insert({
+      business_id: currentBusinessId,
+      customer_name: name,
+      customer_phone: phone,
+      items_summary: itemsSummaryText,
+      total_amount: totalAmt,
+      status: 'pending'
+    });
+
+    if (error) throw error;
+
+    alert('🎉 तुमची ऑर्डर यशस्वीरित्या दुकानदाराला पाठवली गेली आहे! आता तुम्ही Weavo द्वारे दुकानदाराशी संवाद साधू शकता.');
+    customerCart = [];
+    updateCustomerCartUI();
+    closeModal('customer-cart-modal');
+
+    // स्वयंचलितपणे वीव्हो चॅट उघडणे
+    openWeavoChat();
+  } catch (err) {
+    alert('ऑर्डर पाठवताना त्रुटी आली: ' + err.message);
+  }
 }
 
 async function loadProducts() {
