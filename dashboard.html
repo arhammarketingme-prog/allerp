@@ -22,6 +22,9 @@ body.store-locked-mode #app-nav { display: none !important; }
 
 .weavo-header-btn { background: linear-gradient(135deg, #0b8f87, #16b8a9); color: #fff; padding: 8px 14px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12.5px; display: inline-flex; align-items: center; gap: 5px; text-decoration: none; box-shadow: 0 2px 8px rgba(11,143,135,0.2); }
 .whatsapp-share-btn { background: #25D366; color: #fff; padding: 8px 14px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12.5px; display: inline-flex; align-items: center; gap: 5px; text-decoration: none; }
+.google-login-customer-btn { background: #ffffff; color: #1e293b; border: 1px solid #cbd5e1; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12.5px; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+.google-login-customer-btn:hover { background: #f8fafc; }
+
 .weavo-header-btn:hover, .whatsapp-share-btn:hover { opacity: 0.9; }
 
 .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 99999 !important; align-items: center; justify-content: center; }
@@ -63,9 +66,12 @@ body.store-locked-mode #app-nav { display: none !important; }
     <div>
       <h1 id="business-display-name">ALL ERP Dashboard</h1>
       <span class="muted" id="header-sub-text">Universal Multi-Business Operating System & Local Marketplace</span>
+      
+      <!-- दुकानदार किंवा ग्राहक ओळख बॅज -->
       <div style="margin-top:4px; font-size:13px; font-weight:700; color:#0b8f87;" id="merchant-username-badge">
-        👤 वीव्हो युझरनेम: <span id="display-merchant-handle">लोड होत आहे...</span>
+        👤 युझरनेम: <span id="display-merchant-handle">लोड होत आहे...</span>
       </div>
+
       <div style="margin-top:4px;" id="wholesaler-toggle-box">
         <label style="font-size:12.5px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:5px;">
           <input type="checkbox" id="is-wholesaler-toggle" style="width:auto; margin:0;" onchange="toggleWholesalerMode(this.checked)">
@@ -73,7 +79,14 @@ body.store-locked-mode #app-nav { display: none !important; }
         </label>
       </div>
     </div>
+
     <div id="header-action-buttons">
+      <!-- ग्राहकांसाठी Google लॉगिन बटण (स्टोअर मोडमध्ये दिसणार) -->
+      <button type="button" id="customer-google-login-btn" onclick="loginCustomerWithGoogle()" class="google-login-customer-btn" style="display:none;">
+        <svg width="16" height="16" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+        <span>Google ने लॉगिन करा</span>
+      </button>
+
       <button type="button" id="whatsapp-share-btn" onclick="shareStoreOnWhatsApp()" class="whatsapp-share-btn">
         📢 WhatsApp शेअर
       </button>
@@ -111,6 +124,14 @@ body.store-locked-mode #app-nav { display: none !important; }
   <div id="tab-overview" class="erp-tab-pane">
     <div id="customer-store-notice" style="display:none; background:#e0f2fe; border:1px solid #7dd3fc; padding:16px; border-radius:8px; margin-bottom:16px; color:#0369a1; font-weight:bold; text-align:center;">
       🔒 स्टोअर मोड: खालील प्रॉडक्ट्स निवडून कार्टमध्ये टाका आणि थेट दुकानदाराला ऑर्डर पाठवा.
+    </div>
+
+    <!-- ग्राहकांच्या स्वतःच्या ऑर्डर हिस्ट्री व डिलिव्हरी स्टेटस पाहण्यासाठी बॉक्स -->
+    <div id="customer-my-orders-box" style="display:none; background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:16px; margin-bottom:20px;">
+      <h3 style="margin-top:0; color:#1D4E89;">📦 तुमच्या मागील ऑर्डर्स व डिलिव्हरी स्टेटस</h3>
+      <div id="customer-my-orders-list">
+        <p class="muted">तुमच्या ऑर्डर्स लोड होत आहेत...</p>
+      </div>
     </div>
 
     <div id="customer-products-section" style="display:none; margin-bottom:30px;">
@@ -208,6 +229,7 @@ let customerCart = [];
 let lastKnownOrderCount = 0;
 let audioCtx = null;
 let currentMerchantUsername = '';
+let loggedInCustomer = null;
 
 function enableAudioContextOnce() {
   if (!audioCtx) {
@@ -285,11 +307,27 @@ async function initDashboard() {
       if (unlockBanner) unlockBanner.style.display = 'none';
       const merchantBadge = document.getElementById('merchant-username-badge');
       if (merchantBadge) merchantBadge.style.display = 'none';
+
+      // ग्राहकांसाठी Google लॉगिन बटण दाखवणे
+      const custGoogleBtn = document.getElementById('customer-google-login-btn');
+      if (custGoogleBtn) custGoogleBtn.style.display = 'inline-flex';
       
       const noticeBox = document.getElementById('customer-store-notice');
       if (noticeBox) noticeBox.style.display = 'block';
       const prodSection = document.getElementById('customer-products-section');
       if (prodSection) prodSection.style.display = 'block';
+      const myOrdersBox = document.getElementById('customer-my-orders-box');
+      if (myOrdersBox) myOrdersBox.style.display = 'block';
+
+      // तपासा की ग्राहक आधीच Google ने लॉग्ड-इन आहे का
+      const { data: { user } } = await sb.auth.getUser();
+      if (user) {
+        loggedInCustomer = user;
+        if (custGoogleBtn) custGoogleBtn.style.display = 'none';
+        const nameField = document.getElementById('cust-order-name');
+        if (nameField && user.user_metadata?.full_name) nameField.value = user.user_metadata.full_name;
+        loadCustomerMyOrders(user.email);
+      }
 
       const cleanStoreName = lockedStoreUsername.replace(/_/g, ' ').trim();
       const { data: storeInfo } = await sb.from('businesses').select('*').ilike('name', cleanStoreName).maybeSingle();
@@ -338,6 +376,41 @@ async function initDashboard() {
       }
     }
   } catch (err) { console.error('Init error:', err); }
+}
+
+// 🌐 ग्राहकासाठी Google द्वारे लॉगिन फंक्शन
+async function loginCustomerWithGoogle() {
+  const cleanUrl = window.location.href;
+  await sb.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo: cleanUrl }
+  });
+}
+
+// 📦 ग्राहकाच्या स्वतःच्या मागील ऑर्डर्स लोड करणे
+async function loadCustomerMyOrders(email) {
+  if (!currentBusinessId || !email) return;
+  const listEl = document.getElementById('customer-my-orders-list');
+  if (!listEl) return;
+
+  const { data: orders, error } = await sb.from('orders').select('*').eq('business_id', currentBusinessId).eq('customer_phone', email).order('created_at', { ascending: false });
+  if (error || !orders || orders.length === 0) {
+    listEl.innerHTML = '<p class="muted">तुम्ही अजून कोणतीही ऑर्डर दिलेली नाही किंवा फोन नंबर जुळत नाही.</p>';
+    return;
+  }
+
+  listEl.innerHTML = orders.map(o => `
+    <div style="border-bottom:1px solid #f1f5f9; padding:8px 0; font-size:13px; display:flex; justify-content:space-between; align-items:center;">
+      <div>
+        <strong>ऑर्डर #${o.id.toString().substring(0,8)}</strong><br>
+        <span class="muted">वस्तू: ${escapeHtml(o.items_summary)}</span>
+      </div>
+      <div style="text-align:right;">
+        <strong style="color:#16a34a;">₹${o.total_amount}</strong><br>
+        <span class="badge pending">${o.status || 'pending'}</span>
+      </div>
+    </div>
+  `).join('');
 }
 
 function shareStoreOnWhatsApp() {
@@ -467,74 +540,18 @@ async function submitCustomerOrder() {
     let itemsSummaryText = customerCart.map(i => `${i.name} (${i.qty} नग)`).join(', ');
 
     // १. AllERP च्या orders टेबलमध्ये ऑर्डर सेव्ह करणे
-    const { data: orderData, error: orderErr } = await sb.from('orders').insert({
+    const { error: orderErr } = await sb.from('orders').insert({
       business_id: currentBusinessId,
       customer_name: name,
       customer_phone: phone,
       items_summary: itemsSummaryText,
       total_amount: totalAmt,
       status: 'pending'
-    }).select().single();
+    });
 
     if (orderErr) throw orderErr;
 
-    // २. Weavo च्या चॅट डेटाबेसमध्ये स्वयंचलितपणे ऑर्डरचा मेसेज पाठवणे व अचूक युजर आयडी मॅच करणे
-    try {
-      const { data: bizInfo } = await sb.from('businesses').select('owner_id, name').eq('id', currentBusinessId).single();
-      if (bizInfo && bizInfo.owner_id) {
-        const storeUserId = bizInfo.owner_id;
-        
-        // ग्राहक जर लॉग-इन असेल तर त्याचा id वापरा, अन्यथा lockedStoreUsername वरून मर्चंटशी जोडणारा ब्रिज वापरा
-        const { data: { user: custAuthUser } } = await sb.auth.getUser();
-        let customerUserId = custAuthUser ? custAuthUser.id : null;
-
-        if (!customerUserId) {
-          // जर ॲनाॅनमस ग्राहक असेल तर फोन किंवा युनिक सेशन आयडीवरून प्रोफाईल शोधणे किंवा वापरणे
-          const { data: anonProfile } = await sb.from('profiles').select('id').eq('username', 'customer_' + phone).maybeSingle();
-          if (anonProfile) {
-            customerUserId = anonProfile.id;
-          } else {
-            // जर प्रोफाईल नसेल तर तात्पुरता युझर तयार करणे किंवा मर्चंटच्या चॅटशी थेट कनेक्ट करणे
-            customerUserId = storeUserId; // Fallback to prevent crash
-          }
-        }
-
-        if (customerUserId && customerUserId !== storeUserId) {
-          let targetConvId = null;
-          const { data: myConvs } = await sb.from('conversation_members').select('conversation_id').eq('user_id', customerUserId);
-          const myIds = (myConvs || []).map(r => r.conversation_id);
-
-          if (myIds.length) {
-            const { data: theirConvs } = await sb.from('conversation_members').select('conversation_id').eq('user_id', storeUserId).in('conversation_id', myIds);
-            if (theirConvs && theirConvs.length) targetConvId = theirConvs[0].conversation_id;
-          }
-
-          if (!targetConvId) {
-            const { data: newConv } = await sb.from('conversations').insert({ type: 'direct', created_by: customerUserId }).select().single();
-            if (newConv) {
-              targetConvId = newConv.id;
-              await sb.from('conversation_members').insert([
-                { conversation_id: targetConvId, user_id: customerUserId },
-                { conversation_id: targetConvId, user_id: storeUserId },
-              ]);
-            }
-          }
-
-          if (targetConvId) {
-            const orderMessageText = `📦 **नवीन ऑनलाईन ऑर्डर प्राप्त!**\n\n👤 ग्राहक: ${name}\n📞 फोन: ${phone}\n🛒 तपशील: ${itemsSummaryText}\n💰 एकूण रक्कम: ₹${totalAmt}\n\nडुकानदार महोदय, कृपया ही ऑर्डर तपासा.`;
-            await sb.from('messages').insert({
-              conversation_id: targetConvId,
-              sender_id: customerUserId,
-              content: orderMessageText
-            });
-          }
-        }
-      }
-    } catch (chatSyncErr) {
-      console.log('Weavo chat auto-sync note:', chatSyncErr);
-    }
-
-    alert('🎉 तुमची ऑर्डर यशस्वीरित्या दुकानदाराला आणि वीव्हो चॅटमध्ये पाठवली गेली आहे!');
+    alert('🎉 तुमची ऑर्डर यशस्वीरित्या दुकानदाराला पाठवली गेली आहे! आता चॅट उघडत आहे...');
     customerCart = [];
     updateCustomerCartUI();
     closeModal('customer-cart-modal');
