@@ -36,6 +36,7 @@
 </style>
 </head>
 <body>
+<!-- 🔒 ग्राहक मोडमध्ये वरची ऑल ईआरपी नेव्हिगेशन पट्टी पूर्णपणे लपवली जाईल -->
 <nav id="app-nav"></nav>
 
 <div class="dashboard-main-frame">
@@ -51,7 +52,7 @@
       </div>
     </div>
     <div id="header-action-buttons">
-      <!-- 📢 WhatsApp शेअर बटण -->
+      <!-- 📢 WhatsApp शेअर बटण (फक्त दुकानदारासाठी) -->
       <button type="button" id="whatsapp-share-btn" onclick="shareStoreOnWhatsApp()" class="whatsapp-share-btn">
         📢 WhatsApp शेअर
       </button>
@@ -84,7 +85,7 @@
       🔒 स्टोअर मोड: खालील प्रॉडक्ट्स निवडून कार्टमध्ये टाका आणि थेट दुकानदाराला ऑर्डर पाठवा.
     </div>
 
-    <!-- ग्राहकासाठी दिसणारी उत्पादनांची यादी व फ्लोटिंग कार्ट -->
+    <!-- ग्राहकासाठी दिसणारी उत्पादनांची यादी व कार्ट -->
     <div id="customer-products-section" style="display:none; margin-bottom:30px;">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
         <h2 style="color:#1D4E89; margin:0;">📦 या दुकानातील उपलब्ध वस्तू</h2>
@@ -170,16 +171,16 @@ function switchTab(tabId) {
 function openModal(id) { const el = document.getElementById(id); if (el) el.style.display = 'flex'; }
 function closeModal(id) { const el = document.getElementById(id); if (el) el.style.display = 'none'; }
 
-// 🌟 इनिशिलायझेशन
+// 🌟 मुख्य इनिशिलायझेशन (स्टोअर लॉक आणि मर्चंट मोड अचूक हाताळणारी)
 async function initDashboard() {
   try {
     const urlParams = new URLSearchParams(window.location.search);
     lockedStoreUsername = urlParams.get('store');
 
     if (lockedStoreUsername) {
-      // 🔒 ग्राहक मोड
+      // 🔒 1. ग्राहक मोड: जेव्हा ग्राहक WhatsApp लिंकवरून येईल
       const navBar = document.getElementById('app-nav');
-      if (navBar) navBar.style.display = 'none';
+      if (navBar) navBar.style.display = 'none'; // वरची ऑल ईआरपी नेव्हिगेशन पट्टी पूर्णपणे लपवणे
       const tabsBar = document.getElementById('erp-navigation-tabs');
       if (tabsBar) tabsBar.style.display = 'none';
       const kpiGrid = document.getElementById('kpi-grid-section');
@@ -199,7 +200,7 @@ async function initDashboard() {
       if (prodSection) prodSection.style.display = 'block';
 
       const cleanStoreName = lockedStoreUsername.replace(/_/g, ' ').trim();
-      const { data: storeInfo } = await sb.from('businesses').select('*').ilike('name', cleanStoreName).maybeSingle();
+      const { data: storeInfo, error } = await sb.from('businesses').select('*').ilike('name', cleanStoreName).maybeSingle();
       
       if (storeInfo) {
         currentBusinessId = storeInfo.id;
@@ -210,7 +211,7 @@ async function initDashboard() {
         document.getElementById('business-display-name').textContent = 'स्टोअर सापडले नाही';
       }
     } else {
-      // 👨‍💼 मर्चंट (दुकानदार) मोड
+      // 👨‍💼 2. मर्चंट मोड: जेव्हा दुकानदार स्वतः लॉगिन करून डॅशबोर्ड उघडेईल
       const { data: { user } } = await sb.auth.getUser();
       if (!user) { window.location.href = 'login.html'; return; }
 
@@ -224,6 +225,7 @@ async function initDashboard() {
   } catch (err) { console.error('Init error:', err); }
 }
 
+// 📢 WhatsApp वर स्टोअर लिंक शेअर करण्याची सोय
 function shareStoreOnWhatsApp() {
   const bNameEl = document.getElementById('business-display-name');
   const storeName = bNameEl ? bNameEl.textContent.trim() : 'my_store';
@@ -233,6 +235,7 @@ function shareStoreOnWhatsApp() {
   window.open(`https://api.whatsapp.com/send?text=${message}`, '_blank');
 }
 
+// 💬 Weavo चॅट डायनॅमिक ब्रिज (ऑटो-लॉगिन करून थेट चॅट उघडणे)
 function openWeavoChat() {
   let storeUsername = lockedStoreUsername;
   if (!storeUsername) {
@@ -255,7 +258,7 @@ function openWeavoChat() {
   }
 }
 
-// ग्राहकासाठी प्रॉडक्ट्स दाखवणारे आणि ॲड-टू-कार्ट देणारे फंक्शन
+// ग्राहकासाठी दुकानातील प्रॉडक्ट्स दाखवणारे आणि ॲड-टू-कार्ट देणारे फंक्शन
 async function loadCustomerStoreProducts() {
   if (!currentBusinessId) return;
   const gridEl = document.getElementById('customer-products-grid');
@@ -322,18 +325,19 @@ function openCustomerCartModal() {
   openModal('customer-cart-modal');
 }
 
-// 🛍️ दुकानदाराच्या ऑर्डर्स टेबलमध्ये ऑर्डर पाठवण्याचे मुख्य फंक्शन
+// 🛍️ ग्राहकाने टाकलेली ऑर्डर थेट Supabase मधील orders टेबलमध्ये पाठवणारे अचूक फंक्शन
 async function submitCustomerOrder() {
   if (customerCart.length === 0) { alert('कार्ट रिकामी आहे!'); return; }
   const name = document.getElementById('cust-order-name').value.trim();
   const phone = document.getElementById('cust-order-phone').value.trim();
   if (!name || !phone) { alert('कृपया तुमचे नाव आणि मोबाईल नंबर टाका!'); return; }
+  if (!currentBusinessId) { alert('त्रुटी: स्टोअर आयडी सापडला नाही!'); return; }
 
   try {
     let totalAmt = customerCart.reduce((sum, i) => sum + (i.price * i.qty), 0);
     let itemsSummaryText = customerCart.map(i => `${i.name} (${i.qty} नग)`).join(', ');
 
-    // Supabase मधील orders टेबलमध्ये थेट इन्सर्ट करणे
+    // अचूक currentBusinessId सोबत orders टेबलमध्ये डेटा सेव्ह करणे
     const { error } = await sb.from('orders').insert({
       business_id: currentBusinessId,
       customer_name: name,
@@ -345,12 +349,12 @@ async function submitCustomerOrder() {
 
     if (error) throw error;
 
-    alert('🎉 तुमची ऑर्डर यशस्वीरित्या दुकानदाराला पाठवली गेली आहे! आता तुम्ही Weavo द्वारे दुकानदाराशी संवाद साधू शकता.');
+    alert('🎉 तुमची ऑर्डर यशस्वीरित्या दुकानदाराला पाठवली गेली आहे! आता दुकानदाराच्या डॅशबोर्डवर ती दिसेल.');
     customerCart = [];
     updateCustomerCartUI();
     closeModal('customer-cart-modal');
 
-    // स्वयंचलितपणे वीव्हो चॅट उघडणे
+    // वीव्हो चॅट स्वयंचलितपणे उघडणे
     openWeavoChat();
   } catch (err) {
     alert('ऑर्डर पाठवताना त्रुटी आली: ' + err.message);
