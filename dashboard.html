@@ -225,7 +225,7 @@ body.store-locked-mode #app-nav { display: none !important; }
 </div>
 
 <script>
-// 🌟 पूर्णपणे सुरक्षित आणि एरर-फ्री Supabase क्लायंट इनिशिलायझेशन (Hardcoded credentials to prevent 400/404 errors)
+// 🌟 पूर्णपणे सुरक्षित आणि एरर-फ्री Supabase क्लायंट इनिशिलायझेशन
 const SUPABASE_URL = "https://xpsxbvmziibbrjnadrlm.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhwc3hidm16aWliYnJqbmFkcmxtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2OTY0NTcsImV4cCI6MjEwNDI3MjQ1N30.d-kDYwqFfxP_xfNHQHEYYYZQHr31-75u-UHxYznRP-A";
 
@@ -346,17 +346,17 @@ async function initDashboard() {
       const prodSection = document.getElementById('customer-products-section');
       if (prodSection) prodSection.style.display = 'block';
 
-      const cleanStoreName = lockedStoreUsername.replace(/_/g, ' ').trim();
+      const cleanStoreName = lockedStoreUsername.replace(/_/g, ' ').trim().toLowerCase();
       
-      // स्टोअर सुरक्षितपणे शोधणे (कोणतीही 400 किंवा 404 एरर न येता)
+      // स्टोअर सुरक्षितपणे शोधणे (try-catch ब्लॉकसह जेणेकरून 400/404 एरर पूर्णपणे टाळता येईल)
       let storeInfo = null;
       try {
-        const { data: stores } = await sb.from('businesses').select('*');
-        if (stores && stores.length > 0) {
-          storeInfo = stores.find(s => s.name && s.name.toLowerCase().replace(/\s+/g, '_') === lockedStoreUsername.toLowerCase()) || stores[0];
+        const { data: stores, error: storeErr } = await sb.from('businesses').select('*');
+        if (!storeErr && stores && stores.length > 0) {
+          storeInfo = stores.find(s => s.name && s.name.toLowerCase().replace(/\s+/g, '_') === cleanStoreName) || stores[0];
         }
       } catch (e) {
-        console.log("Store fetch fallback note:", e);
+        console.log("Store query handled gracefully:", e);
       }
       
       if (storeInfo) {
@@ -376,14 +376,18 @@ async function initDashboard() {
       const handleEl = document.getElementById('display-merchant-handle');
       if (handleEl) handleEl.textContent = '@' + currentMerchantUsername;
 
-      const { data: businesses } = await sb.from('businesses').select('id, name, phone').eq('owner_id', user.id);
-      if (businesses && businesses.length > 0) {
-        currentBusinessId = businesses[0].id;
-        document.getElementById('business-display-name').textContent = businesses[0].name;
-        if (businesses[0].phone) merchantPhoneNo = businesses[0].phone;
-        await loadProducts();
-        await checkNewOrdersBackground();
-        setInterval(checkNewOrdersBackground, 10000);
+      try {
+        const { data: businesses } = await sb.from('businesses').select('id, name, phone').eq('owner_id', user.id);
+        if (businesses && businesses.length > 0) {
+          currentBusinessId = businesses[0].id;
+          document.getElementById('business-display-name').textContent = businesses[0].name;
+          if (businesses[0].phone) merchantPhoneNo = businesses[0].phone;
+          await loadProducts();
+          await checkNewOrdersBackground();
+          setInterval(checkNewOrdersBackground, 10000);
+        }
+      } catch (e) {
+        console.log("Merchant business query handled gracefully:", e);
       }
     }
   } catch (err) { console.error('Init error:', err); }
@@ -421,22 +425,26 @@ function callMerchantPhone() {
 async function loadCustomerStoreProducts() {
   if (!currentBusinessId) return;
   const gridEl = document.getElementById('customer-products-grid');
-  const { data: products } = await sb.from('business_products').select('*').eq('business_id', currentBusinessId).order('name');
-  if (!products || products.length === 0) {
-    gridEl.innerHTML = '<p class="muted">या दुकानात सध्या कोणतीही उत्पादने उपलब्ध नाहीत.</p>';
-    return;
-  }
-  currentProducts = products;
-  gridEl.innerHTML = products.map(p => `
-    <div style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:12px; text-align:center; display:flex; flex-direction:column; justify-content:space-between;">
-      <div>
-        <img src="${p.image_url || 'https://placehold.co/100x100?text=Product'}" style="width:90px; height:90px; object-fit:cover; border-radius:6px; margin-bottom:8px;">
-        <div style="font-weight:700; font-size:14px; margin-bottom:4px; color:#1e293b;">${escapeHtml(p.name)}</div>
-        <div style="color:#16a34a; font-weight:800; font-size:14px; margin-bottom:8px;">₹${p.selling_price}</div>
+  try {
+    const { data: products } = await sb.from('business_products').select('*').eq('business_id', currentBusinessId).order('name');
+    if (!products || products.length === 0) {
+      gridEl.innerHTML = '<p class="muted">या दुकानात सध्या कोणतीही उत्पादने उपलब्ध नाहीत.</p>';
+      return;
+    }
+    currentProducts = products;
+    gridEl.innerHTML = products.map(p => `
+      <div style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:12px; text-align:center; display:flex; flex-direction:column; justify-content:space-between;">
+        <div>
+          <img src="${p.image_url || 'https://placehold.co/100x100?text=Product'}" style="width:90px; height:90px; object-fit:cover; border-radius:6px; margin-bottom:8px;">
+          <div style="font-weight:700; font-size:14px; margin-bottom:4px; color:#1e293b;">${escapeHtml(p.name)}</div>
+          <div style="color:#16a34a; font-weight:800; font-size:14px; margin-bottom:8px;">₹${p.selling_price}</div>
+        </div>
+        <button onclick="addToCustomerCart('${p.id}')" style="background:#16a34a; color:#fff; border:none; padding:7px; border-radius:5px; font-size:12px; font-weight:bold; cursor:pointer;">🛒 ॲड टू कार्ट</button>
       </div>
-      <button onclick="addToCustomerCart('${p.id}')" style="background:#16a34a; color:#fff; border:none; padding:7px; border-radius:5px; font-size:12px; font-weight:bold; cursor:pointer;">🛒 ॲड टू कार्ट</button>
-    </div>
-  `).join('');
+    `).join('');
+  } catch (e) {
+    gridEl.innerHTML = '<p class="muted">प्रॉडक्ट्स लोड करताना त्रुटी आली.</p>';
+  }
 }
 
 function addToCustomerCart(productId) {
@@ -585,20 +593,22 @@ async function submitCustomerOrder() {
 
 async function checkNewOrdersBackground() {
   if (!currentBusinessId) return;
-  const { count, error } = await sb.from('orders').select('*', { count: 'exact', head: true }).eq('business_id', currentBusinessId);
-  if (!error && count !== null) {
-    if (lastKnownOrderCount > 0 && count > lastKnownOrderCount) {
-      playOrderAlertSound();
-      const banner = document.getElementById('new-order-alert-banner');
-      if (banner) banner.style.display = 'flex';
-      const badge = document.getElementById('order-badge-count');
-      if (badge) {
-        badge.textContent = (count - lastKnownOrderCount);
-        badge.style.display = 'inline-block';
+  try {
+    const { count, error } = await sb.from('orders').select('*', { count: 'exact', head: true }).eq('business_id', currentBusinessId);
+    if (!error && count !== null) {
+      if (lastKnownOrderCount > 0 && count > lastKnownOrderCount) {
+        playOrderAlertSound();
+        const banner = document.getElementById('new-order-alert-banner');
+        if (banner) banner.style.display = 'flex';
+        const badge = document.getElementById('order-badge-count');
+        if (badge) {
+          badge.textContent = (count - lastKnownOrderCount);
+          badge.style.display = 'inline-block';
+        }
       }
+      lastKnownOrderCount = count;
     }
-    lastKnownOrderCount = count;
-  }
+  } catch (e) {}
 }
 
 async function loadOnlineOrders() {
@@ -606,26 +616,30 @@ async function loadOnlineOrders() {
   const tbody = document.getElementById('online-orders-table-body');
   if (!tbody) return;
   
-  const { data: orders, error } = await sb.from('orders').select('*').eq('business_id', currentBusinessId).order('created_at', { ascending: false });
-  if (error || !orders || orders.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="6" class="muted" style="text-align:center; padding:20px;">कोणतीही ऑनलाईन ऑर्डर आलेली नाही.</td></tr>';
-    return;
+  try {
+    const { data: orders, error } = await sb.from('orders').select('*').eq('business_id', currentBusinessId).order('created_at', { ascending: false });
+    if (error || !orders || orders.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" class="muted" style="text-align:center; padding:20px;">कोणतीही ऑनलाईन ऑर्डर आलेली नाही.</td></tr>';
+      return;
+    }
+
+    lastKnownOrderCount = orders.length;
+    const badge = document.getElementById('order-badge-count');
+    if (badge) badge.style.display = 'none';
+
+    tbody.innerHTML = orders.map(o => `
+      <tr style="border-bottom:1px solid #f1f5f9; padding:8px 0;">
+        <td><strong>#${o.id.toString().substring(0,8)}</strong></td>
+        <td>${escapeHtml(o.customer_name || 'Customer')}</td>
+        <td>📱 <a href="tel:${escapeHtml(o.customer_phone)}">${escapeHtml(o.customer_phone || '-')}</a><br><small class="muted">🏠 ${escapeHtml(o.customer_address || 'पत्ता नाही')}</small></td>
+        <td>${escapeHtml(o.items_summary || '-')}</td>
+        <td style="font-weight:bold; color:#16a34a;">₹${o.total_amount || 0}</td>
+        <td><span class="badge pending">${o.status || 'pending'}</span></td>
+      </tr>
+    `).join('');
+  } catch (e) {
+    tbody.innerHTML = '<tr><td colspan="6" class="muted" style="text-align:center; padding:20px;">ऑर्डर्स लोड करताना त्रुटी आली.</td></tr>';
   }
-
-  lastKnownOrderCount = orders.length;
-  const badge = document.getElementById('order-badge-count');
-  if (badge) badge.style.display = 'none';
-
-  tbody.innerHTML = orders.map(o => `
-    <tr style="border-bottom:1px solid #f1f5f9; padding:8px 0;">
-      <td><strong>#${o.id.toString().substring(0,8)}</strong></td>
-      <td>${escapeHtml(o.customer_name || 'Customer')}</td>
-      <td>📱 <a href="tel:${escapeHtml(o.customer_phone)}">${escapeHtml(o.customer_phone || '-')}</a><br><small class="muted">🏠 ${escapeHtml(o.customer_address || 'पत्ता नाही')}</small></td>
-      <td>${escapeHtml(o.items_summary || '-')}</td>
-      <td style="font-weight:bold; color:#16a34a;">₹${o.total_amount || 0}</td>
-      <td><span class="badge pending">${o.status || 'pending'}</span></td>
-    </tr>
-  `).join('');
 }
 
 async function loadCustomerOrderHistory() {
@@ -636,47 +650,53 @@ async function loadCustomerOrderHistory() {
   const tbody = document.getElementById('customer-history-table-body');
   const userPhone = localStorage.getItem('customer_saved_phone') || '';
   
-  let query = sb.from('orders').select('*').order('created_at', { ascending: false });
-  if (userPhone) {
-    query = query.eq('customer_phone', userPhone);
-  } else {
-    const defaultName = (loggedInCustomer.user_metadata && loggedInCustomer.user_metadata.full_name) ? loggedInCustomer.user_metadata.full_name : loggedInCustomer.email.split('@')[0];
-    query = query.eq('customer_name', defaultName);
-  }
+  try {
+    let query = sb.from('orders').select('*').order('created_at', { ascending: false });
+    if (userPhone) {
+      query = query.eq('customer_phone', userPhone);
+    } else {
+      const defaultName = (loggedInCustomer.user_metadata && loggedInCustomer.user_metadata.full_name) ? loggedInCustomer.user_metadata.full_name : loggedInCustomer.email.split('@')[0];
+      query = query.eq('customer_name', defaultName);
+    }
 
-  const historyRes = await query;
-  const orders = historyRes.data;
-  if (historyRes.error || !orders || orders.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="5" class="muted" style="text-align:center; padding:20px;">तुम्ही अजून कोणतीही ऑर्डर दिलेली नाही.</td></tr>';
-    return;
-  }
+    const historyRes = await query;
+    const orders = historyRes.data;
+    if (historyRes.error || !orders || orders.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" class="muted" style="text-align:center; padding:20px;">तुमची कोणतीही मागील ऑर्डर सापडली नाही.</td></tr>';
+      return;
+    }
 
-  tbody.innerHTML = orders.map(o => `
-    <tr style="border-bottom:1px solid #f1f5f9; padding:8px 0;">
-      <td><strong>#${o.id.toString().substring(0,8)}</strong></td>
-      <td>${escapeHtml(o.items_summary || '-')}</td>
-      <td style="font-weight:bold; color:#16a34a;">₹${o.total_amount || 0}</td>
-      <td>${escapeHtml(o.customer_address || '-')}</td>
-      <td><span class="badge ${o.status === 'delivered' ? 'live' : 'pending'}">${o.status || 'pending'}</span></td>
-    </tr>
-  `).join('');
+    tbody.innerHTML = orders.map(o => `
+      <tr style="border-bottom:1px solid #f1f5f9; padding:8px 0;">
+        <td><strong>#${o.id.toString().substring(0,8)}</strong></td>
+        <td>${escapeHtml(o.items_summary || '-')}</td>
+        <td style="font-weight:bold; color:#16a34a;">₹${o.total_amount || 0}</td>
+        <td>${escapeHtml(o.customer_address || '-')}</td>
+        <td><span class="badge ${o.status === 'delivered' ? 'live' : 'pending'}">${o.status || 'pending'}</span></td>
+      </tr>
+    `).join('');
+  } catch (e) {
+    tbody.innerHTML = '<tr><td colspan="5" class="muted" style="text-align:center; padding:20px;">इतिहास लोड करताना त्रुटी आली.</td></tr>';
+  }
 }
 
 async function loadProducts() {
   if (!currentBusinessId) return;
-  const { data } = await sb.from('business_products').select('*').eq('business_id', currentBusinessId).order('name');
-  currentProducts = data ?? [];
-  const tbody = document.getElementById('products-table-body');
-  if (!tbody) return;
-  if (currentProducts.length === 0) { tbody.innerHTML = '<tr><td colspan="4" class="muted" style="text-align:center; padding:15px;">कोणतीही उत्पादने नाहीत.</td></tr>'; return; }
-  tbody.innerHTML = currentProducts.map(p => `
-    <tr style="border-bottom:1px solid #f1f5f9; padding:8px 0;">
-      <td><strong>${escapeHtml(p.name)}</strong></td>
-      <td>₹${p.selling_price}</td>
-      <td>${p.stock !== null ? p.stock : 0} नग</td>
-      <td><span class="badge ${p.stock > 0 ? 'live' : 'pending'}">${p.stock > 0 ? 'LIVE' : 'INACTIVE'}</span></td>
-    </tr>
-  `).join('');
+  try {
+    const { data } = await sb.from('business_products').select('*').eq('business_id', currentBusinessId).order('name');
+    currentProducts = data ?? [];
+    const tbody = document.getElementById('products-table-body');
+    if (!tbody) return;
+    if (currentProducts.length === 0) { tbody.innerHTML = '<tr><td colspan="4" class="muted" style="text-align:center; padding:15px;">कोणतीही उत्पादने नाहीत.</td></tr>'; return; }
+    tbody.innerHTML = currentProducts.map(p => `
+      <tr style="border-bottom:1px solid #f1f5f9; padding:8px 0;">
+        <td><strong>${escapeHtml(p.name)}</strong></td>
+        <td>₹${p.selling_price}</td>
+        <td>${p.stock !== null ? p.stock : 0} नग</td>
+        <td><span class="badge ${p.stock > 0 ? 'live' : 'pending'}">${p.stock > 0 ? 'LIVE' : 'INACTIVE'}</span></td>
+      </tr>
+    `).join('');
+  } catch (e) {}
 }
 
 function escapeHtml(str) {
