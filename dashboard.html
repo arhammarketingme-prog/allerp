@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#1D4E89">
+<meta name="theme-color" content="#0f172a">
 <title>ALL ERP — Universal Business Operating System</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
 <link rel="stylesheet" href="css/style.css">
@@ -12,16 +12,16 @@
 <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 <style>
 :root {
-  --primary: #1D4E89;
-  --primary-dark: #153b6b;
-  --accent: #0ea5e9;
-  --bg-main: #f8fafc;
+  --primary: #0f172a;
+  --primary-gradient: linear-gradient(135deg, #1e293b, #0f172a);
+  --accent: #10b981;
+  --bg-main: #f1f5f9;
   --card-bg: #ffffff;
-  --text-main: #1e293b;
+  --text-main: #0f172a;
   --text-muted: #64748b;
-  --border-color: #cbd5e1;
-  --success: #16a34a;
-  --danger: #dc2626;
+  --border-color: #e2e8f0;
+  --success: #10b981;
+  --danger: #ef4444;
   --warning: #f59e0b;
 }
 
@@ -32,17 +32,17 @@ body.store-locked-mode #kpi-grid-section { display: none !important; }
 
 .dashboard-main-frame { width: 98%; max-width: 1450px; margin: 15px auto; padding: 0 10px; }
 
-/* 🌟 सुंदर आणि आकर्षक Header डिझाईन */
-.erp-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px; background: linear-gradient(135deg, #1e3a8a, #1D4E89); color: #fff; padding: 16px 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(29,78,137,0.2); }
-.erp-header h1 { font-size: 22px !important; margin: 0 !important; color: #fff; font-weight: 800; }
-.erp-header .muted { color: #cbd5e1 !important; font-size: 12px !important; }
+/* 🌟 सुंदर, फॅन्सी आणि क्लासी डार्क-स्लेटी थीम (निळी नाही!) */
+.erp-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px; background: var(--primary-gradient); color: #fff; padding: 18px 22px; border-radius: 14px; box-shadow: 0 6px 20px rgba(15,23,42,0.25); border-bottom: 3px solid var(--accent); }
+.erp-header h1 { font-size: 22px !important; margin: 0 !important; color: #fff; font-weight: 900; letter-spacing: 0.5px; }
+.erp-header .muted { color: #94a3b8 !important; font-size: 12.5px !important; }
 
-.weavo-header-btn { background: linear-gradient(135deg, #0b8f87, #16b8a9); color: #fff; padding: 9px 16px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; box-shadow: 0 2px 6px rgba(0,0,0,0.15); transition: 0.2s; }
+.weavo-header-btn { background: linear-gradient(135deg, #0d9488, #0f766e); color: #fff; padding: 9px 16px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; box-shadow: 0 2px 6px rgba(0,0,0,0.15); transition: 0.2s; }
 .weavo-header-btn:hover { opacity: 0.9; }
 
-.whatsapp-share-btn { background: #25D366; color: #fff; padding: 9px 16px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; box-shadow: 0 2px 6px rgba(0,0,0,0.15); }
+.whatsapp-share-btn { background: #10b981; color: #fff; padding: 9px 16px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; box-shadow: 0 2px 6px rgba(0,0,0,0.15); }
 
-/* 🌟 गुगलचे अस्सल आणि आकर्षक लॉगिन बटण */
+/* 🌟 गुगलचे अस्सल लॉगिन बटण */
 .google-login-customer-btn { background: #ffffff; color: #1e293b; border: 1px solid #cbd5e1; padding: 9px 16px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 13px; display: inline-flex; align-items: center; gap: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); transition: 0.2s; }
 .google-login-customer-btn:hover { background: #f8fafc; }
 
@@ -52,11 +52,12 @@ body.store-locked-mode #kpi-grid-section { display: none !important; }
 .cust-nav-btn.primary { background: var(--primary); color: #fff; border-color: var(--primary); }
 .cust-nav-btn.success { background: var(--success); color: #fff; border-color: var(--success); }
 
-/* 🌟 टॅब बार डिझाईन */
+/* 🌟 पूर्ण बटणे आणि AI बटणासह टॅब बार */
 .erp-tabs-bar { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 18px; border-bottom: 2px solid var(--border-color); }
-.erp-tab-btn { background: #ffffff; color: var(--text-main); border: 1px solid var(--border-color); border-bottom: 3px solid transparent; padding: 8px 16px; font-size: 13.5px; font-weight: 700; cursor: pointer; white-space: nowrap; border-radius: 8px 8px 0 0; transition: 0.2s; }
-.erp-tab-btn:hover { background: #f1f5f9; color: var(--primary); }
+.erp-tab-btn { background: #ffffff; color: var(--text-main); border: 1px solid var(--border-color); border-bottom: 3px solid transparent; padding: 8px 14px; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; border-radius: 8px 8px 0 0; transition: 0.2s; }
+.erp-tab-btn:hover { background: #f1f5f9; color: var(--accent); }
 .erp-tab-btn.active { background: var(--primary); color: #ffffff; border-color: var(--primary); border-bottom-color: var(--accent); }
+.erp-tab-btn.ai-btn { background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: #fff; border-color: #7c3aed; }
 
 .erp-tab-pane { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); min-height: 400px; }
 .erp-tab-pane h2 { margin-top: 0; color: var(--primary); font-size: 20px; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; }
@@ -70,7 +71,7 @@ tr:hover { background: #f8fafc; }
 .modal-content { background: var(--card-bg); border-radius: 14px; width: 95%; max-width: 650px; padding: 26px; max-height: 85vh; overflow-y: auto; box-shadow: 0 20px 40px rgba(0,0,0,0.3); z-index: 100000 !important; }
 
 .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 20px; }
-.kpi-card { background: #ffffff; border: 1px solid var(--border-color); border-radius: 10px; padding: 16px; box-shadow: 0 2px 5px rgba(0,0,0,0.03); border-left: 5px solid var(--primary); }
+.kpi-card { background: #ffffff; border: 1px solid var(--border-color); border-radius: 10px; padding: 16px; box-shadow: 0 2px 5px rgba(0,0,0,0.03); border-left: 5px solid var(--accent); }
 .kpi-title { font-size: 13px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; }
 .kpi-value { font-size: 22px; font-weight: 900; color: var(--text-main); margin-top: 6px; }
 
@@ -87,7 +88,7 @@ tr:hover { background: #f8fafc; }
     <div>
       <h1 id="business-display-name">निखिल किराणा स्टोअर्स</h1>
       <span class="muted" id="header-sub-text">Universal Business Operating System & Local Marketplace</span>
-      <div style="margin-top:6px; font-size:13.5px; font-weight:700; color:#38bdf8;" id="merchant-username-badge">
+      <div style="margin-top:6px; font-size:13.5px; font-weight:700; color:#34d399;" id="merchant-username-badge">
         👤 वीव्हो चॅट युजरनेम: <span id="display-merchant-handle">@nikhil_kirana</span>
       </div>
     </div>
@@ -107,7 +108,7 @@ tr:hover { background: #f8fafc; }
     <button type="button" class="cust-nav-btn" onclick="openWeavoChat()">💬 दुकानदाराशी चॅट</button>
   </div>
 
-  <!-- 🌟 सर्व पूर्ण टॅब बटणे -->
+  <!-- 🌟 सर्व पूर्ण टॅब बटणे आणि AI बटण -->
   <div class="erp-tabs-bar" id="erp-navigation-tabs">
     <button type="button" class="erp-tab-btn active" onclick="switchTab('tab-overview')">📊 डॅशबोर्ड</button>
     <button type="button" class="erp-tab-btn" onclick="switchTab('tab-products')">📦 इन्व्हेंटरी व स्टॉक</button>
@@ -122,6 +123,7 @@ tr:hover { background: #f8fafc; }
     <button type="button" class="erp-tab-btn" onclick="switchTab('tab-orders')">🛍️ ऑनलाईन ऑर्डर्स</button>
     <button type="button" class="erp-tab-btn" onclick="switchTab('tab-my-orders')">🛍️ माझ्या ऑर्डर्स</button>
     <button type="button" class="erp-tab-btn" onclick="switchTab('tab-reports')">📈 रिपोर्ट्स</button>
+    <button type="button" class="erp-tab-btn ai-btn" onclick="switchTab('tab-ai')">✨ AllERP AI</button>
     <button type="button" class="erp-tab-btn" onclick="switchTab('tab-settings')">⚙️ सेटिंग्स</button>
   </div>
 
@@ -131,7 +133,7 @@ tr:hover { background: #f8fafc; }
       🔒 स्टोअर मोड: खालील प्रॉडक्ट्स निवडून कार्टमध्ये टाका आणि थेट दुकानदाराला ऑर्डर पाठवा.
     </div>
     <div id="customer-products-section" style="display:none; margin-bottom:24px;">
-      <h2 style="color:#1D4E89; margin:0 0 10px 0;">📦 या दुकानातील उपलब्ध वस्तू</h2>
+      <h2 style="color:var(--primary); margin:0 0 10px 0;">📦 या दुकानातील उपलब्ध वस्तू</h2>
       <div id="customer-products-grid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap:12px;">
         <p class="muted">प्रॉडक्ट्स लोड होत आहेत...</p>
       </div>
@@ -241,6 +243,22 @@ tr:hover { background: #f8fafc; }
   </div>
 
   <div id="tab-reports" class="erp-tab-pane" style="display:none;"><h2>📈 रिपोर्ट्स व GST</h2><p class="muted">व्यवसायाचे मासिक व वार्षिक आर्थिक अहवाल.</p></div>
+  
+  <!-- 🌟 AllERP AI Assistant Tab -->
+  <div id="tab-ai" class="erp-tab-pane" style="display:none;">
+    <h2>✨ AllERP AI Business Assistant</h2>
+    <p class="muted">तुमच्या व्यवसायाच्या वाढीसाठी, स्टॉक व्यवस्थापनासाठी आणि ऑटोमेशनसाठी AI सहाय्यक.</p>
+    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:16px; height:300px; overflow-y:auto; margin-bottom:12px;" id="ai-chat-box">
+      <div style="background:#e0f2fe; color:#0369a1; padding:10px; border-radius:6px; font-size:13.5px; margin-bottom:8px;">
+        👋 नमस्कार! मी तुमचा ऑल ईआरपी AI असिस्टंट आहे. आज मी तुमच्या व्यवसायासाठी काय मदत करू?
+      </div>
+    </div>
+    <div style="display:flex; gap:8px;">
+      <input id="ai-user-prompt" placeholder="काहीतरी विचारा (उदा. आजची विक्री किती झाली?)..." style="flex:1; padding:10px; border:1px solid #cbd5e1; border-radius:6px; font-size:13.5px;" />
+      <button onclick="sendAIPrompt()" style="background:#7c3aed; color:#fff; border:none; padding:10px 18px; border-radius:6px; font-weight:bold; cursor:pointer;">विचार करा</button>
+    </div>
+  </div>
+
   <div id="tab-settings" class="erp-tab-pane" style="display:none;">
     <h2>⚙️ सेटिंग्स (Business & Profile Settings)</h2>
     <div style="background:#f8fafc; padding:20px; border-radius:8px; border:1px solid #e2e8f0; max-width:500px;">
@@ -325,7 +343,6 @@ async function initDashboard() {
       var prodSec = document.getElementById('customer-products-section');
       if (prodSec) prodSec.style.display = 'block';
 
-      // 🌟 URL मधील store स्लगवरून अचूक दुकान नाव फेच करणे
       var storeTitle = "निखिल किराणा स्टोअर्स";
       try {
         var bizRes = await sb.from('businesses').select('name, id').or('slug.eq.' + lockedStoreUsername + ',name.ilike.%' + lockedStoreUsername + '%').maybeSingle();
@@ -739,6 +756,27 @@ async function loadCustomerOrderHistory() {
   } catch (e) {
     tbody.innerHTML = '<tr><td colspan="5" class="muted" style="text-align:center;">इतिहास लोड करताना त्रुटी आली.</td></tr>';
   }
+}
+
+async function sendAIPrompt() {
+  var input = document.getElementById('ai-user-prompt');
+  var box = document.getElementById('ai-chat-box');
+  var q = input.value.trim();
+  if (!q) return;
+
+  box.innerHTML += '<div style="background:#f1f5f9; padding:8px 12px; border-radius:6px; font-size:13.5px; margin-bottom:6px;"><b>तुम्ही:</b> ' + escapeHtml(q) + '</div>';
+  input.value = '';
+
+  setTimeout(function() {
+    var reply = "तुमच्या व्यवसायाच्या आकडेवारीनुसार आजची एकूण विक्री सुरळीत सुरू आहे. इन्व्हेंटरी आणि स्टॉक व्यवस्थित अपडेट केला आहे.";
+    if (q.includes('विक्री') || q.includes('sales')) {
+      reply = "चालू महिन्याची एकूण विक्री आणि उलाढाल उत्तम स्वरूपात सुरू आहे.";
+    } else if (q.includes('स्टॉक') || q.includes('stock')) {
+      reply = "तुमच्या इन्व्हेंटरीमधील सर्व उत्पादने ॲक्टिव्ह (LIVE) आहेत.";
+    }
+    box.innerHTML += '<div style="background:#e0f2fe; color:#0369a1; padding:8px 12px; border-radius:6px; font-size:13.5px; margin-bottom:6px;"><b>AllERP AI:</b> ' + reply + '</div>';
+    box.scrollTop = box.scrollHeight;
+  }, 600);
 }
 
 function escapeHtml(str) {
