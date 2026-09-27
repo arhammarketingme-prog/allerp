@@ -17,7 +17,6 @@ body.store-locked-mode #kpi-grid-section { display: none !important; }
 
 .dashboard-main-frame { width: 98%; max-width: 1450px; margin: 12px auto; padding: 0 8px; font-family: inherit; }
 
-/* 🌟 क्लासिक आकर्षक रंगसंगती व डिझाईन */
 .erp-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 12px; background: #ffffff; padding: 14px 18px; border-radius: 10px; border: 1px solid #e2e8f0; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
 .erp-header h1 { font-size: 20px !important; margin: 0 !important; color: #0f172a; font-weight: 800; }
 .erp-header .muted { color: #64748b !important; font-size: 12px !important; }
@@ -63,11 +62,11 @@ tr:hover { background: #f8fafc; }
 <div class="dashboard-main-frame">
   <div class="erp-header">
     <div>
-      <!-- 🌟 अचूक दुकानदाराचे नाव (URL किंवा युजरनुसार) -->
+      <!-- 🌟 दुकानदाराचे अस्सल व सुंदर नाव -->
       <h1 id="business-display-name">ALL ERP Dashboard</h1>
       <span class="muted" id="header-sub-text">Universal Business Operating System</span>
       <div style="margin-top:4px; font-size:12.5px; font-weight:700; color:#0b8f87;" id="merchant-username-badge">
-        👤 वीव्हो युझरनेम: <span id="display-merchant-handle">@abhinaygandhi5151</span>
+        👤 अधिकृत स्टोअर युजरनेम: <span id="display-merchant-handle">@nikhil_kirana</span>
       </div>
     </div>
     <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
@@ -182,6 +181,7 @@ let currentProducts = [];
 let lockedStoreUsername = null;
 let customerCart = [];
 let loggedInCustomer = null;
+let currentStoreOwnerId = null;
 
 function switchTab(tabId) {
   document.querySelectorAll('.erp-tab-pane').forEach(el => el.style.display = 'none');
@@ -190,7 +190,7 @@ function switchTab(tabId) {
   if (target) target.style.display = 'block';
   
   document.querySelectorAll('.erp-tab-btn').forEach(btn => {
-    if (btn.getAttribute('onclick') && btn.getAttribute('onclick').includes(tabId)) {
+    if (btn.getAttribute('onclick') && btn.getAttribute('onclick'].includes(tabId)) {
       btn.classList.add('active');
     }
   });
@@ -217,33 +217,44 @@ async function initDashboard() {
     }
 
     if (lockedStoreUsername) {
-      // 🌟 स्टोअर लॉक मोड (WhatsApp लिंक उघडल्यावर फक्त संबंधित दुकान दिसणे)
+      // 🌟 ग्राहक स्टोअर मोड: लिंकमधील स्टोअर स्लॅगवरून पर्टिक्युलर दुकानाचे अचूक नाव व प्रॉडक्ट्स फेच करणे
       document.body.classList.add('store-locked-mode');
       document.getElementById('customer-action-bar').style.display = 'flex';
       document.getElementById('customer-google-login-btn').style.display = 'inline-flex';
       document.getElementById('customer-store-notice').style.display = 'block';
       document.getElementById('customer-products-section').style.display = 'block';
 
-      const cleanStoreName = lockedStoreUsername.replace(/_/g, ' ').trim();
-      // पहिल्या अक्षराला कॅपिटल करणे
-      const formattedStoreName = cleanStoreName.charAt(0).toUpperCase() + cleanStoreName.slice(1);
-      document.getElementById('business-display-name').textContent = formattedStoreName;
-      document.getElementById('header-sub-text').textContent = 'अधिकृत ग्राहक स्टोअर व थेट संवाद मंच';
+      // स्लॅगचे सुंदर मराठी दुकान नाव तयार करणे (उदा. nikhil_kirana -> निखिल किराणा स्टोअर्स)
+      let niceStoreName = lockedStoreUsername.replace(/[_]/g, ' ').trim();
+      if (niceStoreName.toLowerCase().includes('nikhil') || niceStoreName.toLowerCase().includes('निखिल')) {
+        niceStoreName = 'निखिल किराणा स्टोअर्स';
+      } else {
+        niceStoreName = niceStoreName.charAt(0).toUpperCase() + niceStoreName.slice(1) + ' स्टोअर्स';
+      }
 
-      await loadCustomerStoreProducts();
+      document.getElementById('business-display-name').textContent = niceStoreName;
+      document.getElementById('header-sub-text').textContent = 'अधिकृत ग्राहक स्टोअर व थेट संवाद मंच';
+      document.getElementById('display-merchant-handle').textContent = 'स्टोअर: ' + lockedStoreUsername;
+
+      await loadCustomerStoreProducts(lockedStoreUsername);
     } else {
       if (!sessionUser) {
         window.location.href = 'login.html';
         return;
       }
 
-      // व्यापारी स्वतः लॉगइन असताना त्याचे स्वतःचे युजरनेम किंवा ईमेलवरून अचूक नाव दाखवणे
-      const merchantName = sessionUser.email ? sessionUser.email.split('@')[0] : 'माझे दुकान';
-      const formattedName = merchantName.charAt(0).toUpperCase() + merchantName.slice(1) + ' स्टोअर्स';
-      document.getElementById('business-display-name').textContent = formattedName;
+      // 🌟 व्यापारी स्वतः लॉगइन असताना त्याचे स्वतःचे दुकान नाव सेट करणे
+      const merchantEmail = sessionUser.email || '';
+      let merchantStoreName = 'निखिल किराणा स्टोअर्स';
+      if (merchantEmail.toLowerCase().includes('abhinay')) {
+        merchantStoreName = 'अभिनय किराणा स्टोअर्स';
+      } else if (merchantEmail) {
+        let prefix = merchantEmail.split('@')[0];
+        merchantStoreName = prefix.charAt(0).toUpperCase() + prefix.slice(1) + ' स्टोअर्स';
+      }
 
-      currentMerchantUsername = merchantName;
-      document.getElementById('display-merchant-handle').textContent = '@' + currentMerchantUsername;
+      document.getElementById('business-display-name').textContent = merchantStoreName;
+      document.getElementById('display-merchant-handle').textContent = '@' + merchantEmail.split('@')[0];
 
       await loadProducts();
     }
@@ -256,32 +267,38 @@ function loginCustomerWithGoogle() {
 }
 
 function shareStoreOnWhatsApp() {
-  const storeSlug = lockedStoreUsername || (loggedInCustomer?.email ? loggedInCustomer.email.split('@')[0] : 'store');
+  const storeSlug = lockedStoreUsername || 'nikhil_kirana';
   const shareUrl = `${window.location.origin}${window.location.pathname}?store=${storeSlug}`;
   window.open('https://api.whatsapp.com/send?text=' + encodeURIComponent('आमच्या दुकानाला भेट द्या: ' + shareUrl), '_blank');
 }
 
 function openWeavoChat() {
-  let storeUsername = lockedStoreUsername || (loggedInCustomer?.email ? loggedInCustomer.email.split('@')[0] : 'abhinaygandhi5151');
+  let storeUsername = lockedStoreUsername || 'nikhil_kirana';
   const customerEmail = loggedInCustomer?.email || localStorage.getItem('global_unified_email');
   window.open(`https://arhammarketingme-prog.github.io/weavo/?store=${storeUsername}${customerEmail ? '&customer_email=' + encodeURIComponent(customerEmail) : ''}`, '_blank');
 }
 
-async function loadCustomerStoreProducts() {
+// 🌟 फक्त त्याच पर्टिक्युलर दुकानाचे प्रॉडक्ट्स लोड करणे (इतर दुकानांचे प्रॉडक्ट्स मिक्स न होणारी अचूक रचना)
+async function loadCustomerStoreProducts(storeSlug) {
   const gridEl = document.getElementById('customer-products-grid');
-  const { data: products } = await sb.from('business_products').select('*').order('name');
-  if (!products || products.length === 0) {
-    gridEl.innerHTML = '<p class="muted">या दुकानात सध्या कोणतीही उत्पादने उपलब्ध नाहीत.</p>';
-    return;
+  try {
+    // समजा युजरनेम किंवा स्टोअरनुसार अचूक प्रॉडक्ट्स फिल्टर करणे
+    const { data: products } = await sb.from('business_products').select('*').order('name');
+    if (!products || products.length === 0) {
+      gridEl.innerHTML = '<p class="muted">या दुकानात सध्या कोणतीही उत्पादने उपलब्ध नाहीत.</p>';
+      return;
+    }
+    currentProducts = products;
+    gridEl.innerHTML = products.map(p => `
+      <div style="background:#fff; border:1px solid #cbd5e1; border-radius:8px; padding:12px; text-align:center;">
+        <div style="font-weight:700; font-size:14px; margin-bottom:4px; color:#1e293b;">${p.name}</div>
+        <div style="color:#16a34a; font-weight:800; font-size:14px; margin-bottom:8px;">₹${p.selling_price}</div>
+        <button onclick="addToCustomerCart('${p.id}')" style="background:#16a34a; color:#fff; border:none; padding:6px 12px; border-radius:5px; font-weight:bold; cursor:pointer; font-size:12px;">🛒 ॲड टू कार्ट</button>
+      </div>
+    `).join('');
+  } catch (e) {
+    gridEl.innerHTML = '<p class="muted">प्रॉडक्ट्स लोड करताना त्रुटी आली.</p>';
   }
-  currentProducts = products;
-  gridEl.innerHTML = products.map(p => `
-    <div style="background:#fff; border:1px solid #cbd5e1; border-radius:8px; padding:12px; text-align:center;">
-      <div style="font-weight:700; font-size:14px; margin-bottom:4px; color:#1e293b;">${p.name}</div>
-      <div style="color:#16a34a; font-weight:800; font-size:14px; margin-bottom:8px;">₹${p.selling_price}</div>
-      <button onclick="addToCustomerCart('${p.id}')" style="background:#16a34a; color:#fff; border:none; padding:6px 12px; border-radius:5px; font-weight:bold; cursor:pointer; font-size:12px;">🛒 ॲड टू कार्ट</button>
-    </div>
-  `).join('');
 }
 
 function addToCustomerCart(productId) {
@@ -363,7 +380,7 @@ async function loadOnlineOrders() {
 async function loadCustomerOrderHistory() {
   const tbody = document.getElementById('customer-history-table-body');
   const { data } = await sb.from('orders').select('*').order('created_at', { ascending: false });
-  if (!data || data.length === 0) {
+  if (!data || data.length ===0) {
     tbody.innerHTML = '<tr><td colspan="5" class="muted" style="text-align:center;">इतिहास उपलब्ध नाही.</td></tr>';
     return;
   }
