@@ -230,7 +230,7 @@ body.store-locked-mode #app-nav { display: none !important; }
 <script src="js/erp-engine.js"></script>
 <script src="js/master-dictionary.js"></script>
 <script>
-// 🌟 Supabase थेट फाईलमध्ये सुरक्षित इनिशिअलायझेशन (कोणताही 400 एरर न येणारी रचना)
+// 🌟 Supabase थेट फाईलमध्ये सुरक्षित इनिशिअलायझेशन (Session Guard सह)
 const SUPABASE_URL = "https://xpsxbvmziibbrjnadrlm.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhwc3hidm16aWliYnJqbmFkcmxtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2OTY0NTcsImV4cCI6MjEwNDI3MjQ1N30.d-kDYwqFfxP_xfNHQHEYYYZQHr31-75u-UHxYznRP-A";
 
@@ -314,10 +314,13 @@ async function initDashboard() {
     const urlParams = new URLSearchParams(window.location.search);
     lockedStoreUsername = urlParams.get('store');
 
+    // 🌟 सेशन चेक करण्यासाठी getSession() वापरणे (जेणेकरून बाहेर फेकले जाणार नाही)
     const sessionRes = await sb.auth.getSession();
-    if (sessionRes.data && sessionRes.data.session && sessionRes.data.session.user) {
-      loggedInCustomer = sessionRes.data.session.user;
-      localStorage.setItem('global_unified_email', loggedInCustomer.email);
+    const sessionUser = sessionRes?.data?.session?.user;
+
+    if (sessionUser) {
+      loggedInCustomer = sessionUser;
+      localStorage.setItem('global_unified_email', sessionUser.email);
     }
 
     if (lockedStoreUsername) {
@@ -358,9 +361,14 @@ async function initDashboard() {
       await loadCustomerStoreProducts();
     } else {
       document.body.classList.remove('store-locked-mode');
-      const { data: { user } } = await sb.auth.getUser();
-      if (!user) { window.location.href = 'login.html'; return; }
-      currentMerchantUsername = user.email ? user.email.split('@')[0] : 'abhinaygandhi5151';
+      
+      // जर व्यापारी (Merchant) लॉगइन नसेल तरच लॉगिन पेजवर पाठवणे, अन्यथा चालू ठेवणे
+      if (!sessionUser) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      currentMerchantUsername = sessionUser.email ? sessionUser.email.split('@')[0] : 'abhinaygandhi5151';
       const handleEl = document.getElementById('display-merchant-handle');
       if (handleEl) handleEl.textContent = '@' + currentMerchantUsername;
 
