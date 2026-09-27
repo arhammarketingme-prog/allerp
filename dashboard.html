@@ -94,7 +94,7 @@ body.store-locked-mode #app-nav { display: none !important; }
   <div class="erp-tabs-bar" id="erp-navigation-tabs">
     <button type="button" class="erp-tab-btn active" onclick="switchTab('tab-overview')">📊 डॅशबोर्ड</button>
     <button type="button" class="erp-tab-btn" onclick="switchTab('tab-products')">📦 इन्व्हेंटरी व स्टॉक</button>
-    <button type="button" class="erp-tab-btn" onclick="switchTab('tab-sales')">💰 विक्री व इनव्हॉइस</button>
+    <button type="button" class="erp-tab-btn" onclick="switchTab('tab-sales')">💰 विक्री व इनव्हॉ이스</button>
     <button type="button" class="erp-tab-btn" onclick="switchTab('tab-purchase')">🛒 खरेदी</button>
     <button type="button" class="erp-tab-btn" onclick="switchTab('tab-crm')">👥 CRM व ग्राहक</button>
     <button type="button" class="erp-tab-btn" onclick="switchTab('tab-khata')">🧾 उधार खाता (Khata)</button>
@@ -133,7 +133,7 @@ body.store-locked-mode #app-nav { display: none !important; }
     </div>
   </div>
 
-  <!-- TAB 2: PRODUCTS & INVENTORY (🌟 बारकोड व इमेज सपोर्टसह) -->
+  <!-- TAB 2: PRODUCTS & INVENTORY -->
   <div id="tab-products" class="erp-tab-pane" style="display:none;">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
       <h2 style="color:var(--primary); margin:0; font-size:18px;">📦 इन्व्हेंटरी व स्टॉक व्यवस्थापन</h2>
@@ -206,7 +206,7 @@ body.store-locked-mode #app-nav { display: none !important; }
 
 </div>
 
-<!-- ➕ नवीन आयटम ॲड मोडल (इमेज आणि बारकोड सपोर्टसह) -->
+<!-- ➕ नवीन आयटम ॲड मोडल -->
 <div id="add-product-modal" class="modal-overlay">
   <div class="modal-content">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
@@ -498,7 +498,7 @@ function openCustomerCartModal() {
   if (customerCart.length === 0) { alert('तुमची कार्ट रिकामी आहे!'); return; }
   
   if (!loggedInCustomer) {
-    alert('कृपया ऑर्डर देण्यासाठी आधी वर दिलेल्या "Google ने लॉगिन करा" बटणावर क्लिक करून लॉगिन करा!');
+    alert('कृपया ऑर्डर देण्यासाठी आधी वर दिलेल्या "Google ne Login करा" बटणावर क्लिक करा!');
     loginCustomerWithGoogle();
     return;
   }
@@ -513,7 +513,6 @@ function openCustomerCartModal() {
   openModal('customer-cart-modal');
 }
 
-// 🌟 वीव्हो चॅटमध्ये अचूकपणे ऑर्डर फॉरवर्ड करणारी मजबूत ब्रिज यंत्रणा
 async function submitCustomerOrderWithDetails() {
   if (customerCart.length === 0 || !loggedInCustomer) return;
   
