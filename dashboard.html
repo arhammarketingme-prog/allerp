@@ -12,9 +12,12 @@
 <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 <style>
 body.store-locked-mode #app-nav { display: none !important; }
+body.store-locked-mode .erp-tabs-bar { display: none !important; }
+body.store-locked-mode #kpi-grid-section { display: none !important; }
+
 .dashboard-main-frame { width: 98%; max-width: 1450px; margin: 12px auto; padding: 0 8px; font-family: inherit; }
 
-/* 🌟 तुमच्या मूळ Zip मधील अस्सल आणि आकर्षक रंगसंगती व डिझाईन */
+/* 🌟 क्लासिक आकर्षक रंगसंगती व डिझाईन */
 .erp-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 12px; background: #ffffff; padding: 14px 18px; border-radius: 10px; border: 1px solid #e2e8f0; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
 .erp-header h1 { font-size: 20px !important; margin: 0 !important; color: #0f172a; font-weight: 800; }
 .erp-header .muted { color: #64748b !important; font-size: 12px !important; }
@@ -60,7 +63,7 @@ tr:hover { background: #f8fafc; }
 <div class="dashboard-main-frame">
   <div class="erp-header">
     <div>
-      <!-- 🌟 इथे दुकानदाराचे मूळ नाव (उदा. निखिल किराणा) अचूक दिसेल -->
+      <!-- 🌟 अचूक दुकानदाराचे नाव (URL किंवा युजरनुसार) -->
       <h1 id="business-display-name">ALL ERP Dashboard</h1>
       <span class="muted" id="header-sub-text">Universal Business Operating System</span>
       <div style="margin-top:4px; font-size:12.5px; font-weight:700; color:#0b8f87;" id="merchant-username-badge">
@@ -84,7 +87,7 @@ tr:hover { background: #f8fafc; }
   <div class="erp-tabs-bar" id="erp-navigation-tabs">
     <button type="button" class="erp-tab-btn active" onclick="switchTab('tab-overview')">📊 डॅशबोर्ड</button>
     <button type="button" class="erp-tab-btn" onclick="switchTab('tab-products')">📦 इन्व्हेंटरी व स्टॉक</button>
-    <button type="button" class="erp-tab-btn" onclick="switchTab('tab-sales')">💰 विक्री व इनव्हॉ이스</button>
+    <button type="button" class="erp-tab-btn" onclick="switchTab('tab-sales')">💰 विक्री व इनव्हॉइस</button>
     <button type="button" class="erp-tab-btn" onclick="switchTab('tab-purchase')">🛒 खरेदी</button>
     <button type="button" class="erp-tab-btn" onclick="switchTab('tab-crm')">👥 CRM व ग्राहक</button>
     <button type="button" class="erp-tab-btn" onclick="switchTab('tab-khata')">🧾 उधार खाता</button>
@@ -110,7 +113,7 @@ tr:hover { background: #f8fafc; }
       </div>
     </div>
     
-    <div class="kpi-grid">
+    <div class="kpi-grid" id="kpi-grid-section">
       <div class="kpi-card"><div class="kpi-title">एकूण विक्री</div><div class="kpi-value" id="kpi-total-sales">₹0.00</div></div>
       <div class="kpi-card"><div class="kpi-title">एकूण खरेदी</div><div class="kpi-value" id="kpi-total-purchases">₹0.00</div></div>
       <div class="kpi-card"><div class="kpi-title">एकूण खर्च</div><div class="kpi-value" id="kpi-total-expenses" style="color:#dc2626;">₹0.00</div></div>
@@ -214,16 +217,17 @@ async function initDashboard() {
     }
 
     if (lockedStoreUsername) {
+      // 🌟 स्टोअर लॉक मोड (WhatsApp लिंक उघडल्यावर फक्त संबंधित दुकान दिसणे)
       document.body.classList.add('store-locked-mode');
-      document.getElementById('erp-navigation-tabs').style.display = 'none';
-      document.getElementById('whatsapp-share-btn').style.display = 'none';
       document.getElementById('customer-action-bar').style.display = 'flex';
       document.getElementById('customer-google-login-btn').style.display = 'inline-flex';
       document.getElementById('customer-store-notice').style.display = 'block';
       document.getElementById('customer-products-section').style.display = 'block';
 
       const cleanStoreName = lockedStoreUsername.replace(/_/g, ' ').trim();
-      document.getElementById('business-display-name').textContent = cleanStoreName;
+      // पहिल्या अक्षराला कॅपिटल करणे
+      const formattedStoreName = cleanStoreName.charAt(0).toUpperCase() + cleanStoreName.slice(1);
+      document.getElementById('business-display-name').textContent = formattedStoreName;
       document.getElementById('header-sub-text').textContent = 'अधिकृत ग्राहक स्टोअर व थेट संवाद मंच';
 
       await loadCustomerStoreProducts();
@@ -233,19 +237,12 @@ async function initDashboard() {
         return;
       }
 
-      // 🌟 डेटाबेसवरून दुकानदाराचे खरे नाव (Business Name) फेच करणे
-      try {
-        const { data: bizData } = await sb.from('businesses').select('name, phone').eq('owner_id', sessionUser.id).maybeSingle();
-        if (bizData && bizData.name) {
-          document.getElementById('business-display-name').textContent = bizData.name;
-        } else {
-          document.getElementById('business-display-name').textContent = 'निखिल किराणा स्टोअर्स';
-        }
-      } catch (e) {
-        document.getElementById('business-display-name').textContent = 'निखिल किराणा स्टोअर्स';
-      }
+      // व्यापारी स्वतः लॉगइन असताना त्याचे स्वतःचे युजरनेम किंवा ईमेलवरून अचूक नाव दाखवणे
+      const merchantName = sessionUser.email ? sessionUser.email.split('@')[0] : 'माझे दुकान';
+      const formattedName = merchantName.charAt(0).toUpperCase() + merchantName.slice(1) + ' स्टोअर्स';
+      document.getElementById('business-display-name').textContent = formattedName;
 
-      currentMerchantUsername = sessionUser.email ? sessionUser.email.split('@')[0] : 'abhinaygandhi5151';
+      currentMerchantUsername = merchantName;
       document.getElementById('display-merchant-handle').textContent = '@' + currentMerchantUsername;
 
       await loadProducts();
@@ -259,13 +256,13 @@ function loginCustomerWithGoogle() {
 }
 
 function shareStoreOnWhatsApp() {
-  const storeName = document.getElementById('business-display-name').textContent.trim();
-  const shareUrl = `${window.location.origin}${window.location.pathname}?store=${storeName.replace(/\s+/g, '_').toLowerCase()}`;
+  const storeSlug = lockedStoreUsername || (loggedInCustomer?.email ? loggedInCustomer.email.split('@')[0] : 'store');
+  const shareUrl = `${window.location.origin}${window.location.pathname}?store=${storeSlug}`;
   window.open('https://api.whatsapp.com/send?text=' + encodeURIComponent('आमच्या दुकानाला भेट द्या: ' + shareUrl), '_blank');
 }
 
 function openWeavoChat() {
-  let storeUsername = lockedStoreUsername || 'abhinaygandhi5151';
+  let storeUsername = lockedStoreUsername || (loggedInCustomer?.email ? loggedInCustomer.email.split('@')[0] : 'abhinaygandhi5151');
   const customerEmail = loggedInCustomer?.email || localStorage.getItem('global_unified_email');
   window.open(`https://arhammarketingme-prog.github.io/weavo/?store=${storeUsername}${customerEmail ? '&customer_email=' + encodeURIComponent(customerEmail) : ''}`, '_blank');
 }
