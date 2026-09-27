@@ -19,7 +19,7 @@ body.store-locked-mode #app-nav { display: none !important; }
 .google-login-customer-btn { background: #ffffff; color: #1e293b; border: 1px solid #cbd5e1; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12.5px; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
 .google-login-customer-btn:hover { background: #f8fafc; }
 .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 99999 !important; align-items: center; justify-content: center; }
-.modal-content { background: var(--card, #ffffff); border-radius: 12px; width: 95%; max-width: 450px; padding: 24px; box-shadow: 0 15px 35px rgba(0,0,0,0.25); }
+.modal-content { background: var(--card, #ffffff); border-radius: 12px; width: 95%; max-width: 480px; padding: 24px; box-shadow: 0 15px 35px rgba(0,0,0,0.25); }
 .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 16px; }
 .kpi-card { background: var(--card, #ffffff); border: 1px solid var(--border, #e2e8f0); border-radius: 8px; padding: 12px; }
 .erp-tabs-bar { display: flex; gap: 4px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 14px; border-bottom: 2px solid var(--border, #e2e8f0); }
@@ -118,7 +118,7 @@ body.store-locked-mode #app-nav { display: none !important; }
       <table style="width:100%; border-collapse:collapse;">
         <thead>
           <tr style="text-align:left; border-bottom:2px solid #e2e8f0;">
-            <th>ऑर्डर #</th><th>ग्राहक नाव</th><th>फोन नंबर/ईमेल</th><th>तपशील (Items)</th><th>रक्कम</th><th>स्थिती</th>
+            <th>ऑर्डर #</th><th>ग्राहक नाव</th><th>संपर्क व पत्ता</th><th>तपशील (Items)</th><th>रक्कम</th><th>स्थिती</th>
           </tr>
         </thead>
         <tbody id="online-orders-table-body"><tr><td colspan="6" class="muted" style="text-align:center; padding:20px;">कोणतीही ऑनलाईन ऑर्डर आलेली नाही.</td></tr></tbody>
@@ -128,33 +128,39 @@ body.store-locked-mode #app-nav { display: none !important; }
 
 </div>
 
-<!-- 🛒 ग्राहकाचे कार्ट व मोबाईल नंबरसह ऑर्डर मोडल -->
+<!-- 🛒 ग्राहकाचे कार्ट, मोबाईल नंबर व पत्ता (Address) मोडल -->
 <div id="customer-cart-modal" class="modal-overlay">
   <div class="modal-content">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
       <h3 style="margin:0;">🛒 तुमची चालू ऑर्डर (Cart Summary)</h3>
       <button type="button" onclick="closeModal('customer-cart-modal')" style="background:transparent; border:none; font-size:16px; cursor:pointer; font-weight:bold;">✕</button>
     </div>
-    <div id="customer-cart-items" style="max-height:180px; overflow-y:auto; margin-bottom:12px;">
+    <div id="customer-cart-items" style="max-height:160px; overflow-y:auto; margin-bottom:10px;">
       <p class="muted">कार्ट रिकामी आहे.</p>
     </div>
-    <hr style="border:none; border-top:1px solid #e2e8f0; margin:10px 0;">
-    <div style="display:flex; justify-content:space-between; font-size:16px; font-weight:bold; margin-bottom:14px;">
+    <hr style="border:none; border-top:1px solid #e2e8f0; margin:8px 0;">
+    <div style="display:flex; justify-content:space-between; font-size:15px; font-weight:bold; margin-bottom:12px;">
       <span>एकूण रक्कम:</span>
       <span style="color:#16a34a;">₹<span id="modal-cart-total">0.00</span></span>
     </div>
     
-    <div style="background:#f1f5f9; padding:8px 12px; border-radius:6px; margin-bottom:10px; font-size:12.5px; color:#334155;">
+    <div style="background:#f1f5f9; padding:8px 12px; border-radius:6px; margin-bottom:10px; font-size:12px; color:#334155;">
       👤 गुगल ईमेल: <strong id="modal-user-email">तपासत आहे...</strong>
     </div>
 
-    <!-- 🌟 ग्राहकाचा संपर्क साधण्यासाठी मोबाईल नंबर इनव्हूट फील्ड -->
-    <div style="margin-bottom:16px;">
-      <label style="font-weight:700; font-size:12px; color:#1e293b; display:block; margin-bottom:4px;">📱 संपर्क मोबाईल नंबर (डिलिव्हरीसाठी आवश्यक):</label>
-      <input type="tel" id="cust-phone-input" placeholder="१० अंकी मोबाईल नंबर टाка (उदा. 9876543210)" maxlength="10" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px; font-weight:600; font-size:14px; background:#fff;">
+    <!-- 📱 संपर्क मोबाईल नंबर (Edit करता येण्याजोगे) -->
+    <div style="margin-bottom:10px;">
+      <label style="font-weight:700; font-size:12px; color:#1e293b; display:block; margin-bottom:3px;">📱 संपर्क मोबाईल नंबर:</label>
+      <input type="tel" id="cust-phone-input" placeholder="१० अंकी मोबाईल नंबर टाका" maxlength="10" style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:6px; font-weight:600; font-size:13.5px; background:#fff;">
     </div>
 
-    <button type="button" onclick="submitCustomerOrderWithPhone()" style="width:100%; background:#16a34a; color:#fff; padding:12px; border:none; border-radius:6px; font-weight:bold; font-size:15px; cursor:pointer;">
+    <!-- 🏠 डिलिव्हरी पत्ता (Address - Edit करता येण्याजोगे व स्टोअर होणारे) -->
+    <div style="margin-bottom:16px;">
+      <label style="font-weight:700; font-size:12px; color:#1e293b; display:block; margin-bottom:3px;">🏠 संपूर्ण डिलिव्हरी पत्ता (Address):</label>
+      <textarea id="cust-address-input" placeholder="घर/दुकान क्रमांक, गल्ली, परिसर, शहर व पिनकोड लिहा..." rows="2" style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:6px; font-weight:500; font-size:13px; background:#fff; resize:none;"></textarea>
+    </div>
+
+    <button type="button" onclick="submitCustomerOrderWithDetails()" style="width:100%; background:#16a34a; color:#fff; padding:12px; border:none; border-radius:6px; font-weight:bold; font-size:15px; cursor:pointer;">
       ✅ थेट ऑर्डर पाठवा व चॅट उघडा (Place Order)
     </button>
   </div>
@@ -289,7 +295,7 @@ function updateCustomerCartUI() {
     return;
   }
   itemsBox.innerHTML = customerCart.map(i => `
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; font-size:13px; border-bottom:1px solid #f1f5f9; padding-bottom:6px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; font-size:13px; border-bottom:1px solid #f1f5f9; padding-bottom:4px;">
       <div><strong>${escapeHtml(i.name)}</strong><br><span class="muted">₹${i.price} × ${i.qty}</span></div>
       <div style="font-weight:bold; color:#16a34a;">₹${(i.price * i.qty).toFixed(2)}</div>
     </div>
@@ -309,24 +315,31 @@ function openCustomerCartModal() {
   const userName = loggedInCustomer.user_metadata?.full_name || userEmail.split('@')[0];
   document.getElementById('modal-user-email').textContent = `${userName} (${userEmail})`;
 
-  // आधीच सेव्ह असलेला फोन नंबर असल्यास ऑटो-फील करणे
-  const savedPhone = localStorage.getItem('customer_saved_phone') || '';
-  document.getElementById('cust-phone-input').value = savedPhone;
+  // 🌟 आधीच सेव्ह असलेला मोबाईल नंबर आणि पत्ता ऑटो-फील करणे (Auto-fill)
+  document.getElementById('cust-phone-input').value = localStorage.getItem('customer_saved_phone') || '';
+  document.getElementById('cust-address-input').value = localStorage.getItem('customer_saved_address') || '';
 
   openModal('customer-cart-modal');
 }
 
-async function submitCustomerOrderWithPhone() {
+async function submitCustomerOrderWithDetails() {
   if (customerCart.length === 0 || !loggedInCustomer) return;
   
   const phoneInput = document.getElementById('cust-phone-input').value.trim();
+  const addressInput = document.getElementById('cust-address-input').value.trim();
+
   if (!phoneInput || phoneInput.length < 10) {
     alert('कृपया संपर्क साधण्यासाठी वैध १० अंकी मोबाईल नंबर टाका!');
     return;
   }
+  if (!addressInput) {
+    alert('कृपया डिलिव्हरीसाठी ग्राहकाचा पत्ता (Address) प्रविष्ट करा!');
+    return;
+  }
 
-  // मोबाईल नंबर ब्राउझरमध्ये सेव्ह करून ठेवणे जेणेकरून पुढच्या वेळी पुन्हा टाकावा लागणार नाही
+  // 🌟 मोबाईल नंबर आणि पत्ता ब्राउझरमध्ये सुरक्षितपणे सेव्ह करणे (Store & Edit support)
   localStorage.setItem('customer_saved_phone', phoneInput);
+  localStorage.setItem('customer_saved_address', addressInput);
 
   const name = loggedInCustomer.user_metadata?.full_name || loggedInCustomer.email.split('@')[0];
   const email = loggedInCustomer.email;
@@ -335,11 +348,12 @@ async function submitCustomerOrderWithPhone() {
     let totalAmt = customerCart.reduce((sum, i) => sum + (i.price * i.qty), 0);
     let itemsSummaryText = customerCart.map(i => `${i.name} (${i.qty} नग)`).join(', ');
 
-    // 🌟 डेटाबेसमध्ये मोबाईल नंबरसह ऑर्डर सेव्ह करणे
+    // 🌟 डेटाबेसमध्ये मोबाईल नंबर आणि पत्त्यासह ऑर्डर सेव्ह करणे
     const { error: orderErr } = await sb.from('orders').insert({
       business_id: currentBusinessId,
       customer_name: name,
-      customer_phone: phoneInput, // मोबाईल नंबर
+      customer_phone: phoneInput,
+      customer_address: addressInput, // पत्ता
       items_summary: itemsSummaryText,
       total_amount: totalAmt,
       status: 'pending'
@@ -347,15 +361,15 @@ async function submitCustomerOrderWithPhone() {
 
     if (orderErr) throw orderErr;
 
-    alert('🎉 तुमची ऑर्डर यशस्वीरीत्या नोंदवली गेली! दुकानदाराकडे मोबाईल नंबरसह पाठवली आहे.');
+    alert('🎉 तुमची ऑर्डर यशस्वीरीत्या नोंदवली गेली! दुकानदाराकडे मोबाईल नंबर व पत्त्यासह पाठवली आहे.');
     customerCart = [];
     closeModal('customer-cart-modal');
 
     let storeUsername = 'abhinay_gandhi';
     localStorage.setItem('weavo_target_store', storeUsername);
 
-    // 🌟 वीव्होच्या चॅटमध्ये ईमेल आणि मोबाईल नंबर स्पष्टपणे दिसणारा मेसेज प्रीफिल्ड करणे
-    const orderMsg = encodeURIComponent(`📦 नवीन ऑनलाईन ऑर्डर:\n👤 ग्राहक: ${name}\n📱 मोबाईल: ${phoneInput}\n📧 ईमेल: ${email}\n🛒 तपशील: ${itemsSummaryText}\n💰 एकूण: ₹${totalAmt}`);
+    // 🌟 वीव्होच्या चॅटमध्ये नाव, मोबाईल, पत्ता आणि तपशील स्पष्टपणे जाणारा मेसेज
+    const orderMsg = encodeURIComponent(`📦 नवीन ऑनलाईन ऑर्डर:\n👤 ग्राहक: ${name}\n📱 मोबाईल: ${phoneInput}\n🏠 पत्ता: ${addressInput}\n📧 ईमेल: ${email}\n🛒 तपशील: ${itemsSummaryText}\n💰 एकूण: ₹${totalAmt}`);
     
     const unifiedEmail = localStorage.getItem('global_unified_email') || email;
     const weavoUrl = `https://arhammarketingme-prog.github.io/weavo/?store=${storeUsername}&prefill=${orderMsg}&customer_email=${encodeURIComponent(unifiedEmail)}`;
@@ -377,7 +391,7 @@ async function loadOnlineOrders() {
     <tr style="border-bottom:1px solid #f1f5f9; padding:8px 0;">
       <td><strong>#${o.id.toString().substring(0,8)}</strong></td>
       <td>${escapeHtml(o.customer_name || 'Customer')}</td>
-      <td>📱 ${escapeHtml(o.customer_phone || '-')}<br><small class="muted">${escapeHtml(o.customer_email || '')}</small></td>
+      <td>📱 ${escapeHtml(o.customer_phone || '-')}<br><small class="muted">🏠 ${escapeHtml(o.customer_address || 'पत्ता उपलब्ध नाही')}</small></td>
       <td>${escapeHtml(o.items_summary || '-')}</td>
       <td style="font-weight:bold; color:#16a34a;">₹${o.total_amount || 0}</td>
       <td><span class="badge pending">${o.status || 'pending'}</span></td>
