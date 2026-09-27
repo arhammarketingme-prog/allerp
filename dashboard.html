@@ -468,7 +468,7 @@ function openCustomerCartModal() {
   openModal('customer-cart-modal');
 }
 
-// 🛍️ ग्राहकाने नाव, फोन आणि पत्ता भरून थेट ERP आणि Weavo मध्ये ऑर्डर पाठवणे (डेटाबेस थेट इन्सर्टसह)
+// 🛍️ ग्राहकाने नाव, फोन आणि पत्ता भरून थेट ERP आणि Weavo मध्ये ऑर्डर पाठवणे (दुकानदाराचे युझरनेम अचूक फेच करून)
 async function submitCustomerOrder() {
   if (customerCart.length === 0 || !loggedInCustomer) return;
   
@@ -487,7 +487,7 @@ async function submitCustomerOrder() {
     let totalAmt = customerCart.reduce((sum, i) => sum + (i.price * i.qty), 0);
     let itemsSummaryText = customerCart.map(i => `${i.name} (${i.qty} नग)`).join(', ');
 
-    // १. AllERP च्या orders टेबलमध्ये सेव्ह करणे (पत्ता व फोनसह)
+    // १. AllERP च्या orders टेबलमध्ये सेव्ह करणे
     const { error: orderErr } = await sb.from('orders').insert({
       business_id: currentBusinessId,
       customer_name: name,
@@ -500,12 +500,18 @@ async function submitCustomerOrder() {
 
     if (orderErr) throw orderErr;
 
-    // २. थेट वीव्होच्या messages डेटाबेस टेबलमध्ये मेसेज स्वयंचलितपणे इन्सर्ट करणे
+    // २. दुकानाचा मालक शोधून वीव्होच्या messages टेबलमध्ये स्वयंचलित मेसेज इन्सर्ट करणे
+    let storeUsername = lockedStoreUsername || 'abhinay_gandhi5151';
     try {
-      const { data: storeBiz } = await sb.from('businesses').select('owner_id').eq('id', currentBusinessId).maybeSingle();
+      const { data: storeBiz } = await sb.from('businesses').select('owner_id, name').eq('id', currentBusinessId).maybeSingle();
       if (storeBiz && storeBiz.owner_id && loggedInCustomer) {
         const storeUserId = storeBiz.owner_id;
         const customerUserId = loggedInCustomer.id;
+
+        const { data: storeProf } = await sb.from('profiles').select('username').eq('id', storeUserId).maybeSingle();
+        if (storeProf && storeProf.username) {
+          storeUsername = storeProf.username;
+        }
 
         if (customerUserId !== storeUserId) {
           let targetConvId = null;
@@ -548,9 +554,7 @@ async function submitCustomerOrder() {
     updateCustomerCartUI();
 
     // ३. वीव्हो चॅट टॅब/विंडो उघडणे
-    let storeUsername = lockedStoreUsername || 'abhinaygandhi5151';
     localStorage.setItem('weavo_target_store', storeUsername);
-
     const orderMsg = encodeURIComponent(`📦 नवीन ऑनलाईन ऑर्डर:\n👤 ग्राहक: ${name}\n📱 मोबाईल: ${phone}\n🏠 डिलिव्हरी पत्ता: ${address}\n📧 ईमेल: ${loggedInCustomer.email}\n🛒 तपशील: ${itemsSummaryText}\n💰 एकूण: ₹${totalAmt}`);
     const weavoUrl = `https://arhammarketingme-prog.github.io/weavo/?store=${storeUsername}&prefill=${orderMsg}&customer_email=${encodeURIComponent(loggedInCustomer.email)}`;
     
