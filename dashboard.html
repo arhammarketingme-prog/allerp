@@ -26,18 +26,15 @@ body { background-color: var(--bg-color); color: var(--text-main); font-family: 
 body.store-locked-mode #app-nav { display: none !important; }
 .dashboard-main-frame { width: 98%; max-width: 1450px; margin: 10px auto; padding: 0 6px; }
 
-/* 🌟 ऑल ईआरपी मूळ हेडर आणि थीम डिझाईन */
 .erp-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px; background: var(--card-bg); padding: 12px 18px; border-radius: 8px; border: 1px solid var(--border-color); box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
 .erp-header h1 { color: var(--primary); margin: 0; font-size: 22px; font-weight: 800; }
 .muted { color: var(--text-muted); font-size: 13px; }
 
-/* 🌟 ऑल ईआरपी युनिफाइड बटणे */
 .weavo-header-btn { background: linear-gradient(135deg, #0b8f87, #16b8a9); color: #fff; padding: 8px 14px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12.5px; display: inline-flex; align-items: center; gap: 5px; text-decoration: none; }
 .whatsapp-share-btn { background: #25D366; color: #fff; padding: 8px 14px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12.5px; display: inline-flex; align-items: center; gap: 5px; text-decoration: none; }
 .google-login-customer-btn { background: #ffffff; color: var(--text-main); border: 1px solid var(--border-color); padding: 8px 14px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12.5px; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
 .google-login-customer-btn:hover { background: #f1f5f9; }
 
-/* 🌟 कस्टमर स्टोअर मोड नेव्हिगेशन बार (ऑल ईआरपी थीम मॅचिंग) */
 .customer-action-bar { display: none; gap: 8px; overflow-x: auto; padding: 10px 14px; margin-bottom: 14px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
 .cust-nav-btn { background: #ffffff; color: var(--text-main); border: 1px solid var(--border-color); padding: 8px 14px; border-radius: 6px; font-weight: 700; font-size: 12.5px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; text-decoration: none; }
 .cust-nav-btn:hover { background: #f1f5f9; }
@@ -61,7 +58,6 @@ body.store-locked-mode #app-nav { display: none !important; }
 .badge.live { background: var(--success); color: #fff; }
 .badge.pending { background: #f59e0b; color: #fff; }
 
-/* 🌟 दुकानदारासाठी अलर्ट पट्टी */
 #merchant-alert-banner { display: none; background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; padding: 12px 18px; border-radius: 8px; margin-bottom: 14px; font-weight: bold; font-size: 14px; text-align: center; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3); }
 </style>
 </head>
@@ -92,7 +88,7 @@ body.store-locked-mode #app-nav { display: none !important; }
     🔔 नवीन ऑनलाईन ऑर्डर आली आहे! कृपया "ऑनलाईन ऑर्डर्स" टॅब तपासा.
   </div>
 
-  <!-- 🌟 ऑल ईआरपी थीम मॅचिंग कस्टमर नेव्हिगेशन बार -->
+  <!-- CUSTOMER ACTION BAR -->
   <div class="customer-action-bar" id="customer-action-bar">
     <button type="button" class="cust-nav-btn success" onclick="openCustomerCartModal()">🛒 कार्ट (<span id="bar-cart-count">0</span>)</button>
     <button type="button" class="cust-nav-btn primary" onclick="switchTab('tab-my-orders')">🛍️ माझ्या ऑर्डर्स</button>
@@ -100,7 +96,7 @@ body.store-locked-mode #app-nav { display: none !important; }
     <button type="button" class="cust-nav-btn" onclick="callMerchantPhone()">📞 दुकानदाराला कॉल</button>
   </div>
 
-  <!-- NAVIGATION TABS -->
+  <!-- ALL ERP FULL NAVIGATION TABS (सर्व जुनी मॉड्यूल्स आणि टॅब्ज परत आणले आहेत) -->
   <div class="erp-tabs-bar" id="erp-navigation-tabs">
     <button type="button" class="erp-tab-btn active" onclick="switchTab('tab-overview')">📊 डॅशबोर्ड</button>
     <button type="button" class="erp-tab-btn" onclick="switchTab('tab-products')">📦 इन्व्हेंटरी व स्टॉक</button>
@@ -154,6 +150,23 @@ body.store-locked-mode #app-nav { display: none !important; }
     </div>
   </div>
 
+  <!-- TAB 3: SALES -->
+  <div id="tab-sales" class="erp-tab-pane" style="display:none;"><h2 style="color:var(--primary);">💰 विक्री व इनव्हॉइस व्यवस्थापन</h2><p class="muted">येथे सर्व विक्रीची बिले आणि इनव्हॉइस दिसतील.</p></div>
+  <!-- TAB 4: PURCHASE -->
+  <div id="tab-purchase" class="erp-tab-pane" style="display:none;"><h2 style="color:var(--primary);">🛒 खरेदी व्यवस्थापन</h2><p class="muted">खरेदीचे रेकॉर्ड येथे समाविष्ट केले जाईल.</p></div>
+  <!-- TAB 5: CRM -->
+  <div id="tab-crm" class="erp-tab-pane" style="display:none;"><h2 style="color:var(--primary);">👥 CRM व ग्राहक संबंध</h2><p class="muted">ग्राहकांची माहिती व फॉलोअप.</p></div>
+  <!-- TAB 6: KHATA -->
+  <div id="tab-khata" class="erp-tab-pane" style="display:none;"><h2 style="color:var(--primary);">🧾 उधार खाता (Khata)</h2><p class="muted">उधार आणि लेन-देन हिशोब.</p></div>
+  <!-- TAB 7: FINANCE -->
+  <div id="tab-finance" class="erp-tab-pane" style="display:none;"><h2 style="color:var(--primary);">📑 खर्च व फायनान्स</h2><p class="muted">व्यवसायाचा खर्च व हिशोब.</p></div>
+  <!-- TAB 8: HR -->
+  <div id="tab-hr" class="erp-tab-pane" style="display:none;"><h2 style="color:var(--primary);">👔 कर्मचारी व HR</h2><p class="muted">कर्मचाऱ्यांची माहिती.</p></div>
+  <!-- TAB 9: PROJECTS -->
+  <div id="tab-projects" class="erp-tab-pane" style="display:none;"><h2 style="color:var(--primary);">🏗️ प्रकल्प व साईट्स</h2><p class="muted">प्रकल्प प्रगती अहवाल.</p></div>
+  <!-- TAB 10: POS -->
+  <div id="tab-pos" class="erp-tab-pane" style="display:none;"><h2 style="color:var(--primary);">⚡ POS बिलिंग काउंटर</h2><p class="muted">फास्ट बिलिंग काउंटर.</p></div>
+
   <!-- TAB 11: ORDERS (Merchant View) -->
   <div id="tab-orders" class="erp-tab-pane" style="display:none;">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
@@ -171,6 +184,11 @@ body.store-locked-mode #app-nav { display: none !important; }
       </table>
     </div>
   </div>
+
+  <!-- TAB 12: REPORTS -->
+  <div id="tab-reports" class="erp-tab-pane" style="display:none;"><h2 style="color:var(--primary);">📈 रिपोर्ट्स व GST</h2><p class="muted">टॅक्स आणि व्यवसाय अहवाल.</p></div>
+  <!-- TAB 13: SETTINGS -->
+  <div id="tab-settings" class="erp-tab-pane" style="display:none;"><h2 style="color:var(--primary);">⚙️ डॅशबोर्ड सेटिंग्स</h2><p class="muted">व्यवसायाची माहिती बदला.</p></div>
 
   <!-- CUSTOMER ORDER HISTORY TAB -->
   <div id="tab-my-orders" class="erp-tab-pane" style="display:none;">
@@ -192,7 +210,7 @@ body.store-locked-mode #app-nav { display: none !important; }
 
 </div>
 
-<!-- 🛒 कार्ट व डिटेल्स मोडल (ऑल ईआरपी थीम स्टाईल) -->
+<!-- 🛒 कार्ट व डिटेल्स मोडल -->
 <div id="customer-cart-modal" class="modal-overlay">
   <div class="modal-content">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
