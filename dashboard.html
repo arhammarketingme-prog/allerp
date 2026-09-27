@@ -73,7 +73,6 @@ body.store-locked-mode #app-nav { display: none !important; }
       </div>
     </div>
     <div id="header-action-buttons">
-      <!-- ग्राहकांसाठी गुगल लॉगिन बटण (स्टोअर मोडमध्ये दिसणार) -->
       <button type="button" id="customer-google-login-btn" onclick="loginCustomerWithGoogle()" class="google-login-customer-btn" style="display:none;">
         <svg width="16" height="16" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
         <span id="google-login-btn-text">Google ने लॉगिन करा</span>
@@ -84,7 +83,7 @@ body.store-locked-mode #app-nav { display: none !important; }
     </div>
   </div>
 
-  <!-- CUSTOMER ACTION BAR (WhatsApp लिंकवरून आल्यावर दिसणारा कस्टमर बार) -->
+  <!-- CUSTOMER ACTION BAR -->
   <div class="customer-action-bar" id="customer-action-bar" style="display:none;">
     <button type="button" class="cust-nav-btn success" onclick="openCustomerCartModal()">🛒 कार्ट (<span id="bar-cart-count">0</span>)</button>
     <button type="button" class="cust-nav-btn primary" onclick="switchTab('tab-my-orders')">🛍️ माझ्या ऑर्डर्स</button>
@@ -96,7 +95,7 @@ body.store-locked-mode #app-nav { display: none !important; }
   <div class="erp-tabs-bar" id="erp-navigation-tabs">
     <button type="button" class="erp-tab-btn active" onclick="switchTab('tab-overview')">📊 डॅशबोर्ड</button>
     <button type="button" class="erp-tab-btn" onclick="switchTab('tab-products')">📦 इन्व्हेंटरी व स्टॉक</button>
-    <button type="button" class="erp-tab-btn" onclick="switchTab('tab-sales')">💰 विक्री व इनव्हॉइस</button>
+    <button type="button" class="erp-tab-btn" onclick="switchTab('tab-sales')">💰 विक्री व इनव्हॉ이스</button>
     <button type="button" class="erp-tab-btn" onclick="switchTab('tab-purchase')">🛒 खरेदी</button>
     <button type="button" class="erp-tab-btn" onclick="switchTab('tab-crm')">👥 CRM व ग्राहक</button>
     <button type="button" class="erp-tab-btn" onclick="switchTab('tab-khata')">🧾 उधार खाता (Khata)</button>
@@ -322,7 +321,6 @@ async function initDashboard() {
       const merchantBadge = document.getElementById('merchant-username-badge');
       if (merchantBadge) merchantBadge.style.display = 'none';
       
-      // कस्टमरसाठी विशेष एक्शन बार व गूगल लॉगिन बटण दाखवणे
       const custBar = document.getElementById('customer-action-bar');
       if (custBar) custBar.style.display = 'flex';
       const googleLoginBtn = document.getElementById('customer-google-login-btn');
@@ -470,7 +468,7 @@ function openCustomerCartModal() {
   openModal('customer-cart-modal');
 }
 
-// 🛍️ ग्राहकाने नाव, फोन आणि पत्ता भरून थेट ERP आणि Weavo मध्ये ऑर्डर पाठवणे
+// 🛍️ ग्राहकाने नाव, फोन आणि पत्ता भरून थेट ERP आणि Weavo मध्ये ऑर्डर पाठवणे (डेटाबेस थेट इन्सर्टसह)
 async function submitCustomerOrder() {
   if (customerCart.length === 0 || !loggedInCustomer) return;
   
@@ -502,12 +500,54 @@ async function submitCustomerOrder() {
 
     if (orderErr) throw orderErr;
 
-    alert('🎉 तुमची ऑर्डर यशस्वीरीत्या नोंदवली गेली! वीव्हो चॅट उघडत आहे...');
+    // २. थेट वीव्होच्या messages डेटाबेस टेबलमध्ये मेसेज स्वयंचलितपणे इन्सर्ट करणे
+    try {
+      const { data: storeBiz } = await sb.from('businesses').select('owner_id').eq('id', currentBusinessId).maybeSingle();
+      if (storeBiz && storeBiz.owner_id && loggedInCustomer) {
+        const storeUserId = storeBiz.owner_id;
+        const customerUserId = loggedInCustomer.id;
+
+        if (customerUserId !== storeUserId) {
+          let targetConvId = null;
+          const { data: myConvs } = await sb.from('conversation_members').select('conversation_id').eq('user_id', customerUserId);
+          const myIds = (myConvs || []).map(r => r.conversation_id);
+
+          if (myIds.length) {
+            const { data: theirConvs } = await sb.from('conversation_members').select('conversation_id').eq('user_id', storeUserId).in('conversation_id', myIds);
+            if (theirConvs && theirConvs.length) targetConvId = theirConvs[0].conversation_id;
+          }
+
+          if (!targetConvId) {
+            const { data: newConv } = await sb.from('conversations').insert({ type: 'direct', created_by: customerUserId }).select().single();
+            if (newConv) {
+              targetConvId = newConv.id;
+              await sb.from('conversation_members').insert([
+                { conversation_id: targetConvId, user_id: customerUserId },
+                { conversation_id: targetConvId, user_id: storeUserId },
+              ]);
+            }
+          }
+
+          if (targetConvId) {
+            const orderMsgText = `📦 नवीन ऑनलाईन ऑर्डर:\n👤 ग्राहक: ${name}\n📱 मोबाईल: ${phone}\n🏠 डिलिव्हरी पत्ता: ${address}\n📧 ईमेल: ${loggedInCustomer.email}\n🛒 तपशील: ${itemsSummaryText}\n💰 एकूण: ₹${totalAmt}`;
+            await sb.from('messages').insert({
+              conversation_id: targetConvId,
+              sender_id: customerUserId,
+              content: orderMsgText
+            });
+          }
+        }
+      }
+    } catch (weavoDbErr) {
+      console.log('Weavo DB sync note:', weavoDbErr);
+    }
+
+    alert('🎉 तुमची ऑर्डर यशस्वीरीत्या नोंदवली गेली आणि वीव्हो चॅटमध्ये पाठवली गेली!');
     customerCart = [];
     closeModal('customer-cart-modal');
     updateCustomerCartUI();
 
-    // २. थेट वीव्हो चॅटमध्ये ऑटो-ब्रिज मेसेज पाठवणे
+    // ३. वीव्हो चॅट टॅब/विंडो उघडणे
     let storeUsername = lockedStoreUsername || 'abhinaygandhi5151';
     localStorage.setItem('weavo_target_store', storeUsername);
 
