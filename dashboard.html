@@ -11,47 +11,70 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 <style>
+:root {
+  --primary: #1D4E89;
+  --primary-dark: #153b6b;
+  --accent: #0ea5e9;
+  --bg-main: #f8fafc;
+  --card-bg: #ffffff;
+  --text-main: #1e293b;
+  --text-muted: #64748b;
+  --border-color: #cbd5e1;
+  --success: #16a34a;
+  --danger: #dc2626;
+  --warning: #f59e0b;
+}
+
+body { background: var(--bg-main); color: var(--text-main); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 0; }
 body.store-locked-mode #app-nav { display: none !important; }
 body.store-locked-mode .erp-tabs-bar { display: none !important; }
 body.store-locked-mode #kpi-grid-section { display: none !important; }
 
-.dashboard-main-frame { width: 98%; max-width: 1450px; margin: 12px auto; padding: 0 8px; font-family: inherit; }
+.dashboard-main-frame { width: 98%; max-width: 1450px; margin: 15px auto; padding: 0 10px; }
 
-.erp-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 12px; background: #ffffff; padding: 14px 18px; border-radius: 10px; border: 1px solid #e2e8f0; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
-.erp-header h1 { font-size: 20px !important; margin: 0 !important; color: #0f172a; font-weight: 800; }
-.erp-header .muted { color: #64748b !important; font-size: 12px !important; }
+/* 🌟 सुंदर आणि आकर्षक Header डिझाईन */
+.erp-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px; background: linear-gradient(135deg, #1e3a8a, #1D4E89); color: #fff; padding: 16px 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(29,78,137,0.2); }
+.erp-header h1 { font-size: 22px !important; margin: 0 !important; color: #fff; font-weight: 800; }
+.erp-header .muted { color: #cbd5e1 !important; font-size: 12px !important; }
 
-.weavo-header-btn { background: linear-gradient(135deg, #0b8f87, #16b8a9); color: #fff; padding: 8px 14px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12.5px; display: inline-flex; align-items: center; gap: 5px; text-decoration: none; box-shadow: 0 2px 6px rgba(11,143,135,0.2); }
-.whatsapp-share-btn { background: #25D366; color: #fff; padding: 8px 14px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12.5px; display: inline-flex; align-items: center; gap: 5px; text-decoration: none; }
-.google-login-customer-btn { background: #ffffff; color: #1e293b; border: 1px solid #cbd5e1; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12.5px; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+.weavo-header-btn { background: linear-gradient(135deg, #0b8f87, #16b8a9); color: #fff; padding: 9px 16px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; box-shadow: 0 2px 6px rgba(0,0,0,0.15); transition: 0.2s; }
+.weavo-header-btn:hover { opacity: 0.9; }
 
-.customer-action-bar { display: none; gap: 8px; overflow-x: auto; padding: 10px 14px; margin-bottom: 14px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
-.cust-nav-btn { background: #ffffff; color: #1e293b; border: 1px solid #cbd5e1; padding: 8px 14px; border-radius: 6px; font-weight: 700; font-size: 12.5px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; }
-.cust-nav-btn.primary { background: #1D4E89; color: #fff; border-color: #1D4E89; }
-.cust-nav-btn.success { background: #16a34a; color: #fff; border-color: #16a34a; }
+.whatsapp-share-btn { background: #25D366; color: #fff; padding: 9px 16px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; box-shadow: 0 2px 6px rgba(0,0,0,0.15); }
 
-.erp-tabs-bar { display: flex; gap: 4px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 14px; border-bottom: 2px solid #e2e8f0; }
-.erp-tab-btn { background: #f8fafc; color: #334155; border: 1px solid #cbd5e1; border-bottom: 3px solid transparent; padding: 7px 14px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; border-radius: 6px 6px 0 0; }
-.erp-tab-btn:hover { background: #f1f5f9; color: #1D4E89; }
-.erp-tab-btn.active { background: #1D4E89; color: #fff; border-color: #1D4E89; border-bottom-color: #facc15; }
+/* 🌟 गुगलचे अस्सल आणि आकर्षक लॉगिन बटण */
+.google-login-customer-btn { background: #ffffff; color: #1e293b; border: 1px solid #cbd5e1; padding: 9px 16px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 13px; display: inline-flex; align-items: center; gap: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); transition: 0.2s; }
+.google-login-customer-btn:hover { background: #f8fafc; }
 
-.erp-tab-pane { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); min-height: 400px; }
-.erp-tab-pane h2 { margin-top: 0; color: #1D4E89; font-size: 18px; border-bottom: 2px solid #f1f5f9; padding-bottom: 8px; }
+.customer-action-bar { display: none; gap: 10px; overflow-x: auto; padding: 12px 18px; margin-bottom: 16px; background: #ffffff; border: 1px solid var(--border-color); border-radius: 10px; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.03); }
+.cust-nav-btn { background: #ffffff; color: var(--text-main); border: 1px solid var(--border-color); padding: 9px 16px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; transition: 0.2s; }
+.cust-nav-btn:hover { background: #f1f5f9; }
+.cust-nav-btn.primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+.cust-nav-btn.success { background: var(--success); color: #fff; border-color: var(--success); }
 
-table { width: 100%; border-collapse: collapse; margin-top: 10px; background: #fff; border-radius: 6px; overflow: hidden; border: 1px solid #e2e8f0; }
-th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #f1f5f9; font-size: 13.5px; }
-th { background: #f1f5f9; color: #334155; font-weight: 700; }
+/* 🌟 टॅब बार डिझाईन */
+.erp-tabs-bar { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 18px; border-bottom: 2px solid var(--border-color); }
+.erp-tab-btn { background: #ffffff; color: var(--text-main); border: 1px solid var(--border-color); border-bottom: 3px solid transparent; padding: 8px 16px; font-size: 13.5px; font-weight: 700; cursor: pointer; white-space: nowrap; border-radius: 8px 8px 0 0; transition: 0.2s; }
+.erp-tab-btn:hover { background: #f1f5f9; color: var(--primary); }
+.erp-tab-btn.active { background: var(--primary); color: #ffffff; border-color: var(--primary); border-bottom-color: var(--accent); }
+
+.erp-tab-pane { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); min-height: 400px; }
+.erp-tab-pane h2 { margin-top: 0; color: var(--primary); font-size: 20px; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; }
+
+table { width: 100%; border-collapse: collapse; margin-top: 10px; background: #fff; border-radius: 8px; overflow: hidden; border: 1px solid var(--border-color); }
+th, td { padding: 12px 14px; text-align: left; border-bottom: 1px solid #f1f5f9; font-size: 14px; }
+th { background: #f8fafc; color: #334155; font-weight: 800; border-bottom: 2px solid var(--border-color); }
 tr:hover { background: #f8fafc; }
 
-.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 99999 !important; align-items: center; justify-content: center; }
-.modal-content { background: #ffffff; border-radius: 12px; width: 95%; max-width: 600px; padding: 24px; max-height: 85vh; overflow-y: auto; box-shadow: 0 15px 35px rgba(0,0,0,0.25); z-index: 100000 !important; }
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 99999 !important; align-items: center; justify-content: center; backdrop-filter: blur(2px); }
+.modal-content { background: var(--card-bg); border-radius: 14px; width: 95%; max-width: 650px; padding: 26px; max-height: 85vh; overflow-y: auto; box-shadow: 0 20px 40px rgba(0,0,0,0.3); z-index: 100000 !important; }
 
-.kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 16px; }
-.kpi-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
-.kpi-title { font-size: 12px; color: #64748b; font-weight: 700; text-transform: uppercase; }
-.kpi-value { font-size: 20px; font-weight: 800; color: #0f172a; margin-top: 4px; }
+.kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 20px; }
+.kpi-card { background: #ffffff; border: 1px solid var(--border-color); border-radius: 10px; padding: 16px; box-shadow: 0 2px 5px rgba(0,0,0,0.03); border-left: 5px solid var(--primary); }
+.kpi-title { font-size: 13px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; }
+.kpi-value { font-size: 22px; font-weight: 900; color: var(--text-main); margin-top: 6px; }
 
-.badge { padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; display: inline-block; }
+.badge { padding: 4px 10px; border-radius: 6px; font-size: 11.5px; font-weight: 800; display: inline-block; }
 .badge.live { background: #dcfce7; color: #166534; }
 .badge.pending { background: #fef9c3; color: #854d0e; }
 </style>
@@ -62,14 +85,17 @@ tr:hover { background: #f8fafc; }
 <div class="dashboard-main-frame">
   <div class="erp-header">
     <div>
-      <h1 id="business-display-name">लोड होत आहे...</h1>
-      <span class="muted" id="header-sub-text">Universal Business Operating System</span>
-      <div style="margin-top:4px; font-size:12.5px; font-weight:700; color:#0b8f87;" id="merchant-username-badge">
-        👤 वीव्हो चॅट युजरनेम: <span id="display-merchant-handle">@loading</span>
+      <h1 id="business-display-name">निखिल किराणा स्टोअर्स</h1>
+      <span class="muted" id="header-sub-text">Universal Business Operating System & Local Marketplace</span>
+      <div style="margin-top:6px; font-size:13.5px; font-weight:700; color:#38bdf8;" id="merchant-username-badge">
+        👤 वीव्हो चॅट युजरनेम: <span id="display-merchant-handle">@nikhil_kirana</span>
       </div>
     </div>
     <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-      <button type="button" id="customer-google-login-btn" onclick="loginCustomerWithGoogle()" class="google-login-customer-btn" style="display:none;">Google ने लॉगिन करा</button>
+      <button type="button" id="customer-google-login-btn" onclick="loginCustomerWithGoogle()" class="google-login-customer-btn" style="display:none;">
+        <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+        <span>Google ने लॉगिन करा</span>
+      </button>
       <button type="button" id="whatsapp-share-btn" onclick="shareStoreOnWhatsApp()" class="whatsapp-share-btn">📢 WhatsApp शेअर</button>
       <button type="button" id="weavo-chat-btn" onclick="openWeavoChat()" class="weavo-header-btn">💬 Weavo चॅट</button>
     </div>
@@ -114,8 +140,8 @@ tr:hover { background: #f8fafc; }
     <div class="kpi-grid" id="kpi-grid-section">
       <div class="kpi-card"><div class="kpi-title">एकूण विक्री</div><div class="kpi-value" id="kpi-total-sales">₹0.00</div></div>
       <div class="kpi-card"><div class="kpi-title">एकूण खरेदी</div><div class="kpi-value" id="kpi-total-purchases">₹0.00</div></div>
-      <div class="kpi-card"><div class="kpi-title">एकूण खर्च</div><div class="kpi-value" id="kpi-total-expenses" style="color:#dc2626;">₹0.00</div></div>
-      <div class="kpi-card"><div class="kpi-title">निव्वळ नफा</div><div class="kpi-value" id="kpi-net-profit" style="color:#16a34a;">₹0.00</div></div>
+      <div class="kpi-card"><div class="kpi-title">एकूण खर्च</div><div class="kpi-value" id="kpi-total-expenses" style="color:var(--danger);">₹0.00</div></div>
+      <div class="kpi-card"><div class="kpi-title">निव्वळ नफा</div><div class="kpi-value" id="kpi-net-profit" style="color:var(--success);">₹0.00</div></div>
     </div>
   </div>
 
@@ -132,10 +158,10 @@ tr:hover { background: #f8fafc; }
     <div style="background:#f8fafc; padding:16px; border-radius:8px; border:1px solid #e2e8f0; margin-bottom:15px;">
       <h3 style="margin-top:0; font-size:15px;">नवीन इनव्हॉइस तयार करा</h3>
       <div style="display:grid; grid-template-columns: 2fr 1fr 1fr auto; gap:10px; align-items:end;">
-        <div><label style="font-size:12px; font-weight:bold;">ग्राहक नाव</label><input id="sale-cust-name" placeholder="ग्राहक नाव" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; box-sizing:border-box;"></div>
-        <div><label style="font-size:12px; font-weight:bold;">रक्कम (₹)</label><input id="sale-amount" type="number" placeholder="0.00" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; box-sizing:border-box;"></div>
-        <div><label style="font-size:12px; font-weight:bold;">प्रकार</label><select id="sale-type" style="width:100%; padding:9px; border:1px solid #cbd5e1; border-radius:6px;"><option value="cash">रोख (Cash)</option><option value="credit">उधार (Credit)</option></select></div>
-        <button onclick="recordNewSale()" style="background:#16a34a; color:#fff; border:none; padding:9px 16px; border-radius:6px; font-weight:bold; cursor:pointer;">नोंद करा</button>
+        <div><label style="font-size:12px; font-weight:bold;">ग्राहक नाव</label><input id="sale-cust-name" placeholder="ग्राहक नाव" style="width:100%; padding:8px; border:1px solid var(--border-color); border-radius:6px; box-sizing:border-box;"></div>
+        <div><label style="font-size:12px; font-weight:bold;">रक्कम (₹)</label><input id="sale-amount" type="number" placeholder="0.00" style="width:100%; padding:8px; border:1px solid var(--border-color); border-radius:6px; box-sizing:border-box;"></div>
+        <div><label style="font-size:12px; font-weight:bold;">प्रकार</label><select id="sale-type" style="width:100%; padding:9px; border:1px solid var(--border-color); border-radius:6px;"><option value="cash">रोख (Cash)</option><option value="credit">उधार (Credit)</option></select></div>
+        <button onclick="recordNewSale()" style="background:var(--success); color:#fff; border:none; padding:9px 16px; border-radius:6px; font-weight:bold; cursor:pointer;">नोंद करा</button>
       </div>
     </div>
     <table>
@@ -193,7 +219,7 @@ tr:hover { background: #f8fafc; }
         <div id="pos-cart-items" style="max-height:220px; overflow-y:auto; margin-bottom:10px;">कार्ट रिकामी आहे.</div>
         <hr style="border:none; border-top:1px solid #cbd5e1; margin:10px 0;">
         <div style="font-weight:bold; font-size:16px; margin-bottom:12px;">एकूण: ₹<span id="pos-cart-total">0.00</span></div>
-        <button onclick="completePOSBilling()" style="width:100%; background:#16a34a; color:#fff; border:none; padding:12px; border-radius:6px; font-weight:bold; cursor:pointer; font-size:15px;">✅ बिल पूर्ण करा व प्रिंट काढा</button>
+        <button onclick="completePOSBilling()" style="width:100%; background:var(--success); color:#fff; border:none; padding:12px; border-radius:6px; font-weight:bold; cursor:pointer; font-size:15px;">✅ बिल पूर्ण करा व प्रिंट काढा</button>
       </div>
     </div>
   </div>
@@ -219,24 +245,24 @@ tr:hover { background: #f8fafc; }
     <h2>⚙️ सेटिंग्स (Business & Profile Settings)</h2>
     <div style="background:#f8fafc; padding:20px; border-radius:8px; border:1px solid #e2e8f0; max-width:500px;">
       <h3 style="margin-top:0;">दुकान व प्रोफाईल माहिती</h3>
-      <div style="margin-bottom:10px;"><label style="font-size:12px; font-weight:bold;">दुकानचे नाव (Business Name)</label><input id="settings-biz-name" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; box-sizing:border-box;"></div>
-      <div style="margin-bottom:10px;"><label style="font-size:12px; font-weight:bold;">युजरनेम (Weavo Username)</label><input id="settings-username" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; box-sizing:border-box;"></div>
-      <button onclick="saveBusinessSettings()" style="background:#1D4E89; color:#fff; border:none; padding:10px 16px; border-radius:6px; font-weight:bold; cursor:pointer;">सेटिंग्ज जतन करा</button>
+      <div style="margin-bottom:10px;"><label style="font-size:12px; font-weight:bold;">दुकानचे नाव (Business Name)</label><input id="settings-biz-name" style="width:100%; padding:8px; border:1px solid var(--border-color); border-radius:6px; box-sizing:border-box;"></div>
+      <div style="margin-bottom:10px;"><label style="font-size:12px; font-weight:bold;">युजरनेम (Weavo Username)</label><input id="settings-username" style="width:100%; padding:8px; border:1px solid var(--border-color); border-radius:6px; box-sizing:border-box;"></div>
+      <button onclick="saveBusinessSettings()" style="background:var(--primary); color:#fff; border:none; padding:10px 16px; border-radius:6px; font-weight:bold; cursor:pointer;">सेटिंग्ज जतन करा</button>
     </div>
   </div>
 </div>
 
 <div id="customer-cart-modal" class="modal-overlay">
   <div class="modal-content">
-    <h3 style="margin-top:0; color:#1D4E89;">🛒 तुमची चालू ऑर्डर (Cart & Checkout)</h3>
+    <h3 style="margin-top:0; color:var(--primary);">🛒 तुमची चालू ऑर्डर (Cart & Checkout)</h3>
     <div id="customer-cart-items" style="margin-bottom:10px;">कार्ट रिकामी आहे.</div>
-    <div style="font-weight:bold; margin-bottom:10px; font-size:15px;">एकूण रक्कम: ₹<span id="modal-cart-total" style="color:#16a34a;">0.00</span></div>
+    <div style="font-weight:bold; margin-bottom:10px; font-size:15px;">एकूण रक्कम: ₹<span id="modal-cart-total" style="color:var(--success);">0.00</span></div>
     <div style="background:#f1f5f9; padding:8px 12px; border-radius:6px; margin-bottom:10px; font-size:12.5px;">📧 ईमेल: <strong id="modal-user-email">तपासत आहे...</strong></div>
-    <div style="margin-bottom:8px;"><label style="font-size:12px; font-weight:bold;">पूर्ण नाव</label><input id="cust-order-name" placeholder="पूर्ण नाव" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; box-sizing:border-box;"></div>
-    <div style="margin-bottom:8px;"><label style="font-size:12px; font-weight:bold;">मोबाईल नंबर</label><input id="cust-order-phone" placeholder="मोबाईल नंबर" maxlength="10" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; box-sizing:border-box;"></div>
-    <div style="margin-bottom:12px;"><label style="font-size:12px; font-weight:bold;">डिलिव्हरी पत्ता</label><textarea id="cust-order-address" placeholder="डिलिव्हरी पत्ता" rows="2" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; box-sizing:border-box; resize:none;"></textarea></div>
-    <button type="button" onclick="submitCustomerOrder()" style="width:100%; background:#16a34a; color:#fff; padding:11px; border:none; border-radius:6px; font-weight:bold; font-size:14px; cursor:pointer; margin-bottom:6px;">✅ थेट ऑर्डर पाठवा व वीव्हो चॅट उघडा</button>
-    <button type="button" onclick="closeModal('customer-cart-modal')" style="width:100%; background:#64748b; color:#fff; padding:9px; border:none; border-radius:6px; font-weight:bold; font-size:13.5px; cursor:pointer;">✕ बंद करा</button>
+    <div style="margin-bottom:8px;"><label style="font-size:12px; font-weight:bold;">पूर्ण नाव</label><input id="cust-order-name" placeholder="पूर्ण नाव" style="width:100%; padding:8px; border:1px solid var(--border-color); border-radius:6px; box-sizing:border-box;"></div>
+    <div style="margin-bottom:8px;"><label style="font-size:12px; font-weight:bold;">मोबाईल नंबर</label><input id="cust-order-phone" placeholder="मोबाईल नंबर" maxlength="10" style="width:100%; padding:8px; border:1px solid var(--border-color); border-radius:6px; box-sizing:border-box;"></div>
+    <div style="margin-bottom:12px;"><label style="font-size:12px; font-weight:bold;">डिलिव्हरी पत्ता</label><textarea id="cust-order-address" placeholder="डिलिव्हरी पत्ता" rows="2" style="width:100%; padding:8px; border:1px solid var(--border-color); border-radius:6px; box-sizing:border-box; resize:none;"></textarea></div>
+    <button type="button" onclick="submitCustomerOrder()" style="width:100%; background:var(--success); color:#fff; padding:11px; border:none; border-radius:6px; font-weight:bold; font-size:14px; cursor:pointer; margin-bottom:6px;">✅ थेट ऑर्डर पाठवा व वीव्हो चॅट उघडा</button>
+    <button type="button" onclick="closeModal('customer-cart-modal')" style="width:100%; background:var(--text-muted); color:#fff; padding:9px; border:none; border-radius:6px; font-weight:bold; font-size:13.5px; cursor:pointer;">✕ बंद करा</button>
   </div>
 </div>
 
@@ -299,9 +325,20 @@ async function initDashboard() {
       var prodSec = document.getElementById('customer-products-section');
       if (prodSec) prodSec.style.display = 'block';
 
+      // 🌟 URL मधील store स्लगवरून अचूक दुकान नाव फेच करणे
       var storeTitle = "निखिल किराणा स्टोअर्स";
-      var clean = lockedStoreUsername.replace(/[_]/g, ' ').trim();
-      storeTitle = clean.charAt(0).toUpperCase() + clean.slice(1) + " स्टोअर्स";
+      try {
+        var bizRes = await sb.from('businesses').select('name, id').or('slug.eq.' + lockedStoreUsername + ',name.ilike.%' + lockedStoreUsername + '%').maybeSingle();
+        if (bizRes.data && bizRes.data.name) {
+          storeTitle = bizRes.data.name;
+          if (bizRes.data.id) currentBusinessId = bizRes.data.id;
+        } else {
+          var clean = lockedStoreUsername.replace(/[_]/g, ' ').trim();
+          storeTitle = clean.charAt(0).toUpperCase() + clean.slice(1) + " स्टोअर्स";
+        }
+      } catch (e) {
+        storeTitle = "निखिल किराणा स्टोअर्स";
+      }
 
       document.getElementById('business-display-name').textContent = storeTitle;
       document.getElementById('header-sub-text').textContent = 'अधिकृत ग्राहक स्टोअर व थेट संवाद मंच';
@@ -314,7 +351,6 @@ async function initDashboard() {
         return;
       }
 
-      // 🌟 वीव्होच्या `profiles` किंवा `users` टेबलमधून ईमेलद्वारे ऑटोमॅटिक युजरनेम फेच करणे
       var merchantHandle = sessionUser.email ? sessionUser.email.split('@')[0] : 'nikhil_kirana';
       var merchantStoreName = "निखिल किराणा स्टोअर्स";
 
@@ -324,9 +360,10 @@ async function initDashboard() {
           merchantHandle = profRes.data.username;
         }
 
-        var bizRes = await sb.from('businesses').select('name').eq('owner_id', sessionUser.id).maybeSingle();
-        if (bizRes.data && bizRes.data.name) {
-          merchantStoreName = bizRes.data.name;
+        var bizRes = await sb.from('businesses').select('name, id').eq('owner_id', sessionUser.id).maybeSingle();
+        if (bizRes.data) {
+          if (bizRes.data.name) merchantStoreName = bizRes.data.name;
+          if (bizRes.data.id) currentBusinessId = bizRes.data.id;
         } else {
           merchantStoreName = merchantHandle.charAt(0).toUpperCase() + merchantHandle.slice(1) + " स्टोअर्स";
         }
@@ -370,7 +407,10 @@ async function loadCustomerStoreProducts() {
   var gridEl = document.getElementById('customer-products-grid');
   if (!gridEl) return;
   try {
-    var res = await sb.from('business_products').select('*').order('name');
+    var res = await sb.from('business_products').select('*').eq('business_id', currentBusinessId);
+    if (!res.data || res.data.length === 0) {
+      res = await sb.from('business_products').select('*').order('name');
+    }
     var products = res.data;
     if (!products || products.length === 0) {
       gridEl.innerHTML = '<p class="muted">या दुकानात सध्या कोणतीही उत्पादने उपलब्ध नाहीत.</p>';
@@ -430,7 +470,7 @@ function openCustomerCartModal() {
   openModal('customer-cart-modal');
 }
 
-// 🌟 ग्राहक ऑर्डर सबमिट केल्यावर थेट डेटाबेसमध्ये आणि वीव्हो चॅटमध्ये अचूक पास होणे
+// 🌟 ऑर्डर सबमिट व वीव्हो ब्रिजिंग
 async function submitCustomerOrder() {
   var name = document.getElementById('cust-order-name').value.trim();
   var phone = document.getElementById('cust-order-phone').value.trim();
@@ -442,7 +482,6 @@ async function submitCustomerOrder() {
   var itemsSummaryText = customerCart.map(function(i) { return i.name + ' (' + i.qty + ' नग)'; }).join(', ');
 
   try {
-    // १. AllERP च्या orders टेबलमध्ये इन्सर्ट करणे
     await sb.from('orders').insert({
       business_id: currentBusinessId,
       customer_name: name,
@@ -453,7 +492,6 @@ async function submitCustomerOrder() {
       status: 'pending'
     });
 
-    // २. Weavo च्या chat/messages मध्ये थेट सिंक करणे
     var storeUsername = lockedStoreUsername || currentMerchantUsername || 'nikhil_kirana';
     var customerUserId = loggedInCustomer ? loggedInCustomer.id : null;
     if (customerUserId) {
@@ -486,7 +524,10 @@ async function loadProducts() {
   var tbody = document.getElementById('products-table-body');
   if (!tbody) return;
   try {
-    var res = await sb.from('business_products').select('*').order('name');
+    var res = await sb.from('business_products').select('*').eq('business_id', currentBusinessId);
+    if (!res.data || res.data.length === 0) {
+      res = await sb.from('business_products').select('*').order('name');
+    }
     var data = res.data;
     if (!data || data.length === 0) {
       tbody.innerHTML = '<tr><td colspan="4" class="muted" style="text-align:center;">कोणतीही उत्पादने नाहीत.</td></tr>';
@@ -565,7 +606,10 @@ async function loadPOSProducts() {
   var grid = document.getElementById('pos-products-grid');
   if (!grid) return;
   try {
-    var res = await sb.from('business_products').select('*').order('name');
+    var res = await sb.from('business_products').select('*').eq('business_id', currentBusinessId);
+    if (!res.data || res.data.length === 0) {
+      res = await sb.from('business_products').select('*').order('name');
+    }
     var data = res.data;
     if (!data || data.length === 0) {
       grid.innerHTML = '<p class="muted">प्रॉडक्ट्स उपलब्ध नाहीत.</p>';
@@ -662,9 +706,9 @@ async function loadOnlineOrders() {
       return '<tr>' +
              '<td><strong>#' + o.id.toString().substring(0,8) + '</strong></td>' +
              '<td>' + escapeHtml(o.customer_name || '-') + '</td>' +
-             '<td>📱 ' + escapeHtml(o.customer_phone || '-') + '<br><small style="color:#64748b;">🏠 ' + escapeHtml(o.customer_address || '-') + '</small></td>' +
+             '<td>📱 ' + escapeHtml(o.customer_phone || '-') + '<br><small style="color:var(--text-muted);">🏠 ' + escapeHtml(o.customer_address || '-') + '</small></td>' +
              '<td>' + escapeHtml(o.items_summary || '-') + '</td>' +
-             '<td style="font-weight:bold; color:#16a34a;">₹' + (o.total_amount || 0) + '</td>' +
+             '<td style="font-weight:bold; color:var(--success);">₹' + (o.total_amount || 0) + '</td>' +
              '<td><span class="badge pending">' + (o.status || 'pending') + '</span></td>' +
              '</tr>';
     }).join('');
@@ -687,7 +731,7 @@ async function loadCustomerOrderHistory() {
       return '<tr>' +
              '<td><strong>#' + o.id.toString().substring(0,8) + '</strong></td>' +
              '<td>' + escapeHtml(o.items_summary || '-') + '</td>' +
-             '<td style="font-weight:bold; color:#16a34a;">₹' + (o.total_amount || 0) + '</td>' +
+             '<td style="font-weight:bold; color:var(--success);">₹' + (o.total_amount || 0) + '</td>' +
              '<td>' + escapeHtml(o.customer_address || '-') + '</td>' +
              '<td><span class="badge ' + (o.status === 'delivered' ? 'live' : 'pending') + '">' + (o.status || 'pending') + '</span></td>' +
              '</tr>';
