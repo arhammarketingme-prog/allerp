@@ -11,36 +11,58 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 <style>
+:root {
+  --primary: #1D4E89;
+  --primary-hover: #153e72;
+  --success: #16a34a;
+  --bg-color: #f8fafc;
+  --card-bg: #ffffff;
+  --text-main: #1e293b;
+  --text-muted: #64748b;
+  --border-color: #cbd5e1;
+}
+
+body { background-color: var(--bg-color); color: var(--text-main); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 0; }
 body.store-locked-mode #app-nav { display: none !important; }
 .dashboard-main-frame { width: 98%; max-width: 1450px; margin: 10px auto; padding: 0 6px; }
-.erp-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px; background: #ffffff; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border, #e2e8f0); }
+
+/* 🌟 ऑल ईआरपी मूळ हेडर आणि थीम डिझाईन */
+.erp-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px; background: var(--card-bg); padding: 12px 18px; border-radius: 8px; border: 1px solid var(--border-color); box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+.erp-header h1 { color: var(--primary); margin: 0; font-size: 22px; font-weight: 800; }
+.muted { color: var(--text-muted); font-size: 13px; }
+
+/* 🌟 ऑल ईआरपी युनिफाइड बटणे */
 .weavo-header-btn { background: linear-gradient(135deg, #0b8f87, #16b8a9); color: #fff; padding: 8px 14px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12.5px; display: inline-flex; align-items: center; gap: 5px; text-decoration: none; }
 .whatsapp-share-btn { background: #25D366; color: #fff; padding: 8px 14px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12.5px; display: inline-flex; align-items: center; gap: 5px; text-decoration: none; }
-.google-login-customer-btn { background: #ffffff; color: #1e293b; border: 1px solid #cbd5e1; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12.5px; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-.google-login-customer-btn:hover { background: #f8fafc; }
+.google-login-customer-btn { background: #ffffff; color: var(--text-main); border: 1px solid var(--border-color); padding: 8px 14px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12.5px; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+.google-login-customer-btn:hover { background: #f1f5f9; }
 
-/* 🌟 कस्टमरसाठी खास उपयुक्त बटणांची बार (Customer Navigation Bar) */
-.customer-action-bar { display: none; gap: 8px; overflow-x: auto; padding: 10px 0; margin-bottom: 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding-left: 10px; padding-right: 10px; align-items: center; }
-.cust-nav-btn { background: #ffffff; color: #1e293b; border: 1px solid #cbd5e1; padding: 7px 14px; border-radius: 6px; font-weight: 700; font-size: 12.5px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; text-decoration: none; }
+/* 🌟 कस्टमर स्टोअर मोड नेव्हिगेशन बार (ऑल ईआरपी थीम मॅचिंग) */
+.customer-action-bar { display: none; gap: 8px; overflow-x: auto; padding: 10px 14px; margin-bottom: 14px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
+.cust-nav-btn { background: #ffffff; color: var(--text-main); border: 1px solid var(--border-color); padding: 8px 14px; border-radius: 6px; font-weight: 700; font-size: 12.5px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; text-decoration: none; }
 .cust-nav-btn:hover { background: #f1f5f9; }
-.cust-nav-btn.primary { background: #1D4E89; color: #fff; border-color: #1D4E89; }
-.cust-nav-btn.success { background: #16a34a; color: #fff; border-color: #16a34a; }
+.cust-nav-btn.primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+.cust-nav-btn.success { background: var(--success); color: #fff; border-color: var(--success); }
 
 .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 99999 !important; align-items: center; justify-content: center; }
-.modal-content { background: var(--card, #ffffff); border-radius: 12px; width: 95%; max-width: 480px; padding: 24px; box-shadow: 0 15px 35px rgba(0,0,0,0.25); }
+.modal-content { background: var(--card-bg); border-radius: 10px; width: 95%; max-width: 480px; padding: 24px; box-shadow: 0 15px 35px rgba(0,0,0,0.25); border: 1px solid var(--border-color); }
+
 .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 16px; }
-.kpi-card { background: var(--card, #ffffff); border: 1px solid var(--border, #e2e8f0); border-radius: 8px; padding: 12px; }
-.erp-tabs-bar { display: flex; gap: 4px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 14px; border-bottom: 2px solid var(--border, #e2e8f0); }
-.erp-tab-btn { background: transparent; color: var(--text, #1e293b); border: none; border-bottom: 3px solid transparent; padding: 6px 12px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; }
-.erp-tab-btn.active { color: var(--secondary, #1D4E89); border-bottom-color: var(--secondary, #1D4E89); }
-.erp-tab-pane { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin-bottom: 20px; }
+.kpi-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
+.kpi-title { font-size: 12.5px; color: var(--text-muted); font-weight: 600; }
+.kpi-value { font-size: 20px; font-weight: 800; color: var(--primary); margin-top: 4px; }
+
+.erp-tabs-bar { display: flex; gap: 4px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 14px; border-bottom: 2px solid var(--border-color); }
+.erp-tab-btn { background: transparent; color: var(--text-main); border: none; border-bottom: 3px solid transparent; padding: 6px 12px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+.erp-tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+.erp-tab-pane { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
+
 .badge { padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; }
-.badge.live { background: #16a34a; color: #fff; }
+.badge.live { background: var(--success); color: #fff; }
 .badge.pending { background: #f59e0b; color: #fff; }
 
-/* 🌟 नवीन ऑर्डर आल्यावर चमकणारी पट्टी (Alert Banner) */
-#merchant-alert-banner { display: none; background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; padding: 12px 18px; border-radius: 8px; margin-bottom: 14px; font-weight: bold; font-size: 14px; text-align: center; animation: pulse-banner 1.5s infinite; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3); }
-@keyframes pulse-banner { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
+/* 🌟 दुकानदारासाठी अलर्ट पट्टी */
+#merchant-alert-banner { display: none; background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; padding: 12px 18px; border-radius: 8px; margin-bottom: 14px; font-weight: bold; font-size: 14px; text-align: center; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3); }
 </style>
 </head>
 <body>
@@ -51,7 +73,7 @@ body.store-locked-mode #app-nav { display: none !important; }
     <div>
       <h1 id="business-display-name">ALL ERP Dashboard</h1>
       <span class="muted" id="header-sub-text">Universal Multi-Business Operating System & Local Marketplace</span>
-      <div style="margin-top:4px; font-size:13px; font-weight:700; color:#0b8f87;" id="merchant-username-badge">
+      <div style="margin-top:4px; font-size:13px; font-weight:700; color:var(--primary);" id="merchant-username-badge">
         👤 युझरनेम: <span id="display-merchant-handle">@abhinay_gandhi</span>
       </div>
     </div>
@@ -66,12 +88,11 @@ body.store-locked-mode #app-nav { display: none !important; }
     </div>
   </div>
 
-  <!-- 🌟 नवीन ऑर्डर आल्यावर दिसणारी अलर्ट पट्टी (Merchant Alert Banner) -->
   <div id="merchant-alert-banner">
     🔔 नवीन ऑनलाईन ऑर्डर आली आहे! कृपया "ऑनलाईन ऑर्डर्स" टॅब तपासा.
   </div>
 
-  <!-- 🌟 कस्टमरसाठी खास उपयुक्त बटणांची बार (Customer Action Bar) -->
+  <!-- 🌟 ऑल ईआरपी थीम मॅचिंग कस्टमर नेव्हिगेशन बार -->
   <div class="customer-action-bar" id="customer-action-bar">
     <button type="button" class="cust-nav-btn success" onclick="openCustomerCartModal()">🛒 कार्ट (<span id="bar-cart-count">0</span>)</button>
     <button type="button" class="cust-nav-btn primary" onclick="switchTab('tab-my-orders')">🛍️ माझ्या ऑर्डर्स</button>
@@ -104,8 +125,8 @@ body.store-locked-mode #app-nav { display: none !important; }
 
     <div id="customer-products-section" style="display:none; margin-bottom:30px;">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-        <h2 style="color:#1D4E89; margin:0;">📦 या दुकानातील उपलब्ध वस्तू</h2>
-        <div id="cart-summary-badge" style="background:#16a34a; color:#fff; padding:6px 14px; border-radius:20px; font-weight:bold; font-size:13px; cursor:pointer;" onclick="openCustomerCartModal()">
+        <h2 style="color:var(--primary); margin:0; font-size:18px;">📦 या दुकानातील उपलब्ध वस्तू</h2>
+        <div id="cart-summary-badge" style="background:var(--success); color:#fff; padding:6px 14px; border-radius:20px; font-weight:bold; font-size:13px; cursor:pointer;" onclick="openCustomerCartModal()">
           🛒 कार्ट: <span id="cart-count">0</span> वस्तू (₹<span id="cart-total">0</span>)
         </div>
       </div>
@@ -124,10 +145,10 @@ body.store-locked-mode #app-nav { display: none !important; }
 
   <!-- TAB 2: PRODUCTS -->
   <div id="tab-products" class="erp-tab-pane" style="display:none;">
-    <h2>📦 इन्व्हेंटरी व उत्पादने</h2>
-    <div style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:16px;">
+    <h2 style="color:var(--primary); font-size:18px;">📦 इन्व्हेंटरी व उत्पादने</h2>
+    <div style="background:#fff; border:1px solid var(--border-color); border-radius:8px; padding:16px;">
       <table style="width:100%; border-collapse:collapse;">
-        <thead><tr style="text-align:left; border-bottom:2px solid #e2e8f0;"><th>उत्पादन</th><th>विक्री दर</th><th>स्टॉक</th><th>स्थिती</th></tr></thead>
+        <thead><tr style="text-align:left; border-bottom:2px solid var(--border-color);"><th>उत्पादन</th><th>विक्री दर</th><th>स्टॉक</th><th>स्थिती</th></tr></thead>
         <tbody id="products-table-body"></tbody>
       </table>
     </div>
@@ -136,13 +157,13 @@ body.store-locked-mode #app-nav { display: none !important; }
   <!-- TAB 11: ORDERS (Merchant View) -->
   <div id="tab-orders" class="erp-tab-pane" style="display:none;">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-      <h2>🛍️ ऑनलाईन ग्राहकांच्या ऑर्डर्स</h2>
-      <button type="button" onclick="loadOnlineOrders()" style="background:#1D4E89; color:#fff; border:none; padding:6px 12px; border-radius:4px; cursor:pointer;">🔄 रिफ्रेश करा</button>
+      <h2 style="color:var(--primary); font-size:18px;">🛍️ ऑनलाईन ग्राहकांच्या ऑर्डर्स</h2>
+      <button type="button" onclick="loadOnlineOrders()" style="background:var(--primary); color:#fff; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:bold;">🔄 रिफ्रेश करा</button>
     </div>
-    <div style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:16px;">
+    <div style="background:#fff; border:1px solid var(--border-color); border-radius:8px; padding:16px;">
       <table style="width:100%; border-collapse:collapse;">
         <thead>
-          <tr style="text-align:left; border-bottom:2px solid #e2e8f0;">
+          <tr style="text-align:left; border-bottom:2px solid var(--border-color);">
             <th>ऑर्डर #</th><th>ग्राहक नाव</th><th>संपर्क व पत्ता</th><th>तपशील (Items)</th><th>रक्कम</th><th>स्थिती</th>
           </tr>
         </thead>
@@ -151,16 +172,16 @@ body.store-locked-mode #app-nav { display: none !important; }
     </div>
   </div>
 
-  <!-- 🌟 कस्टमरसाठी नवीन टॅब: माझ्या ऑर्डर्स व स्टेटस (Customer Order History & Status) -->
+  <!-- CUSTOMER ORDER HISTORY TAB -->
   <div id="tab-my-orders" class="erp-tab-pane" style="display:none;">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-      <h2>🛍️ तुमची ऑर्डर हिस्ट्री व स्टेटस</h2>
-      <button type="button" onclick="loadCustomerOrderHistory()" style="background:#1D4E89; color:#fff; border:none; padding:6px 12px; border-radius:4px; cursor:pointer;">🔄 रिफ्रेश करा</button>
+      <h2 style="color:var(--primary); font-size:18px;">🛍️ तुमची ऑर्डर हिस्ट्री व स्टेटस</h2>
+      <button type="button" onclick="loadCustomerOrderHistory()" style="background:var(--primary); color:#fff; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:bold;">🔄 रिफ्रेश करा</button>
     </div>
-    <div style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:16px;">
+    <div style="background:#fff; border:1px solid var(--border-color); border-radius:8px; padding:16px;">
       <table style="width:100%; border-collapse:collapse;">
         <thead>
-          <tr style="text-align:left; border-bottom:2px solid #e2e8f0;">
+          <tr style="text-align:left; border-bottom:2px solid var(--border-color);">
             <th>ऑर्डर #</th><th>तपशील (Items)</th><th>रक्कम</th><th>डिलिव्हरी पत्ता</th><th>स्थिती (Status)</th>
           </tr>
         </thead>
@@ -171,39 +192,37 @@ body.store-locked-mode #app-nav { display: none !important; }
 
 </div>
 
-<!-- 🛒 ग्राहकाचे कार्ट, मोबाईल नंबर व पत्ता (Address) मोडल -->
+<!-- 🛒 कार्ट व डिटेल्स मोडल (ऑल ईआरपी थीम स्टाईल) -->
 <div id="customer-cart-modal" class="modal-overlay">
   <div class="modal-content">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-      <h3 style="margin:0;">🛒 तुमची चालू ऑर्डर (Cart Summary)</h3>
-      <button type="button" onclick="closeModal('customer-cart-modal')" style="background:transparent; border:none; font-size:16px; cursor:pointer; font-weight:bold;">✕</button>
+      <h3 style="margin:0; color:var(--primary);">🛒 तुमची चालू ऑर्डर (Cart Summary)</h3>
+      <button type="button" onclick="closeModal('customer-cart-modal')" style="background:transparent; border:none; font-size:16px; cursor:pointer; font-weight:bold; color:var(--text-muted);">✕</button>
     </div>
     <div id="customer-cart-items" style="max-height:160px; overflow-y:auto; margin-bottom:10px;">
       <p class="muted">कार्ट रिकामी आहे.</p>
     </div>
-    <hr style="border:none; border-top:1px solid #e2e8f0; margin:8px 0;">
+    <hr style="border:none; border-top:1px solid var(--border-color); margin:8px 0;">
     <div style="display:flex; justify-content:space-between; font-size:15px; font-weight:bold; margin-bottom:12px;">
       <span>एकूण रक्कम:</span>
-      <span style="color:#16a34a;">₹<span id="modal-cart-total">0.00</span></span>
+      <span style="color:var(--success);">₹<span id="modal-cart-total">0.00</span></span>
     </div>
     
-    <div style="background:#f1f5f9; padding:8px 12px; border-radius:6px; margin-bottom:10px; font-size:12px; color:#334155;">
+    <div style="background:#f1f5f9; padding:8px 12px; border-radius:6px; margin-bottom:10px; font-size:12px; color:#334155; border:1px solid var(--border-color);">
       👤 गुगल ईमेल: <strong id="modal-user-email">तपासत आहे...</strong>
     </div>
 
-    <!-- 📱 संपर्क मोबाईल नंबर -->
     <div style="margin-bottom:10px;">
-      <label style="font-weight:700; font-size:12px; color:#1e293b; display:block; margin-bottom:3px;">📱 संपर्क मोबाईल नंबर:</label>
-      <input type="tel" id="cust-phone-input" placeholder="१० अंकी मोबाईल नंबर टाका" maxlength="10" style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:6px; font-weight:600; font-size:13.5px; background:#fff;">
+      <label style="font-weight:700; font-size:12px; color:var(--text-main); display:block; margin-bottom:3px;">📱 संपर्क मोबाईल नंबर:</label>
+      <input type="tel" id="cust-phone-input" placeholder="१० अंकी मोबाईल नंबर टाका" maxlength="10" style="width:100%; padding:9px 12px; border:1px solid var(--border-color); border-radius:6px; font-weight:600; font-size:13.5px; background:#fff;">
     </div>
 
-    <!-- 🏠 डिलिव्हरी पत्ता -->
     <div style="margin-bottom:16px;">
-      <label style="font-weight:700; font-size:12px; color:#1e293b; display:block; margin-bottom:3px;">🏠 संपूर्ण डिलिव्हरी पत्ता (Address):</label>
-      <textarea id="cust-address-input" placeholder="घर/दुकान क्रमांक, गल्ली, परिसर, शहर व पिनकोड लिहा..." rows="2" style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:6px; font-weight:500; font-size:13px; background:#fff; resize:none;"></textarea>
+      <label style="font-weight:700; font-size:12px; color:var(--text-main); display:block; margin-bottom:3px;">🏠 संपूर्ण डिलिव्हरी पत्ता (Address):</label>
+      <textarea id="cust-address-input" placeholder="घर/दुकान क्रमांक, गल्ली, परिसर, शहर व पिनकोड लिहा..." rows="2" style="width:100%; padding:9px 12px; border:1px solid var(--border-color); border-radius:6px; font-weight:500; font-size:13px; background:#fff; resize:none;"></textarea>
     </div>
 
-    <button type="button" onclick="submitCustomerOrderWithDetails()" style="width:100%; background:#16a34a; color:#fff; padding:12px; border:none; border-radius:6px; font-weight:bold; font-size:15px; cursor:pointer;">
+    <button type="button" onclick="submitCustomerOrderWithDetails()" style="width:100%; background:var(--success); color:#fff; padding:12px; border:none; border-radius:6px; font-weight:bold; font-size:15px; cursor:pointer;">
       ✅ थेट ऑर्डर पाठवा व चॅट उघडा (Place Order)
     </button>
   </div>
@@ -221,7 +240,7 @@ let currentProducts = [];
 let lockedStoreUsername = null;
 let customerCart = [];
 let loggedInCustomer = null;
-let merchantPhoneNo = "9876543210"; // दुकानदाराचा संपर्क नंबर
+let merchantPhoneNo = "9876543210";
 
 function switchTab(tabId) {
   document.querySelectorAll('.erp-tab-pane').forEach(el => el.style.display = 'none');
@@ -244,14 +263,12 @@ async function initDashboard() {
     lockedStoreUsername = urlParams.get('store');
 
     if (lockedStoreUsername) {
-      // 🔒 कस्टमर स्टोअर मोड
       document.body.classList.add('store-locked-mode');
       document.getElementById('erp-navigation-tabs').style.display = 'none';
       document.getElementById('kpi-grid-section').style.display = 'none';
       document.getElementById('whatsapp-share-btn').style.display = 'none';
       document.getElementById('weavo-chat-btn').style.display = 'none';
       
-      // कस्टमरसाठी निवडक उपयुक्त बटणांची बार दाखवणे
       document.getElementById('customer-action-bar').style.display = 'flex';
       document.getElementById('customer-google-login-btn').style.display = 'inline-flex';
       document.getElementById('customer-store-notice').style.display = 'block';
@@ -276,7 +293,6 @@ async function initDashboard() {
         await loadCustomerStoreProducts();
       }
     } else {
-      // 📊 दुकानदार (Merchant) डॅशबोर्ड मोड
       if (typeof sb === 'undefined' || !sb.auth) return;
       const { data: { user } } = await sb.auth.getUser();
       if (!user) { window.location.href = 'login.html'; return; }
@@ -291,8 +307,6 @@ async function initDashboard() {
         document.getElementById('business-display-name').textContent = businesses[0].name;
         if (businesses[0].phone) merchantPhoneNo = businesses[0].phone;
         await loadOnlineOrders();
-        
-        // 🌟 दुकानदारासाठी रिअल-टाइम ऑर्डर अलर्ट व साऊंड यंत्रणा सुरू करणे
         subscribeMerchantOrderAlerts(currentBusinessId);
       }
     }
@@ -316,13 +330,13 @@ async function loadCustomerStoreProducts() {
   }
   currentProducts = products;
   gridEl.innerHTML = products.map(p => `
-    <div style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:12px; text-align:center; display:flex; flex-direction:column; justify-content:space-between;">
+    <div style="background:#fff; border:1px solid var(--border-color); border-radius:8px; padding:12px; text-align:center; display:flex; flex-direction:column; justify-content:space-between;">
       <div>
         <img src="${p.image_url || 'https://placehold.co/100x100?text=Product'}" style="width:90px; height:90px; object-fit:cover; border-radius:6px; margin-bottom:8px;">
-        <div style="font-weight:700; font-size:14px; margin-bottom:4px;">${escapeHtml(p.name)}</div>
-        <div style="color:#16a34a; font-weight:800; font-size:14px; margin-bottom:8px;">₹${p.selling_price}</div>
+        <div style="font-weight:700; font-size:14px; margin-bottom:4px; color:var(--text-main);">${escapeHtml(p.name)}</div>
+        <div style="color:var(--success); font-weight:800; font-size:14px; margin-bottom:8px;">₹${p.selling_price}</div>
       </div>
-      <button onclick="addToCustomerCart('${p.id}')" style="background:#16a34a; color:#fff; border:none; padding:7px; border-radius:5px; font-size:12px; font-weight:bold; cursor:pointer;">🛒 ॲड टू कार्ट</button>
+      <button onclick="addToCustomerCart('${p.id}')" style="background:var(--success); color:#fff; border:none; padding:7px; border-radius:5px; font-size:12px; font-weight:bold; cursor:pointer;">🛒 ॲड टू कार्ट</button>
     </div>
   `).join('');
 }
@@ -353,7 +367,7 @@ function updateCustomerCartUI() {
   itemsBox.innerHTML = customerCart.map(i => `
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; font-size:13px; border-bottom:1px solid #f1f5f9; padding-bottom:4px;">
       <div><strong>${escapeHtml(i.name)}</strong><br><span class="muted">₹${i.price} × ${i.qty}</span></div>
-      <div style="font-weight:bold; color:#16a34a;">₹${(i.price * i.qty).toFixed(2)}</div>
+      <div style="font-weight:bold; color:var(--success);">₹${(i.price * i.qty).toFixed(2)}</div>
     </div>
   `).join('');
 }
@@ -446,13 +460,12 @@ async function loadOnlineOrders() {
       <td>${escapeHtml(o.customer_name || 'Customer')}</td>
       <td>📱 <a href="tel:${escapeHtml(o.customer_phone)}">${escapeHtml(o.customer_phone || '-')}</a><br><small class="muted">🏠 ${escapeHtml(o.customer_address || 'पत्ता नाही')}</small></td>
       <td>${escapeHtml(o.items_summary || '-')}</td>
-      <td style="font-weight:bold; color:#16a34a;">₹${o.total_amount || 0}</td>
+      <td style="font-weight:bold; color:var(--success);">₹${o.total_amount || 0}</td>
       <td><span class="badge pending">${o.status || 'pending'}</span></td>
     </tr>
   `).join('');
 }
 
-// 🌟 ग्राहकाची स्वतःची ऑर्डर हिस्ट्री पाहण्याची यंत्रणा
 async function loadCustomerOrderHistory() {
   if (!loggedInCustomer) {
     alert('कृपया आधी गुगलने लॉगिन करा!');
@@ -478,14 +491,13 @@ async function loadCustomerOrderHistory() {
     <tr style="border-bottom:1px solid #f1f5f9; padding:8px 0;">
       <td><strong>#${o.id.toString().substring(0,8)}</strong></td>
       <td>${escapeHtml(o.items_summary || '-')}</td>
-      <td style="font-weight:bold; color:#16a34a;">₹${o.total_amount || 0}</td>
+      <td style="font-weight:bold; color:var(--success);">₹${o.total_amount || 0}</td>
       <td>${escapeHtml(o.customer_address || '-')}</td>
       <td><span class="badge ${o.status === 'delivered' ? 'live' : 'pending'}">${o.status || 'pending'}</span></td>
     </tr>
   `).join('');
 }
 
-// 🌟 दुकानदाराशी संपर्क साधण्यासाठी फोन कॉल बटण
 function callMerchantPhone() {
   if (merchantPhoneNo) {
     window.location.href = `tel:${merchantPhoneNo}`;
@@ -494,18 +506,12 @@ function callMerchantPhone() {
   }
 }
 
-// 🌟 नवीन ऑर्डर आल्यावर बीप साऊंड आणि बॅनर पट्टी वाजवणारी रिअल-टाइम यंत्रणा
 function subscribeMerchantOrderAlerts(businessId) {
   sb.channel('merchant-orders-channel')
     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'orders', filter: `business_id=eq.${businessId}` }, payload => {
-      // 1. स्क्रीनवर अलर्ट पट्टी दाखवणे
       const banner = document.getElementById('merchant-alert-banner');
-      if (banner) {
-        banner.style.display = 'block';
-      }
-      // 2. बीप साऊंड वाजवणे (Audio Beep)
+      if (banner) banner.style.display = 'block';
       playAlertBeepSound();
-      // 3. ऑर्डर्स टेबल रिफ्रेश करणे
       loadOnlineOrders();
     })
     .subscribe();
@@ -517,12 +523,12 @@ function playAlertBeepSound() {
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.type = 'sine';
-    osc.frequency.value = 800; // सुमधुर बीप फ्रिक्वेन्सी
+    osc.frequency.value = 800;
     gain.gain.setValueAtTime(0.1, ctx.currentTime);
     osc.connect(gain);
     gain.connect(ctx.destination);
     osc.start();
-    osc.stop(ctx.currentTime + 0.5); // अर्धा सेकंद बीप वाजेल
+    osc.stop(ctx.currentTime + 0.5);
   } catch(e) {}
 }
 
