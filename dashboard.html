@@ -11,27 +11,68 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 <style>
+:root {
+  --primary: #1D4E89;
+  --primary-dark: #153b6b;
+  --accent: #0ea5e9;
+  --bg-main: #f8fafc;
+  --card-bg: #ffffff;
+  --text-main: #1e293b;
+  --text-muted: #64748b;
+  --border-color: #cbd5e1;
+  --success: #16a34a;
+  --danger: #dc2626;
+  --warning: #f59e0b;
+}
+
+body { background: var(--bg-main); color: var(--text-main); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 0; }
 body.store-locked-mode #app-nav { display: none !important; }
-.dashboard-main-frame { width: 98%; max-width: 1450px; margin: 10px auto; padding: 0 6px; }
-.erp-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px; background: #ffffff; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border, #e2e8f0); position: relative; z-index: 50; }
-.erp-header h1 { font-size: 18px !important; margin: 0 !important; }
-.weavo-header-btn { background: linear-gradient(135deg, #0b8f87, #16b8a9); color: #fff; padding: 8px 14px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12.5px; display: inline-flex; align-items: center; gap: 5px; text-decoration: none; }
-.whatsapp-share-btn { background: #25D366; color: #fff; padding: 8px 14px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12.5px; display: inline-flex; align-items: center; gap: 5px; text-decoration: none; }
-.google-login-customer-btn { background: #ffffff; color: #1e293b; border: 1px solid #cbd5e1; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12.5px; display: inline-flex; align-items: center; gap: 8px; }
-.customer-action-bar { display: none; gap: 8px; overflow-x: auto; padding: 10px 14px; margin-bottom: 14px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; align-items: center; }
-.cust-nav-btn { background: #ffffff; color: #1e293b; border: 1px solid #cbd5e1; padding: 8px 14px; border-radius: 6px; font-weight: 700; font-size: 12.5px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; }
-.cust-nav-btn.primary { background: #1D4E89; color: #fff; border-color: #1D4E89; }
-.cust-nav-btn.success { background: #16a34a; color: #fff; border-color: #16a34a; }
-.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 99999 !important; align-items: center; justify-content: center; }
-.modal-content { background: var(--card, #ffffff); border-radius: 12px; width: 95%; max-width: 650px; padding: 24px; max-height: 85vh; overflow-y: auto; z-index: 100000 !important; }
-.kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 16px; }
-.kpi-card { background: var(--card, #ffffff); border: 1px solid var(--border, #e2e8f0); border-radius: 8px; padding: 12px; }
-.erp-tabs-bar { display: flex; gap: 4px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 14px; border-bottom: 2px solid var(--border, #e2e8f0); }
-.erp-tab-btn { background: transparent; color: var(--text, #1e293b); border: none; border-bottom: 3px solid transparent; padding: 6px 12px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; }
-.erp-tab-btn.active { color: var(--secondary, #1D4E89); border-bottom-color: var(--secondary, #1D4E89); }
-.badge { padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; }
-.badge.live { background: #16a34a; color: #fff; }
-.badge.pending { background: #f59e0b; color: #fff; }
+
+.dashboard-main-frame { width: 98%; max-width: 1450px; margin: 15px auto; padding: 0 10px; }
+
+/* 🌟 क्लासिक आकर्षक निळी डिझाईन Header */
+.erp-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px; background: linear-gradient(135deg, #1e3a8a, #1D4E89); color: #fff; padding: 16px 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(29,78,137,0.2); }
+.erp-header h1 { font-size: 22px !important; margin: 0 !important; color: #fff; }
+.erp-header .muted { color: #cbd5e1 !important; font-size: 12px !important; }
+
+.weavo-header-btn { background: linear-gradient(135deg, #0b8f87, #16b8a9); color: #fff; padding: 9px 16px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; box-shadow: 0 2px 6px rgba(0,0,0,0.15); transition: 0.2s; }
+.weavo-header-btn:hover { opacity: 0.9; }
+
+.whatsapp-share-btn { background: #25D366; color: #fff; padding: 9px 16px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; box-shadow: 0 2px 6px rgba(0,0,0,0.15); }
+.google-login-customer-btn { background: #ffffff; color: #1e293b; border: 1px solid #cbd5e1; padding: 9px 16px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 13px; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+
+.customer-action-bar { display: none; gap: 10px; overflow-x: auto; padding: 12px 18px; margin-bottom: 16px; background: #ffffff; border: 1px solid var(--border-color); border-radius: 10px; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.03); }
+.cust-nav-btn { background: #ffffff; color: var(--text-main); border: 1px solid var(--border-color); padding: 9px 16px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; transition: 0.2s; }
+.cust-nav-btn:hover { background: #f1f5f9; }
+.cust-nav-btn.primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+.cust-nav-btn.success { background: var(--success); color: #fff; border-color: var(--success); }
+
+/* 🌟 टॅब बार डिझाईन */
+.erp-tabs-bar { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 18px; border-bottom: 2px solid var(--border-color); }
+.erp-tab-btn { background: #ffffff; color: var(--text-main); border: 1px solid var(--border-color); border-bottom: 3px solid transparent; padding: 8px 16px; font-size: 13.5px; font-weight: 700; cursor: pointer; white-space: nowrap; border-radius: 8px 8px 0 0; transition: 0.2s; }
+.erp-tab-btn:hover { background: #f1f5f9; color: var(--primary); }
+.erp-tab-btn.active { background: var(--primary); color: #ffffff; border-color: var(--primary); border-bottom-color: var(--accent); }
+
+.erp-tab-pane { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); min-height: 400px; }
+.erp-tab-pane h2 { margin-top: 0; color: var(--primary); font-size: 20px; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; }
+
+/* टेबल व फॉर्म डिझाईन */
+table { width: 100%; border-collapse: collapse; margin-top: 10px; background: #fff; border-radius: 8px; overflow: hidden; border: 1px solid var(--border-color); }
+th, td { padding: 12px 14px; text-align: left; border-bottom: 1px solid #f1f5f9; font-size: 14px; }
+th { background: #f8fafc; color: #334155; font-weight: 800; border-bottom: 2px solid var(--border-color); }
+tr:hover { background: #f8fafc; }
+
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 99999 !important; align-items: center; justify-content: center; backdrop-filter: blur(2px); }
+.modal-content { background: var(--card-bg); border-radius: 14px; width: 95%; max-width: 650px; padding: 26px; max-height: 85vh; overflow-y: auto; box-shadow: 0 20px 40px rgba(0,0,0,0.3); z-index: 100000 !important; }
+
+.kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 20px; }
+.kpi-card { background: #ffffff; border: 1px solid var(--border-color); border-radius: 10px; padding: 16px; box-shadow: 0 2px 5px rgba(0,0,0,0.03); border-left: 5px solid var(--primary); }
+.kpi-title { font-size: 13px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; }
+.kpi-value { font-size: 22px; font-weight: 900; color: var(--text-main); margin-top: 6px; }
+
+.badge { padding: 4px 10px; border-radius: 6px; font-size: 11.5px; font-weight: 800; display: inline-block; }
+.badge.live { background: #dcfce7; color: #166534; }
+.badge.pending { background: #fef9c3; color: #854d0e; }
 </style>
 </head>
 <body onclick="enableAudioContextOnce()">
@@ -40,13 +81,13 @@ body.store-locked-mode #app-nav { display: none !important; }
 <div class="dashboard-main-frame">
   <div class="erp-header">
     <div>
-      <h1 id="business-display-name">ALL ERP Dashboard</h1>
+      <h1 id="business-display-name">⚡ ALL ERP Dashboard</h1>
       <span class="muted" id="header-sub-text">Universal Multi-Business Operating System & Local Marketplace</span>
-      <div style="margin-top:4px; font-size:13px; font-weight:700; color:#0b8f87;" id="merchant-username-badge">
+      <div style="margin-top:6px; font-size:13.5px; font-weight:700; color:#38bdf8;" id="merchant-username-badge">
         👤 वीव्हो युझरनेम: <span id="display-merchant-handle">@abhinaygandhi5151</span>
       </div>
     </div>
-    <div>
+    <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
       <button type="button" id="customer-google-login-btn" onclick="loginCustomerWithGoogle()" class="google-login-customer-btn" style="display:none;">Google ने लॉगिन करा</button>
       <button type="button" id="whatsapp-share-btn" onclick="shareStoreOnWhatsApp()" class="whatsapp-share-btn">📢 WhatsApp शेअर</button>
       <button type="button" id="weavo-chat-btn" onclick="openWeavoChat()" class="weavo-header-btn">💬 Weavo चॅट</button>
@@ -59,7 +100,7 @@ body.store-locked-mode #app-nav { display: none !important; }
     <button type="button" class="cust-nav-btn" onclick="openWeavoChat()">💬 दुकानदाराशी चॅट</button>
   </div>
 
-  <!-- 🌟 सर्वच्या सर्व पूर्ण टॅब बटणे -->
+  <!-- 🌟 पूर्ण क्लासिक टॅब बार बटणे -->
   <div class="erp-tabs-bar" id="erp-navigation-tabs">
     <button type="button" class="erp-tab-btn active" onclick="switchTab('tab-overview')">📊 डॅशबोर्ड</button>
     <button type="button" class="erp-tab-btn" onclick="switchTab('tab-products')">📦 इन्व्हेंटरी व स्टॉक</button>
@@ -88,15 +129,23 @@ body.store-locked-mode #app-nav { display: none !important; }
         <p class="muted">प्रॉडक्ट्स लोड होत आहेत...</p>
       </div>
     </div>
+    
     <div class="kpi-grid">
-      <div class="kpi-card"><div>एकूण विक्री</div><div style="font-size:18px; font-weight:bold;" id="kpi-total-sales">₹0.00</div></div>
-      <div class="kpi-card"><div>एकूण खरेदी</div><div style="font-size:18px; font-weight:bold;" id="kpi-total-purchases">₹0.00</div></div>
-      <div class="kpi-card"><div>एकूण खर्च</div><div style="font-size:18px; font-weight:bold; color:#dc2626;" id="kpi-total-expenses">₹0.00</div></div>
-      <div class="kpi-card"><div>निव्वळ नफा</div><div style="font-size:18px; font-weight:bold; color:#16a34a;" id="kpi-net-profit">₹0.00</div></div>
+      <div class="kpi-card"><div class="kpi-title">एकूण विक्री</div><div class="kpi-value" id="kpi-total-sales">₹0.00</div></div>
+      <div class="kpi-card"><div class="kpi-title">एकूण खरेदी</div><div class="kpi-value" id="kpi-total-purchases">₹0.00</div></div>
+      <div class="kpi-card"><div class="kpi-title">एकूण खर्च</div><div class="kpi-value" id="kpi-total-expenses" style="color:var(--danger);">₹0.00</div></div>
+      <div class="kpi-card"><div class="kpi-title">निव्वळ नफा</div><div class="kpi-value" id="kpi-net-profit" style="color:var(--success);">₹0.00</div></div>
     </div>
   </div>
 
-  <div id="tab-products" class="erp-tab-pane" style="display:none;"><h2>📦 इन्व्हेंटरी व उत्पादने</h2><div id="products-table-body"></div></div>
+  <div id="tab-products" class="erp-tab-pane" style="display:none;">
+    <h2>📦 इन्व्हेंटरी व उत्पादने</h2>
+    <table>
+      <thead><tr><th>उत्पादनाचे नाव</th><th>विक्री दर</th><th>स्टॉक</th><th>स्थिती</th></tr></thead>
+      <tbody id="products-table-body"><tr><td colspan="4" class="muted" style="text-align:center;">उत्पादने लोड होत आहेत...</td></tr></tbody>
+    </table>
+  </div>
+
   <div id="tab-sales" class="erp-tab-pane" style="display:none;"><h2>💰 विक्री व इनव्हॉइस</h2><p class="muted">विक्री तपशील येथे उपलब्ध होईल.</p></div>
   <div id="tab-purchase" class="erp-tab-pane" style="display:none;"><h2>🛒 खरेदी</h2><p class="muted">खरेदी तपशील येथे उपलब्ध होईल.</p></div>
   <div id="tab-crm" class="erp-tab-pane" style="display:none;"><h2>👥 CRM व ग्राहक</h2><p class="muted">ग्राहक यादी येथे उपलब्ध होईल.</p></div>
@@ -104,23 +153,38 @@ body.store-locked-mode #app-nav { display: none !important; }
   <div id="tab-finance" class="erp-tab-pane" style="display:none;"><h2>📑 खर्च व फायनान्स</h2><p class="muted">फायनान्स तपशील येथे उपलब्ध होईल.</p></div>
   <div id="tab-hr" class="erp-tab-pane" style="display:none;"><h2>👔 कर्मचारी (HR)</h2><p class="muted">कर्मचारी तपशील येथे उपलब्ध होईल.</p></div>
   <div id="tab-projects" class="erp-tab-pane" style="display:none;"><h2>🏗️ प्रकल्प / साईट्स</h2><p class="muted">प्रकल्प यादी येथे उपलब्ध होईल.</p></div>
-  <div id="tab-pos" class="erp-tab-pane" style="display:none;">⚡ POS काउंटर<p class="muted">POS काउंटर येथे उपलब्ध होईल.</p></div>
-  <div id="tab-orders" class="erp-tab-pane" style="display:none;"><h2>🛍️ ऑनलाईन ऑर्डर्स</h2><div id="online-orders-table-body">कोणतीही ऑनलाईन ऑर्डर नाही.</div></div>
-  <div id="tab-my-orders" class="erp-tab-pane" style="display:none;"><h2>🛍️ तुमची ऑर्डर हिस्ट्री व स्टेटस</h2><div id="customer-history-table-body">इतिहास उपलब्ध नाही.</div></div>
+  <div id="tab-pos" class="erp-tab-pane" style="display:none;"><h2>⚡ POS काउंटर</h2><p class="muted">POS काउंटर येथे उपलब्ध होईल.</p></div>
+
+  <div id="tab-orders" class="erp-tab-pane" style="display:none;">
+    <h2>🛍️ ऑनलाईन ग्राहकांच्या ऑर्डर्स</h2>
+    <table>
+      <thead><tr><th>ऑर्डर #</th><th>ग्राहक नाव</th><th>संपर्क व पत्ता</th><th>तपशील (Items)</th><th>रक्कम</th><th>स्थिती</th></tr></thead>
+      <tbody id="online-orders-table-body"><tr><td colspan="6" class="muted" style="text-align:center;">कोणतीही ऑनलाईन ऑर्डर आलेली नाही.</td></tr></tbody>
+    </table>
+  </div>
+
+  <div id="tab-my-orders" class="erp-tab-pane" style="display:none;">
+    <h2>🛍️ तुमची ऑर्डर हिस्ट्री व स्टेटस</h2>
+    <table>
+      <thead><tr><th>ऑर्डर #</th><th>तपशील (Items)</th><th>रक्कम</th><th>डिलिव्हरी पत्ता</th><th>स्थिती</th></tr></thead>
+      <tbody id="customer-history-table-body"><tr><td colspan="5" class="muted" style="text-align:center;">इतिहास उपलब्ध नाही.</td></tr></tbody>
+    </table>
+  </div>
+
   <div id="tab-reports" class="erp-tab-pane" style="display:none;"><h2>📈 रिपोर्ट्स व GST</h2><p class="muted">रिपॉर्ट्स येथे उपलब्ध होईल.</p></div>
-  <div id="tab-settings" class="erp-tab-pane" style="display:none;">⚙️ सेटिंग्स<p class="muted">सेटिंग्ज येथे उपलब्ध होईल.</p></div>
+  <div id="tab-settings" class="erp-tab-pane" style="display:none;"><h2>⚙️ सेटिंग्स</h2><p class="muted">सेटिंग्ज येथे उपलब्ध होईल.</p></div>
 </div>
 
 <div id="customer-cart-modal" class="modal-overlay">
   <div class="modal-content">
-    <h3>🛒 तुमची चालू ऑर्डर (Cart & Checkout)</h3>
-    <div id="customer-cart-items">कार्ट रिकामी आहे.</div>
-    <p>एकूण रक्कम: ₹<span id="modal-cart-total">0.00</span></p>
-    <input id="cust-order-name" placeholder="पूर्ण नाव" style="width:100%; padding:8px; margin-bottom:8px;">
-    <input id="cust-order-phone" placeholder="मोबाईल नंबर" maxlength="10" style="width:100%; padding:8px; margin-bottom:8px;">
-    <textarea id="cust-order-address" placeholder="डिलिव्हरी पत्ता" rows="2" style="width:100%; padding:8px; margin-bottom:8px;"></textarea>
-    <button type="button" onclick="submitCustomerOrder()" style="width:100%; background:#16a34a; color:#fff; padding:10px; border:none; font-weight:bold; cursor:pointer;">✅ थेट ऑर्डर पाठवा व वीव्हो चॅट उघडा</button>
-    <button type="button" onclick="closeModal('customer-cart-modal')" style="width:100%; background:#64748b; color:#fff; padding:8px; border:none; margin-top:6px; cursor:pointer;">✕ बंद करा</button>
+    <h3 style="margin-top:0; color:var(--primary);">🛒 तुमची चालू ऑर्डर (Cart & Checkout)</h3>
+    <div id="customer-cart-items" style="margin-bottom:12px;">कार्ट रिकामी आहे.</div>
+    <div style="font-weight:bold; margin-bottom:12px; font-size:16px;">एकूण रक्कम: ₹<span id="modal-cart-total" style="color:var(--success);">0.00</span></div>
+    <div style="margin-bottom:8px;"><label style="font-size:12px; font-weight:bold;">पूर्ण नाव</label><input id="cust-order-name" placeholder="पूर्ण नाव" style="width:100%; padding:9px; border:1px solid var(--border-color); border-radius:6px; box-sizing:border-box;"></div>
+    <div style="margin-bottom:8px;"><label style="font-size:12px; font-weight:bold;">मोबाईल नंबर</label><input id="cust-order-phone" placeholder="मोबाईल नंबर" maxlength="10" style="width:100%; padding:9px; border:1px solid var(--border-color); border-radius:6px; box-sizing:border-box;"></div>
+    <div style="margin-bottom:14px;"><label style="font-size:12px; font-weight:bold;">डिलिव्हरी पत्ता</label><textarea id="cust-order-address" placeholder="डिलिव्हरी पत्ता" rows="2" style="width:100%; padding:9px; border:1px solid var(--border-color); border-radius:6px; box-sizing:border-box; resize:none;"></textarea></div>
+    <button type="button" onclick="submitCustomerOrder()" style="width:100%; background:var(--success); color:#fff; padding:12px; border:none; border-radius:8px; font-weight:bold; font-size:14px; cursor:pointer; margin-bottom:6px;">✅ थेट ऑर्डर पाठवा व वीव्हो चॅट उघडा</button>
+    <button type="button" onclick="closeModal('customer-cart-modal')" style="width:100%; background:var(--text-muted); color:#fff; padding:10px; border:none; border-radius:8px; font-weight:bold; font-size:14px; cursor:pointer;">✕ बंद करा</button>
   </div>
 </div>
 
@@ -214,10 +278,10 @@ async function loadCustomerStoreProducts() {
   }
   currentProducts = products;
   gridEl.innerHTML = products.map(p => `
-    <div style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:12px; text-align:center;">
-      <div style="font-weight:700; font-size:14px; margin-bottom:4px;">${p.name}</div>
-      <div style="color:#16a34a; font-weight:800; font-size:14px; margin-bottom:8px;">₹${p.selling_price}</div>
-      <button onclick="addToCustomerCart('${p.id}')" style="background:#16a34a; color:#fff; border:none; padding:6px 12px; border-radius:4px; font-weight:bold; cursor:pointer;">🛒 ॲड टू कार्ट</button>
+    <div style="background:#fff; border:1px solid var(--border-color); border-radius:10px; padding:14px; text-align:center; box-shadow:0 2px 5px rgba(0,0,0,0.02);">
+      <div style="font-weight:800; font-size:14.5px; margin-bottom:6px; color:var(--text-main);">${p.name}</div>
+      <div style="color:var(--success); font-weight:900; font-size:15px; margin-bottom:10px;">₹${p.selling_price}</div>
+      <button onclick="addToCustomerCart('${p.id}')" style="background:var(--success); color:#fff; border:none; padding:7px 14px; border-radius:6px; font-weight:bold; cursor:pointer; font-size:12.5px;">🛒 ॲड टू कार्ट</button>
     </div>
   `).join('');
 }
@@ -230,7 +294,7 @@ function addToCustomerCart(productId) {
   else customerCart.push({ id: product.id, name: product.name, price: product.selling_price, qty: 1 });
   
   document.getElementById('bar-cart-count').textContent = customerCart.reduce((s, i) => s + i.qty, 0);
-  alert(`"${product.name}" कार्टमध्ये जोडले गेले!`);
+  alert(`✅ "${product.name}" कार्टमध्ये जोडले गेले!`);
 }
 
 function openCustomerCartModal() {
@@ -239,6 +303,15 @@ function openCustomerCartModal() {
   
   document.getElementById('modal-user-email').textContent = loggedInCustomer.email;
   document.getElementById('modal-cart-total').textContent = customerCart.reduce((s, i) => s + (i.price * i.qty), 0).toFixed(2);
+  
+  const itemsContainer = document.getElementById('customer-cart-items');
+  itemsContainer.innerHTML = customerCart.map(i => `
+    <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid #f1f5f9; font-size:13.5px;">
+      <div><strong>${i.name}</strong> <span style="color:var(--text-muted); font-size:12px;">(×${i.qty})</span></div>
+      <div style="font-weight:bold; color:var(--success);">₹${(i.price * i.qty).toFixed(2)}</div>
+    </div>
+  `).join('');
+
   openModal('customer-cart-modal');
 }
 
@@ -271,18 +344,57 @@ async function submitCustomerOrder() {
 }
 
 async function loadOnlineOrders() {
+  const tbody = document.getElementById('online-orders-table-body');
   const { data } = await sb.from('orders').select('*').order('created_at', { ascending: false });
-  document.getElementById('online-orders-table-body').innerHTML = data?.length ? data.map(o => `<div>#${o.id.substring(0,6)} - ${o.customer_name} - ₹${o.total_amount}</div>`).join('') : 'कोणतीही ऑनलाईन ऑर्डर नाही.';
+  if (!data || data.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" class="muted" style="text-align:center;">कोणतीही ऑनलाईन ऑर्डर आलेली नाही.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = data.map(o => `
+    <tr>
+      <td><strong>#${o.id.substring(0,8)}</strong></td>
+      <td>${o.customer_name || '-'}</td>
+      <td>📱 ${o.customer_phone || '-'}<br><small style="color:var(--text-muted);">🏠 ${o.customer_address || '-'}</small></td>
+      <td>${o.items_summary || '-'}</td>
+      <td style="font-weight:bold; color:var(--success);">₹${o.total_amount || 0}</td>
+      <td><span class="badge pending">${o.status || 'pending'}</span></td>
+    </tr>
+  `).join('');
 }
 
 async function loadCustomerOrderHistory() {
+  const tbody = document.getElementById('customer-history-table-body');
   const { data } = await sb.from('orders').select('*').order('created_at', { ascending: false });
-  document.getElementById('customer-history-table-body').innerHTML = data?.length ? data.map(o => `<div>#${o.id.substring(0,6)} - ${o.items_summary} - ₹${o.total_amount}</div>`).join('') : 'इतिहास उपलब्ध नाही.';
+  if (!data || data.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" class="muted" style="text-align:center;">इतिहास उपलब्ध नाही.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = data.map(o => `
+    <tr>
+      <td><strong>#${o.id.substring(0,8)}</strong></td>
+      <td>${o.items_summary || '-'}</td>
+      <td style="font-weight:bold; color:var(--success);">₹${o.total_amount || 0}</td>
+      <td>${o.customer_address || '-'}</td>
+      <td><span class="badge ${o.status === 'delivered' ? 'live' : 'pending'}">${o.status || 'pending'}</span></td>
+    </tr>
+  `).join('');
 }
 
 async function loadProducts() {
+  const tbody = document.getElementById('products-table-body');
   const { data } = await sb.from('business_products').select('*').order('name');
-  document.getElementById('products-table-body').innerHTML = data?.length ? data.map(p => `<div>${p.name} - ₹${p.selling_price}</div>`).join('') : 'उत्पादने नाहीत.';
+  if (!data || data.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="4" class="muted" style="text-align:center;">कोणतीही उत्पादने नाहीत.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = data.map(p => `
+    <tr>
+      <td><strong>${p.name}</strong></td>
+      <td style="font-weight:bold; color:var(--success);">₹${p.selling_price}</td>
+      <td>${p.stock !== null ? p.stock : 0}</td>
+      <td><span class="badge ${p.stock > 0 ? 'live' : 'pending'}">${p.stock > 0 ? 'LIVE' : 'INACTIVE'}</span></td>
+    </tr>
+  `).join('');
 }
 
 initDashboard();
