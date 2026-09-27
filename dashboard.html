@@ -35,6 +35,10 @@ body.store-locked-mode #app-nav { display: none !important; }
 .google-login-customer-btn { background: #ffffff; color: var(--text-main); border: 1px solid var(--border-color); padding: 8px 14px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12.5px; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
 .google-login-customer-btn:hover { background: #f1f5f9; }
 
+/* 🌟 AI आणि ॲक्शन बटणे */
+.ai-assistant-btn { background: linear-gradient(135deg, #8b5cf6, #6366f1); color: #fff; padding: 8px 14px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12.5px; display: inline-flex; align-items: center; gap: 5px; }
+.primary-action-btn { background: var(--primary); color: #fff; padding: 8px 14px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12.5px; display: inline-flex; align-items: center; gap: 5px; }
+
 .customer-action-bar { display: none; gap: 8px; overflow-x: auto; padding: 10px 14px; margin-bottom: 14px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
 .cust-nav-btn { background: #ffffff; color: var(--text-main); border: 1px solid var(--border-color); padding: 8px 14px; border-radius: 6px; font-weight: 700; font-size: 12.5px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; text-decoration: none; }
 .cust-nav-btn:hover { background: #f1f5f9; }
@@ -42,7 +46,7 @@ body.store-locked-mode #app-nav { display: none !important; }
 .cust-nav-btn.success { background: var(--success); color: #fff; border-color: var(--success); }
 
 .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 99999 !important; align-items: center; justify-content: center; }
-.modal-content { background: var(--card-bg); border-radius: 10px; width: 95%; max-width: 480px; padding: 24px; box-shadow: 0 15px 35px rgba(0,0,0,0.25); border: 1px solid var(--border-color); }
+.modal-content { background: var(--card-bg); border-radius: 10px; width: 95%; max-width: 500px; padding: 24px; box-shadow: 0 15px 35px rgba(0,0,0,0.25); border: 1px solid var(--border-color); }
 
 .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 16px; }
 .kpi-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
@@ -74,6 +78,8 @@ body.store-locked-mode #app-nav { display: none !important; }
       </div>
     </div>
     <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+      <button type="button" class="ai-assistant-btn" onclick="openAiAssistantModal()">✨ AI असिस्टंट</button>
+      
       <button type="button" id="customer-google-login-btn" onclick="loginCustomerWithGoogle()" class="google-login-customer-btn" style="display:none;">
         <svg width="16" height="16" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
         <span id="google-login-btn-text">Google ने लॉगिन करा</span>
@@ -96,7 +102,7 @@ body.store-locked-mode #app-nav { display: none !important; }
     <button type="button" class="cust-nav-btn" onclick="callMerchantPhone()">📞 दुकानदाराला कॉल</button>
   </div>
 
-  <!-- ALL ERP FULL NAVIGATION TABS (सर्व जुनी मॉड्यूल्स आणि टॅब्ज परत आणले आहेत) -->
+  <!-- ALL ERP FULL NAVIGATION TABS -->
   <div class="erp-tabs-bar" id="erp-navigation-tabs">
     <button type="button" class="erp-tab-btn active" onclick="switchTab('tab-overview')">📊 डॅशबोर्ड</button>
     <button type="button" class="erp-tab-btn" onclick="switchTab('tab-products')">📦 इन्व्हेंटरी व स्टॉक</button>
@@ -139,32 +145,38 @@ body.store-locked-mode #app-nav { display: none !important; }
     </div>
   </div>
 
-  <!-- TAB 2: PRODUCTS -->
+  <!-- TAB 2: PRODUCTS & INVENTORY (🌟 आयटम ॲड व ग्लोबल सर्चसह परिपूर्ण इन्व्हेंटरी) -->
   <div id="tab-products" class="erp-tab-pane" style="display:none;">
-    <h2 style="color:var(--primary); font-size:18px;">📦 इन्व्हेंटरी व उत्पादने</h2>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
+      <h2 style="color:var(--primary); margin:0; font-size:18px;">📦 इन्व्हेंटरी व स्टॉक व्यवस्थापन</h2>
+      <div style="display:flex; gap:8px;">
+        <button type="button" class="primary-action-btn" onclick="openAddProductModal()">➕ नवीन आयटम ॲड करा</button>
+        <button type="button" class="weavo-header-btn" onclick="openGlobalSearchModal()">🌐 ग्लोबल डिक्शनरी मधून शोधा</button>
+      </div>
+    </div>
+    
     <div style="background:#fff; border:1px solid var(--border-color); border-radius:8px; padding:16px;">
       <table style="width:100%; border-collapse:collapse;">
-        <thead><tr style="text-align:left; border-bottom:2px solid var(--border-color);"><th>उत्पादन</th><th>विक्री दर</th><th>स्टॉक</th><th>स्थिती</th></tr></thead>
-        <tbody id="products-table-body"></tbody>
+        <thead>
+          <tr style="text-align:left; border-bottom:2px solid var(--border-color);">
+            <th>उत्पादन (Item Name)</th><th>विक्री दर</th><th>खरेदी दर</th><th>स्टॉक</th><th>कृती</th>
+          </tr>
+        </thead>
+        <tbody id="products-table-body">
+          <tr><td colspan="5" class="muted" style="text-align:center; padding:20px;">इन्व्हेंटरी लोड होत आहे...</td></tr>
+        </tbody>
       </table>
     </div>
   </div>
 
-  <!-- TAB 3: SALES -->
+  <!-- OTHER ERP TABS -->
   <div id="tab-sales" class="erp-tab-pane" style="display:none;"><h2 style="color:var(--primary);">💰 विक्री व इनव्हॉइस व्यवस्थापन</h2><p class="muted">येथे सर्व विक्रीची बिले आणि इनव्हॉइस दिसतील.</p></div>
-  <!-- TAB 4: PURCHASE -->
   <div id="tab-purchase" class="erp-tab-pane" style="display:none;"><h2 style="color:var(--primary);">🛒 खरेदी व्यवस्थापन</h2><p class="muted">खरेदीचे रेकॉर्ड येथे समाविष्ट केले जाईल.</p></div>
-  <!-- TAB 5: CRM -->
   <div id="tab-crm" class="erp-tab-pane" style="display:none;"><h2 style="color:var(--primary);">👥 CRM व ग्राहक संबंध</h2><p class="muted">ग्राहकांची माहिती व फॉलोअप.</p></div>
-  <!-- TAB 6: KHATA -->
   <div id="tab-khata" class="erp-tab-pane" style="display:none;"><h2 style="color:var(--primary);">🧾 उधार खाता (Khata)</h2><p class="muted">उधार आणि लेन-देन हिशोब.</p></div>
-  <!-- TAB 7: FINANCE -->
   <div id="tab-finance" class="erp-tab-pane" style="display:none;"><h2 style="color:var(--primary);">📑 खर्च व फायनान्स</h2><p class="muted">व्यवसायाचा खर्च व हिशोब.</p></div>
-  <!-- TAB 8: HR -->
   <div id="tab-hr" class="erp-tab-pane" style="display:none;"><h2 style="color:var(--primary);">👔 कर्मचारी व HR</h2><p class="muted">कर्मचाऱ्यांची माहिती.</p></div>
-  <!-- TAB 9: PROJECTS -->
   <div id="tab-projects" class="erp-tab-pane" style="display:none;"><h2 style="color:var(--primary);">🏗️ प्रकल्प व साईट्स</h2><p class="muted">प्रकल्प प्रगती अहवाल.</p></div>
-  <!-- TAB 10: POS -->
   <div id="tab-pos" class="erp-tab-pane" style="display:none;"><h2 style="color:var(--primary);">⚡ POS बिलिंग काउंटर</h2><p class="muted">फास्ट बिलिंग काउंटर.</p></div>
 
   <!-- TAB 11: ORDERS (Merchant View) -->
@@ -185,9 +197,7 @@ body.store-locked-mode #app-nav { display: none !important; }
     </div>
   </div>
 
-  <!-- TAB 12: REPORTS -->
   <div id="tab-reports" class="erp-tab-pane" style="display:none;"><h2 style="color:var(--primary);">📈 रिपोर्ट्स व GST</h2><p class="muted">टॅक्स आणि व्यवसाय अहवाल.</p></div>
-  <!-- TAB 13: SETTINGS -->
   <div id="tab-settings" class="erp-tab-pane" style="display:none;"><h2 style="color:var(--primary);">⚙️ डॅशबोर्ड सेटिंग्स</h2><p class="muted">व्यवसायाची माहिती बदला.</p></div>
 
   <!-- CUSTOMER ORDER HISTORY TAB -->
@@ -208,6 +218,37 @@ body.store-locked-mode #app-nav { display: none !important; }
     </div>
   </div>
 
+</div>
+
+<!-- ➕ नवीन आयटम ॲड करण्याचे मोडल (Add Product Modal) -->
+<div id="add-product-modal" class="modal-overlay">
+  <div class="modal-content">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+      <h3 style="margin:0; color:var(--primary);">➕ दुकानात नवीन आयटम जोडा</h3>
+      <button type="button" onclick="closeModal('add-product-modal')" style="background:transparent; border:none; font-size:16px; cursor:pointer; font-weight:bold; color:var(--text-muted);">✕</button>
+    </div>
+    <div style="margin-bottom:10px;">
+      <label style="font-weight:700; font-size:12px; display:block; margin-bottom:3px;">आयटमचे नाव (Product Name):</label>
+      <input type="text" id="new-prod-name" placeholder="उदा. तांदूळ, चहा पावडर..." style="width:100%; padding:9px; border:1px solid var(--border-color); border-radius:6px; font-size:13.5px;">
+    </div>
+    <div style="display:flex; gap:10px; margin-bottom:10px;">
+      <div style="flex:1;">
+        <label style="font-weight:700; font-size:12px; display:block; margin-bottom:3px;">विक्री दर (Selling Price):</label>
+        <input type="number" id="new-prod-selling" placeholder="₹0.00" style="width:100%; padding:9px; border:1px solid var(--border-color); border-radius:6px; font-size:13.5px;">
+      </div>
+      <div style="flex:1;">
+        <label style="font-weight:700; font-size:12px; display:block; margin-bottom:3px;">खरेदी दर (Cost Price):</label>
+        <input type="number" id="new-prod-cost" placeholder="₹0.00" style="width:100%; padding:9px; border:1px solid var(--border-color); border-radius:6px; font-size:13.5px;">
+      </div>
+    </div>
+    <div style="margin-bottom:16px;">
+      <label style="font-weight:700; font-size:12px; display:block; margin-bottom:3px;">सुरुवातीचा स्टॉक (Stock Qty):</label>
+      <input type="number" id="new-prod-stock" value="10" style="width:100%; padding:9px; border:1px solid var(--border-color); border-radius:6px; font-size:13.5px;">
+    </div>
+    <button type="button" onclick="saveNewProductToInventory()" style="width:100%; background:var(--primary); color:#fff; padding:11px; border:none; border-radius:6px; font-weight:bold; font-size:14px; cursor:pointer;">
+      💾 आयटम सेव्ह करा
+    </button>
+  </div>
 </div>
 
 <!-- 🛒 कार्ट व डिटेल्स मोडल -->
@@ -268,12 +309,16 @@ function switchTab(tabId) {
   document.querySelectorAll('.erp-tab-btn').forEach(btn => {
     if (btn.getAttribute('onclick') && btn.getAttribute('onclick').includes(tabId)) btn.classList.add('active');
   });
+  if (tabId === 'tab-products') loadMerchantProducts();
   if (tabId === 'tab-orders') loadOnlineOrders();
   if (tabId === 'tab-my-orders') loadCustomerOrderHistory();
 }
 
 function openModal(id) { document.getElementById(id).style.display = 'flex'; }
 function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+function openAddProductModal() { openModal('add-product-modal'); }
+function openGlobalSearchModal() { alert('🌐 ग्लोबल डिक्शनरी सर्च वैशिष्ट्य लवकरच लोड होत आहे.'); }
+function openAiAssistantModal() { alert('✨ AI असिस्टंट सध्या सक्रिय आहे.'); }
 
 async function initDashboard() {
   try {
@@ -324,6 +369,7 @@ async function initDashboard() {
         currentBusinessId = businesses[0].id;
         document.getElementById('business-display-name').textContent = businesses[0].name;
         if (businesses[0].phone) merchantPhoneNo = businesses[0].phone;
+        await loadMerchantProducts();
         await loadOnlineOrders();
         subscribeMerchantOrderAlerts(currentBusinessId);
       }
@@ -336,6 +382,66 @@ async function loginCustomerWithGoogle() {
     provider: 'google',
     options: { redirectTo: window.location.href }
   });
+}
+
+// 🌟 दुकानदाराचे प्रॉडक्ट्स इन्व्हेंटरी टेबलमध्ये लोड करणे (निखिल किराणा आयटमसह)
+async function loadMerchantProducts() {
+  if (!currentBusinessId) return;
+  const tbody = document.getElementById('products-table-body');
+  const { data: products } = await sb.from('business_products').select('*').eq('business_id', currentBusinessId).order('name');
+  if (!products || products.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" class="muted" style="text-align:center; padding:20px;">कोणताही स्टॉक उपलब्ध नाही. "नवीन आयटम ॲड करा" वर क्लिक करा.</td></tr>';
+    return;
+  }
+  currentProducts = products;
+  tbody.innerHTML = products.map(p => `
+    <tr style="border-bottom:1px solid #f1f5f9; padding:8px 0;">
+      <td><strong>${escapeHtml(p.name)}</strong></td>
+      <td style="color:var(--success); font-weight:bold;">₹${p.selling_price || 0}</td>
+      <td>₹${p.cost_price || 0}</td>
+      <td>${p.stock_quantity || 0} नग</td>
+      <td><button onclick="deleteProduct('${p.id}')" style="background:#ef4444; color:#fff; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:11px;">डिलीट</button></td>
+    </tr>
+  `).join('');
+}
+
+// 🌟 नवीन आयटम सेव्ह करणे
+async function saveNewProductToInventory() {
+  const name = document.getElementById('new-prod-name').value.trim();
+  const selling = parseFloat(document.getElementById('new-prod-selling').value) || 0;
+  const cost = parseFloat(document.getElementById('new-prod-cost').value) || 0;
+  const stock = parseInt(document.getElementById('new-prod-stock').value) || 10;
+
+  if (!name || selling <= 0) {
+    alert('कृपया आयटमचे नाव आणि वैध विक्री दर प्रविष्ट करा!');
+    return;
+  }
+
+  const { error } = await sb.from('business_products').insert({
+    business_id: currentBusinessId,
+    name: name,
+    selling_price: selling,
+    cost_price: cost,
+    stock_quantity: stock
+  });
+
+  if (error) {
+    alert('आयटम सेव्ह करताना त्रुटी आली: ' + error.message);
+    return;
+  }
+
+  alert('✅ नवीन आयटम यशस्वीरीत्या जोडला गेला!');
+  closeModal('add-product-modal');
+  document.getElementById('new-prod-name').value = '';
+  document.getElementById('new-prod-selling').value = '';
+  document.getElementById('new-prod-cost').value = '';
+  loadMerchantProducts();
+}
+
+async function deleteProduct(id) {
+  if (!confirm('तुम्हाला हा आयटम डिलीट करायचा आहे का?')) return;
+  await sb.from('business_products').delete().eq('id', id);
+  loadMerchantProducts();
 }
 
 async function loadCustomerStoreProducts() {
