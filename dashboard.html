@@ -95,7 +95,7 @@ body.store-locked-mode #app-nav { display: none !important; }
   <div class="erp-tabs-bar" id="erp-navigation-tabs">
     <button type="button" class="erp-tab-btn active" onclick="switchTab('tab-overview')">📊 डॅशबोर्ड</button>
     <button type="button" class="erp-tab-btn" onclick="switchTab('tab-products')">📦 इन्व्हेंटरी व स्टॉक</button>
-    <button type="button" class="erp-tab-btn" onclick="switchTab('tab-sales')">💰 विक्री व इनव्हॉ이스</button>
+    <button type="button" class="erp-tab-btn" onclick="switchTab('tab-sales')">💰 विक्री व इनव्हॉइस</button>
     <button type="button" class="erp-tab-btn" onclick="switchTab('tab-purchase')">🛒 खरेदी</button>
     <button type="button" class="erp-tab-btn" onclick="switchTab('tab-crm')">👥 CRM व ग्राहक</button>
     <button type="button" class="erp-tab-btn" onclick="switchTab('tab-khata')">🧾 उधार खाता (Khata)</button>
@@ -230,7 +230,7 @@ body.store-locked-mode #app-nav { display: none !important; }
 <script src="js/erp-engine.js"></script>
 <script src="js/master-dictionary.js"></script>
 <script>
-// 🌟 डॅशबोर्ड फाईलमध्येच थेट Supabase इनिशिअलायझेशन (ज्यामुळे कोणत्याही बाहेरच्या फाईलवर अवलंबून राहावे लागणार नाही)
+// 🌟 Supabase थेट फाईलमध्ये सुरक्षित इनिशिअलायझेशन (400 एरर पूर्णपणे काढण्यासाठी)
 const SUPABASE_URL = "https://xpsxbvmziibbrjnadrlm.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhwc3hidm16aWliYnJqbmFkcmxtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2OTY0NTcsImV4cCI6MjEwNDI3MjQ1N30.d-kDYwqFfxP_xfNHQHEYYYZQHr31-75u-UHxYznRP-A";
 
@@ -364,15 +364,6 @@ async function initDashboard() {
       const handleEl = document.getElementById('display-merchant-handle');
       if (handleEl) handleEl.textContent = '@' + currentMerchantUsername;
 
-      try {
-        const { data: businesses } = await sb.from('businesses').select('id, name, phone').eq('owner_id', user.id);
-        if (businesses && businesses.length > 0) {
-          currentBusinessId = businesses[0].id;
-          document.getElementById('business-display-name').textContent = businesses[0].name;
-          if (businesses[0].phone) merchantPhoneNo = businesses[0].phone;
-        }
-      } catch (e) {}
-
       await loadProducts();
       await checkNewOrdersBackground();
       setInterval(checkNewOrdersBackground, 10000);
@@ -504,7 +495,7 @@ async function submitCustomerOrder() {
     let totalAmt = customerCart.reduce((sum, i) => sum + (i.price * i.qty), 0);
     let itemsSummaryText = customerCart.map(i => `${i.name} (${i.qty} नग)`).join(', ');
 
-    // १. AllERP च्या orders टेबलमध्ये सेव्ह करणे (try-catch सह सुरक्षित)
+    // १. AllERP च्या orders टेबलमध्ये सुरक्षित सेव्हिंग
     try {
       await sb.from('orders').insert({
         business_id: currentBusinessId,
