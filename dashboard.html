@@ -59,13 +59,25 @@ body.store-locked-mode #app-nav { display: none !important; }
     <button type="button" class="cust-nav-btn" onclick="openWeavoChat()">💬 दुकानदाराशी चॅट</button>
   </div>
 
+  <!-- 🌟 सर्वच्या सर्व पूर्ण टॅब बटणे -->
   <div class="erp-tabs-bar" id="erp-navigation-tabs">
     <button type="button" class="erp-tab-btn active" onclick="switchTab('tab-overview')">📊 डॅशबोर्ड</button>
     <button type="button" class="erp-tab-btn" onclick="switchTab('tab-products')">📦 इन्व्हेंटरी व स्टॉक</button>
+    <button type="button" class="erp-tab-btn" onclick="switchTab('tab-sales')">💰 विक्री व इनव्हॉइस</button>
+    <button type="button" class="erp-tab-btn" onclick="switchTab('tab-purchase')">🛒 खरेदी</button>
+    <button type="button" class="erp-tab-btn" onclick="switchTab('tab-crm')">👥 CRM व ग्राहक</button>
+    <button type="button" class="erp-tab-btn" onclick="switchTab('tab-khata')">🧾 उधार खाता</button>
+    <button type="button" class="erp-tab-btn" onclick="switchTab('tab-finance')">📑 खर्च व फायनान्स</button>
+    <button type="button" class="erp-tab-btn" onclick="switchTab('tab-hr')">👔 कर्मचारी</button>
+    <button type="button" class="erp-tab-btn" onclick="switchTab('tab-projects')">🏗️ प्रकल्प</button>
+    <button type="button" class="erp-tab-btn" onclick="switchTab('tab-pos')">⚡ POS काउंटर</button>
     <button type="button" class="erp-tab-btn" onclick="switchTab('tab-orders')">🛍️ ऑनलाईन ऑर्डर्स</button>
     <button type="button" class="erp-tab-btn" onclick="switchTab('tab-my-orders')">🛍️ माझ्या ऑर्डर्स</button>
+    <button type="button" class="erp-tab-btn" onclick="switchTab('tab-reports')">📈 रिपोर्ट्स</button>
+    <button type="button" class="erp-tab-btn" onclick="switchTab('tab-settings')">⚙️ सेटिंग्स</button>
   </div>
 
+  <!-- TABS PANELS -->
   <div id="tab-overview" class="erp-tab-pane">
     <div id="customer-store-notice" style="display:none; background:#e0f2fe; border:1px solid #7dd3fc; padding:16px; border-radius:8px; margin-bottom:16px; color:#0369a1; font-weight:bold; text-align:center;">
       🔒 स्टोअर मोड: खालील प्रॉडक्ट्स निवडून कार्टमध्ये टाका आणि थेट दुकानदाराला ऑर्डर पाठवा.
@@ -76,11 +88,27 @@ body.store-locked-mode #app-nav { display: none !important; }
         <p class="muted">प्रॉडक्ट्स लोड होत आहेत...</p>
       </div>
     </div>
+    <div class="kpi-grid">
+      <div class="kpi-card"><div>एकूण विक्री</div><div style="font-size:18px; font-weight:bold;" id="kpi-total-sales">₹0.00</div></div>
+      <div class="kpi-card"><div>एकूण खरेदी</div><div style="font-size:18px; font-weight:bold;" id="kpi-total-purchases">₹0.00</div></div>
+      <div class="kpi-card"><div>एकूण खर्च</div><div style="font-size:18px; font-weight:bold; color:#dc2626;" id="kpi-total-expenses">₹0.00</div></div>
+      <div class="kpi-card"><div>निव्वळ नफा</div><div style="font-size:18px; font-weight:bold; color:#16a34a;" id="kpi-net-profit">₹0.00</div></div>
+    </div>
   </div>
 
   <div id="tab-products" class="erp-tab-pane" style="display:none;"><h2>📦 इन्व्हेंटरी व उत्पादने</h2><div id="products-table-body"></div></div>
-  <div id="tab-orders" class="erp-tab-pane" style="display:none;"><h2>🛍️ ऑनलाईन ऑर्डर्स</h2><div id="online-orders-table-body">कोणतीही ऑर्डर नाही.</div></div>
-  <div id="tab-my-orders" class="erp-tab-pane" style="display:none;"><h2>🛍️ माझी ऑर्डर हिस्ट्री</h2><div id="customer-history-table-body">इतिहास उपलब्ध नाही.</div></div>
+  <div id="tab-sales" class="erp-tab-pane" style="display:none;"><h2>💰 विक्री व इनव्हॉइस</h2><p class="muted">विक्री तपशील येथे उपलब्ध होईल.</p></div>
+  <div id="tab-purchase" class="erp-tab-pane" style="display:none;"><h2>🛒 खरेदी</h2><p class="muted">खरेदी तपशील येथे उपलब्ध होईल.</p></div>
+  <div id="tab-crm" class="erp-tab-pane" style="display:none;"><h2>👥 CRM व ग्राहक</h2><p class="muted">ग्राहक यादी येथे उपलब्ध होईल.</p></div>
+  <div id="tab-khata" class="erp-tab-pane" style="display:none;"><h2>🧾 उधार खाता</h2><p class="muted">खाते वही येथे उपलब्ध होईल.</p></div>
+  <div id="tab-finance" class="erp-tab-pane" style="display:none;"><h2>📑 खर्च व फायनान्स</h2><p class="muted">फायनान्स तपशील येथे उपलब्ध होईल.</p></div>
+  <div id="tab-hr" class="erp-tab-pane" style="display:none;"><h2>👔 कर्मचारी (HR)</h2><p class="muted">कर्मचारी तपशील येथे उपलब्ध होईल.</p></div>
+  <div id="tab-projects" class="erp-tab-pane" style="display:none;"><h2>🏗️ प्रकल्प / साईट्स</h2><p class="muted">प्रकल्प यादी येथे उपलब्ध होईल.</p></div>
+  <div id="tab-pos" class="erp-tab-pane" style="display:none;">⚡ POS काउंटर<p class="muted">POS काउंटर येथे उपलब्ध होईल.</p></div>
+  <div id="tab-orders" class="erp-tab-pane" style="display:none;"><h2>🛍️ ऑनलाईन ऑर्डर्स</h2><div id="online-orders-table-body">कोणतीही ऑनलाईन ऑर्डर नाही.</div></div>
+  <div id="tab-my-orders" class="erp-tab-pane" style="display:none;"><h2>🛍️ तुमची ऑर्डर हिस्ट्री व स्टेटस</h2><div id="customer-history-table-body">इतिहास उपलब्ध नाही.</div></div>
+  <div id="tab-reports" class="erp-tab-pane" style="display:none;"><h2>📈 रिपोर्ट्स व GST</h2><p class="muted">रिपॉर्ट्स येथे उपलब्ध होईल.</p></div>
+  <div id="tab-settings" class="erp-tab-pane" style="display:none;">⚙️ सेटिंग्स<p class="muted">सेटिंग्ज येथे उपलब्ध होईल.</p></div>
 </div>
 
 <div id="customer-cart-modal" class="modal-overlay">
@@ -112,6 +140,13 @@ function switchTab(tabId) {
   document.querySelectorAll('.erp-tab-btn').forEach(btn => btn.classList.remove('active'));
   const target = document.getElementById(tabId);
   if (target) target.style.display = 'block';
+  
+  document.querySelectorAll('.erp-tab-btn').forEach(btn => {
+    if (btn.getAttribute('onclick') && btn.getAttribute('onclick').includes(tabId)) {
+      btn.classList.add('active');
+    }
+  });
+
   if (tabId === 'tab-orders') loadOnlineOrders();
   if (tabId === 'tab-my-orders') loadCustomerOrderHistory();
   if (tabId === 'tab-products') loadProducts();
