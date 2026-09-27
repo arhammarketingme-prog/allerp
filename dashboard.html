@@ -32,6 +32,7 @@ body.store-locked-mode #app-nav { display: none !important; }
 
 .customer-action-bar { display: none; gap: 8px; overflow-x: auto; padding: 10px 14px; margin-bottom: 14px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
 .cust-nav-btn { background: #ffffff; color: var(--text-main); border: 1px solid var(--border-color); padding: 8px 14px; border-radius: 6px; font-weight: 700; font-size: 12.5px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; text-decoration: none; }
+.cust-nav-btn:hover { background: #f1f5f9; }
 .cust-nav-btn.primary { background: var(--primary); color: #fff; border-color: var(--primary); }
 .cust-nav-btn.success { background: var(--success); color: #fff; border-color: var(--success); }
 
@@ -173,6 +174,7 @@ body.store-locked-mode #app-nav { display: none !important; }
   <div id="tab-projects" class="erp-tab-pane" style="display:none;"><h2 style="color:var(--primary);">🏗️ प्रकल्प</h2></div>
   <div id="tab-pos" class="erp-tab-pane" style="display:none;"><h2 style="color:var(--primary);">⚡ POS काउंटर</h2></div>
 
+  <!-- TAB 11: ONLINE ORDERS (Merchant View) -->
   <div id="tab-orders" class="erp-tab-pane" style="display:none;">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
       <h2 style="color:var(--primary); font-size:18px;">🛍️ ऑनलाईन ग्राहकांच्या ऑर्डर्स</h2>
@@ -185,7 +187,9 @@ body.store-locked-mode #app-nav { display: none !important; }
             <th>ऑर्डर #</th><th>ग्राहक नाव</th><th>संपर्क व पत्ता</th><th>तपशील (Items)</th><th>रक्कम</th><th>स्थिती</th>
           </tr>
         </thead>
-        <tbody id="online-orders-table-body"><tr><td colspan="6" class="muted" style="text-align:center; padding:20px;">कोणतीही ऑनलाईन ऑर्डर आलेली नाही.</td></tr></tbody>
+        <tbody id="online-orders-table-body">
+          <tr><td colspan="6" class="muted" style="text-align:center; padding:20px;">ऑर्डर्स लोड होत आहेत...</td></tr>
+        </tbody>
       </table>
     </div>
   </div>
@@ -293,7 +297,7 @@ body.store-locked-mode #app-nav { display: none !important; }
     </div>
 
     <div style="margin-bottom:16px;">
-      <label style="font-weight:700; font-size:12px; color:var(--text-main); display:block; margin-bottom:3px;">🏠 संपूर्ण डिलिव्हरी पत्ता (Address):</label>
+      <label style="font-weight:700; font-size:12px; display:block; margin-bottom:3px;">🏠 संपूर्ण डिलिव्हरी पत्ता (Address):</label>
       <textarea id="cust-address-input" placeholder="घर/दुकान क्रमांक, गल्ली, परिसर, शहर व पिनकोड लिहा..." rows="2" style="width:100%; padding:9px 12px; border:1px solid var(--border-color); border-radius:6px; font-weight:500; font-size:13px; background:#fff; resize:none;"></textarea>
     </div>
 
@@ -736,7 +740,7 @@ async function loadCustomerOrderHistory() {
   var historyRes = await query;
   var orders = historyRes.data;
   if (historyRes.error || !orders || orders.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="5" class="muted" style="text-align:center; padding:20px;">तुम्ही अजून कोणतीही ऑर्डर दिलेली नाही.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="5" class="muted" style="text-align:center; padding:20px;">तुमची कोणतीही मागील ऑर्डर सापडली नाही.</td></tr>';
     return;
   }
 
