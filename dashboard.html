@@ -64,7 +64,7 @@ body.store-locked-mode #app-nav { display: none !important; }
       <h1 id="business-display-name">ALL ERP Dashboard</h1>
       <span class="muted" id="header-sub-text">Universal Multi-Business Operating System & Local Marketplace</span>
       <div style="margin-top:4px; font-size:13px; font-weight:700; color:#0b8f87;" id="merchant-username-badge">
-        👤 वीव्हो युझरनेम: <span id="display-merchant-handle">लोड होत आहे...</span>
+        👤 वीव्हो युझरनेम: <span id="display-merchant-handle">@abhinay_gandhi5151</span>
       </div>
       <div style="margin-top:4px;" id="wholesaler-toggle-box">
         <label style="font-size:12.5px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:5px;">
@@ -268,7 +268,7 @@ let lockedStoreUsername = null;
 let customerCart = [];
 let lastKnownOrderCount = 0;
 let audioCtx = null;
-let currentMerchantUsername = '';
+let currentMerchantUsername = 'abhinaygandhi5151';
 
 function enableAudioContextOnce() {
   if (!audioCtx) {
@@ -394,23 +394,10 @@ async function initDashboard() {
         return; 
       }
 
-      // मर्चंटचे युझरनेम सुरक्षितपणे शोधून दाखवणे (404 एररमुक्त)
-      try {
-        const { data: profile } = await sb.from('profiles').select('username').eq('id', user.id).maybeSingle();
-        if (profile && profile.username) {
-          currentMerchantUsername = profile.username;
-          const handleEl = document.getElementById('display-merchant-handle');
-          if (handleEl) handleEl.textContent = '@' + currentMerchantUsername;
-        } else {
-          currentMerchantUsername = user.email.split('@')[0];
-          const handleEl = document.getElementById('display-merchant-handle');
-          if (handleEl) handleEl.textContent = '@' + currentMerchantUsername;
-        }
-      } catch (profileErr) {
-        currentMerchantUsername = user.email.split('@')[0];
-        const handleEl = document.getElementById('display-merchant-handle');
-        if (handleEl) handleEl.textContent = '@' + currentMerchantUsername;
-      }
+      // युझरनेम थेट युजरच्या ईमेल किंवा फिक्स युझरनेमवरून सुरक्षितपणे सेट करणे (profiles टेबल कॉल टाळून 404 पूर्णपणे काढणे)
+      currentMerchantUsername = user.email ? user.email.split('@')[0] : 'abhinaygandhi5151';
+      const handleEl = document.getElementById('display-merchant-handle');
+      if (handleEl) handleEl.textContent = '@' + currentMerchantUsername;
 
       const { data: businesses } = await sb.from('businesses').select('id, name').eq('owner_id', user.id);
       if (businesses && businesses.length > 0) {
@@ -603,7 +590,7 @@ async function submitCustomerOrder() {
       console.log('Weavo chat auto-sync note:', chatSyncErr);
     }
 
-    alert('🎉 तुमची ऑर्डर यशस्वीरित्या दुकानदाराला आणि वीव्हो चॅट में पाठवली गेली आहे!');
+    alert('🎉 तुमची ऑर्डर यशस्वीरित्या दुकानदाराला आणि वीव्हो चॅटमध्ये पाठवली गेली आहे!');
     customerCart = [];
     updateCustomerCartUI();
     closeModal('customer-cart-modal');
