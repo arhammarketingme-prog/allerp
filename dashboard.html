@@ -319,15 +319,22 @@ let merchantPhoneNo = "9876543210";
 let html5QrCode = null;
 
 function switchTab(tabId) {
-  document.querySelectorAll('.erp-tab-pane').forEach(function(el) { el.style.display = 'none'; });
-  document.querySelectorAll('.erp-tab-btn').forEach(function(btn) { btn.classList.remove('active'); });
+  var panes = document.querySelectorAll('.erp-tab-pane');
+  for (var i = 0; i < panes.length; i++) {
+    panes[i].style.display = 'none';
+  }
+  var buttons = document.querySelectorAll('.erp-tab-btn');
+  for (var j = 0; j < buttons.length; j++) {
+    buttons[j].classList.remove('active');
+  }
   var target = document.getElementById(tabId);
   if (target) target.style.display = 'block';
-  document.querySelectorAll('.erp-tab-btn').forEach(function(btn) {
-    if (btn.getAttribute('onclick') && btn.getAttribute('onclick').indexOf(tabId) !== -1) {
-      btn.classList.add('active');
+  for (var k = 0; k < buttons.length; k++) {
+    var onclickAttr = buttons[k].getAttribute('onclick');
+    if (onclickAttr && onclickAttr.indexOf(tabId) !== -1) {
+      buttons[k].classList.add('active');
     }
-  });
+  }
   if (tabId === 'tab-products') loadMerchantProducts();
   if (tabId === 'tab-orders') loadOnlineOrders();
   if (tabId === 'tab-my-orders') loadCustomerOrderHistory();
@@ -729,7 +736,7 @@ async function loadCustomerOrderHistory() {
   var historyRes = await query;
   var orders = historyRes.data;
   if (historyRes.error || !orders || orders.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="5" class="muted" style="text-align:center; padding:20px;">तुमची कोणतीही मागील ऑर्डर सापडली नाही.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="5" class="muted" style="text-align:center; padding:20px;">तुम्ही अजून कोणतीही ऑर्डर दिलेली नाही.</td></tr>';
     return;
   }
 
