@@ -394,12 +394,19 @@ async function initDashboard() {
         return; 
       }
 
-      const { data: profile } = await sb.from('profiles').select('username').eq('id', user.id).maybeSingle();
-      if (profile && profile.username) {
-        currentMerchantUsername = profile.username;
-        const handleEl = document.getElementById('display-merchant-handle');
-        if (handleEl) handleEl.textContent = '@' + currentMerchantUsername;
-      } else {
+      // मर्चंटचे युझरनेम सुरक्षितपणे शोधून दाखवणे (404 एररमुक्त)
+      try {
+        const { data: profile } = await sb.from('profiles').select('username').eq('id', user.id).maybeSingle();
+        if (profile && profile.username) {
+          currentMerchantUsername = profile.username;
+          const handleEl = document.getElementById('display-merchant-handle');
+          if (handleEl) handleEl.textContent = '@' + currentMerchantUsername;
+        } else {
+          currentMerchantUsername = user.email.split('@')[0];
+          const handleEl = document.getElementById('display-merchant-handle');
+          if (handleEl) handleEl.textContent = '@' + currentMerchantUsername;
+        }
+      } catch (profileErr) {
         currentMerchantUsername = user.email.split('@')[0];
         const handleEl = document.getElementById('display-merchant-handle');
         if (handleEl) handleEl.textContent = '@' + currentMerchantUsername;
@@ -596,7 +603,7 @@ async function submitCustomerOrder() {
       console.log('Weavo chat auto-sync note:', chatSyncErr);
     }
 
-    alert('🎉 तुमची ऑर्डर यशस्वीरित्या दुकानदाराला आणि वीव्हो चॅटमध्ये पाठवली गेली आहे!');
+    alert('🎉 तुमची ऑर्डर यशस्वीरित्या दुकानदाराला आणि वीव्हो चॅट में पाठवली गेली आहे!');
     customerCart = [];
     updateCustomerCartUI();
     closeModal('customer-cart-modal');
