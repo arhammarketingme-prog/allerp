@@ -19,7 +19,7 @@ body.store-locked-mode #app-nav { display: none !important; }
 .google-login-customer-btn { background: #ffffff; color: #1e293b; border: 1px solid #cbd5e1; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12.5px; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
 .google-login-customer-btn:hover { background: #f8fafc; }
 .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 99999 !important; align-items: center; justify-content: center; }
-.modal-content { background: var(--card, #ffffff); border-radius: 12px; width: 95%; max-width: 500px; padding: 24px; box-shadow: 0 15px 35px rgba(0,0,0,0.25); }
+.modal-content { background: var(--card, #ffffff); border-radius: 12px; width: 95%; max-width: 450px; padding: 24px; box-shadow: 0 15px 35px rgba(0,0,0,0.25); }
 .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 16px; }
 .kpi-card { background: var(--card, #ffffff); border: 1px solid var(--border, #e2e8f0); border-radius: 8px; padding: 12px; }
 .erp-tabs-bar { display: flex; gap: 4px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 14px; border-bottom: 2px solid var(--border, #e2e8f0); }
@@ -129,33 +129,28 @@ body.store-locked-mode #app-nav { display: none !important; }
 
 </div>
 
-<!-- 🛒 ग्राहकाचे कार्ट व गुगल ऑटो-फिल ऑर्डर मोडल -->
+<!-- 🛒 ग्राहकाचे कार्ट व ऑटो-सबमिट ऑर्डर मोडल -->
 <div id="customer-cart-modal" class="modal-overlay">
   <div class="modal-content">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-      <h3 style="margin:0;">🛒 तुमची चालू ऑर्डर (Cart)</h3>
+      <h3 style="margin:0;">🛒 तुमची चालू ऑर्डर (Cart Summary)</h3>
       <button type="button" onclick="closeModal('customer-cart-modal')" style="background:transparent; border:none; font-size:16px; cursor:pointer; font-weight:bold;">✕</button>
     </div>
-    <div id="customer-cart-items" style="max-height:200px; overflow-y:auto; margin-bottom:12px;">
+    <div id="customer-cart-items" style="max-height:220px; overflow-y:auto; margin-bottom:12px;">
       <p class="muted">कार्ट रिकामी आहे.</p>
     </div>
     <hr style="border:none; border-top:1px solid #e2e8f0; margin:10px 0;">
-    <div style="display:flex; justify-content:space-between; font-size:16px; font-weight:bold; margin-bottom:14px;">
+    <div style="display:flex; justify-content:space-between; font-size:16px; font-weight:bold; margin-bottom:16px;">
       <span>एकूण रक्कम:</span>
       <span style="color:#16a34a;">₹<span id="modal-cart-total">0.00</span></span>
     </div>
     
-    <div style="margin-bottom:10px;">
-      <label style="font-weight:700; font-size:12px;">ग्राहकाचे नाव (Google Auto-fill)</label>
-      <input id="cust-order-name" readonly style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px; background:#f8fafc; font-weight:600; margin-top:4px;">
-    </div>
-    <div style="margin-bottom:16px;">
-      <label style="font-weight:700; font-size:12px;">ईमेल / मोबाईल (Google Auto-fill)</label>
-      <input id="cust-order-phone" readonly style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px; background:#f8fafc; font-weight:600; margin-top:4px;">
+    <div style="background:#f1f5f9; padding:10px 12px; border-radius:6px; margin-bottom:16px; font-size:13px; color:#334155;">
+      👤 गुगल लॉगिन युझर: <strong id="modal-user-email">तपासत आहे...</strong>
     </div>
 
-    <button type="button" onclick="submitCustomerOrder()" style="width:100%; background:#16a34a; color:#fff; padding:12px; border:none; border-radius:6px; font-weight:bold; font-size:15px; cursor:pointer;">
-      ✅ दुकानदाराला ऑर्डर पाठवा (Place Order & Chat)
+    <button type="button" onclick="submitCustomerOrderDirectly()" style="width:100%; background:#16a34a; color:#fff; padding:12px; border:none; border-radius:6px; font-weight:bold; font-size:15px; cursor:pointer;">
+      ✅ थेट ऑर्डर पाठवा व चॅट उघडा (Place Order)
     </button>
   </div>
 </div>
@@ -202,7 +197,7 @@ async function initDashboard() {
       document.getElementById('customer-store-notice').style.display = 'block';
       document.getElementById('customer-products-section').style.display = 'block';
 
-      // गुगल लॉगिन युझर ऑटो-डिटेक्ट आणि सिंक करणे
+      // गुगल लॉगिन युझर ऑटो-डिटेक्ट करणे
       const { data: { user } } = await sb.auth.getUser();
       if (user) {
         loggedInCustomer = user;
@@ -300,17 +295,19 @@ function openCustomerCartModal() {
     return;
   }
 
-  document.getElementById('cust-order-name').value = loggedInCustomer.user_metadata?.full_name || loggedInCustomer.email.split('@')[0];
-  document.getElementById('cust-order-phone').value = loggedInCustomer.email;
+  // मॅन्युअली विचारण्याचा प्रश्नच काढला, थेट गुगल लॉगिन ईमेल आणि नाव दाखवणे
+  const userEmail = loggedInCustomer.email;
+  const userName = loggedInCustomer.user_metadata?.full_name || userEmail.split('@')[0];
+  document.getElementById('modal-user-email').textContent = `${userName} (${userEmail})`;
 
   openModal('customer-cart-modal');
 }
 
-async function submitCustomerOrder() {
+async function submitCustomerOrderDirectly() {
   if (customerCart.length === 0 || !loggedInCustomer) return;
   
-  const name = document.getElementById('cust-order-name').value;
-  const phone = document.getElementById('cust-order-phone').value;
+  const name = loggedInCustomer.user_metadata?.full_name || loggedInCustomer.email.split('@')[0];
+  const phone = loggedInCustomer.email;
 
   try {
     let totalAmt = customerCart.reduce((sum, i) => sum + (i.price * i.qty), 0);
@@ -327,17 +324,17 @@ async function submitCustomerOrder() {
 
     if (orderErr) throw orderErr;
 
-    alert('🎉 तुमची ऑर्डर यशस्वीरीत्या नोंदवली गेली! आता त्याच खात्याने संवाद साधण्यासाठी चॅट उघडत आहे.');
+    alert('🎉 तुमची ऑर्डर यशस्वीरीत्या नोंदवली गेली! आता वीव्हो चॅट उघडत आहे.');
     customerCart = [];
     closeModal('customer-cart-modal');
 
-    // 🌟 अत्यंत महत्त्वाचे: ग्राहकाचा अचूक ईमेल आणि नाव Weavo कडे पास करणे, जेणेकरून तोच ईमेल तिथे आपोआप लॉगिन राहील!
+    // 🌟 अत्यंत महत्त्वाचे: वीव्होचे बटण किंवा चॅट थेट त्याच गुगल खात्याने ऑटो-लॉगिन करून उघडणे
     let storeUsername = 'abhinay_gandhi';
     localStorage.setItem('weavo_target_store', storeUsername);
 
     const orderMsg = encodeURIComponent(`📦 नवीन ऑनलाईन ऑर्डर:\n👤 ग्राहक: ${name}\n📞 ईमेल: ${phone}\n🛒 तपशील: ${itemsSummaryText}\n💰 एकूण: ₹${totalAmt}`);
     
-    // Weavo ला ऑल ईआरपीच्या लॉगिन ईमेलसह जोडणारी स्मार्ट लिंक
+    // Weavo ला ऑल ईआरपीच्या लॉगिन ईमेलसह जोडणारी आणि आपोआप ऑथेंटिकेट करणारी लिंक
     const weavoUrl = `https://arhammarketingme-prog.github.io/weavo/?store=${storeUsername}&prefill=${orderMsg}&customer_email=${encodeURIComponent(phone)}`;
     window.open(weavoUrl, '_blank');
   } catch (err) {
@@ -375,7 +372,6 @@ async function openWeavoChat() {
   let storeUsername = 'abhinay_gandhi';
   localStorage.setItem('weavo_target_store', storeUsername);
 
-  // वर्तमान लॉगिन ग्राहकाचा ईमेल मिळवून वीव्होला पाठवणे
   let customerEmail = '';
   try {
     const { data: { user } } = await sb.auth.getUser();
