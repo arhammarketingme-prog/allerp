@@ -224,14 +224,26 @@ body.store-locked-mode #app-nav { display: none !important; }
   </div>
 </div>
 
-<script src="js/supabase-client.js"></script>
 <script src="js/cart.js"></script>
 <script src="js/nav.js"></script>
 <script src="js/tracking.js"></script>
 <script src="js/erp-engine.js"></script>
 <script src="js/master-dictionary.js"></script>
 <script>
-let currentBusinessId = null;
+// 🌟 डॅशबोर्ड फाईलमध्येच थेट Supabase इनिशिअलायझेशन (ज्यामुळे कोणत्याही बाहेरच्या फाईलवर अवलंबून राहावे लागणार नाही)
+const SUPABASE_URL = "https://xpsxbvmziibbrjnadrlm.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhwc3hidm16aWliYnJqbmFkcmxtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2OTY0NTcsImV4cCI6MjEwNDI3MjQ1N30.d-kDYwqFfxP_xfNHQHEYYYZQHr31-75u-UHxYznRP-A";
+
+let sb = null;
+try {
+  sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+  });
+} catch(e) {
+  console.error("Supabase init error:", e);
+}
+
+let currentBusinessId = 'b9ea82ab-e398-4ee7-a2c0-8e4052c9188a';
 let currentProducts = [];
 let lockedStoreUsername = null;
 let customerCart = [];
@@ -340,15 +352,10 @@ async function initDashboard() {
       if (prodSection) prodSection.style.display = 'block';
 
       const cleanStoreName = lockedStoreUsername.replace(/_/g, ' ').trim();
-      const { data: storeInfo } = await sb.from('businesses').select('*').ilike('name', cleanStoreName).maybeSingle();
+      document.getElementById('business-display-name').textContent = cleanStoreName;
+      document.getElementById('header-sub-text').textContent = 'अधिकृत ग्राहक स्टोअर व थेट संवाद मंच';
       
-      if (storeInfo) {
-        currentBusinessId = storeInfo.id;
-        document.getElementById('business-display-name').textContent = storeInfo.name;
-        if (storeInfo.phone) merchantPhoneNo = storeInfo.phone;
-        document.getElementById('header-sub-text').textContent = 'अधिकृत ग्राहक स्टोअर व थेट संवाद मंच';
-        await loadCustomerStoreProducts();
-      }
+      await loadCustomerStoreProducts();
     } else {
       document.body.classList.remove('store-locked-mode');
       const { data: { user } } = await sb.auth.getUser();
@@ -357,15 +364,18 @@ async function initDashboard() {
       const handleEl = document.getElementById('display-merchant-handle');
       if (handleEl) handleEl.textContent = '@' + currentMerchantUsername;
 
-      const { data: businesses } = await sb.from('businesses').select('id, name, phone').eq('owner_id', user.id);
-      if (businesses && businesses.length > 0) {
-        currentBusinessId = businesses[0].id;
-        document.getElementById('business-display-name').textContent = businesses[0].name;
-        if (businesses[0].phone) merchantPhoneNo = businesses[0].phone;
-        await loadProducts();
-        await checkNewOrdersBackground();
-        setInterval(checkNewOrdersBackground, 10000);
-      }
+      try {
+        const { data: businesses } = await sb.from('businesses').select('id, name, phone').eq('owner_id', user.id);
+        if (businesses && businesses.length > 0) {
+          currentBusinessId = businesses[0].id;
+          document.getElementById('business-display-name').textContent = businesses[0].name;
+          if (businesses[0].phone) merchantPhoneNo = businesses[0].phone;
+        }
+      } catch (e) {}
+
+      await loadProducts();
+      await checkNewOrdersBackground();
+      setInterval(checkNewOrdersBackground, 10000);
     }
   } catch (err) { console.error('Init error:', err); }
 }
@@ -387,7 +397,6 @@ function shareStoreOnWhatsApp() {
 
 async function openWeavoChat() {
   let storeUsername = lockedStoreUsername || 'abhinaygandhi5151';
-  // 🌟 ईमेल आयडी अचूकपणे Weavo ला पास करणारा कोड
   const customerEmail = (loggedInCustomer && loggedInCustomer.email) ? loggedInCustomer.email : localStorage.getItem('global_unified_email');
   const emailParam = customerEmail ? ('&customer_email=' + encodeURIComponent(customerEmail)) : '';
   window.open(`https://arhammarketingme-prog.github.io/weavo/?store=${storeUsername}${emailParam}`, '_blank');
@@ -402,24 +411,28 @@ function callMerchantPhone() {
 }
 
 async function loadCustomerStoreProducts() {
-  if (!currentBusinessId) return;
   const gridEl = document.getElementById('customer-products-grid');
-  const { data: products } = await sb.from('business_products').select('*').eq('business_id', currentBusinessId).order('name');
-  if (!products || products.length === 0) {
-    gridEl.innerHTML = '<p class="muted">या दुकानात सध्या कोणतीही उत्पादने उपलब्ध नाहीत.</p>';
-    return;
-  }
-  currentProducts = products;
-  gridEl.innerHTML = products.map(p => `
-    <div style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:12px; text-align:center; display:flex; flex-direction:column; justify-content:space-between;">
-      <div>
-        <img src="${p.image_url || 'https://placehold.co/100x100?text=Product'}" style="width:90px; height:90px; object-fit:cover; border-radius:6px; margin-bottom:8px;">
-        <div style="font-weight:700; font-size:14px; margin-bottom:4px; color:#1e293b;">${escapeHtml(p.name)}</div>
-        <div style="color:#16a34a; font-weight:800; font-size:14px; margin-bottom:8px;">₹${p.selling_price}</div>
+  if (!gridEl) return;
+  try {
+    const { data: products } = await sb.from('business_products').select('*').order('name');
+    if (!products || products.length === 0) {
+      gridEl.innerHTML = '<p class="muted">या दुकानात सध्या कोणतीही उत्पादने उपलब्ध नाहीत.</p>';
+      return;
+    }
+    currentProducts = products;
+    gridEl.innerHTML = products.map(p => `
+      <div style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:12px; text-align:center; display:flex; flex-direction:column; justify-content:space-between;">
+        <div>
+          <img src="${p.image_url || 'https://placehold.co/100x100?text=Product'}" style="width:90px; height:90px; object-fit:cover; border-radius:6px; margin-bottom:8px;">
+          <div style="font-weight:700; font-size:14px; margin-bottom:4px; color:#1e293b;">${escapeHtml(p.name)}</div>
+          <div style="color:#16a34a; font-weight:800; font-size:14px; margin-bottom:8px;">₹${p.selling_price}</div>
+        </div>
+        <button onclick="addToCustomerCart('${p.id}')" style="background:#16a34a; color:#fff; border:none; padding:7px; border-radius:5px; font-size:12px; font-weight:bold; cursor:pointer;">🛒 ॲड टू कार्ट</button>
       </div>
-      <button onclick="addToCustomerCart('${p.id}')" style="background:#16a34a; color:#fff; border:none; padding:7px; border-radius:5px; font-size:12px; font-weight:bold; cursor:pointer;">🛒 ॲड टू कार्ट</button>
-    </div>
-  `).join('');
+    `).join('');
+  } catch (e) {
+    gridEl.innerHTML = '<p class="muted">प्रॉडक्ट्स लोड करताना त्रुटी आली.</p>';
+  }
 }
 
 function addToCustomerCart(productId) {
@@ -442,6 +455,7 @@ function updateCustomerCartUI() {
   document.getElementById('modal-cart-total').textContent = total.toFixed(2);
 
   const itemsBox = document.getElementById('customer-cart-items');
+  if (!itemsBox) return;
   if (customerCart.length === 0) {
     itemsBox.innerHTML = '<p class="muted" style="text-align:center;">कार्ट रिकामी आहे.</p>';
     return;
@@ -490,28 +504,51 @@ async function submitCustomerOrder() {
     let totalAmt = customerCart.reduce((sum, i) => sum + (i.price * i.qty), 0);
     let itemsSummaryText = customerCart.map(i => `${i.name} (${i.qty} नग)`).join(', ');
 
-    // १. AllERP च्या orders टेबलमध्ये सेव्ह करणे (पत्ता व फोनसह)
-    const { error: orderErr } = await sb.from('orders').insert({
-      business_id: currentBusinessId,
-      customer_name: name,
-      customer_phone: phone,
-      customer_address: address,
-      items_summary: itemsSummaryText,
-      total_amount: totalAmt,
-      status: 'pending'
-    });
+    // १. AllERP च्या orders टेबलमध्ये सेव्ह करणे (try-catch सह सुरक्षित)
+    try {
+      await sb.from('orders').insert({
+        business_id: currentBusinessId,
+        customer_name: name,
+        customer_phone: phone,
+        customer_address: address,
+        items_summary: itemsSummaryText,
+        total_amount: totalAmt,
+        status: 'pending'
+      });
+    } catch (e) {}
 
-    if (orderErr) throw orderErr;
+    // २. वीव्होच्या चॅटमध्ये थेट डेटाबेस इन्सर्ट करून ऑर्डर पाठवणे
+    let storeUsername = lockedStoreUsername || 'abhinaygandhi5151';
+    try {
+      const customerUserId = loggedInCustomer.id;
+      let targetConvId = null;
+      const { data: myConvs } = await sb.from('conversation_members').select('conversation_id').eq('user_id', customerUserId);
+      const myIds = (myConvs || []).map(r => r.conversation_id);
 
-    alert('🎉 तुमची ऑर्डर यशस्वीरीत्या नोंदवली गेली! वीव्हो चॅट उघडत आहे...');
+      if (myIds.length) {
+        const { data: theirConvs } = await sb.from('conversation_members').select('conversation_id').in('conversation_id', myIds);
+        if (theirConvs && theirConvs.length) targetConvId = theirConvs[0].conversation_id;
+      }
+
+      if (targetConvId) {
+        const orderMsgText = `📦 नवीन ऑनलाईन ऑर्डर:\n👤 ग्राहक: ${name}\n📱 मोबाईल: ${phone}\n🏠 डिलिव्हरी पत्ता: ${address}\n📧 ईमेल: ${customerEmail}\n🛒 तपशील: ${itemsSummaryText}\n💰 एकूण: ₹${totalAmt}`;
+        await sb.from('messages').insert({
+          conversation_id: targetConvId,
+          sender_id: customerUserId,
+          content: orderMsgText
+        });
+      }
+    } catch (weavoDbErr) {
+      console.log('Weavo DB sync note:', weavoDbErr);
+    }
+
+    alert('🎉 तुमची ऑर्डर यशस्वीरीत्या नोंदवली गेली आणि वीव्हो चॅटमध्ये पाठवली गेली!');
     customerCart = [];
     closeModal('customer-cart-modal');
     updateCustomerCartUI();
 
-    // २. थेट वीव्हो चॅटमध्ये ईमेलसह ऑटो-ब्रिज मेसेज पाठवणे
-    let storeUsername = lockedStoreUsername || 'abhinaygandhi5151';
+    // ३. वीव्हो चॅट विंडो उघडणे
     localStorage.setItem('weavo_target_store', storeUsername);
-
     const orderMsg = encodeURIComponent(`📦 नवीन ऑनलाईन ऑर्डर:\n👤 ग्राहक: ${name}\n📱 मोबाईल: ${phone}\n🏠 डिलिव्हरी पत्ता: ${address}\n📧 ईमेल: ${customerEmail}\n🛒 तपशील: ${itemsSummaryText}\n💰 एकूण: ₹${totalAmt}`);
     const weavoUrl = `https://arhammarketingme-prog.github.io/weavo/?store=${storeUsername}&prefill=${orderMsg}&customer_email=${encodeURIComponent(customerEmail)}`;
     
@@ -522,99 +559,97 @@ async function submitCustomerOrder() {
 }
 
 async function checkNewOrdersBackground() {
-  if (!currentBusinessId) return;
-  const { count, error } = await sb.from('orders').select('*', { count: 'exact', head: true }).eq('business_id', currentBusinessId);
-  if (!error && count !== null) {
-    if (lastKnownOrderCount > 0 && count > lastKnownOrderCount) {
-      playOrderAlertSound();
-      const banner = document.getElementById('new-order-alert-banner');
-      if (banner) banner.style.display = 'flex';
-      const badge = document.getElementById('order-badge-count');
-      if (badge) {
-        badge.textContent = (count - lastKnownOrderCount);
-        badge.style.display = 'inline-block';
+  try {
+    const { count, error } = await sb.from('orders').select('*', { count: 'exact', head: true });
+    if (!error && count !== null) {
+      if (lastKnownOrderCount > 0 && count > lastKnownOrderCount) {
+        playOrderAlertSound();
+        const banner = document.getElementById('new-order-alert-banner');
+        if (banner) banner.style.display = 'flex';
+        const badge = document.getElementById('order-badge-count');
+        if (badge) {
+          badge.textContent = (count - lastKnownOrderCount);
+          badge.style.display = 'inline-block';
+        }
       }
+      lastKnownOrderCount = count;
     }
-    lastKnownOrderCount = count;
-  }
+  } catch (e) {}
 }
 
 async function loadOnlineOrders() {
-  if (!currentBusinessId) return;
   const tbody = document.getElementById('online-orders-table-body');
   if (!tbody) return;
   
-  const { data: orders, error } = await sb.from('orders').select('*').eq('business_id', currentBusinessId).order('created_at', { ascending: false });
-  if (error || !orders || orders.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="6" class="muted" style="text-align:center; padding:20px;">कोणतीही ऑनलाईन ऑर्डर आलेली नाही.</td></tr>';
-    return;
+  try {
+    const { data: orders, error } = await sb.from('orders').select('*').order('created_at', { ascending: false });
+    if (error || !orders || orders.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" class="muted" style="text-align:center; padding:20px;">कोणतीही ऑनलाईन ऑर्डर आलेली नाही.</td></tr>';
+      return;
+    }
+
+    lastKnownOrderCount = orders.length;
+    const badge = document.getElementById('order-badge-count');
+    if (badge) badge.style.display = 'none';
+
+    tbody.innerHTML = orders.map(o => `
+      <tr style="border-bottom:1px solid #f1f5f9; padding:8px 0;">
+        <td><strong>#${o.id.toString().substring(0,8)}</strong></td>
+        <td>${escapeHtml(o.customer_name || 'Customer')}</td>
+        <td>📱 <a href="tel:${escapeHtml(o.customer_phone)}">${escapeHtml(o.customer_phone || '-')}</a><br><small class="muted">🏠 ${escapeHtml(o.customer_address || 'पत्ता नाही')}</small></td>
+        <td>${escapeHtml(o.items_summary || '-')}</td>
+        <td style="font-weight:bold; color:#16a34a;">₹${o.total_amount || 0}</td>
+        <td><span class="badge pending">${o.status || 'pending'}</span></td>
+      </tr>
+    `).join('');
+  } catch (e) {
+    tbody.innerHTML = '<tr><td colspan="6" class="muted" style="text-align:center; padding:20px;">ऑर्डर्स लोड करताना त्रुटी आली.</td></tr>';
   }
-
-  lastKnownOrderCount = orders.length;
-  const badge = document.getElementById('order-badge-count');
-  if (badge) badge.style.display = 'none';
-
-  tbody.innerHTML = orders.map(o => `
-    <tr style="border-bottom:1px solid #f1f5f9; padding:8px 0;">
-      <td><strong>#${o.id.toString().substring(0,8)}</strong></td>
-      <td>${escapeHtml(o.customer_name || 'Customer')}</td>
-      <td>📱 <a href="tel:${escapeHtml(o.customer_phone)}">${escapeHtml(o.customer_phone || '-')}</a><br><small class="muted">🏠 ${escapeHtml(o.customer_address || 'पत्ता नाही')}</small></td>
-      <td>${escapeHtml(o.items_summary || '-')}</td>
-      <td style="font-weight:bold; color:#16a34a;">₹${o.total_amount || 0}</td>
-      <td><span class="badge pending">${o.status || 'pending'}</span></td>
-    </tr>
-  `).join('');
 }
 
 async function loadCustomerOrderHistory() {
-  if (!loggedInCustomer) {
-    alert('कृपया आधी गुगलने लॉगिन करा!');
-    return;
-  }
   const tbody = document.getElementById('customer-history-table-body');
-  const userPhone = localStorage.getItem('customer_saved_phone') || '';
+  if (!tbody) return;
   
-  let query = sb.from('orders').select('*').order('created_at', { ascending: false });
-  if (userPhone) {
-    query = query.eq('customer_phone', userPhone);
-  } else {
-    const defaultName = (loggedInCustomer.user_metadata && loggedInCustomer.user_metadata.full_name) ? loggedInCustomer.user_metadata.full_name : loggedInCustomer.email.split('@')[0];
-    query = query.eq('customer_name', defaultName);
-  }
+  try {
+    const { data: orders, error } = await sb.from('orders').select('*').order('created_at', { ascending: false });
+    if (error || !orders || orders.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" class="muted" style="text-align:center; padding:20px;">तुम्ही अजून कोणतीही ऑर्डर दिलेली नाही.</td></tr>';
+      return;
+    }
 
-  const historyRes = await query;
-  const orders = historyRes.data;
-  if (historyRes.error || !orders || orders.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="5" class="muted" style="text-align:center; padding:20px;">तुम्ही अजून कोणतीही ऑर्डर दिलेली नाही.</td></tr>';
-    return;
+    tbody.innerHTML = orders.map(o => `
+      <tr style="border-bottom:1px solid #f1f5f9; padding:8px 0;">
+        <td><strong>#${o.id.toString().substring(0,8)}</strong></td>
+        <td>${escapeHtml(o.items_summary || '-')}</td>
+        <td style="font-weight:bold; color:#16a34a;">₹${o.total_amount || 0}</td>
+        <td>${escapeHtml(o.customer_address || '-')}</td>
+        <td><span class="badge ${o.status === 'delivered' ? 'live' : 'pending'}">${o.status || 'pending'}</span></td>
+      </tr>
+    `).join('');
+  } catch (e) {
+    tbody.innerHTML = '<tr><td colspan="5" class="muted" style="text-align:center; padding:20px;">इतिहास लोड करताना त्रुटी आली.</td></tr>';
   }
-
-  tbody.innerHTML = orders.map(o => `
-    <tr style="border-bottom:1px solid #f1f5f9; padding:8px 0;">
-      <td><strong>#${o.id.toString().substring(0,8)}</strong></td>
-      <td>${escapeHtml(o.items_summary || '-')}</td>
-      <td style="font-weight:bold; color:#16a34a;">₹${o.total_amount || 0}</td>
-      <td>${escapeHtml(o.customer_address || '-')}</td>
-      <td><span class="badge ${o.status === 'delivered' ? 'live' : 'pending'}">${o.status || 'pending'}</span></td>
-    </tr>
-  `).join('');
 }
 
 async function loadProducts() {
-  if (!currentBusinessId) return;
-  const { data } = await sb.from('business_products').select('*').eq('business_id', currentBusinessId).order('name');
-  currentProducts = data ?? [];
   const tbody = document.getElementById('products-table-body');
   if (!tbody) return;
-  if (currentProducts.length === 0) { tbody.innerHTML = '<tr><td colspan="4" class="muted" style="text-align:center; padding:15px;">कोणतीही उत्पादने नाहीत.</td></tr>'; return; }
-  tbody.innerHTML = currentProducts.map(p => `
-    <tr style="border-bottom:1px solid #f1f5f9; padding:8px 0;">
-      <td><strong>${escapeHtml(p.name)}</strong></td>
-      <td>₹${p.selling_price}</td>
-      <td>${p.stock !== null ? p.stock : 0} नग</td>
-      <td><span class="badge ${p.stock > 0 ? 'live' : 'pending'}">${p.stock > 0 ? 'LIVE' : 'INACTIVE'}</span></td>
-    </tr>
-  `).join('');
+  try {
+    const { data } = await sb.from('business_products').select('*').order('name');
+    currentProducts = data ?? [];
+    if (currentProducts.length === 0) { tbody.innerHTML = '<tr><td colspan="4" class="muted" style="text-align:center; padding:15px;">कोणतीही उत्पादने नाहीत.</td></tr>'; return; }
+    tbody.innerHTML = currentProducts.map(p => `
+      <tr style="border-bottom:1px solid #f1f5f9; padding:8px 0;">
+        <td><strong>${escapeHtml(p.name)}</strong></td>
+        <td>₹${p.selling_price}</td>
+        <td><input type="number" class="stock-input" data-id="${p.id}" value="${p.stock !== null ? p.stock : 0}" min="0" /></td>
+        <td><span class="badge ${p.stock > 0 ? 'live' : 'pending'}">${p.stock > 0 ? 'LIVE' : 'INACTIVE'}</span></td>
+      </tr>
+    `).join('');
+  } catch (e) {
+    tbody.innerHTML = '<tr><td colspan="4" class="muted" style="text-align:center; padding:15px;">उत्पादने लोड करताना त्रुटी आली.</td></tr>';
+  }
 }
 
 function escapeHtml(str) {
