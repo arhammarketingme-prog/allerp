@@ -22,7 +22,12 @@ body.store-locked-mode #app-nav { display: none !important; }
 
 .weavo-header-btn { background: linear-gradient(135deg, #0b8f87, #16b8a9); color: #fff; padding: 8px 14px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12.5px; display: inline-flex; align-items: center; gap: 5px; text-decoration: none; box-shadow: 0 2px 8px rgba(11,143,135,0.2); }
 .whatsapp-share-btn { background: #25D366; color: #fff; padding: 8px 14px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12.5px; display: inline-flex; align-items: center; gap: 5px; text-decoration: none; }
-.weavo-header-btn:hover, .whatsapp-share-btn:hover { opacity: 0.9; }
+.google-login-customer-btn { background: #ffffff; color: #1e293b; border: 1px solid #cbd5e1; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12.5px; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+
+.customer-action-bar { display: none; gap: 8px; overflow-x: auto; padding: 10px 14px; margin-bottom: 14px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
+.cust-nav-btn { background: #ffffff; color: #1e293b; border: 1px solid #cbd5e1; padding: 8px 14px; border-radius: 6px; font-weight: 700; font-size: 12.5px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; text-decoration: none; }
+.cust-nav-btn.primary { background: #1D4E89; color: #fff; border-color: #1D4E89; }
+.cust-nav-btn.success { background: #16a34a; color: #fff; border-color: #16a34a; }
 
 .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 99999 !important; align-items: center; justify-content: center; }
 .modal-content { background: var(--card, #ffffff); border-radius: 12px; width: 95%; max-width: 650px; padding: 24px; max-height: 85vh; overflow-y: auto; box-shadow: 0 15px 35px rgba(0,0,0,0.25); z-index: 100000 !important; }
@@ -68,10 +73,23 @@ body.store-locked-mode #app-nav { display: none !important; }
       </div>
     </div>
     <div id="header-action-buttons">
+      <!-- ग्राहकांसाठी गुगल लॉगिन बटण (स्टोअर मोडमध्ये दिसणार) -->
+      <button type="button" id="customer-google-login-btn" onclick="loginCustomerWithGoogle()" class="google-login-customer-btn" style="display:none;">
+        <svg width="16" height="16" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+        <span id="google-login-btn-text">Google ने लॉगिन करा</span>
+      </button>
       <button type="button" id="whatsapp-share-btn" onclick="shareStoreOnWhatsApp()" class="whatsapp-share-btn">📢 WhatsApp शेअर</button>
       <button type="button" id="weavo-chat-btn" onclick="openWeavoChat()" class="weavo-header-btn">💬 Weavo चॅट</button>
       <button type="button" id="global-market-btn" onclick="openGlobalCatalogModal()" style="background:#16a34a; color:#fff; padding:8px 14px; border:none; border-radius:6px; cursor:pointer; font-weight:bold; font-size:12.5px;">🌐 ग्लोबल मार्केटप्लेस</button>
     </div>
+  </div>
+
+  <!-- CUSTOMER ACTION BAR (WhatsApp लिंकवरून आल्यावर दिसणारा कस्टमर बार) -->
+  <div class="customer-action-bar" id="customer-action-bar" style="display:none;">
+    <button type="button" class="cust-nav-btn success" onclick="openCustomerCartModal()">🛒 कार्ट (<span id="bar-cart-count">0</span>)</button>
+    <button type="button" class="cust-nav-btn primary" onclick="switchTab('tab-my-orders')">🛍️ माझ्या ऑर्डर्स</button>
+    <button type="button" class="cust-nav-btn" onclick="openWeavoChat()">💬 दुकानदाराशी चॅट</button>
+    <button type="button" class="cust-nav-btn" onclick="callMerchantPhone()">📞 दुकानदाराला कॉल</button>
   </div>
 
   <!-- NAVIGATION TABS -->
@@ -145,6 +163,24 @@ body.store-locked-mode #app-nav { display: none !important; }
     </div>
   </div>
 
+  <!-- TAB: CUSTOMER ORDER HISTORY (माझ्या ऑर्डर्स) -->
+  <div id="tab-my-orders" class="erp-tab-pane" style="display:none;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+      <h2>🛍️ तुमची ऑर्डर हिस्ट्री व स्टेटस</h2>
+      <button type="button" onclick="loadCustomerOrderHistory()" class="secondary" style="padding:6px 12px; cursor:pointer;">🔄 रिफ्रेश करा</button>
+    </div>
+    <div class="card" style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:16px;">
+      <table style="width:100%; border-collapse:collapse;">
+        <thead>
+          <tr style="text-align:left; border-bottom:2px solid #e2e8f0;">
+            <th>ऑर्डर #</th><th>तपशील (Items)</th><th>रक्कम</th><th>डिलिव्हरी पत्ता</th><th>स्थिती (Status)</th>
+          </tr>
+        </thead>
+        <tbody id="customer-history-table-body"><tr><td colspan="5" class="muted" style="text-align:center; padding:20px;">तुम्ही अजून कोणतीही ऑर्डर दिलेली नाही.</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
   <div id="tab-reports" class="erp-tab-pane" style="display:none;"><h2>📈 रिपोर्ट्स</h2></div>
   <div id="tab-settings" class="erp-tab-pane" style="display:none;"><h2>⚙️ सेटिंग्स</h2></div>
 </div>
@@ -203,7 +239,8 @@ let customerCart = [];
 let lastKnownOrderCount = 0;
 let audioCtx = null;
 let currentMerchantUsername = 'abhinaygandhi5151';
-let loggedInCustomerEmail = '';
+let loggedInCustomer = null;
+let merchantPhoneNo = '9876543210';
 
 function enableAudioContextOnce() {
   if (!audioCtx) {
@@ -233,6 +270,7 @@ function switchTab(tabId) {
     const alertBanner = document.getElementById('new-order-alert-banner');
     if (alertBanner) alertBanner.style.display = 'none';
   }
+  if (tabId === 'tab-my-orders') loadCustomerOrderHistory();
   if (tabId === 'tab-products') loadProducts();
 }
 
@@ -267,8 +305,8 @@ async function initDashboard() {
 
     const sessionRes = await sb.auth.getSession();
     if (sessionRes.data && sessionRes.data.session && sessionRes.data.session.user) {
-      loggedInCustomerEmail = sessionRes.data.session.user.email;
-      localStorage.setItem('global_unified_email', loggedInCustomerEmail);
+      loggedInCustomer = sessionRes.data.session.user;
+      localStorage.setItem('global_unified_email', loggedInCustomer.email);
     }
 
     if (lockedStoreUsername) {
@@ -284,6 +322,20 @@ async function initDashboard() {
       const merchantBadge = document.getElementById('merchant-username-badge');
       if (merchantBadge) merchantBadge.style.display = 'none';
       
+      // कस्टमरसाठी विशेष एक्शन बार व गूगल लॉगिन बटण दाखवणे
+      const custBar = document.getElementById('customer-action-bar');
+      if (custBar) custBar.style.display = 'flex';
+      const googleLoginBtn = document.getElementById('customer-google-login-btn');
+      if (googleLoginBtn) googleLoginBtn.style.display = 'inline-flex';
+
+      if (loggedInCustomer) {
+        const btnText = document.getElementById('google-login-btn-text');
+        if (btnText) {
+          const fullName = (loggedInCustomer.user_metadata && loggedInCustomer.user_metadata.full_name) ? loggedInCustomer.user_metadata.full_name : loggedInCustomer.email;
+          btnText.textContent = '👤 ' + fullName;
+        }
+      }
+
       const noticeBox = document.getElementById('customer-store-notice');
       if (noticeBox) noticeBox.style.display = 'block';
       const prodSection = document.getElementById('customer-products-section');
@@ -295,6 +347,7 @@ async function initDashboard() {
       if (storeInfo) {
         currentBusinessId = storeInfo.id;
         document.getElementById('business-display-name').textContent = storeInfo.name;
+        if (storeInfo.phone) merchantPhoneNo = storeInfo.phone;
         document.getElementById('header-sub-text').textContent = 'अधिकृत ग्राहक स्टोअर व थेट संवाद मंच';
         await loadCustomerStoreProducts();
       }
@@ -306,16 +359,25 @@ async function initDashboard() {
       const handleEl = document.getElementById('display-merchant-handle');
       if (handleEl) handleEl.textContent = '@' + currentMerchantUsername;
 
-      const { data: businesses } = await sb.from('businesses').select('id, name').eq('owner_id', user.id);
+      const { data: businesses } = await sb.from('businesses').select('id, name, phone').eq('owner_id', user.id);
       if (businesses && businesses.length > 0) {
         currentBusinessId = businesses[0].id;
         document.getElementById('business-display-name').textContent = businesses[0].name;
+        if (businesses[0].phone) merchantPhoneNo = businesses[0].phone;
         await loadProducts();
         await checkNewOrdersBackground();
         setInterval(checkNewOrdersBackground, 10000);
       }
     }
   } catch (err) { console.error('Init error:', err); }
+}
+
+async function loginCustomerWithGoogle() {
+  const currentUrl = window.location.origin + window.location.pathname + (lockedStoreUsername ? ('?store=' + lockedStoreUsername) : '');
+  await sb.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo: currentUrl }
+  });
 }
 
 function shareStoreOnWhatsApp() {
@@ -327,8 +389,16 @@ function shareStoreOnWhatsApp() {
 
 async function openWeavoChat() {
   let storeUsername = lockedStoreUsername || 'abhinaygandhi5151';
-  const emailParam = loggedInCustomerEmail ? ('&customer_email=' + encodeURIComponent(loggedInCustomerEmail)) : '';
+  const emailParam = (loggedInCustomer && loggedInCustomer.email) ? ('&customer_email=' + encodeURIComponent(loggedInCustomer.email)) : '';
   window.open(`https://arhammarketingme-prog.github.io/weavo/?store=${storeUsername}${emailParam}`, '_blank');
+}
+
+function callMerchantPhone() {
+  if (merchantPhoneNo) {
+    window.location.href = 'tel:' + merchantPhoneNo;
+  } else {
+    alert('दुकानदाराचा मोबाईल नंबर उपलब्ध नाही.');
+  }
 }
 
 async function loadCustomerStoreProducts() {
@@ -366,6 +436,8 @@ function updateCustomerCartUI() {
   let count = 0, total = 0;
   customerCart.forEach(i => { count += i.qty; total += (i.price * i.qty); });
   document.getElementById('cart-count').textContent = count;
+  const barCount = document.getElementById('bar-cart-count');
+  if (barCount) barCount.textContent = count;
   document.getElementById('cart-total').textContent = total.toFixed(2);
   document.getElementById('modal-cart-total').textContent = total.toFixed(2);
 
@@ -385,11 +457,13 @@ function updateCustomerCartUI() {
 function openCustomerCartModal() {
   if (customerCart.length === 0) { alert('तुमची कार्ट रिकामी आहे!'); return; }
   
-  if (!loggedInCustomerEmail) {
-    alert('कृपया ऑर्डर देण्यासाठी आधी गुगलने लॉगिन करा!');
+  if (!loggedInCustomer) {
+    alert('कृपया ऑर्डर देण्यासाठी आधी वर दिलेल्या "Google ने लॉगिन करा" बटणावर क्लिक करा!');
+    loginCustomerWithGoogle();
     return;
   }
-  document.getElementById('modal-user-email').textContent = loggedInCustomerEmail;
+  document.getElementById('modal-user-email').textContent = loggedInCustomer.email;
+  document.getElementById('cust-order-name').value = (loggedInCustomer.user_metadata && loggedInCustomer.user_metadata.full_name) ? loggedInCustomer.user_metadata.full_name : '';
   document.getElementById('cust-order-phone').value = localStorage.getItem('customer_saved_phone') || '';
   document.getElementById('cust-order-address').value = localStorage.getItem('customer_saved_address') || '';
   
@@ -398,7 +472,7 @@ function openCustomerCartModal() {
 
 // 🛍️ ग्राहकाने नाव, फोन आणि पत्ता भरून थेट ERP आणि Weavo मध्ये ऑर्डर पाठवणे
 async function submitCustomerOrder() {
-  if (customerCart.length === 0 || !loggedInCustomerEmail) return;
+  if (customerCart.length === 0 || !loggedInCustomer) return;
   
   const name = document.getElementById('cust-order-name').value.trim();
   const phone = document.getElementById('cust-order-phone').value.trim();
@@ -437,8 +511,8 @@ async function submitCustomerOrder() {
     let storeUsername = lockedStoreUsername || 'abhinaygandhi5151';
     localStorage.setItem('weavo_target_store', storeUsername);
 
-    const orderMsg = encodeURIComponent(`📦 नवीन ऑनलाईन ऑर्डर:\n👤 ग्राहक: ${name}\n📱 मोबाईल: ${phone}\n🏠 डिलिव्हरी पत्ता: ${address}\n📧 ईमेल: ${loggedInCustomerEmail}\n🛒 तपशील: ${itemsSummaryText}\n💰 एकूण: ₹${totalAmt}`);
-    const weavoUrl = `https://arhammarketingme-prog.github.io/weavo/?store=${storeUsername}&prefill=${orderMsg}&customer_email=${encodeURIComponent(loggedInCustomerEmail)}`;
+    const orderMsg = encodeURIComponent(`📦 नवीन ऑनलाईन ऑर्डर:\n👤 ग्राहक: ${name}\n📱 मोबाईल: ${phone}\n🏠 डिलिव्हरी पत्ता: ${address}\n📧 ईमेल: ${loggedInCustomer.email}\n🛒 तपशील: ${itemsSummaryText}\n💰 एकूण: ₹${totalAmt}`);
+    const weavoUrl = `https://arhammarketingme-prog.github.io/weavo/?store=${storeUsername}&prefill=${orderMsg}&customer_email=${encodeURIComponent(loggedInCustomer.email)}`;
     
     window.open(weavoUrl, '_blank');
   } catch (err) {
@@ -487,6 +561,40 @@ async function loadOnlineOrders() {
       <td>${escapeHtml(o.items_summary || '-')}</td>
       <td style="font-weight:bold; color:#16a34a;">₹${o.total_amount || 0}</td>
       <td><span class="badge pending">${o.status || 'pending'}</span></td>
+    </tr>
+  `).join('');
+}
+
+async function loadCustomerOrderHistory() {
+  if (!loggedInCustomer) {
+    alert('कृपया आधी गुगलने लॉगिन करा!');
+    return;
+  }
+  const tbody = document.getElementById('customer-history-table-body');
+  const userPhone = localStorage.getItem('customer_saved_phone') || '';
+  
+  let query = sb.from('orders').select('*').order('created_at', { ascending: false });
+  if (userPhone) {
+    query = query.eq('customer_phone', userPhone);
+  } else {
+    const defaultName = (loggedInCustomer.user_metadata && loggedInCustomer.user_metadata.full_name) ? loggedInCustomer.user_metadata.full_name : loggedInCustomer.email.split('@')[0];
+    query = query.eq('customer_name', defaultName);
+  }
+
+  const historyRes = await query;
+  const orders = historyRes.data;
+  if (historyRes.error || !orders || orders.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" class="muted" style="text-align:center; padding:20px;">तुमची कोणतीही मागील ऑर्डर सापडली नाही.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = orders.map(o => `
+    <tr style="border-bottom:1px solid #f1f5f9; padding:8px 0;">
+      <td><strong>#${o.id.toString().substring(0,8)}</strong></td>
+      <td>${escapeHtml(o.items_summary || '-')}</td>
+      <td style="font-weight:bold; color:#16a34a;">₹${o.total_amount || 0}</td>
+      <td>${escapeHtml(o.customer_address || '-')}</td>
+      <td><span class="badge ${o.status === 'delivered' ? 'live' : 'pending'}">${o.status || 'pending'}</span></td>
     </tr>
   `).join('');
 }
