@@ -268,7 +268,7 @@ async function initDashboard() {
     const sessionRes = await sb.auth.getSession();
     if (sessionRes.data && sessionRes.data.session && sessionRes.data.session.user) {
       loggedInCustomerEmail = sessionRes.data.session.user.email;
-      localStorage.setItem('global_unified_email', loggedInCustomeremail);
+      localStorage.setItem('global_unified_email', loggedInCustomerEmail);
     }
 
     if (lockedStoreUsername) {
@@ -322,11 +322,11 @@ function shareStoreOnWhatsApp() {
   const storeName = document.getElementById('business-display-name').textContent.trim();
   const storeSlug = storeName.replace(/\s+/g, '_').toLowerCase();
   const shareUrl = `${window.location.origin}${window.location.pathname}?store=${storeSlug}`;
-  window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent('आमच्या दुकानाला भेट द्या: ' + shareUrl)}, '_blank');
+  window.open('https://api.whatsapp.com/send?text=' + encodeURIComponent('आमच्या दुकानाला भेट द्या: ' + shareUrl), '_blank');
 }
 
 async function openWeavoChat() {
-  let storeUsername = lockedStoreUsername || 'abhinay_gandhi5151';
+  let storeUsername = lockedStoreUsername || 'abhinaygandhi5151';
   const emailParam = loggedInCustomerEmail ? ('&customer_email=' + encodeURIComponent(loggedInCustomerEmail)) : '';
   window.open(`https://arhammarketingme-prog.github.io/weavo/?store=${storeUsername}${emailParam}`, '_blank');
 }
@@ -434,7 +434,7 @@ async function submitCustomerOrder() {
     updateCustomerCartUI();
 
     // २. थेट वीव्हो चॅटमध्ये ऑटो-ब्रिज मेसेज पाठवणे
-    let storeUsername = lockedStoreUsername || 'abhinay_gandhi5151';
+    let storeUsername = lockedStoreUsername || 'abhinaygandhi5151';
     localStorage.setItem('weavo_target_store', storeUsername);
 
     const orderMsg = encodeURIComponent(`📦 नवीन ऑनलाईन ऑर्डर:\n👤 ग्राहक: ${name}\n📱 मोबाईल: ${phone}\n🏠 डिलिव्हरी पत्ता: ${address}\n📧 ईमेल: ${loggedInCustomerEmail}\n🛒 तपशील: ${itemsSummaryText}\n💰 एकूण: ₹${totalAmt}`);
