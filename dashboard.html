@@ -202,7 +202,7 @@ async function initDashboard() {
       document.getElementById('customer-store-notice').style.display = 'block';
       document.getElementById('customer-products-section').style.display = 'block';
 
-      // गुगल लॉगिन युझर ऑटो-डिटेक्ट करणे
+      // गुगल लॉगिन युझर ऑटो-डिटेक्ट आणि सिंक करणे
       const { data: { user } } = await sb.auth.getUser();
       if (user) {
         loggedInCustomer = user;
@@ -300,7 +300,6 @@ function openCustomerCartModal() {
     return;
   }
 
-  // गुगल लॉगिन युझरची माहिती आपोआप (Auto-fill) भरणे
   document.getElementById('cust-order-name').value = loggedInCustomer.user_metadata?.full_name || loggedInCustomer.email.split('@')[0];
   document.getElementById('cust-order-phone').value = loggedInCustomer.email;
 
@@ -328,16 +327,19 @@ async function submitCustomerOrder() {
 
     if (orderErr) throw orderErr;
 
-    alert('🎉 तुमची ऑर्डर यशस्वीरीत्या नोंदवली गेली! आता दुकानदाराशी संवाद साधण्यासाठी चॅट उघडत आहे.');
+    alert('🎉 तुमची ऑर्डर यशस्वीरीत्या नोंदवली गेली! आता त्याच खात्याने संवाद साधण्यासाठी चॅट उघडत आहे.');
     customerCart = [];
     closeModal('customer-cart-modal');
 
-    // थेट Weavo चॅटमध्ये ऑर्डर प्रीफिल्ड करून उघडणे
+    // 🌟 अत्यंत महत्त्वाचे: ग्राहकाचा अचूक ईमेल आणि नाव Weavo कडे पास करणे, जेणेकरून तोच ईमेल तिथे आपोआप लॉगिन राहील!
     let storeUsername = 'abhinay_gandhi';
     localStorage.setItem('weavo_target_store', storeUsername);
 
     const orderMsg = encodeURIComponent(`📦 नवीन ऑनलाईन ऑर्डर:\n👤 ग्राहक: ${name}\n📞 ईमेल: ${phone}\n🛒 तपशील: ${itemsSummaryText}\n💰 एकूण: ₹${totalAmt}`);
-    window.open(`https://arhammarketingme-prog.github.io/weavo/?store=${storeUsername}&prefill=${orderMsg}`, '_blank');
+    
+    // Weavo ला ऑल ईआरपीच्या लॉगिन ईमेलसह जोडणारी स्मार्ट लिंक
+    const weavoUrl = `https://arhammarketingme-prog.github.io/weavo/?store=${storeUsername}&prefill=${orderMsg}&customer_email=${encodeURIComponent(phone)}`;
+    window.open(weavoUrl, '_blank');
   } catch (err) {
     alert('ऑर्डर पाठवताना त्रुटी आली: ' + err.message);
   }
@@ -369,8 +371,18 @@ function shareStoreOnWhatsApp() {
   window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent('आमच्या दुकानाला भेट द्या: ' + shareUrl)}`, '_blank');
 }
 
-function openWeavoChat() {
-  window.open('https://arhammarketingme-prog.github.io/weavo/?store=abhinay_gandhi', '_blank');
+async function openWeavoChat() {
+  let storeUsername = 'abhinay_gandhi';
+  localStorage.setItem('weavo_target_store', storeUsername);
+
+  // वर्तमान लॉगिन ग्राहकाचा ईमेल मिळवून वीव्होला पाठवणे
+  let customerEmail = '';
+  try {
+    const { data: { user } } = await sb.auth.getUser();
+    if (user && user.email) customerEmail = `&customer_email=${encodeURIComponent(user.email)}`;
+  } catch(e) {}
+
+  window.open(`https://arhammarketingme-prog.github.io/weavo/?store=${storeUsername}${customerEmail}`, '_blank');
 }
 
 function escapeHtml(str) {
