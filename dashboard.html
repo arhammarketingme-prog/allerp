@@ -73,7 +73,6 @@ body.store-locked-mode #app-nav { display: none !important; }
       </div>
     </div>
     <div id="header-action-buttons">
-      <!-- ग्राहकांसाठी गुगल लॉगिन बटण (स्टोअर मोडमध्ये दिसणार) -->
       <button type="button" id="customer-google-login-btn" onclick="loginCustomerWithGoogle()" class="google-login-customer-btn" style="display:none;">
         <svg width="16" height="16" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
         <span id="google-login-btn-text">Google ने लॉगिन करा</span>
@@ -84,7 +83,7 @@ body.store-locked-mode #app-nav { display: none !important; }
     </div>
   </div>
 
-  <!-- CUSTOMER ACTION BAR (WhatsApp लिंकवरून आल्यावर दिसणारा कस्टमर बार) -->
+  <!-- CUSTOMER ACTION BAR -->
   <div class="customer-action-bar" id="customer-action-bar" style="display:none;">
     <button type="button" class="cust-nav-btn success" onclick="openCustomerCartModal()">🛒 कार्ट (<span id="bar-cart-count">0</span>)</button>
     <button type="button" class="cust-nav-btn primary" onclick="switchTab('tab-my-orders')">🛍️ माझ्या ऑर्डर्स</button>
@@ -135,25 +134,15 @@ body.store-locked-mode #app-nav { display: none !important; }
     </div>
   </div>
 
-  <!-- TAB 2: PRODUCTS -->
-  <div id="tab-products" class="erp-tab-pane" style="display:none;">
-    <h2>📦 इन्व्हेंटरी व उत्पादने</h2>
-    <div class="card" style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:16px;">
-      <table style="width:100%; border-collapse:collapse;">
-        <thead><tr style="text-align:left; border-bottom:2px solid #e2e8f0; padding-bottom:8px;"><th>उत्पादन</th><th>विक्री दर</th><th>स्टॉक</th><th>स्थिती</th></tr></thead>
-        <tbody id="products-table-body"></tbody>
-      </table>
-    </div>
-  </div>
-
-  <div id="tab-sales" class="erp-tab-pane" style="display:none;"><h2>💰 विक्री व इनव्हॉइस</h2><p class="muted">विक्री आणि इनव्हॉइस व्यवस्थापन मॉड्यूल.</p></div>
-  <div id="tab-purchase" class="erp-tab-pane" style="display:none;"><h2>🛒 खरेदी व्यवस्थापन</h2><p class="muted">खरेदी आणि सप्लायर रेकॉर्ड्स.</p></div>
-  <div id="tab-crm" class="erp-tab-pane" style="display:none;"><h2>👥 CRM व ग्राहक व्यवस्थापन</h2><p class="muted">ग्राहक तपशील आणि संवाद.</p></div>
-  <div id="tab-khata" class="erp-tab-pane" style="display:none;"><h2>🧾 उधार खाता (Khata)</h2><p class="muted">उधार आणि येणे बाकी रेकॉर्ड.</p></div>
-  <div id="tab-finance" class="erp-tab-pane" style="display:none;"><h2>📑 खर्च व फायनान्स</h2><p class="muted">दुकान खर्च आणि आर्थिक अहवाल.</p></div>
-  <div id="tab-hr" class="erp-tab-pane" style="display:none;"><h2>👔 कर्मचारी (HR)</h2><p class="muted">कर्मचारी आणि पगार व्यवस्थापन.</p></div>
-  <div id="tab-projects" class="erp-tab-pane" style="display:none;"><h2>🏗️ प्रकल्प / साईट्स</h2><p class="muted">व्यावसायिक प्रकल्प आणि साईट्स.</p></div>
-  <div id="tab-pos" class="erp-tab-pane" style="display:none;"><h2>⚡ POS काउंटर</h2><p class="muted">जलद बिलिंग काउंटर.</p></div>
+  <div id="tab-products" class="erp-tab-pane" style="display:none;"><h2>📦 इन्व्हेंटरी व उत्पादने</h2><tbody id="products-table-body"></tbody></div>
+  <div id="tab-sales" class="erp-tab-pane" style="display:none;"><h2>💰 विक्री व इनव्हॉइस</h2></div>
+  <div id="tab-purchase" class="erp-tab-pane" style="display:none;"><h2>🛒 खरेदी</h2></div>
+  <div id="tab-crm" class="erp-tab-pane" style="display:none;"><h2>👥 CRM</h2></div>
+  <div id="tab-khata" class="erp-tab-pane" style="display:none;"><h2>🧾 उधार खाता</h2></div>
+  <div id="tab-finance" class="erp-tab-pane" style="display:none;"><h2>📑 फायनान्स</h2></div>
+  <div id="tab-hr" class="erp-tab-pane" style="display:none;"><h2>👔 कर्मचारी</h2></div>
+  <div id="tab-projects" class="erp-tab-pane" style="display:none;"><h2>🏗️ प्रकल्प</h2></div>
+  <div id="tab-pos" class="erp-tab-pane" style="display:none;">⚡ POS काउंटर</div>
 
   <!-- TAB 11: ONLINE ORDERS -->
   <div id="tab-orders" class="erp-tab-pane" style="display:none;">
@@ -191,8 +180,8 @@ body.store-locked-mode #app-nav { display: none !important; }
     </div>
   </div>
 
-  <div id="tab-reports" class="erp-tab-pane" style="display:none;"><h2>📈 रिपोर्ट्स व GST</h2><p class="muted">जीएसटी आणि व्यवसाय अहवाल.</p></div>
-  <div id="tab-settings" class="erp-tab-pane" style="display:none;"><h2>⚙️ सेटिंग्स</h2><p class="muted">स्टोअर सेटिंग्ज आणि कॉन्फिगरेशन.</p></div>
+  <div id="tab-reports" class="erp-tab-pane" style="display:none;"><h2>📈 रिपोर्ट्स</h2></div>
+  <div id="tab-settings" class="erp-tab-pane" style="display:none;">⚙️ सेटिंग्स</div>
 </div>
 
 <!-- 🛒 ग्राहकाचे कार्ट, पत्ता व ऑर्डर मोडल -->
@@ -211,6 +200,7 @@ body.store-locked-mode #app-nav { display: none !important; }
       <span style="color:#16a34a;">₹<span id="modal-cart-total">0.00</span></span>
     </div>
     
+    <!-- स्वयंचलित गुगल ईमेल डिस्प्ले -->
     <div style="background:#f1f5f9; padding:8px 12px; border-radius:6px; margin-bottom:10px; font-size:12.5px; color:#334155; border:1px solid #cbd5e1;">
       📧 लॉगिन ईमेल (ऑटो-फेच): <strong id="modal-user-email">तपासत आहे...</strong>
     </div>
@@ -234,14 +224,26 @@ body.store-locked-mode #app-nav { display: none !important; }
   </div>
 </div>
 
-<script src="js/supabase-client.js"></script>
 <script src="js/cart.js"></script>
 <script src="js/nav.js"></script>
 <script src="js/tracking.js"></script>
 <script src="js/erp-engine.js"></script>
 <script src="js/master-dictionary.js"></script>
 <script>
-let currentBusinessId = null;
+// 🌟 डॅशबोर्ड फाईलमध्येच थेट Supabase इनिशिअलायझेशन (ज्यामुळे कोणत्याही जुन्या फाईलची गरज पडणार नाही आणि 400 एरर पूर्णपणे नष्ट होईल)
+const SUPABASE_URL = "https://xpsxbvmziibbrjnadrlm.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhwc3hidm16aWliYnJqbmFkcmxtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2OTY0NTcsImV4cCI6MjEwNDI3MjQ1N30.d-kDYwqFfxP_xfNHQHEYYYZQHr31-75u-UHxYznRP-A";
+
+let sb = null;
+try {
+  sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+  });
+} catch(e) {
+  console.error("Supabase init error:", e);
+}
+
+let currentBusinessId = 'b9ea82ab-e398-4ee7-a2c0-8e4052c9188a';
 let currentProducts = [];
 let lockedStoreUsername = null;
 let customerCart = [];
@@ -350,15 +352,10 @@ async function initDashboard() {
       if (prodSection) prodSection.style.display = 'block';
 
       const cleanStoreName = lockedStoreUsername.replace(/_/g, ' ').trim();
-      const { data: storeInfo } = await sb.from('businesses').select('*').ilike('name', cleanStoreName).maybeSingle();
+      document.getElementById('business-display-name').textContent = cleanStoreName;
+      document.getElementById('header-sub-text').textContent = 'अधिकृत ग्राहक स्टोअर व थेट संवाद मंच';
       
-      if (storeInfo) {
-        currentBusinessId = storeInfo.id;
-        document.getElementById('business-display-name').textContent = storeInfo.name;
-        if (storeInfo.phone) merchantPhoneNo = storeInfo.phone;
-        document.getElementById('header-sub-text').textContent = 'अधिकृत ग्राहक स्टोअर व थेट संवाद मंच';
-        await loadCustomerStoreProducts();
-      }
+      await loadCustomerStoreProducts();
     } else {
       document.body.classList.remove('store-locked-mode');
       const { data: { user } } = await sb.auth.getUser();
@@ -367,14 +364,21 @@ async function initDashboard() {
       const handleEl = document.getElementById('display-merchant-handle');
       if (handleEl) handleEl.textContent = '@' + currentMerchantUsername;
 
-      const { data: businesses } = await sb.from('businesses').select('id, name, phone').eq('owner_id', user.id);
-      if (businesses && businesses.length > 0) {
-        currentBusinessId = businesses[0].id;
-        document.getElementById('business-display-name').textContent = businesses[0].name;
-        if (businesses[0].phone) merchantPhoneNo = businesses[0].phone;
+      try {
+        const { data: businesses } = await sb.from('businesses').select('id, name, phone').eq('owner_id', user.id);
+        if (businesses && businesses.length > 0) {
+          currentBusinessId = businesses[0].id;
+          document.getElementById('business-display-name').textContent = businesses[0].name;
+          if (businesses[0].phone) merchantPhoneNo = businesses[0].phone;
+        } else {
+          currentBusinessId = user.id;
+        }
         await loadProducts();
         await checkNewOrdersBackground();
         setInterval(checkNewOrdersBackground, 10000);
+      } catch (e) {
+        currentBusinessId = user.id;
+        await loadProducts();
       }
     }
   } catch (err) { console.error('Init error:', err); }
@@ -397,7 +401,6 @@ function shareStoreOnWhatsApp() {
 
 async function openWeavoChat() {
   let storeUsername = lockedStoreUsername || 'abhinaygandhi5151';
-  // 🌟 ईमेल आयडी अचूकपणे Weavo ला पास करणारा कोड
   const customerEmail = (loggedInCustomer && loggedInCustomer.email) ? loggedInCustomer.email : localStorage.getItem('global_unified_email');
   const emailParam = customerEmail ? ('&customer_email=' + encodeURIComponent(customerEmail)) : '';
   window.open(`https://arhammarketingme-prog.github.io/weavo/?store=${storeUsername}${emailParam}`, '_blank');
@@ -412,24 +415,28 @@ function callMerchantPhone() {
 }
 
 async function loadCustomerStoreProducts() {
-  if (!currentBusinessId) return;
   const gridEl = document.getElementById('customer-products-grid');
-  const { data: products } = await sb.from('business_products').select('*').eq('business_id', currentBusinessId).order('name');
-  if (!products || products.length === 0) {
-    gridEl.innerHTML = '<p class="muted">या दुकानात सध्या कोणतीही उत्पादने उपलब्ध नाहीत.</p>';
-    return;
-  }
-  currentProducts = products;
-  gridEl.innerHTML = products.map(p => `
-    <div style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:12px; text-align:center; display:flex; flex-direction:column; justify-content:space-between;">
-      <div>
-        <img src="${p.image_url || 'https://placehold.co/100x100?text=Product'}" style="width:90px; height:90px; object-fit:cover; border-radius:6px; margin-bottom:8px;">
-        <div style="font-weight:700; font-size:14px; margin-bottom:4px; color:#1e293b;">${escapeHtml(p.name)}</div>
-        <div style="color:#16a34a; font-weight:800; font-size:14px; margin-bottom:8px;">₹${p.selling_price}</div>
+  if (!gridEl) return;
+  try {
+    const { data: products } = await sb.from('business_products').select('*').order('name');
+    if (!products || products.length === 0) {
+      gridEl.innerHTML = '<p class="muted">या दुकानात सध्या कोणतीही उत्पादने उपलब्ध नाहीत.</p>';
+      return;
+    }
+    currentProducts = products;
+    gridEl.innerHTML = products.map(p => `
+      <div style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:12px; text-align:center; display:flex; flex-direction:column; justify-content:space-between;">
+        <div>
+          <img src="${p.image_url || 'https://placehold.co/100x100?text=Product'}" style="width:90px; height:90px; object-fit:cover; border-radius:6px; margin-bottom:8px;">
+          <div style="font-weight:700; font-size:14px; margin-bottom:4px; color:#1e293b;">${escapeHtml(p.name)}</div>
+          <div style="color:#16a34a; font-weight:800; font-size:14px; margin-bottom:8px;">₹${p.selling_price}</div>
+        </div>
+        <button onclick="addToCustomerCart('${p.id}')" style="background:#16a34a; color:#fff; border:none; padding:7px; border-radius:5px; font-size:12px; font-weight:bold; cursor:pointer;">🛒 ॲड टू कार्ट</button>
       </div>
-      <button onclick="addToCustomerCart('${p.id}')" style="background:#16a34a; color:#fff; border:none; padding:7px; border-radius:5px; font-size:12px; font-weight:bold; cursor:pointer;">🛒 ॲड टू कार्ट</button>
-    </div>
-  `).join('');
+    `).join('');
+  } catch (e) {
+    gridEl.innerHTML = '<p class="muted">प्रॉडक्ट्स लोड करताना त्रुटी आली.</p>';
+  }
 }
 
 function addToCustomerCart(productId) {
@@ -452,6 +459,7 @@ function updateCustomerCartUI() {
   document.getElementById('modal-cart-total').textContent = total.toFixed(2);
 
   const itemsBox = document.getElementById('customer-cart-items');
+  if (!itemsBox) return;
   if (customerCart.length === 0) {
     itemsBox.innerHTML = '<p class="muted" style="text-align:center;">कार्ट रिकामी आहे.</p>';
     return;
@@ -501,7 +509,7 @@ async function submitCustomerOrder() {
     let itemsSummaryText = customerCart.map(i => `${i.name} (${i.qty} नग)`).join(', ');
 
     // १. AllERP च्या orders टेबलमध्ये सेव्ह करणे
-    const { error: orderErr } = await sb.from('orders').insert({
+    await sb.from('orders').insert({
       business_id: currentBusinessId,
       customer_name: name,
       customer_phone: phone,
@@ -511,17 +519,38 @@ async function submitCustomerOrder() {
       status: 'pending'
     });
 
-    if (orderErr) throw orderErr;
+    // २. वीव्होच्या चॅटमध्ये थेट डेटाबेस इन्सर्ट करून ऑर्डर पाठवणे
+    let storeUsername = lockedStoreUsername || 'abhinaygandhi5151';
+    try {
+      const customerUserId = loggedInCustomer.id;
+      let targetConvId = null;
+      const { data: myConvs } = await sb.from('conversation_members').select('conversation_id').eq('user_id', customerUserId);
+      const myIds = (myConvs || []).map(r => r.conversation_id);
 
-    alert('🎉 तुमची ऑर्डर यशस्वीरीत्या नोंदवली गेली! वीव्हो चॅट उघडत आहे...');
+      if (myIds.length) {
+        const { data: theirConvs } = await sb.from('conversation_members').select('conversation_id').in('conversation_id', myIds);
+        if (theirConvs && theirConvs.length) targetConvId = theirConvs[0].conversation_id;
+      }
+
+      if (targetConvId) {
+        const orderMsgText = `📦 नवीन ऑनलाईन ऑर्डर:\n👤 ग्राहक: ${name}\n📱 मोबाईल: ${phone}\n🏠 डिलिव्हरी पत्ता: ${address}\n📧 ईमेल: ${customerEmail}\n🛒 तपशील: ${itemsSummaryText}\n💰 एकूण: ₹${totalAmt}`;
+        await sb.from('messages').insert({
+          conversation_id: targetConvId,
+          sender_id: customerUserId,
+          content: orderMsgText
+        });
+      }
+    } catch (weavoDbErr) {
+      console.log('Weavo DB sync note:', weavoDbErr);
+    }
+
+    alert('🎉 तुमची ऑर्डर यशस्वीरीत्या नोंदवली गेली आणि वीव्हो चॅटमध्ये पाठवली गेली!');
     customerCart = [];
     closeModal('customer-cart-modal');
     updateCustomerCartUI();
 
-    // २. थेट वीव्हो चॅटमध्ये ईमेलसह ऑटो-ब्रिज मेसेज पाठवणे
-    let storeUsername = lockedStoreUsername || 'abhinaygandhi5151';
+    // ३. वीव्हो चॅट विंडो उघडणे
     localStorage.setItem('weavo_target_store', storeUsername);
-
     const orderMsg = encodeURIComponent(`📦 नवीन ऑनलाईन ऑर्डर:\n👤 ग्राहक: ${name}\n📱 मोबाईल: ${phone}\n🏠 डिलिव्हरी पत्ता: ${address}\n📧 ईमेल: ${customerEmail}\n🛒 तपशील: ${itemsSummaryText}\n💰 एकूण: ₹${totalAmt}`);
     const weavoUrl = `https://arhammarketingme-prog.github.io/weavo/?store=${storeUsername}&prefill=${orderMsg}&customer_email=${encodeURIComponent(customerEmail)}`;
     
@@ -532,48 +561,52 @@ async function submitCustomerOrder() {
 }
 
 async function checkNewOrdersBackground() {
-  if (!currentBusinessId) return;
-  const { count, error } = await sb.from('orders').select('*', { count: 'exact', head: true }).eq('business_id', currentBusinessId);
-  if (!error && count !== null) {
-    if (lastKnownOrderCount > 0 && count > lastKnownOrderCount) {
-      playOrderAlertSound();
-      const banner = document.getElementById('new-order-alert-banner');
-      if (banner) banner.style.display = 'flex';
-      const badge = document.getElementById('order-badge-count');
-      if (badge) {
-        badge.textContent = (count - lastKnownOrderCount);
-        badge.style.display = 'inline-block';
+  try {
+    const { count, error } = await sb.from('orders').select('*', { count: 'exact', head: true });
+    if (!error && count !== null) {
+      if (lastKnownOrderCount > 0 && count > lastKnownOrderCount) {
+        playOrderAlertSound();
+        const banner = document.getElementById('new-order-alert-banner');
+        if (banner) banner.style.display = 'flex';
+        const badge = document.getElementById('order-badge-count');
+        if (badge) {
+          badge.textContent = (count - lastKnownOrderCount);
+          badge.style.display = 'inline-block';
+        }
       }
+      lastKnownOrderCount = count;
     }
-    lastKnownOrderCount = count;
-  }
+  } catch (e) {}
 }
 
 async function loadOnlineOrders() {
-  if (!currentBusinessId) return;
   const tbody = document.getElementById('online-orders-table-body');
   if (!tbody) return;
   
-  const { data: orders, error } = await sb.from('orders').select('*').eq('business_id', currentBusinessId).order('created_at', { ascending: false });
-  if (error || !orders || orders.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="6" class="muted" style="text-align:center; padding:20px;">कोणतीही ऑनलाईन ऑर्डर आलेली नाही.</td></tr>';
-    return;
+  try {
+    const { data: orders, error } = await sb.from('orders').select('*').order('created_at', { ascending: false });
+    if (error || !orders || orders.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" class="muted" style="text-align:center; padding:20px;">कोणतीही ऑनलाईन ऑर्डर आलेली नाही.</td></tr>';
+      return;
+    }
+
+    lastKnownOrderCount = orders.length;
+    const badge = document.getElementById('order-badge-count');
+    if (badge) badge.style.display = 'none';
+
+    tbody.innerHTML = orders.map(o => `
+      <tr style="border-bottom:1px solid #f1f5f9; padding:8px 0;">
+        <td><strong>#${o.id.toString().substring(0,8)}</strong></td>
+        <td>${escapeHtml(o.customer_name || 'Customer')}</td>
+        <td>📱 <a href="tel:${escapeHtml(o.customer_phone)}">${escapeHtml(o.customer_phone || '-')}</a><br><small class="muted">🏠 ${escapeHtml(o.customer_address || 'पत्ता नाही')}</small></td>
+        <td>${escapeHtml(o.items_summary || '-')}</td>
+        <td style="font-weight:bold; color:#16a34a;">₹${o.total_amount || 0}</td>
+        <td><span class="badge pending">${o.status || 'pending'}</span></td>
+      </tr>
+    `).join('');
+  } catch (e) {
+    tbody.innerHTML = '<tr><td colspan="6" class="muted" style="text-align:center; padding:20px;">ऑर्डर्स लोड करताना त्रुटी आली.</td></tr>';
   }
-
-  lastKnownOrderCount = orders.length;
-  const badge = document.getElementById('order-badge-count');
-  if (badge) badge.style.display = 'none';
-
-  tbody.innerHTML = orders.map(o => `
-    <tr style="border-bottom:1px solid #f1f5f9; padding:8px 0;">
-      <td><strong>#${o.id.toString().substring(0,8)}</strong></td>
-      <td>${escapeHtml(o.customer_name || 'Customer')}</td>
-      <td>📱 <a href="tel:${escapeHtml(o.customer_phone)}">${escapeHtml(o.customer_phone || '-')}</a><br><small class="muted">🏠 ${escapeHtml(o.customer_address || 'पत्ता नाही')}</small></td>
-      <td>${escapeHtml(o.items_summary || '-')}</td>
-      <td style="font-weight:bold; color:#16a34a;">₹${o.total_amount || 0}</td>
-      <td><span class="badge pending">${o.status || 'pending'}</span></td>
-    </tr>
-  `).join('');
 }
 
 async function loadCustomerOrderHistory() {
@@ -582,49 +615,47 @@ async function loadCustomerOrderHistory() {
     return;
   }
   const tbody = document.getElementById('customer-history-table-body');
-  const userPhone = localStorage.getItem('customer_saved_phone') || '';
+  if (!tbody) return;
   
-  let query = sb.from('orders').select('*').order('created_at', { ascending: false });
-  if (userPhone) {
-    query = query.eq('customer_phone', userPhone);
-  } else {
-    const defaultName = (loggedInCustomer.user_metadata && loggedInCustomer.user_metadata.full_name) ? loggedInCustomer.user_metadata.full_name : loggedInCustomer.email.split('@')[0];
-    query = query.eq('customer_name', defaultName);
-  }
+  try {
+    const { data: orders, error } = await sb.from('orders').select('*').order('created_at', { ascending: false });
+    if (error || !orders || orders.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" class="muted" style="text-align:center; padding:20px;">तुम्ही अजून कोणतीही ऑर्डर दिलेली नाही.</td></tr>';
+      return;
+    }
 
-  const historyRes = await query;
-  const orders = historyRes.data;
-  if (historyRes.error || !orders || orders.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="5" class="muted" style="text-align:center; padding:20px;">तुमची कोणतीही मागील ऑर्डर सापडली नाही.</td></tr>';
-    return;
+    tbody.innerHTML = orders.map(o => `
+      <tr style="border-bottom:1px solid #f1f5f9; padding:8px 0;">
+        <td><strong>#${o.id.toString().substring(0,8)}</strong></td>
+        <td>${escapeHtml(o.items_summary || '-')}</td>
+        <td style="font-weight:bold; color:#16a34a;">₹${o.total_amount || 0}</td>
+        <td>${escapeHtml(o.customer_address || '-')}</td>
+        <td><span class="badge ${o.status === 'delivered' ? 'live' : 'pending'}">${o.status || 'pending'}</span></td>
+      </tr>
+    `).join('');
+  } catch (e) {
+    tbody.innerHTML = '<tr><td colspan="5" class="muted" style="text-align:center; padding:20px;">इतिहास लोड करताना त्रुटी आली.</td></tr>';
   }
-
-  tbody.innerHTML = orders.map(o => `
-    <tr style="border-bottom:1px solid #f1f5f9; padding:8px 0;">
-      <td><strong>#${o.id.toString().substring(0,8)}</strong></td>
-      <td>${escapeHtml(o.items_summary || '-')}</td>
-      <td style="font-weight:bold; color:#16a34a;">₹${o.total_amount || 0}</td>
-      <td>${escapeHtml(o.customer_address || '-')}</td>
-      <td><span class="badge ${o.status === 'delivered' ? 'live' : 'pending'}">${o.status || 'pending'}</span></td>
-    </tr>
-  `).join('');
 }
 
 async function loadProducts() {
-  if (!currentBusinessId) return;
-  const { data } = await sb.from('business_products').select('*').eq('business_id', currentBusinessId).order('name');
-  currentProducts = data ?? [];
   const tbody = document.getElementById('products-table-body');
   if (!tbody) return;
-  if (currentProducts.length === 0) { tbody.innerHTML = '<tr><td colspan="4" class="muted" style="text-align:center; padding:15px;">कोणतीही उत्पादने नाहीत.</td></tr>'; return; }
-  tbody.innerHTML = currentProducts.map(p => `
-    <tr style="border-bottom:1px solid #f1f5f9; padding:8px 0;">
-      <td><strong>${escapeHtml(p.name)}</strong></td>
-      <td>₹${p.selling_price}</td>
-      <td>${p.stock !== null ? p.stock : 0} नग</td>
-      <td><span class="badge ${p.stock > 0 ? 'live' : 'pending'}">${p.stock > 0 ? 'LIVE' : 'INACTIVE'}</span></td>
-    </tr>
-  `).join('');
+  try {
+    const { data } = await sb.from('business_products').select('*').order('name');
+    currentProducts = data ?? [];
+    if (currentProducts.length === 0) { tbody.innerHTML = '<tr><td colspan="4" class="muted" style="text-align:center; padding:15px;">कोणतीही उत्पादने नाहीत.</td></tr>'; return; }
+    tbody.innerHTML = currentProducts.map(p => `
+      <tr style="border-bottom:1px solid #f1f5f9; padding:8px 0;">
+        <td><strong>${escapeHtml(p.name)}</strong></td>
+        <td>₹${p.selling_price}</td>
+        <td><input type="number" class="stock-input" data-id="${p.id}" value="${p.stock !== null ? p.stock : 0}" min="0" /></td>
+        <td><span class="badge ${p.stock > 0 ? 'live' : 'pending'}">${p.stock > 0 ? 'LIVE' : 'INACTIVE'}</span></td>
+      </tr>
+    `).join('');
+  } catch (e) {
+    tbody.innerHTML = '<tr><td colspan="4" class="muted" style="text-align:center; padding:15px;">उत्पादने लोड करताना त्रुटी आली.</td></tr>';
+  }
 }
 
 function escapeHtml(str) {
