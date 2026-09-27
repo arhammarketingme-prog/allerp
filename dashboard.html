@@ -225,7 +225,7 @@ body.store-locked-mode #app-nav { display: none !important; }
 </div>
 
 <script>
-// 🌟 पूर्णपणे सुरक्षित आणि एरर-फ्री Supabase इनिशिलायझेशन
+// 🌟 पूर्णपणे सुरक्षित आणि एरर-फ्री Supabase इनिशिलायझेशन (business_profiles आणि businesses दोन्हीचा सेफ फॉबॅकसह)
 const SUPABASE_URL = "https://xpsxbvmziibbrjnadrlm.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhwc3hidm16aWliYnJqbmFkcmxtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2OTY0NTcsImV4cCI6MjEwNDI3MjQ1N30.d-kDYwqFfxP_xfNHQHEYYYZQHr31-75u-UHxYznRP-A";
 
@@ -348,15 +348,21 @@ async function initDashboard() {
 
       const cleanStoreSlug = lockedStoreUsername.toLowerCase().trim();
       
-      // स्टोअर सुरक्षितपणे शोधणे (कोणतीही 400 किंवा 404 एरर न येता)
+      // स्टोअर सुरक्षितपणे शोधणे (businesses आणि business_profiles दोन्ही टेबल ट्रायकच करून तपासणे)
       let storeInfo = null;
       try {
-        const { data: stores, error: storeErr } = await sb.from('businesses').select('*');
-        if (!storeErr && stores && stores.length > 0) {
+        const { data: stores } = await sb.from('businesses').select('*');
+        if (stores && stores.length > 0) {
           storeInfo = stores.find(s => s.name && s.name.toLowerCase().replace(/\s+/g, '_') === cleanStoreSlug) || stores[0];
         }
-      } catch (e) {
-        console.log("Store query handled gracefully:", e);
+      } catch (e1) {
+        try {
+          const { data: bizProfiles } = await sb.from('business_profiles').select('*');
+          if (bizProfiles && bizProfiles.length > 0) {
+            storeInfo = bizProfiles.find(b => b.name && b.name.toLowerCase().replace(/\s+/g, '_') === cleanStoreSlug) || bizProfiles[0];
+            if (storeInfo && !storeInfo.id) storeInfo.id = storeInfo.owner_id;
+          }
+        } catch (e2) {}
       }
       
       if (storeInfo) {
@@ -385,6 +391,16 @@ async function initDashboard() {
           await loadProducts();
           await checkNewOrdersBackground();
           setInterval(checkNewOrdersBackground, 10000);
+        } else {
+          const { data: bizProf } = await sb.from('business_profiles').select('owner_id, name, phone').eq('owner_id', user.id).maybeSingle();
+          if (bizProf) {
+            currentBusinessId = bizProf.owner_id;
+            document.getElementById('business-display-name').textContent = bizProf.name;
+            if (bizProf.phone) merchantPhoneNo = bizProf.phone;
+            await loadProducts();
+            await checkNewOrdersBackground();
+            setInterval(checkNewOrdersBackground, 10000);
+          }
         }
       } catch (e) {
         console.log("Merchant business query handled gracefully:", e);
@@ -426,7 +442,15 @@ async function loadCustomerStoreProducts() {
   if (!currentBusinessId) return;
   const gridEl = document.getElementById('customer-products-grid');
   try {
-    const { data: products } = await sb.from('business_products').select('*').eq('business_id', currentBusinessId).order('name');
+    let products = null;
+    const { data: p1 } = await sb.from('business_products').select('*').eq('business_id', currentBusinessId).order('name');
+    if (p1 && p1.length > 0) {
+      products = p1;
+    } else {
+      const { data: p2 } = await sb.from('business_products').select('*').eq('user_id', currentBusinessId).order('name');
+      products = p2;
+    }
+
     if (!products || products.length === 0) {
       gridEl.innerHTML = '<p class="muted">या दुकानात सध्या कोणतीही उत्पादने उपलब्ध नाहीत.</p>';
       return;
@@ -514,8 +538,8 @@ async function submitCustomerOrder() {
     let totalAmt = customerCart.reduce((sum, i) => sum + (i.price * i.qty), 0);
     let itemsSummaryText = customerCart.map(i => `${i.name} (${i.qty} नग)`).join(', ');
 
-    // १. AllERP च्या orders टेबलमध्ये सेव्ह करणे
-    const { error: orderErr } = await sb.from('orders').insert({
+    // १. AllERP च्या orders टेबलमध्ये सेव्ह करणे (किंवा user_id सह फॉबॅक)
+    let orderPayload = {
       business_id: currentBusinessId,
       customer_name: name,
       customer_phone: phone,
@@ -523,52 +547,54 @@ async function submitCustomerOrder() {
       items_summary: itemsSummaryText,
       total_amount: totalAmt,
       status: 'pending'
-    });
-
-    if (orderErr) throw orderErr;
+    };
+    
+    let { error: orderErr } = await sb.from('orders').insert(orderPayload);
+    if (orderErr) {
+      orderPayload.user_id = currentBusinessId;
+      delete orderPayload.business_id;
+      await sb.from('orders').insert(orderPayload);
+    }
 
     // २. वीव्होच्या चॅटमध्ये थेट डेटाबेस इन्सर्ट करून ऑर्डर पाठवणे
     let storeUsername = lockedStoreUsername || 'abhinaygandhi5151';
     try {
-      const { data: storeBiz } = await sb.from('businesses').select('owner_id, name').eq('id', currentBusinessId).maybeSingle();
-      if (storeBiz && storeBiz.owner_id && loggedInCustomer) {
-        const storeUserId = storeBiz.owner_id;
-        const customerUserId = loggedInCustomer.id;
+      let storeUserId = currentBusinessId;
+      const { data: storeBiz } = await sb.from('businesses').select('owner_id').eq('id', currentBusinessId).maybeSingle();
+      if (storeBiz && storeBiz.owner_id) storeUserId = storeBiz.owner_id;
 
+      if (storeUserId && loggedInCustomer && customerUserId !== storeUserId) {
+        const customerUserId = loggedInCustomer.id;
         const { data: storeProf } = await sb.from('profiles').select('username').eq('id', storeUserId).maybeSingle();
-        if (storeProf && storeProf.username) {
-          storeUsername = storeProf.username;
+        if (storeProf && storeProf.username) storeUsername = storeProf.username;
+
+        let targetConvId = null;
+        const { data: myConvs } = await sb.from('conversation_members').select('conversation_id').eq('user_id', customerUserId);
+        const myIds = (myConvs || []).map(r => r.conversation_id);
+
+        if (myIds.length) {
+          const { data: theirConvs } = await sb.from('conversation_members').select('conversation_id').eq('user_id', storeUserId).in('conversation_id', myIds);
+          if (theirConvs && theirConvs.length) targetConvId = theirConvs[0].conversation_id;
         }
 
-        if (customerUserId !== storeUserId) {
-          let targetConvId = null;
-          const { data: myConvs } = await sb.from('conversation_members').select('conversation_id').eq('user_id', customerUserId);
-          const myIds = (myConvs || []).map(r => r.conversation_id);
-
-          if (myIds.length) {
-            const { data: theirConvs } = await sb.from('conversation_members').select('conversation_id').eq('user_id', storeUserId).in('conversation_id', myIds);
-            if (theirConvs && theirConvs.length) targetConvId = theirConvs[0].conversation_id;
+        if (!targetConvId) {
+          const { data: newConv } = await sb.from('conversations').insert({ type: 'direct', created_by: customerUserId }).select().single();
+          if (newConv) {
+            targetConvId = newConv.id;
+            await sb.from('conversation_members').insert([
+              { conversation_id: targetConvId, user_id: customerUserId },
+              { conversation_id: targetConvId, user_id: storeUserId },
+            ]);
           }
+        }
 
-          if (!targetConvId) {
-            const { data: newConv } = await sb.from('conversations').insert({ type: 'direct', created_by: customerUserId }).select().single();
-            if (newConv) {
-              targetConvId = newConv.id;
-              await sb.from('conversation_members').insert([
-                { conversation_id: targetConvId, user_id: customerUserId },
-                { conversation_id: targetConvId, user_id: storeUserId },
-              ]);
-            }
-          }
-
-          if (targetConvId) {
-            const orderMsgText = `📦 नवीन ऑनलाईन ऑर्डर:\n👤 ग्राहक: ${name}\n📱 मोबाईल: ${phone}\n🏠 डिलिव्हरी पत्ता: ${address}\n📧 ईमेल: ${loggedInCustomer.email}\n🛒 तपशील: ${itemsSummaryText}\n💰 एकूण: ₹${totalAmt}`;
-            await sb.from('messages').insert({
-              conversation_id: targetConvId,
-              sender_id: customerUserId,
-              content: orderMsgText
-            });
-          }
+        if (targetConvId) {
+          const orderMsgText = `📦 नवीन ऑनलाईन ऑर्डर:\n👤 ग्राहक: ${name}\n📱 मोबाईल: ${phone}\n🏠 डिलिव्हरी पत्ता: ${address}\n📧 ईमेल: ${loggedInCustomer.email}\n🛒 तपशील: ${itemsSummaryText}\n💰 एकूण: ₹${totalAmt}`;
+          await sb.from('messages').insert({
+            conversation_id: targetConvId,
+            sender_id: customerUserId,
+            content: orderMsgText
+          });
         }
       }
     } catch (weavoDbErr) {
@@ -594,7 +620,12 @@ async function submitCustomerOrder() {
 async function checkNewOrdersBackground() {
   if (!currentBusinessId) return;
   try {
-    const { count, error } = await sb.from('orders').select('*', { count: 'exact', head: true }).eq('business_id', currentBusinessId);
+    let { count, error } = await sb.from('orders').select('*', { count: 'exact', head: true }).eq('business_id', currentBusinessId);
+    if (error) {
+      const res2 = await sb.from('orders').select('*', { count: 'exact', head: true }).eq('user_id', currentBusinessId);
+      count = res2.count;
+      error = res2.error;
+    }
     if (!error && count !== null) {
       if (lastKnownOrderCount > 0 && count > lastKnownOrderCount) {
         playOrderAlertSound();
@@ -617,8 +648,16 @@ async function loadOnlineOrders() {
   if (!tbody) return;
   
   try {
-    const { data: orders, error } = await sb.from('orders').select('*').eq('business_id', currentBusinessId).order('created_at', { ascending: false });
-    if (error || !orders || orders.length === 0) {
+    let orders = null;
+    const { data: o1, error: err1 } = await sb.from('orders').select('*').eq('business_id', currentBusinessId).order('created_at', { ascending: false });
+    if (!err1 && o1 && o1.length > 0) {
+      orders = o1;
+    } else {
+      const { data: o2 } = await sb.from('orders').select('*').eq('user_id', currentBusinessId).order('created_at', { ascending: false });
+      orders = o2;
+    }
+
+    if (!orders || orders.length === 0) {
       tbody.innerHTML = '<tr><td colspan="6" class="muted" style="text-align:center; padding:20px;">कोणतीही ऑनलाईन ऑर्डर आलेली नाही.</td></tr>';
       return;
     }
@@ -683,8 +722,16 @@ async function loadCustomerOrderHistory() {
 async function loadProducts() {
   if (!currentBusinessId) return;
   try {
-    const { data } = await sb.from('business_products').select('*').eq('business_id', currentBusinessId).order('name');
-    currentProducts = data ?? [];
+    let products = null;
+    const { data: p1, error: err1 } = await sb.from('business_products').select('*').eq('business_id', currentBusinessId).order('name');
+    if (!err1 && p1 && p1.length > 0) {
+      products = p1;
+    } else {
+      const { data: p2 } = await sb.from('business_products').select('*').eq('user_id', currentBusinessId).order('name');
+      products = p2;
+    }
+
+    currentProducts = products ?? [];
     const tbody = document.getElementById('products-table-body');
     if (!tbody) return;
     if (currentProducts.length === 0) { tbody.innerHTML = '<tr><td colspan="4" class="muted" style="text-align:center; padding:15px;">कोणतीही उत्पादने नाहीत.</td></tr>'; return; }
