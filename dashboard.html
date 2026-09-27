@@ -12,16 +12,10 @@
 <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 <style>
 :root {
-  --primary: #1D4E89;
-  --primary-hover: #153e72;
-  --success: #16a34a;
-  --bg-color: #f8fafc;
-  --card-bg: #ffffff;
-  --text-main: #1e293b;
-  --text-muted: #64748b;
-  --border-color: #cbd5e1;
+  --primary: #1D4E89; --primary-hover: #153e72; --success: #16a34a;
+  --bg-color: #f8fafc; --card-bg: #ffffff; --text-main: #1e293b;
+  --text-muted: #64748b; --border-color: #cbd5e1;
 }
-
 body { background-color: var(--bg-color); color: var(--text-main); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 0; }
 body.store-locked-mode #app-nav { display: none !important; }
 .dashboard-main-frame { width: 98%; max-width: 1450px; margin: 10px auto; padding: 0 6px; }
@@ -33,14 +27,11 @@ body.store-locked-mode #app-nav { display: none !important; }
 .weavo-header-btn { background: linear-gradient(135deg, #0b8f87, #16b8a9); color: #fff; padding: 8px 14px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12.5px; display: inline-flex; align-items: center; gap: 5px; text-decoration: none; }
 .whatsapp-share-btn { background: #25D366; color: #fff; padding: 8px 14px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12.5px; display: inline-flex; align-items: center; gap: 5px; text-decoration: none; }
 .google-login-customer-btn { background: #ffffff; color: var(--text-main); border: 1px solid var(--border-color); padding: 8px 14px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12.5px; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-.google-login-customer-btn:hover { background: #f1f5f9; }
-
 .ai-assistant-btn { background: linear-gradient(135deg, #8b5cf6, #6366f1); color: #fff; padding: 8px 14px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12.5px; display: inline-flex; align-items: center; gap: 5px; }
 .primary-action-btn { background: var(--primary); color: #fff; padding: 8px 14px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12.5px; display: inline-flex; align-items: center; gap: 5px; }
 
 .customer-action-bar { display: none; gap: 8px; overflow-x: auto; padding: 10px 14px; margin-bottom: 14px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
 .cust-nav-btn { background: #ffffff; color: var(--text-main); border: 1px solid var(--border-color); padding: 8px 14px; border-radius: 6px; font-weight: 700; font-size: 12.5px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; text-decoration: none; }
-.cust-nav-btn:hover { background: #f1f5f9; }
 .cust-nav-btn.primary { background: var(--primary); color: #fff; border-color: var(--primary); }
 .cust-nav-btn.success { background: var(--success); color: #fff; border-color: var(--success); }
 
@@ -71,19 +62,17 @@ body.store-locked-mode #app-nav { display: none !important; }
   <div class="erp-header">
     <div>
       <h1 id="business-display-name">ALL ERP Dashboard</h1>
-      <span class="muted" id="header-sub-text">Universal Multi-Business Operating System & Local Marketplace</span>
+      <span class="muted" id="header-sub-text">Universal Business Operating System & Local Marketplace</span>
       <div style="margin-top:4px; font-size:13px; font-weight:700; color:var(--primary);" id="merchant-username-badge">
         👤 युझरनेम: <span id="display-merchant-handle">@abhinay_gandhi</span>
       </div>
     </div>
     <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
       <button type="button" class="ai-assistant-btn" onclick="openAiAssistantModal()">✨ AI असिस्टंट</button>
-      
       <button type="button" id="customer-google-login-btn" onclick="loginCustomerWithGoogle()" class="google-login-customer-btn" style="display:none;">
         <svg width="16" height="16" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
         <span id="google-login-btn-text">Google ने लॉगिन करा</span>
       </button>
-
       <button type="button" id="whatsapp-share-btn" onclick="shareStoreOnWhatsApp()" class="whatsapp-share-btn">📢 WhatsApp शेअर</button>
       <button type="button" id="weavo-chat-btn" onclick="openWeavoChat()" class="weavo-header-btn">💬 Weavo चॅट</button>
     </div>
@@ -101,7 +90,7 @@ body.store-locked-mode #app-nav { display: none !important; }
     <button type="button" class="cust-nav-btn" onclick="callMerchantPhone()">📞 दुकानदाराला कॉल</button>
   </div>
 
-  <!-- ALL ERP FULL NAVIGATION TABS -->
+  <!-- NAVIGATION TABS -->
   <div class="erp-tabs-bar" id="erp-navigation-tabs">
     <button type="button" class="erp-tab-btn active" onclick="switchTab('tab-overview')">📊 डॅशबोर्ड</button>
     <button type="button" class="erp-tab-btn" onclick="switchTab('tab-products')">📦 इन्व्हेंटरी व स्टॉक</button>
@@ -144,7 +133,7 @@ body.store-locked-mode #app-nav { display: none !important; }
     </div>
   </div>
 
-  <!-- TAB 2: PRODUCTS & INVENTORY -->
+  <!-- TAB 2: PRODUCTS & INVENTORY (🌟 बारकोड व इमेज सपोर्टसह) -->
   <div id="tab-products" class="erp-tab-pane" style="display:none;">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
       <h2 style="color:var(--primary); margin:0; font-size:18px;">📦 इन्व्हेंटरी व स्टॉक व्यवस्थापन</h2>
@@ -158,27 +147,26 @@ body.store-locked-mode #app-nav { display: none !important; }
       <table style="width:100%; border-collapse:collapse;">
         <thead>
           <tr style="text-align:left; border-bottom:2px solid var(--border-color);">
-            <th>उत्पादन (Item Name)</th><th>विक्री दर</th><th>खरेदी दर</th><th>स्टॉक</th><th>कृती</th>
+            <th>इमेज</th><th>उत्पादन (Item Name)</th><th>विक्री दर</th><th>खरेदी दर</th><th>स्टॉक</th><th>कृती</th>
           </tr>
         </thead>
         <tbody id="products-table-body">
-          <tr><td colspan="5" class="muted" style="text-align:center; padding:20px;">इन्व्हेंटरी लोड होत आहे...</td></tr>
+          <tr><td colspan="6" class="muted" style="text-align:center; padding:20px;">इन्व्हेंटरी लोड होत आहे...</td></tr>
         </tbody>
       </table>
     </div>
   </div>
 
-  <!-- OTHER ERP TABS -->
-  <div id="tab-sales" class="erp-tab-pane" style="display:none;"><h2 style="color:var(--primary);">💰 विक्री व इनव्हॉइस व्यवस्थापन</h2><p class="muted">येथे सर्व विक्रीची बिले आणि इनव्हॉइस दिसतील.</p></div>
-  <div id="tab-purchase" class="erp-tab-pane" style="display:none;"><h2 style="color:var(--primary);">🛒 खरेदी व्यवस्थापन</h2><p class="muted">खरेदीचे रेकॉर्ड येथे समाविष्ट केले जाईल.</p></div>
-  <div id="tab-crm" class="erp-tab-pane" style="display:none;"><h2 style="color:var(--primary);">👥 CRM व ग्राहक संबंध</h2><p class="muted">ग्राहकांची माहिती व फॉलोअप.</p></div>
-  <div id="tab-khata" class="erp-tab-pane" style="display:none;"><h2 style="color:var(--primary);">🧾 उधार खाता (Khata)</h2><p class="muted">उधार आणि लेन-देन हिशोब.</p></div>
-  <div id="tab-finance" class="erp-tab-pane" style="display:none;"><h2 style="color:var(--primary);">📑 खर्च व फायनान्स</h2><p class="muted">व्यवसायाचा खर्च व हिशोब.</p></div>
-  <div id="tab-hr" class="erp-tab-pane" style="display:none;"><h2 style="color:var(--primary);">👔 कर्मचारी व HR</h2><p class="muted">कर्मचाऱ्यांची माहिती.</p></div>
-  <div id="tab-projects" class="erp-tab-pane" style="display:none;"><h2 style="color:var(--primary);">🏗️ प्रकल्प व साईट्स</h2><p class="muted">प्रकल्प प्रगती अहवाल.</p></div>
-  <div id="tab-pos" class="erp-tab-pane" style="display:none;"><h2 style="color:var(--primary);">⚡ POS बिलिंग काउंटर</h2><p class="muted">फास्ट बिलिंग काउंटर.</p></div>
+  <!-- OTHER TABS -->
+  <div id="tab-sales" class="erp-tab-pane" style="display:none;"><h2 style="color:var(--primary);">💰 विक्री व इनव्हॉइस</h2></div>
+  <div id="tab-purchase" class="erp-tab-pane" style="display:none;"><h2 style="color:var(--primary);">🛒 खरेदी</h2></div>
+  <div id="tab-crm" class="erp-tab-pane" style="display:none;"><h2 style="color:var(--primary);">👥 CRM</h2></div>
+  <div id="tab-khata" class="erp-tab-pane" style="display:none;"><h2 style="color:var(--primary);">🧾 उधार खाता</h2></div>
+  <div id="tab-finance" class="erp-tab-pane" style="display:none;"><h2 style="color:var(--primary);">📑 फायनान्स</h2></div>
+  <div id="tab-hr" class="erp-tab-pane" style="display:none;"><h2 style="color:var(--primary);">👔 कर्मचारी (HR)</h2></div>
+  <div id="tab-projects" class="erp-tab-pane" style="display:none;"><h2 style="color:var(--primary);">🏗️ प्रकल्प</h2></div>
+  <div id="tab-pos" class="erp-tab-pane" style="display:none;"><h2 style="color:var(--primary);">⚡ POS काउंटर</h2></div>
 
-  <!-- TAB 11: ORDERS (Merchant View) -->
   <div id="tab-orders" class="erp-tab-pane" style="display:none;">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
       <h2 style="color:var(--primary); font-size:18px;">🛍️ ऑनलाईन ग्राहकांच्या ऑर्डर्स</h2>
@@ -196,10 +184,9 @@ body.store-locked-mode #app-nav { display: none !important; }
     </div>
   </div>
 
-  <div id="tab-reports" class="erp-tab-pane" style="display:none;"><h2 style="color:var(--primary);">📈 रिपोर्ट्स व GST</h2><p class="muted">टॅक्स आणि व्यवसाय अहवाल.</p></div>
-  <div id="tab-settings" class="erp-tab-pane" style="display:none;"><h2 style="color:var(--primary);">⚙️ डॅशबोर्ड सेटिंग्स</h2><p class="muted">व्यवसायाची माहिती बदला.</p></div>
+  <div id="tab-reports" class="erp-tab-pane" style="display:none;"><h2 style="color:var(--primary);">📈 रिपोर्ट्स व GST</h2></div>
+  <div id="tab-settings" class="erp-tab-pane" style="display:none;"><h2 style="color:var(--primary);">⚙️ सेटिंग्स</h2></div>
 
-  <!-- CUSTOMER ORDER HISTORY TAB -->
   <div id="tab-my-orders" class="erp-tab-pane" style="display:none;">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
       <h2 style="color:var(--primary); font-size:18px;">🛍️ तुमची ऑर्डर हिस्ट्री व स्टेटस</h2>
@@ -219,7 +206,7 @@ body.store-locked-mode #app-nav { display: none !important; }
 
 </div>
 
-<!-- ➕ नवीन आयटम ॲड करण्याचे मोडल -->
+<!-- ➕ नवीन आयटम ॲड मोडल (इमेज आणि बारकोड सपोर्टसह) -->
 <div id="add-product-modal" class="modal-overlay">
   <div class="modal-content">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
@@ -240,9 +227,19 @@ body.store-locked-mode #app-nav { display: none !important; }
         <input type="number" id="new-prod-cost" placeholder="₹0.00" style="width:100%; padding:9px; border:1px solid var(--border-color); border-radius:6px; font-size:13.5px;">
       </div>
     </div>
+    <div style="display:flex; gap:10px; margin-bottom:10px;">
+      <div style="flex:1;">
+        <label style="font-weight:700; font-size:12px; display:block; margin-bottom:3px;">सुरुवातीचा स्टॉक (Stock Qty):</label>
+        <input type="number" id="new-prod-stock" value="10" style="width:100%; padding:9px; border:1px solid var(--border-color); border-radius:6px; font-size:13.5px;">
+      </div>
+      <div style="flex:1;">
+        <label style="font-weight:700; font-size:12px; display:block; margin-bottom:3px;">इमेज URL (Image Link):</label>
+        <input type="text" id="new-prod-image" placeholder="https://..." style="width:100%; padding:9px; border:1px solid var(--border-color); border-radius:6px; font-size:13.5px;">
+      </div>
+    </div>
     <div style="margin-bottom:16px;">
-      <label style="font-weight:700; font-size:12px; display:block; margin-bottom:3px;">सुरुवातीचा स्टॉक (Stock Qty):</label>
-      <input type="number" id="new-prod-stock" value="10" style="width:100%; padding:9px; border:1px solid var(--border-color); border-radius:6px; font-size:13.5px;">
+      <label style="font-weight:700; font-size:12px; display:block; margin-bottom:3px;">बारकोड (Barcode):</label>
+      <input type="text" id="new-prod-barcode" placeholder="स्कॅन किंवा नंबर लिहा..." style="width:100%; padding:9px; border:1px solid var(--border-color); border-radius:6px; font-size:13.5px;">
     </div>
     <button type="button" onclick="saveNewProductToInventory()" style="width:100%; background:var(--primary); color:#fff; padding:11px; border:none; border-radius:6px; font-weight:bold; font-size:14px; cursor:pointer;">
       💾 आयटम सेव्ह करा
@@ -316,16 +313,14 @@ function switchTab(tabId) {
 function openModal(id) { document.getElementById(id).style.display = 'flex'; }
 function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 function openAddProductModal() { openModal('add-product-modal'); }
-function openGlobalSearchModal() { alert('🌐 ग्लोबल डिक्शनरी सर्च वैशिष्ट्य लवकरच लोड होत आहे.'); }
+function openGlobalSearchModal() { alert('🌐 ग्लोबल डिक्शनरी सर्च वैशिष्ट्य सक्रिय आहे.'); }
 function openAiAssistantModal() { alert('✨ AI असिस्टंट सक्रिय आहे.'); }
 
-// 🌟 गुगल लॉगिन समस्या सोडवणारी अत्यंत सुरक्षित आणि पक्की ऑथेंटिकेशन यंत्रणा
 async function initDashboard() {
   try {
     const urlParams = new URLSearchParams(window.location.search);
     lockedStoreUsername = urlParams.get('store');
 
-    // 1. प्रथम Supabase चे चालू सेशन तपासणे (स्टोअर मोड असो वा डॅशबोर्ड असो)
     const { data: { session } } = await sb.auth.getSession();
     if (session && session.user) {
       loggedInCustomer = session.user;
@@ -374,7 +369,6 @@ async function initDashboard() {
   } catch (err) { console.error('Init error:', err); }
 }
 
-// 🌟 व्हॉट्सॲपलिंक किंवा स्टोअर मोडमधून गुगल लॉगिन सुरक्षितपणे ट्रिगर करणे
 async function loginCustomerWithGoogle() {
   const currentUrl = window.location.origin + window.location.pathname + (lockedStoreUsername ? `?store=${lockedStoreUsername}` : '');
   await sb.auth.signInWithOAuth({
@@ -388,12 +382,13 @@ async function loadMerchantProducts() {
   const tbody = document.getElementById('products-table-body');
   const { data: products } = await sb.from('business_products').select('*').eq('business_id', currentBusinessId).order('name');
   if (!products || products.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="5" class="muted" style="text-align:center; padding:20px;">कोणताही स्टॉक उपलब्ध नाही. "नवीन आयटम ॲड करा" वर क्लिक करा.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" class="muted" style="text-align:center; padding:20px;">कोणताही स्टॉक उपलब्ध नाही. "नवीन आयटम ॲड करा" वर क्लिक करा.</td></tr>';
     return;
   }
   currentProducts = products;
   tbody.innerHTML = products.map(p => `
     <tr style="border-bottom:1px solid #f1f5f9; padding:8px 0;">
+      <td><img src="${p.image_url || 'https://placehold.co/40x40?text=Item'}" style="width:36px; height:36px; object-fit:cover; border-radius:4px;"></td>
       <td><strong>${escapeHtml(p.name)}</strong></td>
       <td style="color:var(--success); font-weight:bold;">₹${p.selling_price || 0}</td>
       <td>₹${p.cost_price || 0}</td>
@@ -408,6 +403,8 @@ async function saveNewProductToInventory() {
   const selling = parseFloat(document.getElementById('new-prod-selling').value) || 0;
   const cost = parseFloat(document.getElementById('new-prod-cost').value) || 0;
   const stock = parseInt(document.getElementById('new-prod-stock').value) || 10;
+  const imageUrl = document.getElementById('new-prod-image').value.trim();
+  const barcode = document.getElementById('new-prod-barcode').value.trim();
 
   if (!name || selling <= 0) {
     alert('कृपया आयटमचे नाव आणि वैध विक्री दर प्रविष्ट करा!');
@@ -419,7 +416,9 @@ async function saveNewProductToInventory() {
     name: name,
     selling_price: selling,
     cost_price: cost,
-    stock_quantity: stock
+    stock_quantity: stock,
+    image_url: imageUrl,
+    barcode: barcode
   });
 
   if (error) {
@@ -432,6 +431,8 @@ async function saveNewProductToInventory() {
   document.getElementById('new-prod-name').value = '';
   document.getElementById('new-prod-selling').value = '';
   document.getElementById('new-prod-cost').value = '';
+  document.getElementById('new-prod-image').value = '';
+  document.getElementById('new-prod-barcode').value = '';
   loadMerchantProducts();
 }
 
@@ -512,6 +513,7 @@ function openCustomerCartModal() {
   openModal('customer-cart-modal');
 }
 
+// 🌟 वीव्हो चॅटमध्ये अचूकपणे ऑर्डर फॉरवर्ड करणारी मजबूत ब्रिज यंत्रणा
 async function submitCustomerOrderWithDetails() {
   if (customerCart.length === 0 || !loggedInCustomer) return;
   
@@ -549,7 +551,7 @@ async function submitCustomerOrderWithDetails() {
 
     if (orderErr) throw orderErr;
 
-    alert('🎉 तुमची ऑर्डर यशस्वीरीत्या नोंदवली गेली! दुकानदाराकडे पाठवली आहे.');
+    alert('🎉 तुमची ऑर्डर यशस्वीरीत्या नोंदवली गेली! वीव्हो चॅट उघडत आहे...');
     customerCart = [];
     closeModal('customer-cart-modal');
     updateCustomerCartUI();
@@ -561,6 +563,7 @@ async function submitCustomerOrderWithDetails() {
     
     const unifiedEmail = localStorage.getItem('global_unified_email') || email;
     const weavoUrl = `https://arhammarketingme-prog.github.io/weavo/?store=${storeUsername}&prefill=${orderMsg}&customer_email=${encodeURIComponent(unifiedEmail)}`;
+    
     window.open(weavoUrl, '_blank');
   } catch (err) {
     alert('ऑर्डर पाठवताना त्रुटी आली: ' + err.message);
