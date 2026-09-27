@@ -230,7 +230,7 @@ body.store-locked-mode #app-nav { display: none !important; }
 <script src="js/erp-engine.js"></script>
 <script src="js/master-dictionary.js"></script>
 <script>
-// 🌟 Supabase थेट फाईलमध्ये सुरक्षित इनिशिअलायझेशन (Session Guard सह)
+// 🌟 डॅशबोर्ड फाईलमध्येच थेट सुरक्षित Supabase इनिशिअलायझेशन (कोणताही डेटाबेस एरर किंवा 400/404 न येणारे)
 const SUPABASE_URL = "https://xpsxbvmziibbrjnadrlm.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhwc3hidm16aWliYnJqbmFkcmxtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2OTY0NTcsImV4cCI6MjEwNDI3MjQ1N30.d-kDYwqFfxP_xfNHQHEYYYZQHr31-75u-UHxYznRP-A";
 
@@ -314,7 +314,7 @@ async function initDashboard() {
     const urlParams = new URLSearchParams(window.location.search);
     lockedStoreUsername = urlParams.get('store');
 
-    // 🌟 सेशन चेक करण्यासाठी getSession() वापरणे (जेणेकरून बाहेर फेकले जाणार नाही)
+    // 🌟 अत्यंत सुरक्षित सेशन तपासणी (कोणतीही अनावश्यक क्वेरी नाही)
     const sessionRes = await sb.auth.getSession();
     const sessionUser = sessionRes?.data?.session?.user;
 
@@ -362,7 +362,7 @@ async function initDashboard() {
     } else {
       document.body.classList.remove('store-locked-mode');
       
-      // जर व्यापारी (Merchant) लॉगइन नसेल तरच लॉगिन पेजवर पाठवणे, अन्यथा चालू ठेवणे
+      // जर व्यापारी लॉगइन नसेल तरच लॉगिन पेजवर पाठवणे
       if (!sessionUser) {
         window.location.href = 'login.html';
         return;
@@ -483,7 +483,7 @@ function openCustomerCartModal() {
   openModal('customer-cart-modal');
 }
 
-// 🛍️ ग्राहकाने ऑर्डर सबमिट केल्यावर WhatsApp स्टाईल प्रीफिल्ड मजकुरासह थेट Weavo आणि ERP मध्ये पाठवणे
+// 🛍️ ग्राहकाने ऑर्डर सबमिट केल्यावर थेट वीव्हो चॅट उघडून ऑर्डर पाठवणे
 async function submitCustomerOrder() {
   if (customerCart.length === 0 || !loggedInCustomer) return;
   
@@ -503,7 +503,7 @@ async function submitCustomerOrder() {
     let totalAmt = customerCart.reduce((sum, i) => sum + (i.price * i.qty), 0);
     let itemsSummaryText = customerCart.map(i => `${i.name} (${i.qty} नग)`).join(', ');
 
-    // १. AllERP च्या orders टेबलमध्ये सेव्ह करणे (सुरक्षित फॉबॅकसह)
+    // १. AllERP च्या orders टेबलमध्ये सुरक्षित सेव्हिंग (एरर आल्यास बायपास होईल)
     try {
       await sb.from('orders').insert({
         business_id: currentBusinessId,
@@ -546,7 +546,7 @@ async function submitCustomerOrder() {
     closeModal('customer-cart-modal');
     updateCustomerCartUI();
 
-    // ३. WhatsApp स्टाईल प्रीफिल्ड ब्रिजिंगसह Weavo विंडो उघडणे
+    // ३. वीव्हो चॅट विंडो उघडणे
     localStorage.setItem('weavo_target_store', storeUsername);
     const orderMsg = encodeURIComponent(`📦 नवीन ऑनलाईन ऑर्डर:\n👤 ग्राहक: ${name}\n📱 मोबाईल: ${phone}\n🏠 डिलिव्हरी पत्ता: ${address}\n📧 ईमेल: ${customerEmail}\n🛒 तपशील: ${itemsSummaryText}\n💰 एकूण: ₹${totalAmt}`);
     const weavoUrl = `https://arhammarketingme-prog.github.io/weavo/?store=${storeUsername}&prefill=${orderMsg}&customer_email=${encodeURIComponent(customerEmail)}`;
