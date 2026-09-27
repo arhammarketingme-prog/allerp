@@ -145,7 +145,7 @@ body.store-locked-mode #app-nav { display: none !important; }
     </div>
     
     <div style="background:#f1f5f9; padding:10px 12px; border-radius:6px; margin-bottom:16px; font-size:13px; color:#334155;">
-      👤 गुगल लॉगिन युझर: <strong id="modal-user-email">तपासत आहे...</strong>
+      👤 युनिफाइड गुगल युझर: <strong id="modal-user-email">तपासत आहे...</strong>
     </div>
 
     <button type="button" onclick="submitCustomerOrderDirectly()" style="width:100%; background:#16a34a; color:#fff; padding:12px; border:none; border-radius:6px; font-weight:bold; font-size:15px; cursor:pointer;">
@@ -199,6 +199,9 @@ async function initDashboard() {
       const { data: { user } } = await sb.auth.getUser();
       if (user) {
         loggedInCustomer = user;
+        // 🌟 युनिफाइड ग्लोबल की (Global Storage) मध्ये ईमेल सेव्ह करणे
+        localStorage.setItem('global_unified_email', user.email);
+        
         const btnText = document.getElementById('google-login-btn-text');
         if (btnText) btnText.textContent = '👤 ' + (user.user_metadata?.full_name || user.email);
       }
@@ -215,6 +218,10 @@ async function initDashboard() {
       if (typeof sb === 'undefined' || !sb.auth) return;
       const { data: { user } } = await sb.auth.getUser();
       if (!user) { window.location.href = 'login.html'; return; }
+      
+      if (user.email) {
+        localStorage.setItem('global_unified_email', user.email);
+      }
       
       const { data: businesses } = await sb.from('businesses').select('id, name').eq('owner_id', user.id);
       if (businesses && businesses.length > 0) {
@@ -310,7 +317,6 @@ async function submitCustomerOrderDirectly() {
     let totalAmt = customerCart.reduce((sum, i) => sum + (i.price * i.qty), 0);
     let itemsSummaryText = customerCart.map(i => `${i.name} (${i.qty} नग)`).join(', ');
 
-    // 🌟 अचूक डेटाबेस टेबलमध्ये ऑर्डर यशस्वीरीत्या इन्सर्ट करणे
     const { error: orderErr } = await sb.from('orders').insert({
       business_id: currentBusinessId,
       customer_name: name,
@@ -322,16 +328,18 @@ async function submitCustomerOrderDirectly() {
 
     if (orderErr) throw orderErr;
 
-    alert('🎉 तुमची ऑर्डर यशस्वीरीत्या नोंदवली गेली! दुकानदाराच्या डॅशबोर्डमध्ये पाठवली आहे.');
+    alert('🎉 तुमची ऑर्डर यशस्वीरीत्या नोंदवली गेली! वीव्हो चॅट उघडत आहे.');
     customerCart = [];
     closeModal('customer-cart-modal');
 
-    // वीव्हो चॅट उघडणे
     let storeUsername = 'abhinay_gandhi';
     localStorage.setItem('weavo_target_store', storeUsername);
 
     const orderMsg = encodeURIComponent(`📦 नवीन ऑनलाईन ऑर्डर:\n👤 ग्राहक: ${name}\n📞 ईमेल: ${phone}\n🛒 तपशील: ${itemsSummaryText}\n💰 एकूण: ₹${totalAmt}`);
-    const weavoUrl = `https://arhammarketingme-prog.github.io/weavo/?store=${storeUsername}&prefill=${orderMsg}`;
+    
+    // 🌟 युनिफाइड ग्लोबल ईमेल थेट वीव्होला पास करणे
+    const unifiedEmail = localStorage.getItem('global_unified_email') || phone;
+    const weavoUrl = `https://arhammarketingme-prog.github.io/weavo/?store=${storeUsername}&prefill=${orderMsg}&customer_email=${encodeURIComponent(unifiedEmail)}`;
     window.open(weavoUrl, '_blank');
   } catch (err) {
     alert('ऑर्डर पाठवताना त्रुटी आली: ' + err.message);
@@ -367,7 +375,20 @@ function shareStoreOnWhatsApp() {
 async function openWeavoChat() {
   let storeUsername = 'abhinay_gandhi';
   localStorage.setItem('weavo_target_store', storeUsername);
-  window.open(`https://arhammarketingme-prog.github.io/weavo/?store=${storeUsername}`, '_blank');
+
+  let unifiedEmail = localStorage.getItem('global_unified_email') || '';
+  if (!unifiedEmail) {
+    try {
+      const { data: { user } } = await sb.auth.getUser();
+      if (user && user.email) {
+        unifiedEmail = user.email;
+        localStorage.setItem('global_unified_email', user.email);
+      }
+    } catch(e) {}
+  }
+
+  const emailParam = unifiedEmail ? `&customer_email=${encodeURIComponent(unifiedEmail)}` : '';
+  window.open(`https://arhammarketingme-prog.github.io/weavo/?store=${storeUsername}${emailParam}`, '_blank');
 }
 
 function escapeHtml(str) {
