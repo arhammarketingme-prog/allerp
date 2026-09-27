@@ -62,11 +62,10 @@ tr:hover { background: #f8fafc; }
 <div class="dashboard-main-frame">
   <div class="erp-header">
     <div>
-      <!-- 🌟 दुकानदाराचे अस्सल व सुंदर नाव -->
-      <h1 id="business-display-name">ALL ERP Dashboard</h1>
+      <h1 id="business-display-name">निखिल किराणा स्टोअर्स</h1>
       <span class="muted" id="header-sub-text">Universal Business Operating System</span>
       <div style="margin-top:4px; font-size:12.5px; font-weight:700; color:#0b8f87;" id="merchant-username-badge">
-        👤 अधिकृत स्टोअर युजरनेम: <span id="display-merchant-handle">@nikhil_kirana</span>
+        👤 अधिकृत स्टोअर: <span id="display-merchant-handle">@nikhil_kirana</span>
       </div>
     </div>
     <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
@@ -181,16 +180,16 @@ let currentProducts = [];
 let lockedStoreUsername = null;
 let customerCart = [];
 let loggedInCustomer = null;
-let currentStoreOwnerId = null;
 
 function switchTab(tabId) {
-  document.querySelectorAll('.erp-tab-pane').forEach(el => el.style.display = 'none');
-  document.querySelectorAll('.erp-tab-btn').forEach(btn => btn.classList.remove('active'));
-  const target = document.getElementById(tabId);
+  document.querySelectorAll('.erp-tab-pane').forEach(function(el) { el.style.display = 'none'; });
+  document.querySelectorAll('.erp-tab-btn').forEach(function(btn) { btn.classList.remove('active'); });
+  var target = document.getElementById(tabId);
   if (target) target.style.display = 'block';
   
-  document.querySelectorAll('.erp-tab-btn').forEach(btn => {
-    if (btn.getAttribute('onclick') && btn.getAttribute('onclick'].includes(tabId)) {
+  document.querySelectorAll('.erp-tab-btn').forEach(function(btn) {
+    var onclickAttr = btn.getAttribute('onclick');
+    if (onclickAttr && onclickAttr.indexOf(tabId) !== -1) {
       btn.classList.add('active');
     }
   });
@@ -203,13 +202,15 @@ function switchTab(tabId) {
 function openModal(id) { document.getElementById(id).style.display = 'flex'; }
 function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
+function enableAudioContextOnce() {}
+
 async function initDashboard() {
   try {
-    const urlParams = new URLSearchParams(window.location.search);
+    var urlParams = new URLSearchParams(window.location.search);
     lockedStoreUsername = urlParams.get('store');
 
-    const sessionRes = await sb.auth.getSession();
-    const sessionUser = sessionRes?.data?.session?.user;
+    var sessionRes = await sb.auth.getSession();
+    var sessionUser = sessionRes && sessionRes.data && sessionRes.data.session ? sessionRes.data.session.user : null;
 
     if (sessionUser) {
       loggedInCustomer = sessionUser;
@@ -217,99 +218,96 @@ async function initDashboard() {
     }
 
     if (lockedStoreUsername) {
-      // 🌟 ग्राहक स्टोअर मोड: लिंकमधील स्टोअर स्लॅगवरून पर्टिक्युलर दुकानाचे अचूक नाव व प्रॉडक्ट्स फेच करणे
       document.body.classList.add('store-locked-mode');
-      document.getElementById('customer-action-bar').style.display = 'flex';
-      document.getElementById('customer-google-login-btn').style.display = 'inline-flex';
-      document.getElementById('customer-store-notice').style.display = 'block';
-      document.getElementById('customer-products-section').style.display = 'block';
+      var custBar = document.getElementById('customer-action-bar');
+      if (custBar) custBar.style.display = 'flex';
+      var googleBtn = document.getElementById('customer-google-login-btn');
+      if (googleBtn) googleBtn.style.display = 'inline-flex';
+      var notice = document.getElementById('customer-store-notice');
+      if (notice) notice.style.display = 'block';
+      var prodSec = document.getElementById('customer-products-section');
+      if (prodSec) prodSec.style.display = 'block';
 
-      // स्लॅगचे सुंदर मराठी दुकान नाव तयार करणे (उदा. nikhil_kirana -> निखिल किराणा स्टोअर्स)
-      let niceStoreName = lockedStoreUsername.replace(/[_]/g, ' ').trim();
-      if (niceStoreName.toLowerCase().includes('nikhil') || niceStoreName.toLowerCase().includes('निखिल')) {
-        niceStoreName = 'निखिल किराणा स्टोअर्स';
+      var storeTitle = "निखिल किराणा स्टोअर्स";
+      if (lockedStoreUsername.toLowerCase().indexOf('nikhil') !== -1) {
+        storeTitle = "निखिल किराणा स्टोअर्स";
       } else {
-        niceStoreName = niceStoreName.charAt(0).toUpperCase() + niceStoreName.slice(1) + ' स्टोअर्स';
+        var clean = lockedStoreUsername.replace(/[_]/g, ' ').trim();
+        storeTitle = clean.charAt(0).toUpperCase() + clean.slice(1) + " स्टोअर्स";
       }
 
-      document.getElementById('business-display-name').textContent = niceStoreName;
+      document.getElementById('business-display-name').textContent = storeTitle;
       document.getElementById('header-sub-text').textContent = 'अधिकृत ग्राहक स्टोअर व थेट संवाद मंच';
       document.getElementById('display-merchant-handle').textContent = 'स्टोअर: ' + lockedStoreUsername;
 
-      await loadCustomerStoreProducts(lockedStoreUsername);
+      await loadCustomerStoreProducts();
     } else {
       if (!sessionUser) {
         window.location.href = 'login.html';
         return;
       }
 
-      // 🌟 व्यापारी स्वतः लॉगइन असताना त्याचे स्वतःचे दुकान नाव सेट करणे
-      const merchantEmail = sessionUser.email || '';
-      let merchantStoreName = 'निखिल किराणा स्टोअर्स';
-      if (merchantEmail.toLowerCase().includes('abhinay')) {
-        merchantStoreName = 'अभिनय किराणा स्टोअर्स';
-      } else if (merchantEmail) {
-        let prefix = merchantEmail.split('@')[0];
-        merchantStoreName = prefix.charAt(0).toUpperCase() + prefix.slice(1) + ' स्टोअर्स';
-      }
-
-      document.getElementById('business-display-name').textContent = merchantStoreName;
-      document.getElementById('display-merchant-handle').textContent = '@' + merchantEmail.split('@')[0];
+      document.getElementById('business-display-name').textContent = 'निखिल किराणा स्टोअर्स';
+      document.getElementById('display-merchant-handle').textContent = '@nikhil_kirana';
 
       await loadProducts();
     }
-  } catch (err) { console.error('Init error:', err); }
+  } catch (err) {
+    console.error('Init error:', err);
+  }
 }
 
 function loginCustomerWithGoogle() {
-  const currentUrl = window.location.origin + window.location.pathname + (lockedStoreUsername ? ('?store=' + lockedStoreUsername) : '');
+  var currentUrl = window.location.origin + window.location.pathname + (lockedStoreUsername ? ('?store=' + lockedStoreUsername) : '');
   sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: currentUrl } });
 }
 
 function shareStoreOnWhatsApp() {
-  const storeSlug = lockedStoreUsername || 'nikhil_kirana';
-  const shareUrl = `${window.location.origin}${window.location.pathname}?store=${storeSlug}`;
+  var storeSlug = lockedStoreUsername || 'nikhil_kirana';
+  var shareUrl = window.location.origin + window.location.pathname + '?store=' + storeSlug;
   window.open('https://api.whatsapp.com/send?text=' + encodeURIComponent('आमच्या दुकानाला भेट द्या: ' + shareUrl), '_blank');
 }
 
 function openWeavoChat() {
-  let storeUsername = lockedStoreUsername || 'nikhil_kirana';
-  const customerEmail = loggedInCustomer?.email || localStorage.getItem('global_unified_email');
-  window.open(`https://arhammarketingme-prog.github.io/weavo/?store=${storeUsername}${customerEmail ? '&customer_email=' + encodeURIComponent(customerEmail) : ''}`, '_blank');
+  var storeUsername = lockedStoreUsername || 'nikhil_kirana';
+  var customerEmail = (loggedInCustomer && loggedInCustomer.email) ? loggedInCustomer.email : localStorage.getItem('global_unified_email');
+  window.open('https://arhammarketingme-prog.github.io/weavo/?store=' + storeUsername + (customerEmail ? ('&customer_email=' + encodeURIComponent(customerEmail)) : ''), '_blank');
 }
 
-// 🌟 फक्त त्याच पर्टिक्युलर दुकानाचे प्रॉडक्ट्स लोड करणे (इतर दुकानांचे प्रॉडक्ट्स मिक्स न होणारी अचूक रचना)
-async function loadCustomerStoreProducts(storeSlug) {
-  const gridEl = document.getElementById('customer-products-grid');
+async function loadCustomerStoreProducts() {
+  var gridEl = document.getElementById('customer-products-grid');
+  if (!gridEl) return;
   try {
-    // समजा युजरनेम किंवा स्टोअरनुसार अचूक प्रॉडक्ट्स फिल्टर करणे
-    const { data: products } = await sb.from('business_products').select('*').order('name');
+    var res = await sb.from('business_products').select('*').order('name');
+    var products = res.data;
     if (!products || products.length === 0) {
       gridEl.innerHTML = '<p class="muted">या दुकानात सध्या कोणतीही उत्पादने उपलब्ध नाहीत.</p>';
       return;
     }
     currentProducts = products;
-    gridEl.innerHTML = products.map(p => `
-      <div style="background:#fff; border:1px solid #cbd5e1; border-radius:8px; padding:12px; text-align:center;">
-        <div style="font-weight:700; font-size:14px; margin-bottom:4px; color:#1e293b;">${p.name}</div>
-        <div style="color:#16a34a; font-weight:800; font-size:14px; margin-bottom:8px;">₹${p.selling_price}</div>
-        <button onclick="addToCustomerCart('${p.id}')" style="background:#16a34a; color:#fff; border:none; padding:6px 12px; border-radius:5px; font-weight:bold; cursor:pointer; font-size:12px;">🛒 ॲड टू कार्ट</button>
-      </div>
-    `).join('');
+    gridEl.innerHTML = products.map(function(p) {
+      return '<div style="background:#fff; border:1px solid #cbd5e1; border-radius:8px; padding:12px; text-align:center;">' +
+             '<div style="font-weight:700; font-size:14px; margin-bottom:4px; color:#1e293b;">' + escapeHtml(p.name) + '</div>' +
+             '<div style="color:#16a34a; font-weight:800; font-size:14px; margin-bottom:8px;">₹' + p.selling_price + '</div>' +
+             '<button onclick="addToCustomerCart(\'' + p.id + '\')" style="background:#16a34a; color:#fff; border:none; padding:6px 12px; border-radius:5px; font-weight:bold; cursor:pointer; font-size:12px;">🛒 ॲड टू कार्ट</button>' +
+             '</div>';
+    }).join('');
   } catch (e) {
     gridEl.innerHTML = '<p class="muted">प्रॉडक्ट्स लोड करताना त्रुटी आली.</p>';
   }
 }
 
 function addToCustomerCart(productId) {
-  const product = currentProducts.find(p => p.id === productId);
+  var product = currentProducts.find(function(p) { return p.id === productId; });
   if (!product) return;
-  const existing = customerCart.find(i => i.id === productId);
+  var existing = customerCart.find(function(i) { return i.id === productId; });
   if (existing) existing.qty++;
   else customerCart.push({ id: product.id, name: product.name, price: product.selling_price, qty: 1 });
   
-  document.getElementById('bar-cart-count').textContent = customerCart.reduce((s, i) => s + i.qty, 0);
-  alert(`✅ "${product.name}" कार्टमध्ये जोडले गेले!`);
+  var totalQty = customerCart.reduce(function(s, i) { return s + i.qty; }, 0);
+  var barCount = document.getElementById('bar-cart-count');
+  if (barCount) barCount.textContent = totalQty;
+  alert('✅ "' + product.name + '" कार्टमध्ये जोडले गेले!');
 }
 
 function openCustomerCartModal() {
@@ -317,28 +315,29 @@ function openCustomerCartModal() {
   if (!loggedInCustomer) { loginCustomerWithGoogle(); return; }
   
   document.getElementById('modal-user-email').textContent = loggedInCustomer.email;
-  document.getElementById('modal-cart-total').textContent = customerCart.reduce((s, i) => s + (i.price * i.qty), 0).toFixed(2);
+  var totalAmt = customerCart.reduce(function(s, i) { return s + (i.price * i.qty); }, 0);
+  document.getElementById('modal-cart-total').textContent = totalAmt.toFixed(2);
   
-  const itemsContainer = document.getElementById('customer-cart-items');
-  itemsContainer.innerHTML = customerCart.map(i => `
-    <div style="display:flex; justify-content:space-between; padding:5px 0; border-bottom:1px solid #f1f5f9; font-size:13px;">
-      <div><strong>${i.name}</strong> <span style="color:#64748b;">(×${i.qty})</span></div>
-      <div style="font-weight:bold; color:#16a34a;">₹${(i.price * i.qty).toFixed(2)}</div>
-    </div>
-  `).join('');
+  var itemsContainer = document.getElementById('customer-cart-items');
+  itemsContainer.innerHTML = customerCart.map(function(i) {
+    return '<div style="display:flex; justify-content:space-between; padding:5px 0; border-bottom:1px solid #f1f5f9; font-size:13px;">' +
+           '<div><strong>' + escapeHtml(i.name) + '</strong> <span style="color:#64748b;">(×' + i.qty + ')</span></div>' +
+           '<div style="font-weight:bold; color:#16a34a;">₹' + (i.price * i.qty).toFixed(2) + '</div>' +
+           '</div>';
+  }).join('');
 
   openModal('customer-cart-modal');
 }
 
 async function submitCustomerOrder() {
-  const name = document.getElementById('cust-order-name').value.trim();
-  const phone = document.getElementById('cust-order-phone').value.trim();
-  const address = document.getElementById('cust-order-address').value.trim();
+  var name = document.getElementById('cust-order-name').value.trim();
+  var phone = document.getElementById('cust-order-phone').value.trim();
+  var address = document.getElementById('cust-order-address').value.trim();
   
   if (!name || phone.length < 10 || !address) { alert('कृपया सर्व माहिती अचूक भरा!'); return; }
 
-  let totalAmt = customerCart.reduce((sum, i) => sum + (i.price * i.qty), 0);
-  let itemsSummaryText = customerCart.map(i => `${i.name} (${i.qty} नग)`).join(', ');
+  var totalAmt = customerCart.reduce(function(sum, i) { return sum + (i.price * i.qty); }, 0);
+  var itemsSummaryText = customerCart.map(function(i) { return i.name + ' (' + i.qty + ' नग)'; }).join(', ');
 
   try {
     await sb.from('orders').insert({
@@ -359,57 +358,81 @@ async function submitCustomerOrder() {
 }
 
 async function loadOnlineOrders() {
-  const tbody = document.getElementById('online-orders-table-body');
-  const { data } = await sb.from('orders').select('*').order('created_at', { ascending: false });
-  if (!data || data.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="6" class="muted" style="text-align:center;">कोणतीही ऑनलाईन ऑर्डर आलेली नाही.</td></tr>';
-    return;
+  var tbody = document.getElementById('online-orders-table-body');
+  if (!tbody) return;
+  try {
+    var res = await sb.from('orders').select('*').order('created_at', { ascending: false });
+    var data = res.data;
+    if (!data || data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" class="muted" style="text-align:center;">कोणतीही ऑनलाईन ऑर्डर आलेली नाही.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = data.map(function(o) {
+      return '<tr>' +
+             '<td><strong>#' + o.id.toString().substring(0,8) + '</strong></td>' +
+             '<td>' + escapeHtml(o.customer_name || '-') + '</td>' +
+             '<td>📱 ' + escapeHtml(o.customer_phone || '-') + '<br><small style="color:#64748b;">🏠 ' + escapeHtml(o.customer_address || '-') + '</small></td>' +
+             '<td>' + escapeHtml(o.items_summary || '-') + '</td>' +
+             '<td style="font-weight:bold; color:#16a34a;">₹' + (o.total_amount || 0) + '</td>' +
+             '<td><span class="badge pending">' + (o.status || 'pending') + '</span></td>' +
+             '</tr>';
+    }).join('');
+  } catch (e) {
+    tbody.innerHTML = '<tr><td colspan="6" class="muted" style="text-align:center;">ऑर्डर्स लोड करताना त्रुटी आली.</td></tr>';
   }
-  tbody.innerHTML = data.map(o => `
-    <tr>
-      <td><strong>#${o.id.substring(0,8)}</strong></td>
-      <td>${o.customer_name || '-'}</td>
-      <td>📱 ${o.customer_phone || '-'}<br><small style="color:#64748b;">🏠 ${o.customer_address || '-'}</small></td>
-      <td>${o.items_summary || '-'}</td>
-      <td style="font-weight:bold; color:#16a34a;">₹${o.total_amount || 0}</td>
-      <td><span class="badge pending">${o.status || 'pending'}</span></td>
-    </tr>
-  `).join('');
 }
 
 async function loadCustomerOrderHistory() {
-  const tbody = document.getElementById('customer-history-table-body');
-  const { data } = await sb.from('orders').select('*').order('created_at', { ascending: false });
-  if (!data || data.length ===0) {
-    tbody.innerHTML = '<tr><td colspan="5" class="muted" style="text-align:center;">इतिहास उपलब्ध नाही.</td></tr>';
-    return;
+  var tbody = document.getElementById('customer-history-table-body');
+  if (!tbody) return;
+  try {
+    var res = await sb.from('orders').select('*').order('created_at', { ascending: false });
+    var data = res.data;
+    if (!data || data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" class="muted" style="text-align:center;">इतिहास उपलब्ध नाही.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = data.map(function(o) {
+      return '<tr>' +
+             '<td><strong>#' + o.id.toString().substring(0,8) + '</strong></td>' +
+             '<td>' + escapeHtml(o.items_summary || '-') + '</td>' +
+             '<td style="font-weight:bold; color:#16a34a;">₹' + (o.total_amount || 0) + '</td>' +
+             '<td>' + escapeHtml(o.customer_address || '-') + '</td>' +
+             '<td><span class="badge ' + (o.status === 'delivered' ? 'live' : 'pending') + '">' + (o.status || 'pending') + '</span></td>' +
+             '</tr>';
+    }).join('');
+  } catch (e) {
+    tbody.innerHTML = '<tr><td colspan="5" class="muted" style="text-align:center;">इतिहास लोड करताना त्रुटी आली.</td></tr>';
   }
-  tbody.innerHTML = data.map(o => `
-    <tr>
-      <td><strong>#${o.id.substring(0,8)}</strong></td>
-      <td>${o.items_summary || '-'}</td>
-      <td style="font-weight:bold; color:#16a34a;">₹${o.total_amount || 0}</td>
-      <td>${o.customer_address || '-'}</td>
-      <td><span class="badge ${o.status === 'delivered' ? 'live' : 'pending'}">${o.status || 'pending'}</span></td>
-    </tr>
-  `).join('');
 }
 
 async function loadProducts() {
-  const tbody = document.getElementById('products-table-body');
-  const { data } = await sb.from('business_products').select('*').order('name');
-  if (!data || data.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="4" class="muted" style="text-align:center;">कोणतीही उत्पादने नाहीत.</td></tr>';
-    return;
+  var tbody = document.getElementById('products-table-body');
+  if (!tbody) return;
+  try {
+    var res = await sb.from('business_products').select('*').order('name');
+    var data = res.data;
+    if (!data || data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="4" class="muted" style="text-align:center;">कोणतीही उत्पादने नाहीत.</td></tr>';
+      return;
+    }
+    currentProducts = data;
+    tbody.innerHTML = data.map(function(p) {
+      return '<tr>' +
+             '<td><strong>' + escapeHtml(p.name) + '</strong></td>' +
+             '<td style="font-weight:bold; color:#16a34a;">₹' + p.selling_price + '</td>' +
+             '<td>' + (p.stock !== null ? p.stock : 0) + '</td>' +
+             '<td><span class="badge ' + (p.stock > 0 ? 'live' : 'pending') + '">' + (p.stock > 0 ? 'LIVE' : 'INACTIVE') + '</span></td>' +
+             '</tr>';
+    }).join('');
+  } catch (e) {
+    tbody.innerHTML = '<tr><td colspan="4" class="muted" style="text-align:center;">उत्पादने लोड करताना त्रुटी आली.</td></tr>';
   }
-  tbody.innerHTML = data.map(p => `
-    <tr>
-      <td><strong>${p.name}</strong></td>
-      <td style="font-weight:bold; color:#16a34a;">₹${p.selling_price}</td>
-      <td>${p.stock !== null ? p.stock : 0}</td>
-      <td><span class="badge ${p.stock > 0 ? 'live' : 'pending'}">${p.stock > 0 ? 'LIVE' : 'INACTIVE'}</span></td>
-    </tr>
-  `).join('');
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
 initDashboard();
