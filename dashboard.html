@@ -225,7 +225,7 @@ body.store-locked-mode #app-nav { display: none !important; }
 </div>
 
 <script>
-// 🌟 सुरक्षित आणि अचूक Supabase клиент थेट फाईलमध्ये इनिशिअलाइज करणे (400 व 404 एररमुक्त)
+// 🌟 अचूक आणि एरर-फ्री Supabase इनिशिलायझेशन
 const SUPABASE_URL = "https://xpsxbvmziibbrjnadrlm.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhwc3hidm16aWliYnJqbmFkcmxtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2OTY0NTcsImV4cCI6MjEwNDI3MjQ1N30.d-kDYwqFfxP_xfNHQHEYYYZQHr31-75u-UHxYznRP-A";
 
@@ -347,7 +347,16 @@ async function initDashboard() {
       if (prodSection) prodSection.style.display = 'block';
 
       const cleanStoreName = lockedStoreUsername.replace(/_/g, ' ').trim();
-      const { data: storeInfo } = await sb.from('businesses').select('*').ilike('name', cleanStoreName).maybeSingle();
+      
+      // दुकानाचे नाव सुरक्षितपणे शोधणे (400 व 404 एरर पूर्णपणे काढून टाकण्यासाठी दोन्ही पद्धतींचा वापर)
+      let storeInfo = null;
+      const resExact = await sb.from('businesses').select('*').eq('name', cleanStoreName).maybeSingle();
+      if (resExact.data) {
+        storeInfo = resExact.data;
+      } else {
+        const resLike = await sb.from('businesses').select('*').ilike('name', '%' + cleanStoreName + '%').maybeSingle();
+        if (resLike.data) storeInfo = resLike.data;
+      }
       
       if (storeInfo) {
         currentBusinessId = storeInfo.id;
@@ -355,6 +364,8 @@ async function initDashboard() {
         if (storeInfo.phone) merchantPhoneNo = storeInfo.phone;
         document.getElementById('header-sub-text').textContent = 'अधिकृत ग्राहक स्टोअर व थेट संवाद मंच';
         await loadCustomerStoreProducts();
+      } else {
+        document.getElementById('business-display-name').textContent = 'स्टोअर सापडले नाही';
       }
     } else {
       document.body.classList.remove('store-locked-mode');
