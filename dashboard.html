@@ -224,13 +224,20 @@ body.store-locked-mode #app-nav { display: none !important; }
   </div>
 </div>
 
-<script src="js/supabase-client.js"></script>
-<script src="js/cart.js"></script>
-<script src="js/nav.js"></script>
-<script src="js/tracking.js"></script>
-<script src="js/erp-engine.js"></script>
-<script src="js/master-dictionary.js"></script>
 <script>
+// 🌟 सुरक्षित आणि अचूक Supabase клиент थेट फाईलमध्ये इनिशिअलाइज करणे (400 व 404 एररमुक्त)
+const SUPABASE_URL = "https://xpsxbvmziibbrjnadrlm.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhwc3hidm16aWliYnJqbmFkcmxtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2OTY0NTcsImV4cCI6MjEwNDI3MjQ1N30.d-kDYwqFfxP_xfNHQHEYYYZQHr31-75u-UHxYznRP-A";
+
+let sb = null;
+try {
+  sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+  });
+} catch(e) {
+  console.error("Supabase init error:", e);
+}
+
 let currentBusinessId = null;
 let currentProducts = [];
 let lockedStoreUsername = null;
@@ -468,7 +475,7 @@ function openCustomerCartModal() {
   openModal('customer-cart-modal');
 }
 
-// 🛍️ ग्राहकाने नाव, फोन आणि पत्ता भरून थेट ERP आणि Weavo मध्ये ऑर्डर पाठवणे (दुकानदाराचे युझरनेम अचूक फेच करून)
+// 🛍️ ग्राहकाने ऑर्डर सबमिट केल्यावर ERP आणि Weavo मध्ये स्वयंचलितपणे मेसेज पाठवणे
 async function submitCustomerOrder() {
   if (customerCart.length === 0 || !loggedInCustomer) return;
   
@@ -500,8 +507,8 @@ async function submitCustomerOrder() {
 
     if (orderErr) throw orderErr;
 
-    // २. दुकानाचा मालक शोधून वीव्होच्या messages टेबलमध्ये स्वयंचलित मेसेज इन्सर्ट करणे
-    let storeUsername = lockedStoreUsername || 'abhinay_gandhi5151';
+    // २. वीव्होच्या चॅटमध्ये थेट डेटाबेस इन्सर्ट करून ऑर्डर पाठवणे
+    let storeUsername = lockedStoreUsername || 'abhinaygandhi5151';
     try {
       const { data: storeBiz } = await sb.from('businesses').select('owner_id, name').eq('id', currentBusinessId).maybeSingle();
       if (storeBiz && storeBiz.owner_id && loggedInCustomer) {
@@ -553,7 +560,7 @@ async function submitCustomerOrder() {
     closeModal('customer-cart-modal');
     updateCustomerCartUI();
 
-    // ३. वीव्हो चॅट टॅब/विंडो उघडणे
+    // ३. वीव्हो चॅट विंडो उघडणे
     localStorage.setItem('weavo_target_store', storeUsername);
     const orderMsg = encodeURIComponent(`📦 नवीन ऑनलाईन ऑर्डर:\n👤 ग्राहक: ${name}\n📱 मोबाईल: ${phone}\n🏠 डिलिव्हरी पत्ता: ${address}\n📧 ईमेल: ${loggedInCustomer.email}\n🛒 तपशील: ${itemsSummaryText}\n💰 एकूण: ₹${totalAmt}`);
     const weavoUrl = `https://arhammarketingme-prog.github.io/weavo/?store=${storeUsername}&prefill=${orderMsg}&customer_email=${encodeURIComponent(loggedInCustomer.email)}`;
