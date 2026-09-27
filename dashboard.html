@@ -225,7 +225,7 @@ body.store-locked-mode #app-nav { display: none !important; }
 </div>
 
 <script>
-// 🌟 पूर्णपणे सुरक्षित आणि एरर-फ्री Supabase क्लायंट इनिशिलायझेशन
+// 🌟 पूर्णपणे सुरक्षित आणि एरर-फ्री Supabase इनिशिलायझेशन
 const SUPABASE_URL = "https://xpsxbvmziibbrjnadrlm.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhwc3hidm16aWliYnJqbmFkcmxtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2OTY0NTcsImV4cCI6MjEwNDI3MjQ1N30.d-kDYwqFfxP_xfNHQHEYYYZQHr31-75u-UHxYznRP-A";
 
@@ -346,14 +346,14 @@ async function initDashboard() {
       const prodSection = document.getElementById('customer-products-section');
       if (prodSection) prodSection.style.display = 'block';
 
-      const cleanStoreName = lockedStoreUsername.replace(/_/g, ' ').trim().toLowerCase();
+      const cleanStoreSlug = lockedStoreUsername.toLowerCase().trim();
       
-      // स्टोअर सुरक्षितपणे शोधणे (try-catch ब्लॉकसह जेणेकरून 400/404 एरर पूर्णपणे टाळता येईल)
+      // स्टोअर सुरक्षितपणे शोधणे (कोणतीही 400 किंवा 404 एरर न येता)
       let storeInfo = null;
       try {
         const { data: stores, error: storeErr } = await sb.from('businesses').select('*');
         if (!storeErr && stores && stores.length > 0) {
-          storeInfo = stores.find(s => s.name && s.name.toLowerCase().replace(/\s+/g, '_') === cleanStoreName) || stores[0];
+          storeInfo = stores.find(s => s.name && s.name.toLowerCase().replace(/\s+/g, '_') === cleanStoreSlug) || stores[0];
         }
       } catch (e) {
         console.log("Store query handled gracefully:", e);
@@ -662,7 +662,7 @@ async function loadCustomerOrderHistory() {
     const historyRes = await query;
     const orders = historyRes.data;
     if (historyRes.error || !orders || orders.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="5" class="muted" style="text-align:center; padding:20px;">तुमची कोणतीही मागील ऑर्डर सापडली नाही.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="5" class="muted" style="text-align:center; padding:20px;">तुम्ही अजून कोणतीही ऑर्डर दिलेली नाही.</td></tr>';
       return;
     }
 
