@@ -83,10 +83,10 @@ tr:hover { background: #f8fafc; }
 <div class="dashboard-main-frame">
   <div class="erp-header">
     <div>
-      <h1 id="business-display-name">निखिल किराणा स्टोअर्स</h1>
+      <h1 id="business-display-name">लोड होत आहे...</h1>
       <span class="muted" id="header-sub-text">Universal Business Operating System & Local Marketplace</span>
       <div style="margin-top:6px; font-size:13.5px; font-weight:700; color:#34d399;" id="merchant-username-badge">
-        👤 वीव्हो चॅट युजरनेम: <span id="display-merchant-handle">@nikhil_kirana</span>
+        👤 वीव्हो चॅट युजरनेम: <span id="display-merchant-handle">@abhinaygandhi5151</span>
       </div>
     </div>
     <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
@@ -105,7 +105,6 @@ tr:hover { background: #f8fafc; }
     <button type="button" class="cust-nav-btn" onclick="openWeavoChat()">💬 दुकानदाराशी चॅट</button>
   </div>
 
-  <!-- 🌟 सर्व पूर्ण टॅब बटणे आणि AI बटण -->
   <div class="erp-tabs-bar" id="erp-navigation-tabs">
     <button type="button" class="erp-tab-btn active" onclick="switchTab('tab-overview')">📊 डॅशबोर्ड</button>
     <button type="button" class="erp-tab-btn" onclick="switchTab('tab-products')">📦 इन्व्हेंटरी व स्टॉक</button>
@@ -124,7 +123,6 @@ tr:hover { background: #f8fafc; }
     <button type="button" class="erp-tab-btn" onclick="switchTab('tab-settings')">⚙️ सेटिंग्स</button>
   </div>
 
-  <!-- TABS PANELS -->
   <div id="tab-overview" class="erp-tab-pane">
     <div id="customer-store-notice" style="display:none; background:#e0f2fe; border:1px solid #7dd3fc; padding:14px; border-radius:8px; margin-bottom:14px; color:#0369a1; font-weight:bold; text-align:center;">
       🔒 स्टोअर मोड: खालील प्रॉडक्ट्स निवडून कार्टमध्ये टाका आणि थेट दुकानदाराला ऑर्डर पाठवा.
@@ -290,7 +288,7 @@ let currentProducts = [];
 let lockedStoreUsername = null;
 let customerCart = [];
 let loggedInCustomer = null;
-let currentMerchantUsername = 'nikhil_kirana';
+let currentMerchantUsername = 'abhinaygandhi5151';
 let currentMerchantUserId = null;
 
 function switchTab(tabId) {
@@ -340,7 +338,8 @@ async function initDashboard() {
       var prodSec = document.getElementById('customer-products-section');
       if (prodSec) prodSec.style.display = 'block';
 
-      var storeTitle = "निखिल किराणा स्टोअर्स";
+      // 🌟 URL मधून आलेल्या store स्लगवरून (उदा. abhinaygandhi5151) डेटाबेस मधून अस्सल नाव आणि युजर आयडी फेच करणे
+      var storeTitle = "अभिनय स्टोअर्स";
       try {
         var bizRes = await sb.from('businesses').select('*').or('slug.eq.' + lockedStoreUsername + ',name.ilike.%' + lockedStoreUsername + '%').maybeSingle();
         if (bizRes.data) {
@@ -348,16 +347,21 @@ async function initDashboard() {
           if (bizRes.data.id) currentBusinessId = bizRes.data.id;
           if (bizRes.data.owner_id) currentMerchantUserId = bizRes.data.owner_id;
         } else {
-          var clean = lockedStoreUsername.replace(/[_]/g, ' ').trim();
-          storeTitle = clean.charAt(0).toUpperCase() + clean.slice(1) + " स्टोअर्स";
+          // profiles टेबलमधून शोधणे
+          var profRes = await sb.from('profiles').select('id, username').ilike('username', lockedStoreUsername).maybeSingle();
+          if (profRes.data) {
+            currentMerchantUserId = profRes.data.id;
+            storeTitle = "अभिनय गांधी स्टोअर्स";
+          }
         }
       } catch (e) {
-        storeTitle = "निखिल किराणा स्टोअर्स";
+        storeTitle = "अभिनय गांधी स्टोअर्स";
       }
 
       document.getElementById('business-display-name').textContent = storeTitle;
       document.getElementById('header-sub-text').textContent = 'अधिकृत ग्राहक स्टोअर व थेट संवाद मंच';
       document.getElementById('display-merchant-handle').textContent = '@' + lockedStoreUsername;
+      currentMerchantUsername = lockedStoreUsername;
 
       await loadCustomerStoreProducts();
     } else {
@@ -366,8 +370,8 @@ async function initDashboard() {
         return;
       }
 
-      var merchantHandle = sessionUser.email ? sessionUser.email.split('@')[0] : 'nikhil_kirana';
-      var merchantStoreName = "निखिल किराणा स्टोअर्स";
+      var merchantHandle = sessionUser.email ? sessionUser.email.split('@')[0] : 'abhinaygandhi5151';
+      var merchantStoreName = "अभिनय गांधी स्टोअर्स";
       currentMerchantUserId = sessionUser.id;
 
       try {
@@ -380,8 +384,6 @@ async function initDashboard() {
         if (bizRes.data) {
           if (bizRes.data.name) merchantStoreName = bizRes.data.name;
           if (bizRes.data.id) currentBusinessId = bizRes.data.id;
-        } else {
-          merchantStoreName = merchantHandle.charAt(0).toUpperCase() + merchantHandle.slice(1) + " स्टोअर्स";
         }
       } catch (e) {}
 
@@ -408,13 +410,13 @@ function loginCustomerWithGoogle() {
 }
 
 function shareStoreOnWhatsApp() {
-  var storeSlug = lockedStoreUsername || currentMerchantUsername || 'nikhil_kirana';
+  var storeSlug = lockedStoreUsername || currentMerchantUsername || 'abhinaygandhi5151';
   var shareUrl = window.location.origin + window.location.pathname + '?store=' + storeSlug;
   window.open('https://api.whatsapp.com/send?text=' + encodeURIComponent('आमच्या दुकानाला भेट द्या: ' + shareUrl), '_blank');
 }
 
 function openWeavoChat() {
-  var storeUsername = lockedStoreUsername || currentMerchantUsername || 'nikhil_kirana';
+  var storeUsername = lockedStoreUsername || currentMerchantUsername || 'abhinaygandhi5151';
   var customerEmail = (loggedInCustomer && loggedInCustomer.email) ? loggedInCustomer.email : localStorage.getItem('global_unified_email');
   window.open('https://arhammarketingme-prog.github.io/weavo/?store=' + storeUsername + (customerEmail ? ('&customer_email=' + encodeURIComponent(customerEmail)) : ''), '_blank');
 }
@@ -486,7 +488,7 @@ function openCustomerCartModal() {
   openModal('customer-cart-modal');
 }
 
-// 🌟 सुरक्षित आणि सेफ ऑर्डर सबमिट व वीव्हो ब्रिजिंग (404 एररमुक्त)
+// 🌟 सुरक्षित आणि एररमुक्त ऑर्डर सबमिट व वीव्हो ब्रिजिंग
 async function submitCustomerOrder() {
   var name = document.getElementById('cust-order-name').value.trim();
   var phone = document.getElementById('cust-order-phone').value.trim();
@@ -498,7 +500,6 @@ async function submitCustomerOrder() {
   var itemsSummaryText = customerCart.map(function(i) { return i.name + ' (' + i.qty + ' नग)'; }).join(', ');
 
   try {
-    // १. AllERP च्या orders टेबलमध्ये इन्सर्ट करणे
     await sb.from('orders').insert({
       business_id: currentBusinessId,
       customer_name: name,
@@ -509,39 +510,46 @@ async function submitCustomerOrder() {
       status: 'pending'
     });
 
-    // २. Weavo च्या chat/messages मध्ये थेट सिंक करणे (सेफ ट्राय-कॅचसह)
-    var storeUsername = lockedStoreUsername || currentMerchantUsername || 'nikhil_kirana';
+    var storeUsername = lockedStoreUsername || currentMerchantUsername || 'abhinaygandhi5151';
     var customerUserId = loggedInCustomer ? loggedInCustomer.id : null;
     
-    if (customerUserId && currentMerchantUserId) {
+    if (customerUserId) {
       try {
-        var targetConvId = null;
-        var { data: myConvs } = await sb.from('conversation_members').select('conversation_id').eq('user_id', customerUserId);
-        var myIds = (myConvs || []).map(function(r) { return r.conversation_id; });
-        
-        if (myIds.length) {
-          var { data: theirConvs } = await sb.from('conversation_members').select('conversation_id').eq('user_id', currentMerchantUserId).in('conversation_id', myIds);
-          if (theirConvs && theirConvs.length) targetConvId = theirConvs[0].conversation_id;
+        var targetMerchantId = currentMerchantUserId;
+        if (!targetMerchantId) {
+          var { data: prof } = await sb.from('profiles').select('id').ilike('username', storeUsername).maybeSingle();
+          if (prof) targetMerchantId = prof.id;
         }
 
-        if (!targetConvId) {
-          var { data: newConv } = await sb.from('conversations').insert({ type: 'direct', created_by: customerUserId }).select().single();
-          if (newConv) {
-            targetConvId = newConv.id;
-            await sb.from('conversation_members').insert([
-              { conversation_id: targetConvId, user_id: customerUserId },
-              { conversation_id: targetConvId, user_id: currentMerchantUserId }
-            ]);
+        if (targetMerchantId) {
+          var targetConvId = null;
+          var { data: myConvs } = await sb.from('conversation_members').select('conversation_id').eq('user_id', customerUserId);
+          var myIds = (myConvs || []).map(function(r) { return r.conversation_id; });
+          
+          if (myIds.length) {
+            var { data: theirConvs } = await sb.from('conversation_members').select('conversation_id').eq('user_id', targetMerchantId).in('conversation_id', myIds);
+            if (theirConvs && theirConvs.length) targetConvId = theirConvs[0].conversation_id;
           }
-        }
 
-        if (targetConvId) {
-          var orderMsgText = '📦 नवीन ऑनलाईन ऑर्डर:\n👤 ग्राहक: ' + name + '\n📱 मोबाईल: ' + phone + '\n🏠 पत्ता: ' + address + '\n🛒 तपशील: ' + itemsSummaryText + '\n💰 एकूण: ₹' + totalAmt;
-          await sb.from('messages').insert({
-            conversation_id: targetConvId,
-            sender_id: customerUserId,
-            content: orderMsgText
-          });
+          if (!targetConvId) {
+            var { data: newConv } = await sb.from('conversations').insert({ type: 'direct', created_by: customerUserId }).select().single();
+            if (newConv) {
+              targetConvId = newConv.id;
+              await sb.from('conversation_members').insert([
+                { conversation_id: targetConvId, user_id: customerUserId },
+                { conversation_id: targetConvId, user_id: targetMerchantId }
+              ]);
+            }
+          }
+
+          if (targetConvId) {
+            var orderMsgText = '📦 नवीन ऑनलाईन ऑर्डर:\n👤 ग्राहक: ' + name + '\n📱 मोबाईल: ' + phone + '\n🏠 पत्ता: ' + address + '\n🛒 तपशील: ' + itemsSummaryText + '\n💰 एकूण: ₹' + totalAmt;
+            await sb.from('messages').insert({
+              conversation_id: targetConvId,
+              sender_id: customerUserId,
+              content: orderMsgText
+            });
+          }
         }
       } catch (syncErr) {
         console.log("Bridge sync note:", syncErr);
