@@ -35,7 +35,6 @@ body.store-locked-mode #app-nav { display: none !important; }
 .google-login-customer-btn { background: #ffffff; color: var(--text-main); border: 1px solid var(--border-color); padding: 8px 14px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12.5px; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
 .google-login-customer-btn:hover { background: #f1f5f9; }
 
-/* 🌟 AI आणि ॲक्शन बटणे */
 .ai-assistant-btn { background: linear-gradient(135deg, #8b5cf6, #6366f1); color: #fff; padding: 8px 14px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12.5px; display: inline-flex; align-items: center; gap: 5px; }
 .primary-action-btn { background: var(--primary); color: #fff; padding: 8px 14px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12.5px; display: inline-flex; align-items: center; gap: 5px; }
 
@@ -145,7 +144,7 @@ body.store-locked-mode #app-nav { display: none !important; }
     </div>
   </div>
 
-  <!-- TAB 2: PRODUCTS & INVENTORY (🌟 आयटम ॲड व ग्लोबल सर्चसह परिपूर्ण इन्व्हेंटरी) -->
+  <!-- TAB 2: PRODUCTS & INVENTORY -->
   <div id="tab-products" class="erp-tab-pane" style="display:none;">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
       <h2 style="color:var(--primary); margin:0; font-size:18px;">📦 इन्व्हेंटरी व स्टॉक व्यवस्थापन</h2>
@@ -220,7 +219,7 @@ body.store-locked-mode #app-nav { display: none !important; }
 
 </div>
 
-<!-- ➕ नवीन आयटम ॲड करण्याचे मोडल (Add Product Modal) -->
+<!-- ➕ नवीन आयटम ॲड करण्याचे मोडल -->
 <div id="add-product-modal" class="modal-overlay">
   <div class="modal-content">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
@@ -251,7 +250,7 @@ body.store-locked-mode #app-nav { display: none !important; }
   </div>
 </div>
 
-<!-- 🛒 कार्ट व डिटेल्स मोडल -->
+<!-- 🛒 कार्ट मोडल -->
 <div id="customer-cart-modal" class="modal-overlay">
   <div class="modal-content">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
@@ -318,12 +317,20 @@ function openModal(id) { document.getElementById(id).style.display = 'flex'; }
 function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 function openAddProductModal() { openModal('add-product-modal'); }
 function openGlobalSearchModal() { alert('🌐 ग्लोबल डिक्शनरी सर्च वैशिष्ट्य लवकरच लोड होत आहे.'); }
-function openAiAssistantModal() { alert('✨ AI असिस्टंट सध्या सक्रिय आहे.'); }
+function openAiAssistantModal() { alert('✨ AI असिस्टंट सक्रिय आहे.'); }
 
+// 🌟 गुगल लॉगिन समस्या सोडवणारी अत्यंत सुरक्षित आणि पक्की ऑथेंटिकेशन यंत्रणा
 async function initDashboard() {
   try {
     const urlParams = new URLSearchParams(window.location.search);
     lockedStoreUsername = urlParams.get('store');
+
+    // 1. प्रथम Supabase चे चालू सेशन तपासणे (स्टोअर मोड असो वा डॅशबोर्ड असो)
+    const { data: { session } } = await sb.auth.getSession();
+    if (session && session.user) {
+      loggedInCustomer = session.user;
+      localStorage.setItem('global_unified_email', session.user.email);
+    }
 
     if (lockedStoreUsername) {
       document.body.classList.add('store-locked-mode');
@@ -337,13 +344,9 @@ async function initDashboard() {
       document.getElementById('customer-store-notice').style.display = 'block';
       document.getElementById('customer-products-section').style.display = 'block';
 
-      const { data: { user } } = await sb.auth.getUser();
-      if (user) {
-        loggedInCustomer = user;
-        localStorage.setItem('global_unified_email', user.email);
-        
+      if (loggedInCustomer) {
         const btnText = document.getElementById('google-login-btn-text');
-        if (btnText) btnText.textContent = '👤 ' + (user.user_metadata?.full_name || user.email);
+        if (btnText) btnText.textContent = '👤 ' + (loggedInCustomer.user_metadata?.full_name || loggedInCustomer.email);
       }
 
       const cleanStoreName = lockedStoreUsername.replace(/_/g, ' ').trim();
@@ -356,15 +359,9 @@ async function initDashboard() {
         await loadCustomerStoreProducts();
       }
     } else {
-      if (typeof sb === 'undefined' || !sb.auth) return;
-      const { data: { user } } = await sb.auth.getUser();
-      if (!user) { window.location.href = 'login.html'; return; }
+      if (!loggedInCustomer) { window.location.href = 'login.html'; return; }
       
-      if (user.email) {
-        localStorage.setItem('global_unified_email', user.email);
-      }
-      
-      const { data: businesses } = await sb.from('businesses').select('*').eq('owner_id', user.id);
+      const { data: businesses } = await sb.from('businesses').select('*').eq('owner_id', loggedInCustomer.id);
       if (businesses && businesses.length > 0) {
         currentBusinessId = businesses[0].id;
         document.getElementById('business-display-name').textContent = businesses[0].name;
@@ -377,14 +374,15 @@ async function initDashboard() {
   } catch (err) { console.error('Init error:', err); }
 }
 
+// 🌟 व्हॉट्सॲपलिंक किंवा स्टोअर मोडमधून गुगल लॉगिन सुरक्षितपणे ट्रिगर करणे
 async function loginCustomerWithGoogle() {
+  const currentUrl = window.location.origin + window.location.pathname + (lockedStoreUsername ? `?store=${lockedStoreUsername}` : '');
   await sb.auth.signInWithOAuth({
     provider: 'google',
-    options: { redirectTo: window.location.href }
+    options: { redirectTo: currentUrl }
   });
 }
 
-// 🌟 दुकानदाराचे प्रॉडक्ट्स इन्व्हेंटरी टेबलमध्ये लोड करणे (निखिल किराणा आयटमसह)
 async function loadMerchantProducts() {
   if (!currentBusinessId) return;
   const tbody = document.getElementById('products-table-body');
@@ -405,7 +403,6 @@ async function loadMerchantProducts() {
   `).join('');
 }
 
-// 🌟 नवीन आयटम सेव्ह करणे
 async function saveNewProductToInventory() {
   const name = document.getElementById('new-prod-name').value.trim();
   const selling = parseFloat(document.getElementById('new-prod-selling').value) || 0;
