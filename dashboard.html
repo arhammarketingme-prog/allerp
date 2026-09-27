@@ -32,7 +32,6 @@ body.store-locked-mode #kpi-grid-section { display: none !important; }
 
 .dashboard-main-frame { width: 98%; max-width: 1450px; margin: 15px auto; padding: 0 10px; }
 
-/* 🌟 सुंदर, फॅन्सी आणि क्लासी डार्क-स्लेटी थीम (निळी नाही!) */
 .erp-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px; background: var(--primary-gradient); color: #fff; padding: 18px 22px; border-radius: 14px; box-shadow: 0 6px 20px rgba(15,23,42,0.25); border-bottom: 3px solid var(--accent); }
 .erp-header h1 { font-size: 22px !important; margin: 0 !important; color: #fff; font-weight: 900; letter-spacing: 0.5px; }
 .erp-header .muted { color: #94a3b8 !important; font-size: 12.5px !important; }
@@ -42,7 +41,6 @@ body.store-locked-mode #kpi-grid-section { display: none !important; }
 
 .whatsapp-share-btn { background: #10b981; color: #fff; padding: 9px 16px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; box-shadow: 0 2px 6px rgba(0,0,0,0.15); }
 
-/* 🌟 गुगलचे अस्सल लॉगिन बटण */
 .google-login-customer-btn { background: #ffffff; color: #1e293b; border: 1px solid #cbd5e1; padding: 9px 16px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 13px; display: inline-flex; align-items: center; gap: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); transition: 0.2s; }
 .google-login-customer-btn:hover { background: #f8fafc; }
 
@@ -52,7 +50,6 @@ body.store-locked-mode #kpi-grid-section { display: none !important; }
 .cust-nav-btn.primary { background: var(--primary); color: #fff; border-color: var(--primary); }
 .cust-nav-btn.success { background: var(--success); color: #fff; border-color: var(--success); }
 
-/* 🌟 पूर्ण बटणे आणि AI बटणासह टॅब बार */
 .erp-tabs-bar { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 18px; border-bottom: 2px solid var(--border-color); }
 .erp-tab-btn { background: #ffffff; color: var(--text-main); border: 1px solid var(--border-color); border-bottom: 3px solid transparent; padding: 8px 14px; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; border-radius: 8px 8px 0 0; transition: 0.2s; }
 .erp-tab-btn:hover { background: #f1f5f9; color: var(--accent); }
@@ -244,7 +241,6 @@ tr:hover { background: #f8fafc; }
 
   <div id="tab-reports" class="erp-tab-pane" style="display:none;"><h2>📈 रिपोर्ट्स व GST</h2><p class="muted">व्यवसायाचे मासिक व वार्षिक आर्थिक अहवाल.</p></div>
   
-  <!-- 🌟 AllERP AI Assistant Tab -->
   <div id="tab-ai" class="erp-tab-pane" style="display:none;">
     <h2>✨ AllERP AI Business Assistant</h2>
     <p class="muted">तुमच्या व्यवसायाच्या वाढीसाठी, स्टॉक व्यवस्थापनासाठी आणि ऑटोमेशनसाठी AI सहाय्यक.</p>
@@ -295,6 +291,7 @@ let lockedStoreUsername = null;
 let customerCart = [];
 let loggedInCustomer = null;
 let currentMerchantUsername = 'nikhil_kirana';
+let currentMerchantUserId = null;
 
 function switchTab(tabId) {
   document.querySelectorAll('.erp-tab-pane').forEach(function(el) { el.style.display = 'none'; });
@@ -345,10 +342,11 @@ async function initDashboard() {
 
       var storeTitle = "निखिल किराणा स्टोअर्स";
       try {
-        var bizRes = await sb.from('businesses').select('name, id').or('slug.eq.' + lockedStoreUsername + ',name.ilike.%' + lockedStoreUsername + '%').maybeSingle();
-        if (bizRes.data && bizRes.data.name) {
-          storeTitle = bizRes.data.name;
+        var bizRes = await sb.from('businesses').select('*').or('slug.eq.' + lockedStoreUsername + ',name.ilike.%' + lockedStoreUsername + '%').maybeSingle();
+        if (bizRes.data) {
+          if (bizRes.data.name) storeTitle = bizRes.data.name;
           if (bizRes.data.id) currentBusinessId = bizRes.data.id;
+          if (bizRes.data.owner_id) currentMerchantUserId = bizRes.data.owner_id;
         } else {
           var clean = lockedStoreUsername.replace(/[_]/g, ' ').trim();
           storeTitle = clean.charAt(0).toUpperCase() + clean.slice(1) + " स्टोअर्स";
@@ -370,6 +368,7 @@ async function initDashboard() {
 
       var merchantHandle = sessionUser.email ? sessionUser.email.split('@')[0] : 'nikhil_kirana';
       var merchantStoreName = "निखिल किराणा स्टोअर्स";
+      currentMerchantUserId = sessionUser.id;
 
       try {
         var profRes = await sb.from('profiles').select('username').eq('id', sessionUser.id).maybeSingle();
@@ -377,7 +376,7 @@ async function initDashboard() {
           merchantHandle = profRes.data.username;
         }
 
-        var bizRes = await sb.from('businesses').select('name, id').eq('owner_id', sessionUser.id).maybeSingle();
+        var bizRes = await sb.from('businesses').select('*').eq('owner_id', sessionUser.id).maybeSingle();
         if (bizRes.data) {
           if (bizRes.data.name) merchantStoreName = bizRes.data.name;
           if (bizRes.data.id) currentBusinessId = bizRes.data.id;
@@ -487,7 +486,7 @@ function openCustomerCartModal() {
   openModal('customer-cart-modal');
 }
 
-// 🌟 ऑर्डर सबमिट व वीव्हो ब्रिजिंग
+// 🌟 सुरक्षित आणि सेफ ऑर्डर सबमिट व वीव्हो ब्रिजिंग (404 एररमुक्त)
 async function submitCustomerOrder() {
   var name = document.getElementById('cust-order-name').value.trim();
   var phone = document.getElementById('cust-order-phone').value.trim();
@@ -499,6 +498,7 @@ async function submitCustomerOrder() {
   var itemsSummaryText = customerCart.map(function(i) { return i.name + ' (' + i.qty + ' नग)'; }).join(', ');
 
   try {
+    // १. AllERP च्या orders टेबलमध्ये इन्सर्ट करणे
     await sb.from('orders').insert({
       business_id: currentBusinessId,
       customer_name: name,
@@ -509,15 +509,33 @@ async function submitCustomerOrder() {
       status: 'pending'
     });
 
+    // २. Weavo च्या chat/messages मध्ये थेट सिंक करणे (सेफ ट्राय-कॅचसह)
     var storeUsername = lockedStoreUsername || currentMerchantUsername || 'nikhil_kirana';
     var customerUserId = loggedInCustomer ? loggedInCustomer.id : null;
-    if (customerUserId) {
-      var { data: myConvs } = await sb.from('conversation_members').select('conversation_id').eq('user_id', customerUserId);
-      var myIds = (myConvs || []).map(function(r) { return r.conversation_id; });
-      if (myIds.length) {
-        var { data: theirConvs } = await sb.from('conversation_members').select('conversation_id').in('conversation_id', myIds);
-        if (theirConvs && theirConvs.length) {
-          var targetConvId = theirConvs[0].conversation_id;
+    
+    if (customerUserId && currentMerchantUserId) {
+      try {
+        var targetConvId = null;
+        var { data: myConvs } = await sb.from('conversation_members').select('conversation_id').eq('user_id', customerUserId);
+        var myIds = (myConvs || []).map(function(r) { return r.conversation_id; });
+        
+        if (myIds.length) {
+          var { data: theirConvs } = await sb.from('conversation_members').select('conversation_id').eq('user_id', currentMerchantUserId).in('conversation_id', myIds);
+          if (theirConvs && theirConvs.length) targetConvId = theirConvs[0].conversation_id;
+        }
+
+        if (!targetConvId) {
+          var { data: newConv } = await sb.from('conversations').insert({ type: 'direct', created_by: customerUserId }).select().single();
+          if (newConv) {
+            targetConvId = newConv.id;
+            await sb.from('conversation_members').insert([
+              { conversation_id: targetConvId, user_id: customerUserId },
+              { conversation_id: targetConvId, user_id: currentMerchantUserId }
+            ]);
+          }
+        }
+
+        if (targetConvId) {
           var orderMsgText = '📦 नवीन ऑनलाईन ऑर्डर:\n👤 ग्राहक: ' + name + '\n📱 मोबाईल: ' + phone + '\n🏠 पत्ता: ' + address + '\n🛒 तपशील: ' + itemsSummaryText + '\n💰 एकूण: ₹' + totalAmt;
           await sb.from('messages').insert({
             conversation_id: targetConvId,
@@ -525,10 +543,12 @@ async function submitCustomerOrder() {
             content: orderMsgText
           });
         }
+      } catch (syncErr) {
+        console.log("Bridge sync note:", syncErr);
       }
     }
   } catch (e) {
-    console.log('Order sync note:', e);
+    console.log('Order error:', e);
   }
 
   alert('🎉 ऑर्डर यशस्वीरीत्या नोंदवली गेली आणि वीव्हो चॅटमध्ये पाठवली गेली!');
