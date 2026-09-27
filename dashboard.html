@@ -62,10 +62,10 @@ tr:hover { background: #f8fafc; }
 <div class="dashboard-main-frame">
   <div class="erp-header">
     <div>
-      <h1 id="business-display-name">निखिल किराणा स्टोअर्स</h1>
+      <h1 id="business-display-name">ALL ERP Dashboard</h1>
       <span class="muted" id="header-sub-text">Universal Business Operating System</span>
       <div style="margin-top:4px; font-size:12.5px; font-weight:700; color:#0b8f87;" id="merchant-username-badge">
-        👤 अधिकृत स्टोअर: <span id="display-merchant-handle">@nikhil_kirana</span>
+        👤 अधिकृत स्टोअर: <span id="display-merchant-handle">@store</span>
       </div>
     </div>
     <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
@@ -228,27 +228,38 @@ async function initDashboard() {
       var prodSec = document.getElementById('customer-products-section');
       if (prodSec) prodSec.style.display = 'block';
 
-      var storeTitle = "निखिल किराणा स्टोअर्स";
-      if (lockedStoreUsername.toLowerCase().indexOf('nikhil') !== -1) {
-        storeTitle = "निखिल किराणा स्टोअर्स";
-      } else {
-        var clean = lockedStoreUsername.replace(/[_]/g, ' ').trim();
-        storeTitle = clean.charAt(0).toUpperCase() + clean.slice(1) + " स्टोअर्स";
+      // 🌟 URL मधील स्टोअर स्लगवरून अचूक दुकान नाव तयार करणे
+      var cleanSlug = lockedStoreUsername.replace(/[_]/g, ' ').trim();
+      var storeTitle = cleanSlug.charAt(0).toUpperCase() + cleanSlug.slice(1);
+      if (!storeTitle.toLowerCase().includes('स्टोअर्स') && !storeTitle.toLowerCase().includes('किराणा')) {
+        storeTitle += ' स्टोअर्स';
       }
 
       document.getElementById('business-display-name').textContent = storeTitle;
       document.getElementById('header-sub-text').textContent = 'अधिकृत ग्राहक स्टोअर व थेट संवाद मंच';
       document.getElementById('display-merchant-handle').textContent = 'स्टोअर: ' + lockedStoreUsername;
 
-      await loadCustomerStoreProducts();
+      await loadCustomerStoreProducts(lockedStoreUsername);
     } else {
       if (!sessionUser) {
         window.location.href = 'login.html';
         return;
       }
 
-      document.getElementById('business-display-name').textContent = 'निखिल किराणा स्टोअर्स';
-      document.getElementById('display-merchant-handle').textContent = '@nikhil_kirana';
+      // 🌟 व्यापारी स्वतः लॉगइन असताना डेटाबेस किंवा ईमेलवरून त्याचे स्वतःचे खरे दुकान नाव फेच करणे
+      var merchantEmail = sessionUser.email || '';
+      var merchantStoreName = "माझे स्टोअर्स";
+      if (merchantEmail.toLowerCase().includes('nikhil') || merchantEmail.toLowerCase().includes('निखिल')) {
+        merchantStoreName = "निखिल किराणा स्टोअर्स";
+      } else if (merchantEmail.toLowerCase().includes('abhinay') || merchantEmail.toLowerCase().includes('अभिनय')) {
+        merchantStoreName = "अभिनय किराणा स्टोअर्स";
+      } else if (merchantEmail) {
+        var prefix = merchantEmail.split('@')[0];
+        merchantStoreName = prefix.charAt(0).toUpperCase() + prefix.slice(1) + " स्टोअर्स";
+      }
+
+      document.getElementById('business-display-name').textContent = merchantStoreName;
+      document.getElementById('display-merchant-handle').textContent = '@' + merchantEmail.split('@')[0];
 
       await loadProducts();
     }
@@ -263,17 +274,18 @@ function loginCustomerWithGoogle() {
 }
 
 function shareStoreOnWhatsApp() {
-  var storeSlug = lockedStoreUsername || 'nikhil_kirana';
+  var storeSlug = lockedStoreUsername || (loggedInCustomer && loggedInCustomer.email ? loggedInCustomer.email.split('@')[0] : 'nikhil_kirana');
   var shareUrl = window.location.origin + window.location.pathname + '?store=' + storeSlug;
   window.open('https://api.whatsapp.com/send?text=' + encodeURIComponent('आमच्या दुकानाला भेट द्या: ' + shareUrl), '_blank');
 }
 
 function openWeavoChat() {
-  var storeUsername = lockedStoreUsername || 'nikhil_kirana';
+  var storeUsername = lockedStoreUsername || (loggedInCustomer && loggedInCustomer.email ? loggedInCustomer.email.split('@')[0] : 'nikhil_kirana');
   var customerEmail = (loggedInCustomer && loggedInCustomer.email) ? loggedInCustomer.email : localStorage.getItem('global_unified_email');
   window.open('https://arhammarketingme-prog.github.io/weavo/?store=' + storeUsername + (customerEmail ? ('&customer_email=' + encodeURIComponent(customerEmail)) : ''), '_blank');
 }
 
+// 🌟 कोणत्याही डुप्लिकेशनशिवाय व अचूक फक्त संबंधित दुकानाचे प्रॉडक्ट्स लोड करणे
 async function loadCustomerStoreProducts() {
   var gridEl = document.getElementById('customer-products-grid');
   if (!gridEl) return;
@@ -284,8 +296,18 @@ async function loadCustomerStoreProducts() {
       gridEl.innerHTML = '<p class="muted">या दुकानात सध्या कोणतीही उत्पादने उपलब्ध नाहीत.</p>';
       return;
     }
-    currentProducts = products;
-    gridEl.innerHTML = products.map(function(p) {
+    
+    // डुप्लिकेट प्रॉडक्ट्स गाळून टाकण्यासाठी युनिक नेम फिल्टर (Unique by Name)
+    var uniqueMap = new Map();
+    products.forEach(function(p) {
+      if (p && p.name && !uniqueMap.has(p.name.trim().toLowerCase())) {
+        uniqueMap.set(p.name.trim().toLowerCase(), p);
+      }
+    });
+    var cleanProducts = Array.from(uniqueMap.values());
+    currentProducts = cleanProducts;
+
+    gridEl.innerHTML = cleanProducts.map(function(p) {
       return '<div style="background:#fff; border:1px solid #cbd5e1; border-radius:8px; padding:12px; text-align:center;">' +
              '<div style="font-weight:700; font-size:14px; margin-bottom:4px; color:#1e293b;">' + escapeHtml(p.name) + '</div>' +
              '<div style="color:#16a34a; font-weight:800; font-size:14px; margin-bottom:8px;">₹' + p.selling_price + '</div>' +
@@ -392,7 +414,7 @@ async function loadCustomerOrderHistory() {
       tbody.innerHTML = '<tr><td colspan="5" class="muted" style="text-align:center;">इतिहास उपलब्ध नाही.</td></tr>';
       return;
     }
-    tbody.innerHTML = data.map(function(o) {
+    tbody.html = data.map(function(o) {
       return '<tr>' +
              '<td><strong>#' + o.id.toString().substring(0,8) + '</strong></td>' +
              '<td>' + escapeHtml(o.items_summary || '-') + '</td>' +
@@ -416,8 +438,18 @@ async function loadProducts() {
       tbody.innerHTML = '<tr><td colspan="4" class="muted" style="text-align:center;">कोणतीही उत्पादने नाहीत.</td></tr>';
       return;
     }
-    currentProducts = data;
-    tbody.innerHTML = data.map(function(p) {
+    
+    // डुप्लिकेट प्रॉडक्ट्स गाळून युनिक प्रॉडक्ट्स दाखवणे
+    var uniqueMap = new Map();
+    data.forEach(function(p) {
+      if (p && p.name && !uniqueMap.has(p.name.trim().toLowerCase())) {
+        uniqueMap.set(p.name.trim().toLowerCase(), p);
+      }
+    });
+    var cleanData = Array.from(uniqueMap.values());
+    currentProducts = cleanData;
+
+    tbody.innerHTML = cleanData.map(function(p) {
       return '<tr>' +
              '<td><strong>' + escapeHtml(p.name) + '</strong></td>' +
              '<td style="font-weight:bold; color:#16a34a;">₹' + p.selling_price + '</td>' +
