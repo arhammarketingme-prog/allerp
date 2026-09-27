@@ -36,7 +36,7 @@ body.store-locked-mode #app-nav { display: none !important; }
 .cust-nav-btn.success { background: var(--success); color: #fff; border-color: var(--success); }
 
 .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 99999 !important; align-items: center; justify-content: center; }
-.modal-content { background: var(--card-bg); border-radius: 10px; width: 95%; max-width: 500px; padding: 24px; box-shadow: 0 15px 35px rgba(0,0,0,0.25); border: 1px solid var(--border-color); }
+.modal-content { background: var(--card-bg); border-radius: 10px; width: 95%; max-width: 520px; padding: 24px; box-shadow: 0 15px 35px rgba(0,0,0,0.25); border: 1px solid var(--border-color); max-height: 90vh; overflow-y: auto; }
 
 .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 16px; }
 .kpi-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
@@ -94,7 +94,7 @@ body.store-locked-mode #app-nav { display: none !important; }
   <div class="erp-tabs-bar" id="erp-navigation-tabs">
     <button type="button" class="erp-tab-btn active" onclick="switchTab('tab-overview')">📊 डॅशबोर्ड</button>
     <button type="button" class="erp-tab-btn" onclick="switchTab('tab-products')">📦 इन्व्हेंटरी व स्टॉक</button>
-    <button type="button" class="erp-tab-btn" onclick="switchTab('tab-sales')">💰 विक्री व इनव्हॉ이스</button>
+    <button type="button" class="erp-tab-btn" onclick="switchTab('tab-sales')">💰 विक्री व इनव्हॉइस</button>
     <button type="button" class="erp-tab-btn" onclick="switchTab('tab-purchase')">🛒 खरेदी</button>
     <button type="button" class="erp-tab-btn" onclick="switchTab('tab-crm')">👥 CRM व ग्राहक</button>
     <button type="button" class="erp-tab-btn" onclick="switchTab('tab-khata')">🧾 उधार खाता (Khata)</button>
@@ -133,25 +133,32 @@ body.store-locked-mode #app-nav { display: none !important; }
     </div>
   </div>
 
-  <!-- TAB 2: PRODUCTS & INVENTORY -->
+  <!-- TAB 2: PRODUCTS & INVENTORY (बारकोड स्कॅनर व ग्लोबल डिक्शनरी सर्चसह) -->
   <div id="tab-products" class="erp-tab-pane" style="display:none;">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
       <h2 style="color:var(--primary); margin:0; font-size:18px;">📦 इन्व्हेंटरी व स्टॉक व्यवस्थापन</h2>
-      <div style="display:flex; gap:8px;">
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
         <button type="button" class="primary-action-btn" onclick="openAddProductModal()">➕ नवीन आयटम ॲड करा</button>
         <button type="button" class="weavo-header-btn" onclick="openGlobalSearchModal()">🌐 ग्लोबल डिक्शनरी मधून शोधा</button>
+        <button type="button" class="ai-assistant-btn" onclick="startBarcodeScanner()">📷 बारकोड स्कॅन करा</button>
       </div>
     </div>
     
+    <!-- बारकोड स्कॅनर व्हिडिओ प्रीव्ह्यू डिव्ह -->
+    <div id="barcode-scanner-container" style="display:none; margin-bottom:16px; width:100%; max-width:320px; background:#000; border-radius:8px; overflow:hidden;">
+      <div id="reader"></div>
+      <button type="button" onclick="stopBarcodeScanner()" style="width:100%; background:#ef4444; color:#fff; border:none; padding:8px; font-weight:bold; cursor:pointer;">स्कॅनर बंद करा</button>
+    </div>
+
     <div style="background:#fff; border:1px solid var(--border-color); border-radius:8px; padding:16px;">
       <table style="width:100%; border-collapse:collapse;">
         <thead>
           <tr style="text-align:left; border-bottom:2px solid var(--border-color);">
-            <th>इमेज</th><th>उत्पादन (Item Name)</th><th>विक्री दर</th><th>खरेदी दर</th><th>स्टॉक</th><th>कृती</th>
+            <th>इमेज</th><th>उत्पादन (Item Name)</th><th>विक्री दर</th><th>खरेदी दर</th><th>स्टॉक</th><th>बारकोड</th><th>कृती</th>
           </tr>
         </thead>
         <tbody id="products-table-body">
-          <tr><td colspan="6" class="muted" style="text-align:center; padding:20px;">इन्व्हेंटरी लोड होत आहे...</td></tr>
+          <tr><td colspan="7" class="muted" style="text-align:center; padding:20px;">इन्व्हेंटरी लोड होत आहे...</td></tr>
         </tbody>
       </table>
     </div>
@@ -204,6 +211,20 @@ body.store-locked-mode #app-nav { display: none !important; }
     </div>
   </div>
 
+</div>
+
+<!-- 🌐 ग्लोबल डिक्शनरी सर्च मोडल (मॅगी, टाटा इ. शोधण्यासाठी) -->
+<div id="global-search-modal" class="modal-overlay">
+  <div class="modal-content">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+      <h3 style="margin:0; color:var(--primary);">🌐 ग्लोबल डिक्शनरी मधून प्रॉडक्ट शोधा</h3>
+      <button type="button" onclick="closeModal('global-search-modal')" style="background:transparent; border:none; font-size:16px; cursor:pointer; font-weight:bold; color:var(--text-muted);">✕</button>
+    </div>
+    <input type="text" id="global-search-input" placeholder="प्रॉडक्टचे नाव लिहा (उदा. Maggi, Tata Salt, Biscuits)..." oninput="searchGlobalCatalog(this.value)" style="width:100%; padding:10px; border:1px solid var(--border-color); border-radius:6px; font-size:14px; margin-bottom:12px;">
+    <div id="global-search-results" style="max-height:250px; overflow-y:auto; display:flex; flex-direction:column; gap:8px;">
+      <p class="muted" style="text-align:center;">शोधण्यासाठी नाव लिहा...</p>
+    </div>
+  </div>
 </div>
 
 <!-- ➕ नवीन आयटम ॲड मोडल -->
@@ -296,6 +317,7 @@ let lockedStoreUsername = null;
 let customerCart = [];
 let loggedInCustomer = null;
 let merchantPhoneNo = "9876543210";
+let html5QrCode = null;
 
 function switchTab(tabId) {
   document.querySelectorAll('.erp-tab-pane').forEach(el => el.style.display = 'none');
@@ -303,7 +325,7 @@ function switchTab(tabId) {
   const target = document.getElementById(tabId);
   if (target) target.style.display = 'block';
   document.querySelectorAll('.erp-tab-btn').forEach(btn => {
-    if (btn.getAttribute('onclick') && btn.getAttribute('onclick').includes(tabId)) btn.classList.add('active');
+    if (btn.getAttribute('onclick') && btn.getAttribute('onclick'].includes(tabId)) btn.classList.add('active');
   });
   if (tabId === 'tab-products') loadMerchantProducts();
   if (tabId === 'tab-orders') loadOnlineOrders();
@@ -313,8 +335,98 @@ function switchTab(tabId) {
 function openModal(id) { document.getElementById(id).style.display = 'flex'; }
 function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 function openAddProductModal() { openModal('add-product-modal'); }
-function openGlobalSearchModal() { alert('🌐 ग्लोबल डिक्शनरी सर्च वैशिष्ट्य सक्रिय आहे.'); }
+function openGlobalSearchModal() { openModal('global-search-modal'); }
 function openAiAssistantModal() { alert('✨ AI असिस्टंट सक्रिय आहे.'); }
+
+// 🌟 ग्लोबल डिक्शनरी मधून प्रॉडक्ट्स शोधण्याची यंत्रणा (मॅगी, टाटा इ.)
+function searchGlobalCatalog(query) {
+  const resultsDiv = document.getElementById('global-search-results');
+  if (!query || query.trim().length < 2) {
+    resultsDiv.innerHTML = '<p class="muted" style="text-align:center;">शोधण्यासाठी कमीत कमी २ अक्षरे लिहा...</p>';
+    return;
+  }
+  
+  let catalog = [];
+  if (typeof MASTER_DICTIONARY !== 'undefined') {
+    catalog = MASTER_DICTIONARY;
+  } else {
+    catalog = [
+      { name: "Maggi 2-Min Noodles 70g", price: 14, category: "Snacks", image: "https://placehold.co/100x100?text=Maggi" },
+      { name: "Tata Salt 1kg", price: 28, category: "Groceries", image: "https://placehold.co/100x100?text=Tata+Salt" },
+      { name: "Tata Tea Gold 500g", price: 280, category: "Beverages", image: "https://placehold.co/100x100?text=Tata+Tea" },
+      { name: "Parle-G Biscuit 80g", price: 10, category: "Snacks", image: "https://placehold.co/100x100?text=Parle-G" }
+    ];
+  }
+
+  const filtered = catalog.filter(item => item.name.toLowerCase().includes(query.toLowerCase()));
+  if (filtered.length === 0) {
+    resultsDiv.innerHTML = '<p class="muted" style="text-align:center;">कोणतेही उत्पादन सापडले नाही.</p>';
+    return;
+  }
+
+  resultsDiv.innerHTML = filtered.map(item => `
+    <div style="display:flex; justify-content:space-between; align-items:center; background:#f8fafc; border:1px solid var(--border-color); padding:8px 12px; border-radius:6px;">
+      <div><strong>${escapeHtml(item.name)}</strong><br><span class="muted">अंदाजे दर: ₹${item.price || 20}</span></div>
+      <button onclick="addGlobalItemToStore('${escapeHtml(item.name)}', ${item.price || 20}, '${item.image || ''}')" style="background:var(--success); color:#fff; border:none; padding:6px 12px; border-radius:4px; font-weight:bold; cursor:pointer; font-size:12px;">➕ दुकानात जोडा</button>
+    </div>
+  `).join('');
+}
+
+async function addGlobalItemToStore(name, price, imageUrl) {
+  if (!currentBusinessId) return;
+  const { error } = await sb.from('business_products').insert({
+    business_id: currentBusinessId,
+    name: name,
+    selling_price: price,
+    cost_price: Math.round(price * 0.8),
+    stock_quantity: 50,
+    image_url: imageUrl
+  });
+  if (error) {
+    alert('प्रॉडक्ट जोडताना त्रुटी: ' + error.message);
+    return;
+  }
+  alert(`✅ "${name}" तुमच्या दुकानात यशस्वीरीत्या जोडले गेले!`);
+  closeModal('global-search-modal');
+  loadMerchantProducts();
+}
+
+// 🌟 बारकोड स्कॅनर सुरू करण्याची यंत्रणा (Html5Qrcode)
+function startBarcodeScanner() {
+  const container = document.getElementById('barcode-scanner-container');
+  container.style.display = 'block';
+  
+  if (!html5QrCode) {
+    html5QrCode = new Html5Qrcode("reader");
+  }
+  
+  html5QrCode.start(
+    { facingMode: "environment" },
+    { fps: 10, qrbox: { width: 250, height: 150 } },
+    (decodedText, decodedResult) => {
+      stopBarcodeScanner();
+      document.getElementById('new-prod-barcode').value = decodedText;
+      openAddProductModal();
+      alert(`📷 बारकोड यशस्वीरीत्या स्कॅन झाला: ${decodedText}`);
+    },
+    (errorMessage) => {}
+  ).catch(err => {
+    alert('कॅमेरा सुरू करण्यात अपयश आले: ' + err);
+    container.style.display = 'none';
+  });
+}
+
+function stopBarcodeScanner() {
+  if (html5QrCode) {
+    html5QrCode.stop().then(() => {
+      document.getElementById('barcode-scanner-container').style.display = 'none';
+    }).catch(err => {
+      document.getElementById('barcode-scanner-container').style.display = 'none';
+    });
+  } else {
+    document.getElementById('barcode-scanner-container').style.display = 'none';
+  }
+}
 
 async function initDashboard() {
   try {
@@ -382,7 +494,7 @@ async function loadMerchantProducts() {
   const tbody = document.getElementById('products-table-body');
   const { data: products } = await sb.from('business_products').select('*').eq('business_id', currentBusinessId).order('name');
   if (!products || products.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="6" class="muted" style="text-align:center; padding:20px;">कोणताही स्टॉक उपलब्ध नाही. "नवीन आयटम ॲड करा" वर क्लिक करा.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" class="muted" style="text-align:center; padding:20px;">कोणताही स्टॉक उपलब्ध नाही. "नवीन आयटम ॲड करा" वर क्लिक करा.</td></tr>';
     return;
   }
   currentProducts = products;
@@ -393,6 +505,7 @@ async function loadMerchantProducts() {
       <td style="color:var(--success); font-weight:bold;">₹${p.selling_price || 0}</td>
       <td>₹${p.cost_price || 0}</td>
       <td>${p.stock_quantity || 0} नग</td>
+      <td><small class="muted">${escapeHtml(p.barcode || '-')}</small></td>
       <td><button onclick="deleteProduct('${p.id}')" style="background:#ef4444; color:#fff; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:11px;">डिलीट</button></td>
     </tr>
   `).join('');
@@ -498,7 +611,7 @@ function openCustomerCartModal() {
   if (customerCart.length === 0) { alert('तुमची कार्ट रिकामी आहे!'); return; }
   
   if (!loggedInCustomer) {
-    alert('कृपया ऑर्डर देण्यासाठी आधी वर दिलेल्या "Google ne Login करा" बटणावर क्लिक करा!');
+    alert('कृपया ऑर्डर देण्यासाठी आधी वर दिलेल्या "Google ने लॉगिन करा" बटणावर क्लिक करून लॉगिन करा!');
     loginCustomerWithGoogle();
     return;
   }
