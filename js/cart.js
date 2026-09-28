@@ -1,23 +1,23 @@
 // ==========================================
-// ALL ERP — BULLETPROOF SYNCED CART ENGINE
+// ALL ERP — FINAL SYNCHRONIZED CART ENGINE
 // ==========================================
 
-// युनिव्हर्सल कार्ट लोड करणे
+// सर्व possible स्टोरेज की मधून युनिफाइड डेटा लोड करणे
 let cart = JSON.parse(localStorage.getItem('all_erp_cart')) || JSON.parse(localStorage.getItem('cart')) || [];
 
 document.addEventListener("DOMContentLoaded", function() {
   updateCartUI();
 });
 
-// दोन्ही स्टोरेज की मध्ये डेटा एकाच वेळी सेव्ह करणारी फंक्शन
-function saveCartToStorage() {
+// दोन्ही स्टोरेज की मध्ये डेटा एकाच वेळी सिंक आणि सेव्ह करणे
+function syncAndSaveCart() {
   localStorage.setItem('all_erp_cart', JSON.stringify(cart));
   localStorage.setItem('cart', JSON.stringify(cart));
 }
 
-// 1. कार्टमध्ये प्रॉडक्ट ॲड करणे (ग्लोबल फंक्शन)
+// 1. कार्टमध्ये उत्पादन ॲड करणे
 window.addToCart = function(productId, productName, productPrice, merchantBusinessId) {
-  // खात्रीसाठी लोकल स्टोरेज मधून लेटेस्ट डेटा घेणे
+  // लेटेस्ट डेटा रीफ्रेश करणे
   cart = JSON.parse(localStorage.getItem('all_erp_cart')) || JSON.parse(localStorage.getItem('cart')) || [];
 
   var name = productName || 'उत्पादनाचे नाव';
@@ -37,20 +37,19 @@ window.addToCart = function(productId, productName, productPrice, merchantBusine
     });
   }
   
-  // डेटा दोन्ही स्टोरेज की मध्ये强制 सेव्ह करणे
-  saveCartToStorage();
+  syncAndSaveCart();
   updateCartUI();
-  
-  console.log("Updated Cart Data:", cart); // कन्सोलमध्ये तपासण्यासाठी
   alert('✅ "' + name + '" यशस्वीरीत्या कार्टमध्ये समाविष्ट केले गेले!');
 };
 
-// 2. कार्ट बझर (Badge) अपडेट करणे
+// 2. दोन्हीकडील बॅज आणि काऊंट अचूक अपडेट करणे (एकसारखा नंबर दिसण्यासाठी)
 function updateCartUI() {
   cart = JSON.parse(localStorage.getItem('all_erp_cart')) || JSON.parse(localStorage.getItem('cart')) || [];
   
-  var totalQty = cart.reduce(function(sum, item) { return sum + item.qty; }, 0);
-  var badges = document.querySelectorAll('#bar-cart-count, .cart-count-badge');
+  var totalQty = cart.reduce(function(sum, item) { return sum + (item.qty || 1); }, 0);
+  
+  // सर्वा All ERP आणि डॅशबोर्डवरील बॅजचे नंबर एकाच वेळी अपडेट करणे
+  var badges = document.querySelectorAll('#bar-cart-count, .cart-count-badge, [id*="cart-count"]');
   badges.forEach(function(b) {
     b.textContent = totalQty;
   });
