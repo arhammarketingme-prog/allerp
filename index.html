@@ -83,7 +83,7 @@ tr:hover { background: #f8fafc; }
 <div class="dashboard-main-frame">
   <div class="erp-header">
     <div>
-      <h1 id="business-display-name">लोड होत आहे...</h1>
+      <h1 id="business-display-name">ALL ERP — युनिव्हर्सल बिझनेस सिस्टीम</h1>
       <span class="muted" id="header-sub-text">Universal Business Operating System & Local Marketplace</span>
       <div style="margin-top:6px; font-size:13.5px; font-weight:700; color:#34d399;" id="merchant-username-badge">
         👤 वीव्हो चॅट युजरनेम: <span id="display-merchant-handle">@abhinaygandhi5151</span>
@@ -127,10 +127,12 @@ tr:hover { background: #f8fafc; }
     <div id="customer-store-notice" style="display:none; background:#e0f2fe; border:1px solid #7dd3fc; padding:14px; border-radius:8px; margin-bottom:14px; color:#0369a1; font-weight:bold; text-align:center;">
       🔒 स्टोअर मोड: खालील प्रॉडक्ट्स निवडून कार्टमध्ये टाका आणि थेट दुकानदाराला ऑर्डर पाठवा.
     </div>
-    <div id="customer-products-section" style="display:none; margin-bottom:24px;">
-      <h2 style="color:var(--primary); margin:0 0 10px 0;">📦 या दुकानातील उपलब्ध वस्तू</h2>
+    
+    <!-- ग्राहकांसाठी सर्व दुकानांचे प्रॉडक्ट्स दाखवणारा ई-कॉमर्स होम सेक्शन -->
+    <div id="customer-products-section" style="margin-bottom:24px;">
+      <h2 style="color:var(--primary); margin:0 0 10px 0;">📦 उपलब्ध उत्पादने व लोकल मार्केटप्लेस</h2>
       <div id="customer-products-grid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap:12px;">
-        <p class="muted">प्रॉडक्ट्स लोड होत आहेत...</p>
+        <p class="muted">बाजारपेठेतील प्रॉडक्ट्स लोड होत आहेत...</p>
       </div>
     </div>
     
@@ -327,17 +329,17 @@ async function initDashboard() {
       localStorage.setItem('global_unified_email', sessionUser.email);
     }
 
-    if (lockedStoreUsername) {
-      document.body.classList.add('store-locked-mode');
-      var custBar = document.getElementById('customer-action-bar');
-      if (custBar) custBar.style.display = 'flex';
-      var googleBtn = document.getElementById('customer-google-login-btn');
-      if (googleBtn) googleBtn.style.display = 'inline-flex';
-      var notice = document.getElementById('customer-store-notice');
-      if (notice) notice.style.display = 'block';
-      var prodSec = document.getElementById('customer-products-section');
-      if (prodSec) prodSec.style.display = 'block';
+    var custBar = document.getElementById('customer-action-bar');
+    var googleBtn = document.getElementById('customer-google-login-btn');
+    var notice = document.getElementById('customer-store-notice');
+    var prodSec = document.getElementById('customer-products-section');
 
+    if (custBar) custBar.style.display = 'flex';
+    if (googleBtn) googleBtn.style.display = 'inline-flex';
+    if (prodSec) prodSec.style.display = 'block';
+
+    if (lockedStoreUsername) {
+      if (notice) notice.style.display = 'block';
       var storeTitle = "अभिनय स्टोअर्स";
       try {
         var bizRes = await sb.from('businesses').select('*').or('slug.eq.' + lockedStoreUsername + ',name.ilike.%' + lockedStoreUsername + '%').maybeSingle();
@@ -363,39 +365,35 @@ async function initDashboard() {
 
       await loadCustomerStoreProducts();
     } else {
-      if (!sessionUser) {
-        window.location.href = 'login.html';
-        return;
-      }
-
-      var merchantHandle = sessionUser.email ? sessionUser.email.split('@')[0] : 'abhinaygandhi5151';
-      var merchantStoreName = "अभिनय गांधी स्टोअर्स";
-      currentMerchantUserId = sessionUser.id;
+      if (notice) notice.style.display = 'none';
+      var merchantHandle = sessionUser ? (sessionUser.email ? sessionUser.email.split('@')[0] : 'abhinaygandhi5151') : 'abhinaygandhi5151';
+      var merchantStoreName = "ALL ERP युनिव्हर्सल मार्केटप्लेस";
+      if (sessionUser) currentMerchantUserId = sessionUser.id;
 
       try {
-        var profRes = await sb.from('profiles').select('username').eq('id', sessionUser.id).maybeSingle();
-        if (profRes.data && profRes.data.username) {
-          merchantHandle = profRes.data.username;
-        }
-
-        var bizRes = await sb.from('businesses').select('*').eq('owner_id', sessionUser.id).maybeSingle();
-        if (bizRes.data) {
-          if (bizRes.data.name) merchantStoreName = bizRes.data.name;
-          if (bizRes.data.id) currentBusinessId = bizRes.data.id;
+        var allProdRes = await sb.from('business_products').select('*').limit(30);
+        if (allProdRes.data && allProdRes.data.length > 0) {
+          currentProducts = allProdRes.data;
+          var gridEl = document.getElementById('customer-products-grid');
+          if (gridEl) {
+            gridEl.innerHTML = allProdRes.data.map(function(p) {
+              return '<div style="background:#fff; border:1px solid #cbd5e1; border-radius:8px; padding:12px; text-align:center;">' +
+                     '<div style="font-weight:700; font-size:14px; margin-bottom:4px; color:#1e293b;">' + escapeHtml(p.name) + '</div>' +
+                     '<div style="color:#16a34a; font-weight:800; font-size:14px; margin-bottom:8px;">₹' + p.selling_price + '</div>' +
+                     '<button onclick="addToCustomerCart(\'' + p.id + '\')" style="background:#16a34a; color:#fff; border:none; padding:6px 12px; border-radius:5px; font-weight:bold; cursor:pointer; font-size:12px;">🛒 ॲड टू कार्ट</button>' +
+                     '</div>';
+            }).join('');
+          }
         }
       } catch (e) {}
 
       document.getElementById('business-display-name').textContent = merchantStoreName;
       document.getElementById('display-merchant-handle').textContent = '@' + merchantHandle;
-      currentMerchantUsername = merchantHandle;
 
-      var nameInput = document.getElementById('settings-biz-name');
-      var userNickInput = document.getElementById('settings-username');
-      if (nameInput) nameInput.value = merchantStoreName;
-      if (userNickInput) userNickInput.value = merchantHandle;
-
-      await loadProducts();
-      await loadSales();
+      if (sessionUser) {
+        await loadProducts();
+        await loadSales();
+      }
     }
   } catch (err) {
     console.error('Init error:', err);
@@ -496,7 +494,6 @@ async function submitCustomerOrderWithOTPAndWeavo() {
   if (!loggedInCustomer) { alert('कृपया पहिले लॉगिन करा!'); return; }
 
   try {
-    // 1. मर्चंट प्रमाणे प्रॉडक्ट्सचे स्प्लिटिंग (Multi-Merchant Grouping)
     var merchantGroups = {};
     customerCart.forEach(function(item) {
       var mId = item.business_id || currentBusinessId;
@@ -507,16 +504,13 @@ async function submitCustomerOrderWithOTPAndWeavo() {
     var customerUserId = loggedInCustomer.id;
     var storeUsername = lockedStoreUsername || currentMerchantUsername || 'abhinaygandhi5151';
 
-    // 2. प्रत्येक दुकानदारासाठी स्वतंत्र ऑर्डर तयार करणे आणि Weavo मध्ये पाठवणे
     for (var mId in merchantGroups) {
       var items = merchantGroups[mId];
       var totalAmt = items.reduce(function(sum, i) { return sum + (i.price * i.qty); }, 0);
       var itemsSummaryText = items.map(function(i) { return i.name + ' (' + i.qty + ' नग)'; }).join(', ');
       
-      // 3. युनिक 4-अंकी OTP जनरेट करणे
       var orderOtp = Math.floor(1000 + Math.random() * 9000).toString();
 
-      // ऑल ERP च्या orders टेबलमध्ये रेकॉर्ड इन्सर्ट करणे
       var orderRes = await sb.from('orders').insert({
         business_id: mId,
         customer_name: name,
@@ -533,7 +527,6 @@ async function submitCustomerOrderWithOTPAndWeavo() {
         continue;
       }
 
-      // दुकानदाराचा owner_id शोधणे
       var targetMerchantId = currentMerchantUserId;
       var bizRes = await sb.from('businesses').select('owner_id').eq('id', mId).maybeSingle();
       if (bizRes.data && bizRes.data.owner_id) {
@@ -543,7 +536,6 @@ async function submitCustomerOrderWithOTPAndWeavo() {
         if (profRes.data) targetMerchantId = profRes.data.id;
       }
 
-      // 4. Weavo चॅट सिंक आणि ऑटोमॅटिक मेसेज पुशिंग
       if (targetMerchantId && targetMerchantId !== customerUserId) {
         var targetConvId = null;
         var myConvsRes = await sb.from('conversation_members').select('conversation_id').eq('user_id', customerUserId);
