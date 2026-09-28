@@ -9,11 +9,10 @@ function addToCart(productId, productName, productPrice, merchantBusinessId) {
   var name = productName;
   var price = productPrice;
 
-  // जर बटणावरून नाव किंवा किंमत आली नसेल, तर पेजवरून (HTML DOM मधून) शोधून घेणे
   if (!name || name === 'उत्पादनाचे नाव' || name === 'undefined') {
     var titleEl = document.querySelector('h1, h2, .product-title, strong');
     if (titleEl) name = titleEl.textContent.trim();
-    else name = "Lux Soap"; // डीफॉल्ट प्रॉडक्ट नाव
+    else name = "Lux Soap";
   }
 
   if (!price || isNaN(price)) {
@@ -22,7 +21,7 @@ function addToCart(productId, productName, productPrice, merchantBusinessId) {
       var priceText = priceEl.textContent.replace(/[^\d.]/g, '');
       price = parseFloat(priceText) || 40;
     } else {
-      price = 40; // डीफॉल्ट किंमत
+      price = 40;
     }
   }
 
@@ -169,7 +168,7 @@ async function submitCustomerOrderWithOTPAndWeavo() {
     cart = [];
     if (typeof closeModal === 'function') closeModal('customer-cart-modal');
     if (typeof openWeavoChat === 'function') openWeavoChat();
-  } the (err) {
+  } catch (err) {
     console.error('Order process error:', err);
     alert('ऑर्डर प्रक्रिया करताना त्रुटी आली. कृपया पुन्हा प्रयत्न करा.');
   }
