@@ -182,3 +182,28 @@ window.processCartCheckout = async function() {
 
   window.open(weavoUrl, '_blank');
 };
+// cart.html पानावर लोकल स्टोरेजमधील वस्तू रेंडर करणारे फायनल फंक्शन
+document.addEventListener("DOMContentLoaded", function() {
+  var cartPageContainer = document.querySelector('.shopping-cart-container, #cart-items-container, main');
+  var currentCart = JSON.parse(localStorage.getItem('all_erp_cart')) || JSON.parse(localStorage.getItem('cart')) || [];
+  
+  if (currentCart.length > 0 && document.body.contains(document.querySelector('h2, h1'))) {
+    // जर युजर cart.html वर असेल तर तिथे वस्तू दर्शवणे
+    var targetBox = document.querySelector('.text-center, .container, article') || cartPageContainer;
+    if (targetBox && !document.getElementById('dynamic-cart-list')) {
+      var html = '<div id="dynamic-cart-list" style="margin-top: 20px;"><ul style="list-style: none; padding: 0;">';
+      var total = 0;
+      currentCart.forEach(function(item) {
+        var sub = (item.price || 0) * (item.qty || 1);
+        total += sub;
+        html += '<li style="padding: 10px; border-bottom: 1px solid #ddd; display: flex; justify-content: space-between;">' +
+                '<span><b>' + item.name + '</b> (x' + item.qty + ')</span>' +
+                '<span>₹' + sub + '</span></li>';
+      });
+      html += '</ul><h3>एकूण: ₹' + total + '</h3>';
+      html += '<button onclick="processCartCheckout()" style="background: #28a745; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin-top: 10px;">ऑर्डर कन्फर्म करा (Buy Now)</button></div>';
+      
+      targetBox.innerHTML = html;
+    }
+  }
+});
