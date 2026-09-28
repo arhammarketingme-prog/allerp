@@ -1,5 +1,5 @@
 // ==========================================
-// ALL ERP — DASHBOARD UNIFIED CART & LOGIN FLOW
+// ALL ERP — WHATSAPP STYLE UNIFIED CART & LOGIN ENGINE
 // ==========================================
 
 let cart = JSON.parse(localStorage.getItem('all_erp_cart')) || JSON.parse(localStorage.getItem('cart')) || [];
@@ -7,18 +7,20 @@ let cart = JSON.parse(localStorage.getItem('all_erp_cart')) || JSON.parse(localS
 document.addEventListener("DOMContentLoaded", function() {
   updateCartUI();
   
-  // नेव्हबारमधील कार्ट बटनावर क्लिक केल्यावर लॉगिनची खात्री करणे
-  var cartTriggers = document.querySelectorAll('.cart-nav-btn, [data-target="customer-cart-modal"], #nav-cart-btn, .fa-shopping-cart, [onclick*="cart"]');
+  // नेव्हबारमधील कार्ट बटनावर क्लिक केल्यावर WhatsApp पोर्टलसारखे थेट लॉगिन तपासणे
+  var cartTriggers = document.querySelectorAll('.cart-nav-btn, [data-target="customer-cart-modal'], #nav-cart-btn, .fa-shopping-cart, [onclick*="cart"]');
   cartTriggers.forEach(function(btn) {
     btn.addEventListener('click', function(e) {
       e.preventDefault();
       
-      if (!isErpLoggedIn()) {
-        alert('⚠️ कृपया कार्ट पाहण्यासाठी आणि ऑर्डर देण्यासाठी आधी ऑल ईआरपीवर लॉगिन करा!');
+      // जर युजर लॉगिन नसेल, तर थेट गुगल/लॉगिन पेजवर पाठवणे
+      if (!isCustomerLoggedIn()) {
+        alert('⚠️ कृपया कार्ट पाहण्यासाठी आणि ऑर्डर देण्यासाठी आधी लॉगिन करा!');
         window.location.href = 'login.html';
         return;
       }
       
+      // लॉगिन असेल तर थेट कार्ट पेज किंवा मोडल उघडणे
       if (window.location.pathname.includes('index.html') || window.location.pathname.endsWith('/allerp/')) {
         window.location.href = 'cart.html';
       } else {
@@ -28,7 +30,7 @@ document.addEventListener("DOMContentLoaded", function() {
   });
 
   if (window.location.pathname.includes('cart.html') || document.querySelector('.shopping-cart-container')) {
-    if (isErpLoggedIn()) {
+    if (isCustomerLoggedIn()) {
       renderCartPageItems();
     } else {
       window.location.href = 'login.html';
@@ -41,13 +43,13 @@ function saveCartState() {
   localStorage.setItem('cart', JSON.stringify(cart));
 }
 
-// 1. ग्लोबल प्रॉडक्ट ॲड फंक्शन (कोणतीही ReferenceError येणार नाही)
+// 1. प्रॉडक्ट कार्टमध्ये ॲड करणे (WhatsApp पोर्टलप्रमाणे विनासायास ॲड होईल)
 window.addToCart = function(productId, productName, productPrice, merchantBusinessId) {
   cart = JSON.parse(localStorage.getItem('all_erp_cart')) || JSON.parse(localStorage.getItem('cart')) || [];
 
   var name = productName || 'उत्पादनाचे नाव';
   var price = productPrice || 40;
-  var activeBizId = merchantBusinessId || (typeof currentBusinessId !== 'undefined' ? currentBusinessId : 'b9ea82ab-e398-4ee7-a2c0-8e4052c9188a');
+  var activeBizId = merchantBusinessId || 'b9ea82ab-e398-4ee7-a2c0-8e4052c9188a';
   
   var existing = cart.find(function(item) { return (item.id === productId && item.business_id === activeBizId) || item.name === name; });
   if (existing) {
@@ -67,7 +69,6 @@ window.addToCart = function(productId, productName, productPrice, merchantBusine
   alert('✅ "' + name + '" यशस्वीरीत्या कार्टमध्ये समाविष्ट केले गेले!');
 };
 
-// 2. बॅज अपडेट करणे
 function updateCartUI() {
   cart = JSON.parse(localStorage.getItem('all_erp_cart')) || JSON.parse(localStorage.getItem('cart')) || [];
   var totalQty = cart.reduce(function(sum, item) { return sum + (item.qty || 1); }, 0);
@@ -78,39 +79,15 @@ function updateCartUI() {
   });
 }
 
-// 3. डॅशबोर्डशी सुसंगत सर्वसमावेशक लॉगिन तपासणी
-function isErpLoggedIn() {
-  var unifiedEmail = localStorage.getItem('global_unified_email');
-  var supUser = localStorage.getItem('supabase_user');
-  var userEmail = localStorage.getItem('user_email');
-  var loggedIn = localStorage.getItem('logged_in');
-  var user = localStorage.getItem('user');
-  var email = localStorage.getItem('email');
-  var sbToken = localStorage.getItem('sb-access-token') || localStorage.getItem('supabase.auth.token');
-  var custObj = (typeof loggedInCustomer !== 'undefined' && loggedInCustomer) ? loggedInCustomer : null;
+// 2. WhatsApp पोर्टलशी सुसंगत सोपे आणि खात्रीशीर लॉगिन चेक फंक्शन
+function isCustomerLoggedIn() {
+  var userEmail = localStorage.getItem('global_unified_email') || localStorage.getItem('user_email') || localStorage.getItem('email') || localStorage.getItem('supabase_user');
+  var userToken = localStorage.getItem('sb-access-token') || localStorage.getItem('supabase.auth.token') || localStorage.getItem('logged_in');
   
-  if (unifiedEmail || supUser || userEmail || loggedIn === 'true' || loggedIn === true || user || email || sbToken || custObj) {
-    return true;
-  }
-
-  // डॅशबोर्डच्या इतर की स्कॅन करणे
-  for (let i = 0; i < localStorage.length; i++) {
-    let key = localStorage.key(i);
-    if (key) {
-      let lowerKey = key.toLowerCase();
-      if (lowerKey.includes('login') || lowerKey.includes('user') || lowerKey.includes('email') || lowerKey.includes('auth') || lowerKey.includes('token') || lowerKey.includes('erp')) {
-        let val = localStorage.getItem(key);
-        if (val && val !== 'false' && val !== 'null' && val !== '' && val !== '{}') {
-          return true;
-        }
-      }
-    }
-  }
-  
-  return false;
+  return (userEmail || userToken);
 }
 
-// 4. कार्ट पेजवर वस्तू दाखवणे
+// 3. कार्ट पेजवर वस्तू दाखवणे
 function renderCartPageItems() {
   cart = JSON.parse(localStorage.getItem('all_erp_cart')) || JSON.parse(localStorage.getItem('cart')) || [];
   
@@ -147,9 +124,9 @@ function renderCartPageItems() {
   container.innerHTML = html;
 }
 
-// 5. फायनल चेकआउट आणि वीव्हो ब्रिज
+// 4. WhatsApp पोर्टलप्रमाणे नाव, नंबर, पत्ता घेऊन थेट वीव्होवर ऑर्डर पाठवणे
 window.processCartCheckout = async function() {
-  if (!isErpLoggedIn()) {
+  if (!isCustomerLoggedIn()) {
     alert('⚠️ ऑर्डर करण्यासाठी कृपया आधी लॉगिन करा!');
     window.location.href = 'login.html';
     return;
@@ -208,19 +185,20 @@ window.processCartCheckout = async function() {
                      '📍 **पत्ता:** ' + customerAddress;
 
   var storeSlug = (typeof lockedStoreUsername !== 'undefined' && lockedStoreUsername) ? lockedStoreUsername : 'abhinaygandhi5151';
-  var customerEmail = localStorage.getItem('global_unified_email') || localStorage.getItem('supabase_user') || 'customer@allerp.com';
+  var customerEmail = localStorage.getItem('global_unified_email') || localStorage.getItem('user_email') || '';
 
+  // कार्ट साफ करणे
   cart = [];
   saveCartState();
   updateCartUI();
 
   alert('🎉 ऑर्डर यशस्वीरीत्या नोंदवली गेली!\n🔐 तुमचा ओटीपी (OTP): ' + orderOtp);
 
+  // थेट वीव्हो पोर्टलवर पाठवणे
   var weavoUrl = 'https://arhammarketingme-prog.github.io/weavo/?store=' + storeSlug + 
                  '&prefill_msg=' + encodeURIComponent(orderMessage) + 
                  (customerEmail ? ('&customer_email=' + encodeURIComponent(customerEmail)) : '');
 
   window.open(weavoUrl, '_blank');
-  
   window.location.href = 'index.html';
 };
