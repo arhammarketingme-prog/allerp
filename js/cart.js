@@ -1,14 +1,21 @@
 // ==========================================
-// ALL ERP — CART & ORDER MANAGEMENT ENGINE
+// ALL ERP — MASTER CART & CHECKOUT ENGINE
 // ==========================================
 
-let cart = [];
+// ग्लोबल कार्ट यादी (जी संपूर्ण डॅशबोर्डवर दिसेल)
+let cart = JSON.parse(localStorage.getItem('all_erp_cart')) || [];
 
-// कार्टमध्ये प्रॉडक्ट अचूकपणे ॲड करणारा सुरक्षित कोड
+// पेज लोड झाल्यावर कार्ट युजर्ससाठी अपडेट करणे
+document.addEventListener("DOMContentLoaded", function() {
+  updateCartUI();
+});
+
+// 1. कार्टमध्ये प्रॉडक्ट प्रत्यक्ष साठवणारा आणि बॅज अपडेट करणारा अचूक कोड
 function addToCart(productId, productName, productPrice, merchantBusinessId) {
   var name = productName;
   var price = productPrice;
 
+  // जर प्रॉडक्टचे नाव किंवा किंमत बटणावरून आली नसेल, तर पेजवरून अचूक शोधणे
   if (!name || name === 'उत्पादनाचे नाव' || name === 'undefined') {
     var titleEl = document.querySelector('h1, h2, .product-title, strong');
     if (titleEl) name = titleEl.textContent.trim();
@@ -27,6 +34,7 @@ function addToCart(productId, productName, productPrice, merchantBusinessId) {
 
   var activeBizId = merchantBusinessId || (typeof currentBusinessId !== 'undefined' ? currentBusinessId : 'b9ea82ab-e398-4ee7-a2c0-8e4052c9188a');
   
+  // कार्टमध्ये आधीच ती वस्तू आहे का तपणे
   var existing = cart.find(function(item) { return item.id === productId || item.name === name; });
   if (existing) {
     existing.qty++;
@@ -40,18 +48,25 @@ function addToCart(productId, productName, productPrice, merchantBusinessId) {
     });
   }
   
+  // लोकलस्टोरेजमध्ये सेव्ह करणे जेणेकरून रिफ्रेश झाल्यावरही डेटा उडणार नाही
+  localStorage.setItem('all_erp_cart', JSON.stringify(cart));
+  
   updateCartUI();
-  alert('✅ "' + name + '" कार्टमध्ये यशस्वीरीत्या जोडले गेले!');
+  alert('✅ "' + name + '" यशस्वीरीत्या कार्टमध्ये समाविष्ट केले गेले!');
 }
 
-// कार्ट UI आणि वरचा बझर (Badge) अपडेट करणे
+// 2. नेव्हबारमधील कार्ट बझर (Badge Counter) अपडेट करणारे फंक्शन
 function updateCartUI() {
   var totalQty = cart.reduce(function(sum, item) { return sum + item.qty; }, 0);
-  var badge = document.getElementById('bar-cart-count');
-  if (badge) badge.textContent = totalQty;
+  
+  // सर्व पानांवर जिथे कार्टची संख्या दाखवली जाते तिथे ती अपडेट करणे
+  var badges = document.querySelectorAll('#bar-cart-count, .cart-count-badge');
+  badges.forEach(function(b) {
+    b.textContent = totalQty;
+  });
 }
 
-// 🌟 मर्चंट वाईज स्प्लिटिंग, OTP आणि Weavo ऑटोमॅटिक चॅट ब्रिजिंगसह ऑर्डर सबमिट करणे
+// 3. मर्चंट वाईज स्प्लिटिंग, OTP आणि Weavo ऑटोमॅटिक चॅट ब्रिजिंगसह ऑर्डर सबमिट करणे
 async function submitCustomerOrderWithOTPAndWeavo() {
   var nameField = document.getElementById('cust-order-name');
   var phoneField = document.getElementById('cust-order-phone');
@@ -166,6 +181,8 @@ async function submitCustomerOrderWithOTPAndWeavo() {
 
     alert('🎉 ऑर्डर यशस्वीरीत्या नोंदवली गेली, सुरक्षित OTP जनरेट झाला आणि Weavo चॅटमध्ये पाठवला गेला!');
     cart = [];
+    localStorage.removeItem('all_erp_cart');
+    updateCartUI();
     if (typeof closeModal === 'function') closeModal('customer-cart-modal');
     if (typeof openWeavoChat === 'function') openWeavoChat();
   } catch (err) {
