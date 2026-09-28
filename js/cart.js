@@ -7,12 +7,11 @@ let cart = JSON.parse(localStorage.getItem('all_erp_cart')) || JSON.parse(localS
 document.addEventListener("DOMContentLoaded", function() {
   updateCartUI();
   
-  var cartTriggers = document.querySelectorAll('.cart-nav-btn, [data-target="customer-cart-modal'], #nav-cart-btn, .fa-shopping-cart, [onclick*="cart"]');
+  var cartTriggers = document.querySelectorAll('.cart-nav-btn, [data-target="customer-cart-modal"], #nav-cart-btn, .fa-shopping-cart, [onclick*="cart"]');
   cartTriggers.forEach(function(btn) {
     btn.addEventListener('click', function(e) {
       e.preventDefault();
       
-      // लॉगिन नसेल तरच लॉगिन पेजवर पाठवणे, अन्यथा थेट कार्ट पेजवर नेणे
       if (!isErpLoggedIn()) {
         alert('⚠️ कृपया कार्ट पाहण्यासाठी आणि खरेदी करण्यासाठी आधी ऑल ईआरपीवर लॉगिन करा!');
         window.location.href = 'login.html';
@@ -41,7 +40,7 @@ function saveCartState() {
   localStorage.setItem('cart', JSON.stringify(cart));
 }
 
-// ग्लोबल 'addToCart' फंक्शन (कोणतीही एरर न येणारे)
+// ग्लोबल 'addToCart' फंक्शन (पूर्णपणे सुरक्षित आणि एरर-फ्री)
 window.addToCart = function(productId, productName, productPrice, merchantBusinessId) {
   cart = JSON.parse(localStorage.getItem('all_erp_cart')) || JSON.parse(localStorage.getItem('cart')) || [];
 
@@ -77,9 +76,8 @@ function updateCartUI() {
   });
 }
 
-// अत्यंत मजबूत आणि सर्वसमावेशक लॉगिन तसपासणारे फंक्शन (कोणताही लूप तयार होणार नाही)
+// सर्वसमावेशक आणि सुरक्षित लॉगिन तपासणारे फंक्शन
 function isErpLoggedIn() {
-  // १. आधी मुख्य स्टँडर्ड की तपासणे
   var unifiedEmail = localStorage.getItem('global_unified_email');
   var supUser = localStorage.getItem('supabase_user');
   var userEmail = localStorage.getItem('user_email');
@@ -93,7 +91,7 @@ function isErpLoggedIn() {
     return true;
   }
 
-  // २. फॉलबॅक: जर लॉगिन पेजने वेगळी की तयार केली असेल, तर लोकल स्टोरेजमधील प्रत्येक की स्कॅन करणे
+  // लोकल स्टोरेजमधील प्रत्येक की स्कॅन करून लॉगिन तपासणे
   for (let i = 0; i < localStorage.length; i++) {
     let key = localStorage.key(i);
     if (key) {
@@ -190,7 +188,7 @@ window.processCartCheckout = async function() {
         items_summary: itemsSummaryText,
         total_amount: totalAmt,
         otp_code: orderOtp,
--        status: 'pending'
+        status: 'pending'
       });
     }
   } catch (err) {
