@@ -1,118 +1,160 @@
 // ==========================================
-// BUSINESS SUPER PLATFORM - CART ENGINE (js/cart.js)
+// ALL ERP — CART & ORDER MANAGEMENT ENGINE
+// With Multi-Merchant Splitting, OTP & Weavo Bridge
 // ==========================================
 
-// कार्टमधील सर्व आयटम्स मिळवणे
-function getCart() {
-  try {
-    const cartData = localStorage.getItem('marketplace_cart') || localStorage.getItem('cart');
-    return cartData ? JSON.parse(cartData) : [];
-  } catch (e) {
-    console.error('Error reading cart from localStorage:', e);
-    return [];
-  }
-}
+let cart = [];
 
-// कार्ट सेव्ह करणे आणि सर्व पेजेसवर नेव्हिगेशन बारचा काऊंट तात्काळ अपडेट करणे
-function saveCart(cart) {
-  try {
-    const cartString = JSON.stringify(cart);
-    localStorage.setItem('cart', cartString);
-    localStorage.setItem('marketplace_cart', cartString); // दोन्ही की सेफ ठेवल्या आहेत
-    
-    // नेव्हिगेशन बारमधील काऊंट जागेवरच अपडेट करणे
-    if (typeof renderNav === 'function') {
-      renderNav();
-    }
-  } catch (e) {
-    console.error('Error saving cart to localStorage:', e);
-  }
-}
-
-// नवीन प्रॉडक्ट कार्टमध्ये ॲड करणे (किंवा आधीच असल्यास क्वांटिटी वाढवणे)
-function addToCart(product) {
-  let cart = getCart();
-  
-  // शोधणे की हेच प्रॉडक्ट त्याच दुकानदाराकडून आधीच कार्टमध्ये आहे का
-  const existingIndex = cart.findIndex(
-    item => String(item.business_product_id) === String(product.business_product_id) && String(item.business_id) === String(product.business_id)
-  );
-
-  const addQty = Number(product.quantity) || 1;
-
-  if (existingIndex > -1) {
-    // असल्यास क्वांटिटी वाढवणे
-    cart[existingIndex].quantity = (Number(cart[existingIndex].quantity) || 1) + addQty;
+// कार्टमध्ये प्रॉडक्ट जोडणे
+function addToCart(productId, productName, productPrice, merchantBusinessId) {
+  var existing = cart.find(function(item) { return item.id === productId; });
+  if (existing) {
+    existing.qty++;
   } else {
-    // नसल्यास नवीन आयटम जोडणे
     cart.push({
-      business_product_id: product.business_product_id,
-      name: product.name,
-      business_id: product.business_id,
-      business_name: product.business_name,
-      price: Number(product.price) || 0,
-      quantity: addQty
+      id: productId,
+      name: productName,
+      price: productPrice,
+      qty: 1,
+      business_id: merchantBusinessId || currentBusinessId
     });
   }
-
-  // सेव्ह केल्यावर आपोआप नेव्हिगेशन बार अपडेट होईल
-  saveCart(cart);
+  updateCartUI();
+  alert('✅ "' + productName + '" कार्टमध्ये यशस्वीरीत्या जोडले गेले!');
 }
 
-// कार्टमधील एकूण आयटमची संख्या मिळवणे
-function getCartCount() {
-  const cart = getCart();
-  return cart.reduce((sum, item) => sum + (Number(item.quantity) || 1), 0);
+// कार्ट UI अपडेट करणे
+function updateCartUI() {
+  var totalQty = cart.reduce(function(sum, item) { return sum + item.qty; }, 0);
+  var badge = document.getElementById('bar-cart-count');
+  if (badge) badge.textContent = totalQty;
 }
 
-// 🛡️ सुरक्षित इन-ॲप ऑर्डर सबमिट करण्याची पद्धत (WhatsApp नंबर एक्सचेंज पूर्णपणे बंद)
-async function submitSecurePlatformOrder(orderDetails) {
+// 🌟 मर्चंट वाईज स्प्लिटिंग, OTP आणि Weavo ऑटोमॅटिक चॅट ब्रिजिंगसह ऑर्डर सबमिट करणे
+async function submitCustomerOrderWithOTPAndWeavo() {
+  var nameField = document.getElementById('cust-order-name');
+  var phoneField = document.getElementById('cust-order-phone');
+  var addressField = document.getElementById('cust-order-address');
+
+  var name = nameField ? nameField.value.trim() : '';
+  var phone = phoneField ? phoneField.value.trim() : '';
+  var address = addressField ? addressField.value.trim() : '';
+  
+  if (!name || phone.length < 10 || !address) { 
+    alert('कृपया पूर्ण नाव, १० अंकी मोबाईल नंबर आणि डिलिव्हरी पत्ता अचूक भरा!'); 
+    return; 
+  }
+  
+  if (typeof loggedInCustomer === 'undefined' || !loggedInCustomer) { 
+    if (typeof loginCustomerWithGoogle === 'function') {
+      loginCustomerWithGoogle(); 
+    } else {
+      alert('कृपया पहिले लॉगिन करा!');
+    }
+    return; 
+  }
+
+  if (!cart || cart.length === 0) {
+    alert('तुमची कार्ट रिकामी आहे!');
+    return;
+  }
+
   try {
-    const cart = getCart();
-    if (!cart || cart.length === 0) {
-      alert('तुमची कार्ट रिकामी आहे!');
-      return false;
+    // 1. मर्चंट किंवा बिझनेस प्रमाणे प्रॉडक्ट्सचे स्प्लिटिंग (Multi-Merchant Grouping)
+    var merchantGroups = {};
+    cart.forEach(function(item) {
+      var mId = item.business_id || (typeof currentBusinessId !== 'undefined' ? currentBusinessId : null);
+      if (!merchantGroups[mId]) merchantGroups[mId] = [];
+      merchantGroups[mId].push(item);
+    });
+
+    var customerUserId = loggedInCustomer.id;
+    var storeSlug = (typeof lockedStoreUsername !== 'undefined' && lockedStoreUsername) ? lockedStoreUsername : ((typeof currentMerchantUsername !== 'undefined' && currentMerchantUsername) ? currentMerchantUsername : 'abhinaygandhi5151');
+
+    // 2. प्रत्येक दुकानदारासाठी स्वतंत्र ऑर्डर तयार करणे आणि Weavo मध्ये पाठवणे
+    for (var mId in merchantGroups) {
+      var items = merchantGroups[mId];
+      var totalAmt = items.reduce(function(sum, i) { return sum + (i.price * i.qty); }, 0);
+      var itemsSummaryText = items.map(function(i) { return i.name + ' (' + i.qty + ' नग)'; }).join(', ');
+      
+      // 3. युनिक 4-अंकी OTP जनरेट करणे
+      var orderOtp = Math.floor(1000 + Math.random() * 9000).toString();
+
+      // ऑल ERP च्या orders टेबलमध्ये रेकॉर्ड इन्सर्ट करणे
+      var orderRes = await sb.from('orders').insert({
+        business_id: mId,
+        customer_name: name,
+        customer_phone: phone,
+        customer_address: address,
+        items_summary: itemsSummaryText,
+        total_amount: totalAmt,
+        otp_code: orderOtp,
+        status: 'pending'
+      }).select().single();
+
+      if (orderRes.error) {
+        console.error("Order insert error:", orderRes.error.message);
+        continue;
+      }
+
+      // दुकानदाराचा owner_id (merchantUserId) शोधणे
+      var targetMerchantId = (typeof currentMerchantUserId !== 'undefined') ? currentMerchantUserId : null;
+      var bizRes = await sb.from('businesses').select('owner_id').eq('id', mId).maybeSingle();
+      if (bizRes.data && bizRes.data.owner_id) {
+        targetMerchantId = bizRes.data.owner_id;
+      } else {
+        var profRes = await sb.from('profiles').select('id').ilike('username', storeSlug).maybeSingle();
+        if (profRes.data) targetMerchantId = profRes.data.id;
+      }
+
+      // 4. Weavo चॅट सिंक आणि ऑटोमॅटिक मेसेज पुशिंग
+      if (targetMerchantId && targetMerchantId !== customerUserId) {
+        var targetConvId = null;
+        var myConvsRes = await sb.from('conversation_members').select('conversation_id').eq('user_id', customerUserId);
+        var myIds = (myConvsRes.data || []).map(function(r) { return r.conversation_id; });
+
+        if (myIds.length) {
+          var theirConvsRes = await sb.from('conversation_members').select('conversation_id').eq('user_id', targetMerchantId).in('conversation_id', myIds);
+          if (theirConvsRes.data && theirConvsRes.data.length) {
+            targetConvId = theirConvsRes.data[0].conversation_id;
+          }
+        }
+
+        if (!targetConvId) {
+          var newConvRes = await sb.from('conversations').insert({ type: 'direct', created_by: customerUserId }).select().single();
+          if (newConvRes.data) {
+            targetConvId = newConvRes.data.id;
+            await sb.from('conversation_members').insert([
+              { conversation_id: targetConvId, user_id: customerUserId },
+              { conversation_id: targetConvId, user_id: targetMerchantId }
+            ]);
+          }
+        }
+
+        if (targetConvId) {
+          var weavoMsg = '📦 **AllERP नवीन ऑनलाईन ऑर्डर**\n\n' +
+                         '🛒 **तपशील:** ' + itemsSummaryText + '\n' +
+                         '💰 **एकूण रक्कम:** ₹' + totalAmt.toFixed(2) + '\n' +
+                         '🔐 **सुरक्षा OTP:** ' + orderOtp + '\n' +
+                         '📍 **पत्ता:** ' + address + '\n' +
+                         '📱 **मोबाईल:** ' + phone + '\n\n' +
+                         'ही ऑर्डर यशस्वीरीत्या नोंदवली गेली आहे.';
+
+          await sb.from('messages').insert({
+            conversation_id: targetConvId,
+            sender_id: customerUserId,
+            content: weavoMsg
+          });
+        }
+      }
     }
 
-    // एका ऑर्डरजवळ सर्व प्रॉडक्ट्सचा समरी मजकूर तयार करणे
-    let itemsSummary = cart.map(i => `${i.name} (×${i.quantity})`).join(', ');
-    let totalAmount = cart.reduce((sum, i) => sum + (Number(i.price) * Number(i.quantity)), 0);
-    let businessId = cart[0].business_id; // संबंधित दुकानदाराचा ID
-
-    // Supabase मधील orders टेबलमध्ये डेटा इन्सर्ट करणे (नंबर मास्किंग आणि प्रायव्हसीसह)
-    const { data: { user } } = await sb.auth.getUser();
-    
-    const orderPayload = {
-      business_id: businessId,
-      customer_name: orderDetails.customerName || 'Verified Buyer',
-      customer_phone: orderDetails.customerPhone || 'Masked-Secure-ID',
-      delivery_address: orderDetails.deliveryAddress || 'Local Platform Delivery Hub',
-      items_summary: itemsSummary,
-      total_amount: totalAmount,
-      payment_method: orderDetails.paymentMethod || 'COD',
-      status: 'pending',
-      customer_user_id: user ? user.id : null
-    };
-
-    const { error } = await sb.from('orders').insert([orderPayload]);
-
-    if (error) {
-      alert('ऑर्डर सेव्ह करताना अडचण आली: ' + error.message);
-      return false;
-    }
-
-    // यशस्वीरित्या ऑर्डर नोंदवल्यावर कार्ट रिकामी करणे
-    localStorage.removeItem('cart');
-    localStorage.removeItem('marketplace_cart');
-    saveCart([]);
-
-    alert('✅ ऑर्डर सुरक्षितपणे नोंदवली गेली आहे! दुकानदाराने ती स्वीकारताच तुम्हाला सिस्टीममध्ये अपडेट मिळेल.');
-    window.location.href = 'index.html'; // होमपेजवर री-डाइरेक्ट करणे
-    return true;
-
+    alert('🎉 ऑर्डर यशस्वीरीत्या नोंदवली गेली, सुरक्षित OTP जनरेट झाला आणि Weavo चॅटमध्ये पाठवला गेला!');
+    cart = [];
+    if (typeof closeModal === 'function') closeModal('customer-cart-modal');
+    if (typeof openWeavoChat === 'function') openWeavoChat();
   } catch (err) {
-    console.error('Secure order error:', err);
-    alert('त्रुटी: ' + err.message);
-    return false;
+    console.error('Order process error:', err);
+    alert('ऑर्डर प्रक्रिया करताना त्रुटी आली. कृपया पुन्हा प्रयत्न करा.');
   }
 }
