@@ -1,5 +1,5 @@
 // ==========================================
-// ALL ERP — FINAL BULLETPROOF CART & LOGIN ENGINE
+// ALL ERP — DASHBOARD UNIFIED CART & LOGIN FLOW
 // ==========================================
 
 let cart = JSON.parse(localStorage.getItem('all_erp_cart')) || JSON.parse(localStorage.getItem('cart')) || [];
@@ -7,13 +7,14 @@ let cart = JSON.parse(localStorage.getItem('all_erp_cart')) || JSON.parse(localS
 document.addEventListener("DOMContentLoaded", function() {
   updateCartUI();
   
+  // नेव्हबारमधील कार्ट बटनावर क्लिक केल्यावर लॉगिनची खात्री करणे
   var cartTriggers = document.querySelectorAll('.cart-nav-btn, [data-target="customer-cart-modal"], #nav-cart-btn, .fa-shopping-cart, [onclick*="cart"]');
   cartTriggers.forEach(function(btn) {
     btn.addEventListener('click', function(e) {
       e.preventDefault();
       
       if (!isErpLoggedIn()) {
-        alert('⚠️ कृपया कार्ट पाहण्यासाठी आणि खरेदी करण्यासाठी आधी ऑल ईआरपीवर लॉगिन करा!');
+        alert('⚠️ कृपया कार्ट पाहण्यासाठी आणि ऑर्डर देण्यासाठी आधी ऑल ईआरपीवर लॉगिन करा!');
         window.location.href = 'login.html';
         return;
       }
@@ -40,13 +41,13 @@ function saveCartState() {
   localStorage.setItem('cart', JSON.stringify(cart));
 }
 
-// ग्लोबल 'addToCart' फंक्शन (पूर्णपणे सुरक्षित आणि एरर-फ्री)
+// 1. ग्लोबल प्रॉडक्ट ॲड फंक्शन (कोणतीही ReferenceError येणार नाही)
 window.addToCart = function(productId, productName, productPrice, merchantBusinessId) {
   cart = JSON.parse(localStorage.getItem('all_erp_cart')) || JSON.parse(localStorage.getItem('cart')) || [];
 
   var name = productName || 'उत्पादनाचे नाव';
   var price = productPrice || 40;
-  var activeBizId = merchantBusinessId || 'b9ea82ab-e398-4ee7-a2c0-8e4052c9188a';
+  var activeBizId = merchantBusinessId || (typeof currentBusinessId !== 'undefined' ? currentBusinessId : 'b9ea82ab-e398-4ee7-a2c0-8e4052c9188a');
   
   var existing = cart.find(function(item) { return (item.id === productId && item.business_id === activeBizId) || item.name === name; });
   if (existing) {
@@ -66,6 +67,7 @@ window.addToCart = function(productId, productName, productPrice, merchantBusine
   alert('✅ "' + name + '" यशस्वीरीत्या कार्टमध्ये समाविष्ट केले गेले!');
 };
 
+// 2. बॅज अपडेट करणे
 function updateCartUI() {
   cart = JSON.parse(localStorage.getItem('all_erp_cart')) || JSON.parse(localStorage.getItem('cart')) || [];
   var totalQty = cart.reduce(function(sum, item) { return sum + (item.qty || 1); }, 0);
@@ -76,7 +78,7 @@ function updateCartUI() {
   });
 }
 
-// सर्वसमावेशक आणि सुरक्षित लॉगिन तपासणारे फंक्शन
+// 3. डॅशबोर्डशी सुसंगत सर्वसमावेशक लॉगिन तपासणी
 function isErpLoggedIn() {
   var unifiedEmail = localStorage.getItem('global_unified_email');
   var supUser = localStorage.getItem('supabase_user');
@@ -91,7 +93,7 @@ function isErpLoggedIn() {
     return true;
   }
 
-  // लोकल स्टोरेजमधील प्रत्येक की स्कॅन करून लॉगिन तपासणे
+  // डॅशबोर्डच्या इतर की स्कॅन करणे
   for (let i = 0; i < localStorage.length; i++) {
     let key = localStorage.key(i);
     if (key) {
@@ -108,6 +110,7 @@ function isErpLoggedIn() {
   return false;
 }
 
+// 4. कार्ट पेजवर वस्तू दाखवणे
 function renderCartPageItems() {
   cart = JSON.parse(localStorage.getItem('all_erp_cart')) || JSON.parse(localStorage.getItem('cart')) || [];
   
@@ -144,6 +147,7 @@ function renderCartPageItems() {
   container.innerHTML = html;
 }
 
+// 5. फायनल चेकआउट आणि वीव्हो ब्रिज
 window.processCartCheckout = async function() {
   if (!isErpLoggedIn()) {
     alert('⚠️ ऑर्डर करण्यासाठी कृपया आधी लॉगिन करा!');
