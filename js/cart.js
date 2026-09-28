@@ -36,7 +36,6 @@ function saveCartState() {
   localStorage.setItem('cart', JSON.stringify(cart));
 }
 
-// 1. ग्लोबल ॲड टू कार्ट फंक्शन (एरर-फ्री)
 window.addToCart = function(productId, productName, productPrice, merchantBusinessId) {
   cart = JSON.parse(localStorage.getItem('all_erp_cart')) || JSON.parse(localStorage.getItem('cart')) || [];
 
@@ -101,7 +100,6 @@ function getActualLoggedUserEmail() {
          'verified_erp_customer@market.com';
 }
 
-// 2. चेकआउट आणि युजर ट्रॅकिंग फंक्शन
 window.processCartCheckout = async function() {
   if (!isCustomerLoggedIn()) {
     alert('⚠️ ऑर्डर करण्यासाठी कृपया आधी लॉगिन करा!');
