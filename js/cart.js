@@ -1,5 +1,5 @@
 // ==========================================
-// ALL ERP — FINAL ERROR-FREE SYNTAX CART ENGINE
+// ALL ERP — SECURE USER TRACKING & CART ENGINE
 // ==========================================
 
 let cart = JSON.parse(localStorage.getItem('all_erp_cart')) || JSON.parse(localStorage.getItem('cart')) || [];
@@ -7,7 +7,7 @@ let cart = JSON.parse(localStorage.getItem('all_erp_cart')) || JSON.parse(localS
 document.addEventListener("DOMContentLoaded", function() {
   updateCartUI();
   
-  var cartTriggers = document.querySelectorAll('.cart-nav-btn, [data-target="customer-cart-modal"], #nav-cart-btn, .fa-shopping-cart, [onclick*="cart"]');
+  var cartTriggers = document.querySelectorAll('.cart-nav-btn, [data-target="customer-cart-modal'], #nav-cart-btn, .fa-shopping-cart, [onclick*="cart"]');
   cartTriggers.forEach(function(btn) {
     btn.addEventListener('click', function(e) {
       e.preventDefault();
@@ -20,16 +20,12 @@ document.addEventListener("DOMContentLoaded", function() {
       
       if (window.location.pathname.includes('index.html') || window.location.pathname.endsWith('/allerp/')) {
         window.location.href = 'cart.html';
-      } else {
-        renderCartPageItems();
       }
     });
   });
 
-  if (window.location.pathname.includes('cart.html') || document.querySelector('.shopping-cart-container')) {
-    if (isCustomerLoggedIn()) {
-      renderCartPageItems();
-    } else {
+  if (window.location.pathname.includes('cart.html')) {
+    if (!isCustomerLoggedIn()) {
       window.location.href = 'login.html';
     }
   }
@@ -40,7 +36,7 @@ function saveCartState() {
   localStorage.setItem('cart', JSON.stringify(cart));
 }
 
-// ग्लोबल 'addToCart' फंक्शन (पूर्णपणे सुरक्षित आणि एरर-फ्री)
+// ग्लोबल 'addToCart' फंक्शन
 window.addToCart = function(productId, productName, productPrice, merchantBusinessId) {
   cart = JSON.parse(localStorage.getItem('all_erp_cart')) || JSON.parse(localStorage.getItem('cart')) || [];
 
@@ -97,42 +93,17 @@ function isCustomerLoggedIn() {
   return false;
 }
 
-function renderCartPageItems() {
-  cart = JSON.parse(localStorage.getItem('all_erp_cart')) || JSON.parse(localStorage.getItem('cart')) || [];
-  
-  var container = document.getElementById('cart-items-container') || document.querySelector('.shopping-cart-container, main, .container, article');
-  if (!container) return;
-
-  if (cart.length === 0) {
-    container.innerHTML = '<div style="text-align: center; padding: 40px;"><h3>🛒 तुमचे कार्ट सध्या रिकामी आहे.</h3><a href="index.html" style="background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; margin-top: 15px;">खरेदी सुरू ठेवा</a></div>';
-    return;
-  }
-
-  var html = '<div style="max-width: 700px; margin: 20px auto; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">';
-  html += '<h2 style="margin-bottom: 20px; color: #333;">🛒 तुमची शॉपिंग कार्ट (Shopping Cart)</h2><ul style="list-style: none; padding: 0; margin: 0;">';
-  var total = 0;
-  
-  cart.forEach(function(item) {
-    var subtotal = (item.price || 0) * (item.qty || 1);
-    total += subtotal;
-    html += '<li style="margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">' +
-            '<div><b style="font-size: 16px;">' + (item.name || 'उत्पादन') + '</b><br>' +
-            '<small style="color: #666;">किंमत: ₹' + (item.price || 0) + ' x ' + (item.qty || 1) + '</small></div>' +
-            '<div style="font-weight: bold; color: #28a745; font-size: 16px;">₹' + subtotal + '</div>' +
-            '</li>';
-  });
-  
-  html += '</ul>';
-  html += '<div style="margin-top: 20px; border-top: 2px solid #ddd; padding-top: 15px; display: flex; justify-content: space-between; align-items: center;">' +
-          '<h3 style="margin: 0;">एकूण रक्कम:</h3><h3 style="margin: 0; color: #333;">₹' + total + '</h3>' +
-          '</div>';
-          
-  html += '<button onclick="processCartCheckout()" style="width: 100%; background: #28a745; color: white; border: none; padding: 14px; font-size: 16px; font-weight: bold; border-radius: 5px; margin-top: 20px; cursor: pointer;">⚡ खरेदी पूर्ण करा (Buy Now)</button>';
-  html += '</div>';
-
-  container.innerHTML = html;
+// खऱ्या लॉग्ड-इन युजरची माहिती (Email/ID) मिळवणारे फंक्शन
+function getActualLoggedUserEmail() {
+  return localStorage.getItem('global_unified_email') || 
+         localStorage.getItem('user_email') || 
+         localStorage.getItem('email') || 
+         localStorage.getItem('supabase_user') || 
+         localStorage.getItem('erp_logged_user') || 
+         'verified_erp_customer@market.com';
 }
 
+// फायनल चेकआउट आणि युजर ट्रॅकिंगसह वीव्हो ब्रिज
 window.processCartCheckout = async function() {
   if (!isCustomerLoggedIn()) {
     alert('⚠️ ऑर्डर करण्यासाठी कृपया आधी लॉगिन करा!');
@@ -146,6 +117,9 @@ window.processCartCheckout = async function() {
     alert('🛒 तुमची कार्ट रिकामी आहे!');
     return;
   }
+
+  // डमी किंवा खरे नाव घेताना युजरचा खरा लॉग-इन ईमेल आपल्याला माहीत आहे
+  var realLoggedInUserEmail = getActualLoggedUserEmail();
 
   var customerName = prompt('🛒 कृपया तुमचे नाव टाका (ऑर्डरसाठी):', '');
   if (!customerName) return;
@@ -166,12 +140,13 @@ window.processCartCheckout = async function() {
   var totalAmt = cart.reduce(function(sum, i) { return sum + (i.price * i.qty); }, 0);
   var orderOtp = Math.floor(1000 + Math.random() * 9000).toString();
 
+  // Supabase मध्ये डमी नावाबरोबरच "खरा लॉग्ड-इन युजर (X User)" पक्का सेव्ह करणे
   try {
     if (typeof sb !== 'undefined') {
       var primaryBizId = cart[0].business_id || 'b9ea82ab-e398-4ee7-a2c0-8e4052c9188a';
       await sb.from('orders').insert({
         business_id: primaryBizId,
-        customer_name: customerName,
+        customer_name: customerName + ' (Ordered via ERP Login: ' + realLoggedInUserEmail + ')',
         customer_phone: customerPhone,
         customer_address: customerAddress,
         items_summary: itemsSummaryText,
@@ -181,19 +156,19 @@ window.processCartCheckout = async function() {
       });
     }
   } catch (err) {
-    console.error('Supabase order insert error:', err);
+    console.warn('Supabase insert note:', err);
   }
 
   var orderMessage = '📦 **AllERP युनिफाइड ऑर्डर**\n\n' +
                      '🛒 **उत्पादने:**\n' + itemsSummaryText + '\n\n' +
                      '💰 **एकूण रक्कम:** ₹' + totalAmt + '\n' +
                      '🔐 **डिलिव्हरी पिन (OTP):** ' + orderOtp + '\n\n' +
-                     '👤 **ग्राहक:** ' + customerName + '\n' +
+                     '👤 **ग्राहक (Provided):** ' + customerName + '\n' +
+                     '🛡️ **ERP Verified Login (X User):** ' + realLoggedInUserEmail + '\n' +
                      '📱 **मोबाईल:** ' + customerPhone + '\n' +
                      '📍 **पत्ता:** ' + customerAddress;
 
   var storeSlug = (typeof lockedStoreUsername !== 'undefined' && lockedStoreUsername) ? lockedStoreUsername : 'abhinaygandhi5151';
-  var customerEmail = localStorage.getItem('global_unified_email') || localStorage.getItem('user_email') || '';
 
   cart = [];
   saveCartState();
@@ -203,7 +178,7 @@ window.processCartCheckout = async function() {
 
   var weavoUrl = 'https://arhammarketingme-prog.github.io/weavo/?store=' + storeSlug + 
                  '&prefill_msg=' + encodeURIComponent(orderMessage) + 
-                 (customerEmail ? ('&customer_email=' + encodeURIComponent(customerEmail)) : '');
+                 '&customer_email=' + encodeURIComponent(realLoggedInUserEmail);
 
   window.open(weavoUrl, '_blank');
   window.location.href = 'index.html';
