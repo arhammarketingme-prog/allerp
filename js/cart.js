@@ -1,5 +1,5 @@
 // ==========================================
-// ALL ERP — STRICT PRE-CHECK LOGIN CART ENGINE
+// ALL ERP — SAFE & ERROR-FREE CART ENGINE
 // ==========================================
 
 let cart = JSON.parse(localStorage.getItem('all_erp_cart')) || JSON.parse(localStorage.getItem('cart')) || [];
@@ -7,8 +7,7 @@ let cart = JSON.parse(localStorage.getItem('all_erp_cart')) || JSON.parse(localS
 document.addEventListener("DOMContentLoaded", function() {
   updateCartUI();
   
-  // नेव्हबारमधील कार्ट बटनावर क्लिक केल्यावर आधी ईआरपी लॉगिन तपासणे
-  var cartTriggers = document.querySelectorAll('.cart-nav-btn, [data-target="customer-cart-modal'], #nav-cart-btn, .fa-shopping-cart, [onclick*="cart"]');
+  var cartTriggers = document.querySelectorAll('.cart-nav-btn, [data-target="customer-cart-modal"], #nav-cart-btn, .fa-shopping-cart, [onclick*="cart"]');
   cartTriggers.forEach(function(btn) {
     btn.addEventListener('click', function(e) {
       e.preventDefault();
@@ -26,7 +25,7 @@ function saveCartState() {
   localStorage.setItem('cart', JSON.stringify(cart));
 }
 
-// 1. प्रॉडक्ट कार्टमध्ये ॲड करणे (कोणत्याही अडथळ्याशिवाय)
+// 1. HTML मधील बटणासाठी आवश्यक असलेले जुने पण ग्लोबल 'addToCart' फंक्शन (एरर पूर्णपणे काढण्यासाठी)
 window.addToCart = function(productId, productName, productPrice, merchantBusinessId) {
   cart = JSON.parse(localStorage.getItem('all_erp_cart')) || JSON.parse(localStorage.getItem('cart')) || [];
 
@@ -63,7 +62,7 @@ function updateCartUI() {
   });
 }
 
-// 3. ईआरपी लॉगिन तसपासणारे मुख्य फंक्शन
+// 3. ईआरपी लॉगिन तपासणारे फंक्शन
 function isErpLoggedIn() {
   var unifiedEmail = localStorage.getItem('global_unified_email');
   var supUser = localStorage.getItem('supabase_user');
@@ -72,11 +71,11 @@ function isErpLoggedIn() {
   return (unifiedEmail || supUser || custObj);
 }
 
-// 4. कार्ट किंवा ऑर्डर करताना आधी लॉगिन तपासून मगच पुढे जाऊ देणे
+// 4. कार्ट क्लिक केल्यावर लॉगिन चेक करणे
 function checkErpLoginBeforeCart() {
   if (!isErpLoggedIn()) {
     alert('⚠️ ऑर्डर करण्यासाठी आणि कार्ट पाहण्यासाठी कृपया आधी ऑल ईआरपी (All ERP) वर लॉगिन करा!');
-    window.location.href = 'login.html'; // थेट ईआरपी लॉगिन पेजवर पाठवणे
+    window.location.href = 'login.html';
     return;
   }
   
@@ -133,7 +132,7 @@ function renderCartPageItems() {
   container.innerHTML = html;
 }
 
-// 6. फायनल चेकआउट आणि वीव्हो ब्रिज (लॉगिन असल्याशिवाय शक्य नाही)
+// 6. फायनल चेकआउट आणि वीव्हो ब्रिज
 window.processCartCheckout = async function() {
   if (!isErpLoggedIn()) {
     alert('⚠️ ऑर्डर करण्यासाठी कृपया आधी लॉगिन करा!');
@@ -196,7 +195,6 @@ window.processCartCheckout = async function() {
   var storeSlug = (typeof lockedStoreUsername !== 'undefined' && lockedStoreUsername) ? lockedStoreUsername : 'abhinaygandhi5151';
   var customerEmail = localStorage.getItem('global_unified_email') || localStorage.getItem('supabase_user') || '';
 
-  // ऑर्डर यशस्वी झाल्यावर कार्ट पूर्णपणे रिकामी करणे
   cart = [];
   saveCartState();
   updateCartUI();
@@ -209,6 +207,5 @@ window.processCartCheckout = async function() {
 
   window.open(weavoUrl, '_blank');
   
-  // होमपेजवर रीफ्रेश करून पाठवणे
   window.location.href = 'index.html';
 };
