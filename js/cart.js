@@ -1,40 +1,11 @@
 // ==========================================
-// ALL ERP — STRICT LOGIN & CART SECURITY ENGINE
+// ALL ERP — FINAL INDEPENDENT & FOOLPROOF CART ENGINE
 // ==========================================
 
 let cart = JSON.parse(localStorage.getItem('all_erp_cart')) || JSON.parse(localStorage.getItem('cart')) || [];
 
 document.addEventListener("DOMContentLoaded", function() {
-  // 1. पेज लोड होताच किंवा कार्टवर क्लिक केल्यावर सगळ्यात आधी कडक लॉगिन तपणे
-  if (!isCustomerLoggedIn()) {
-    // जर युजर लॉगिन नसेल आणि तो थेट cart.html वर किंवा कार्ट बटनावर असेल तर अडवणे
-    if (window.location.pathname.includes('cart.html')) {
-      alert('⚠️ सुरक्षा नियम: कार्ट पाहण्यासाठी आणि खरेदी करण्यासाठी आधी ऑल ईआरपीवर लॉगिन करणे बंधनकारक आहे!');
-      window.location.href = 'login.html';
-      return;
-    }
-  }
-
   updateCartUI();
-  
-  var cartTriggers = document.querySelectorAll('.cart-nav-btn, [data-target="customer-cart-modal"], #nav-cart-btn, .fa-shopping-cart, [onclick*="cart"]');
-  cartTriggers.forEach(function(btn) {
-    btn.addEventListener('click', function(e) {
-      e.preventDefault();
-      
-      // लॉगिन नसलेस थेट लॉगिन पेजवर पाठवणे
-      if (!isCustomerLoggedIn()) {
-        alert('⚠️ कृपया खरेदी करण्यापूर्वी आधी लॉगिन करा!');
-        window.location.href = 'login.html';
-        return;
-      }
-      
-      // लॉगिन असेल तरच कार्ट पानावर जाऊ देणे
-      if (window.location.pathname.includes('index.html') || window.location.pathname.endsWith('/allerp/')) {
-        window.location.href = 'cart.html';
-      }
-    });
-  });
 });
 
 function saveCartState() {
@@ -42,8 +13,10 @@ function saveCartState() {
   localStorage.setItem('cart', JSON.stringify(cart));
 }
 
+// 1. प्रॉडक्ट कार्टमध्ये ॲड करणे
 window.addToCart = function(productId, productName, productPrice, merchantBusinessId) {
   cart = JSON.parse(localStorage.getItem('all_erp_cart')) || JSON.parse(localStorage.getItem('cart')) || [];
+  
   var name = productName || 'उत्पादनाचे नाव';
   var price = productPrice || 40;
   var activeBizId = merchantBusinessId || 'b9ea82ab-e398-4ee7-a2c0-8e4052c9188a';
@@ -66,6 +39,7 @@ window.addToCart = function(productId, productName, productPrice, merchantBusine
   alert('✅ "' + name + '" यशस्वीरीत्या कार्टमध्ये समाविष्ट केले गेले!');
 };
 
+// 2. बॅज किंवा काऊंट अपडेट करणे
 function updateCartUI() {
   cart = JSON.parse(localStorage.getItem('all_erp_cart')) || JSON.parse(localStorage.getItem('cart')) || [];
   var totalQty = cart.reduce(function(sum, item) { return sum + (item.qty || 1); }, 0);
@@ -76,7 +50,8 @@ function updateCartUI() {
   });
 }
 
-function isCustomerLoggedIn() {
+// 3. युजर लॉगिन आहे का तपासनारे सोपे फंक्शन
+function checkUserLoginStatus() {
   var userEmail = localStorage.getItem('global_unified_email') || localStorage.getItem('user_email') || localStorage.getItem('email') || localStorage.getItem('supabase_user');
   var userToken = localStorage.getItem('sb-access-token') || localStorage.getItem('supabase.auth.token') || localStorage.getItem('logged_in');
   
@@ -105,10 +80,11 @@ function getActualLoggedUserEmail() {
          'verified_erp_customer@market.com';
 }
 
-window.processCartCheckout = async function() {
-  // चेकआउट करताना पुन्हा कडक खात्री करणे
-  if (!isCustomerLoggedIn()) {
-    alert('⚠️ सुरक्षा नियम: ऑर्डर पूर्ण करण्यासाठी लॉगिन करणे आवश्यक आहे!');
+// 4. थेट स्वतंत्र बटनावरून चालणारे मुख्य चेकआउट आणि ऑर्डर फंक्शन
+window.processDirectCheckout = async function() {
+  // सर्वात आधी कडक लॉगिन चेक: लॉगिन नसेल तर थेट लॉगिन पेजवर फेकून देणे
+  if (!checkUserLoginStatus()) {
+    alert('⚠️ कृपया ऑर्डर करण्यासाठी आणि खरेदी करण्यासाठी आधी लॉगिन करा!');
     window.location.href = 'login.html';
     return;
   }
@@ -116,7 +92,7 @@ window.processCartCheckout = async function() {
   cart = JSON.parse(localStorage.getItem('all_erp_cart')) || JSON.parse(localStorage.getItem('cart')) || [];
   
   if (!cart || cart.length === 0) {
-    alert('🛒 तुमचे कार्ट रिकामी आहे!');
+    alert('🛒 तुमचे कार्ट रिकामी आहे! कृपया पहिले उत्पादन समाविष्ट करा.');
     return;
   }
 
@@ -141,6 +117,7 @@ window.processCartCheckout = async function() {
   var totalAmt = cart.reduce(function(sum, i) { return sum + (i.price * i.qty); }, 0);
   var orderOtp = Math.floor(1000 + Math.random() * 9000).toString();
 
+  // डेटाबेसमध्ये सुरक्षित नोंद करणे
   try {
     if (typeof sb !== 'undefined') {
       var primaryBizId = cart[0].business_id || 'b9ea82ab-e398-4ee7-a2c0-8e4052c9188a';
@@ -170,6 +147,7 @@ window.processCartCheckout = async function() {
 
   var storeSlug = (typeof lockedStoreUsername !== 'undefined' && lockedStoreUsername) ? lockedStoreUsername : 'abhinaygandhi5151';
 
+  // ऑर्डर यशस्वी झाल्यावर कार्ट कोरी करणे
   cart = [];
   saveCartState();
   updateCartUI();
