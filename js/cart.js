@@ -4,8 +4,10 @@
 
 let cart = [];
 
-// कार्टमध्ये प्रॉडक्ट जोडणे (सुधारित व सुरक्षित कोड)
+// कार्टमध्ये प्रॉडक्ट जोडणे (नाव undefined येण्याची समस्या दूर करणारा सुरक्षित कोड)
 function addToCart(productId, productName, productPrice, merchantBusinessId) {
+  var cleanName = productName || 'उत्पादनाचे नाव';
+  var cleanPrice = productPrice || 0;
   var activeBizId = merchantBusinessId || (typeof currentBusinessId !== 'undefined' ? currentBusinessId : 'b9ea82ab-e398-4ee7-a2c0-8e4052c9188a');
   
   var existing = cart.find(function(item) { return item.id === productId; });
@@ -14,14 +16,14 @@ function addToCart(productId, productName, productPrice, merchantBusinessId) {
   } else {
     cart.push({
       id: productId,
-      name: productName,
-      price: productPrice,
+      name: cleanName,
+      price: cleanPrice,
       qty: 1,
       business_id: activeBizId
     });
   }
   updateCartUI();
-  alert('✅ "' + productName + '" कार्टमध्ये यशस्वीरीत्या जोडले गेले!');
+  alert('✅ "' + cleanName + '" कार्टमध्ये यशस्वीरीत्या जोडले गेले!');
 }
 
 // कार्ट UI अपडेट करणे
