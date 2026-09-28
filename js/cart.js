@@ -1,24 +1,54 @@
 // ==========================================
-// ALL ERP — DIRECT WEAVO BUY NOW BRIDGE ENGINE
+// ALL ERP — SAFE & STABLE BRIDGE ENGINE
 // ==========================================
 
+let cart = JSON.parse(localStorage.getItem('all_erp_cart')) || [];
+
 document.addEventListener("DOMContentLoaded", function() {
-  // नेव्हबारमधील किंवा होमपेजवरील जुने कार्ट बॅज किंवा काउंटर असल्यास ते शून्य किंवा लपवून ठेवणे
-  var badge = document.getElementById('bar-cart-count');
-  if (badge) badge.textContent = '0';
+  updateCartUI();
 });
 
-// थेट 'Buy Now' किंवा 'Order Now' दाबल्यावर चालणारे युनिव्हर्सल फंक्शन
-window.buyProductDirectly = function(productName, productPrice, merchantUsername, businessId) {
+// 1. जुने ॲड टू कार्ट फंक्शन (एरर येऊ नये म्हणून ग्लोबल केलेले)
+window.addToCart = function(productId, productName, productPrice, merchantBusinessId) {
+  var name = productName || 'उत्पादनाचे नाव';
+  var price = productPrice || 40;
+  var activeBizId = merchantBusinessId || 'b9ea82ab-e398-4ee7-a2c0-8e4052c9188a';
+  
+  var existing = cart.find(function(item) { return item.id === productId || item.name === name; });
+  if (existing) {
+    existing.qty++;
+  } else {
+    cart.push({
+      id: productId || 'prod-' + Date.now(),
+      name: name,
+      price: price,
+      qty: 1,
+      business_id: activeBizId
+    });
+  }
+  
+  localStorage.setItem('all_erp_cart', JSON.stringify(cart));
+  updateCartUI();
+  alert('✅ "' + name + '" यशस्वीरीत्या कार्टमध्ये समाविष्ट केले गेले!');
+};
+
+// 2. बॅज अपडेट करणे
+function updateCartUI() {
+  var totalQty = cart.reduce(function(sum, item) { return sum + item.qty; }, 0);
+  var badges = document.querySelectorAll('#bar-cart-count, .cart-count-badge');
+  badges.forEach(function(b) {
+    b.textContent = totalQty;
+  });
+}
+
+// 3. थेट 'Buy Now' किंवा 'Add to Cart' वरून थेट Weavo पोर्टल उघडणारे फंक्शन
+window.buyProductDirectly = function(productName, productPrice, merchantUsername) {
   var name = productName || 'उत्पादन';
-  var price = productPrice || 0;
+  var price = productPrice || 40;
   var storeSlug = merchantUsername || (typeof lockedStoreUsername !== 'undefined' && lockedStoreUsername ? lockedStoreUsername : 'abhinaygandhi5151');
   
-  // ग्राहकाची माहिती विचारणे किंवा थेट वीव्हो चॅटमध्ये पाठवणे
   var customerName = prompt('🛒 कृपया तुमचे नाव टाका (ऑर्डरसाठी):', '');
-  if (!customerName) {
-    return; // नाव दिले नाही तर प्रक्रिया रद्द करणे
-  }
+  if (!customerName) return;
 
   var customerPhone = prompt('📱 कृपया तुमचा १० अंकी मोबाईल नंबर टाका:', '');
   if (!customerPhone || customerPhone.length < 10) {
@@ -32,7 +62,6 @@ window.buyProductDirectly = function(productName, productPrice, merchantUsername
     return;
   }
 
-  // वीव्हो पोर्टलसाठी मेसेज फॉरमॅट तयार करणे
   var orderMessage = '📦 **AllERP थेट ऑनलाईन ऑर्डर**\n\n' +
                      '🛒 **उत्पादन:** ' + name + '\n' +
                      '💰 **किंमत:** ₹' + price + '\n' +
@@ -40,10 +69,8 @@ window.buyProductDirectly = function(productName, productPrice, merchantUsername
                      '📱 **मोबाईल:** ' + customerPhone + '\n' +
                      '📍 **पत्ता:** ' + customerAddress;
 
-  // लोकल स्टोरेज किंवा युनिव्हर्सल ईमेल मिळवणे
   var customerEmail = localStorage.getItem('global_unified_email') || '';
 
-  // थेट वीव्हो पोर्टल उघडून दुकानदाराशी संवाद साधणे आणि मेसेज पास करणे
   var weavoUrl = 'https://arhammarketingme-prog.github.io/weavo/?store=' + storeSlug + 
                  '&prefill_msg=' + encodeURIComponent(orderMessage) + 
                  (customerEmail ? ('&customer_email=' + encodeURIComponent(customerEmail)) : '');
