@@ -1,8 +1,7 @@
 // ==========================================
-// ALL ERP — FORCE GOOGLE LOGIN & CART CHECKOUT ENGINE
+// ALL ERP — FINAL UNIFIED & SECURE CART ENGINE
 // ==========================================
 
-// 1. युनिव्हर्सल कार्ट लोड करणे
 let cart = JSON.parse(localStorage.getItem('all_erp_cart')) || JSON.parse(localStorage.getItem('cart')) || [];
 
 document.addEventListener("DOMContentLoaded", function() {
@@ -16,15 +15,19 @@ document.addEventListener("DOMContentLoaded", function() {
       checkLoginAndOpenCart();
     });
   });
+
+  // जर युजर थेट cart.html पानावर असेल तर वस्तू रेंडर करणे
+  if (window.location.pathname.includes('cart.html') || document.querySelector('.shopping-cart-container')) {
+    renderCartPageItems();
+  }
 });
 
-// दोन्ही स्टोरेज की मध्ये डेटा एकाच वेळी सेव्ह करणारी फंक्शन
 function saveCartState() {
   localStorage.setItem('all_erp_cart', JSON.stringify(cart));
   localStorage.setItem('cart', JSON.stringify(cart));
 }
 
-// 2. कार्टमध्ये उत्पादन ॲड करणे (कोणत्याही रहदारीशिवाय विनासायास ॲड होईल)
+// 1. प्रॉडक्ट कार्टमध्ये ॲड करणे
 window.addToCart = function(productId, productName, productPrice, merchantBusinessId) {
   cart = JSON.parse(localStorage.getItem('all_erp_cart')) || JSON.parse(localStorage.getItem('cart')) || [];
 
@@ -50,7 +53,7 @@ window.addToCart = function(productId, productName, productPrice, merchantBusine
   alert('✅ "' + name + '" यशस्वीरीत्या कार्टमध्ये समाविष्ट केले गेले!');
 };
 
-// 3. नेव्हबार बझर (Badge) अपडेट करणे
+// 2. बझर/बॅज अपडेट करणे
 function updateCartUI() {
   cart = JSON.parse(localStorage.getItem('all_erp_cart')) || JSON.parse(localStorage.getItem('cart')) || [];
   var totalQty = cart.reduce(function(sum, item) { return sum + (item.qty || 1); }, 0);
@@ -61,62 +64,67 @@ function updateCartUI() {
   });
 }
 
-// 4. कार्ट क्लिक केल्यावर लॉगिन बंधनकारक करणे (Force Google Login)
+// 3. कार्ट क्लिक केल्यावर लॉगिन चेक करणे (Force Login)
 function checkLoginAndOpenCart() {
-  // युजर लॉगिन आहे किंवा नाही हे तपासणे (उदा. localStorage किंवा Supabase सेशन)
   var isLogged = localStorage.getItem('global_unified_email') || localStorage.getItem('supabase_user') || (typeof loggedInCustomer !== 'undefined' && loggedInCustomer);
   
   if (!isLogged) {
-    alert('⚠️ कृपया कार्ट पाहण्यासाठी आणि ऑर्डर करण्यासाठी आधी गुगल (Google) द्वारे लॉगिन करा!');
-    
-    // गुगल लॉगिन पेज किंवा मोडलवर रीडायरेक्ट करणे
-    window.location.href = 'login.html'; // किंवा तुमच्या लॉगिन पेजची योग्य लिंक
+    alert('⚠️ कृपया कार्ट पाहण्यासाठी आणि ऑर्डर करण्यासाठी आधी लॉगिन करा!');
+    window.location.href = 'login.html'; // लॉगिन पेजवर पाठवणे
     return;
   }
   
-  // युजर लॉगिन असेल तरच कार्ट मोडल उघडणे
-  var modal = document.getElementById('customer-cart-modal');
-  if (modal) {
-    modal.style.display = 'block';
+  // लॉगिन असेल तर cart.html वर किंवा मोडलवर जाणे
+  if (window.location.pathname.includes('index.html') || window.location.pathname.endsWith('/allerp/')) {
+    window.location.href = 'cart.html';
+  } else {
+    var modal = document.getElementById('customer-cart-modal');
+    if (modal) {
+      modal.style.display = 'block';
+    }
+    renderCartPageItems();
   }
-  renderCartModalItems();
 }
 
-// 5. मोडलमध्ये सर्व वस्तू रेंडर करणे
-function renderCartModalItems() {
+// 4. cart.html पानावर किंवा मोडलमध्ये वस्तू अचूक दाखवणे
+function renderCartPageItems() {
   cart = JSON.parse(localStorage.getItem('all_erp_cart')) || JSON.parse(localStorage.getItem('cart')) || [];
-  var container = document.getElementById('cart-items-container');
+  
+  // मूळ डिझाईनचे कन्टेनर शोधणे जेणेकरून "कार्ट रिकामी आहे" ची समस्या येणार नाही
+  var container = document.getElementById('cart-items-container') || document.querySelector('.shopping-cart-container, main, .container, article');
   if (!container) return;
 
   if (cart.length === 0) {
-    container.innerHTML = '<p style="text-align: center; padding: 20px;">🛒 तुमचे कार्ट सध्या रिकामी आहे.</p>';
+    container.innerHTML = '<div style="text-align: center; padding: 40px;"><h3>🛒 तुमचे कार्ट सध्या रिकामी आहे.</h3><a href="index.html" style="background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; margin-top: 15px;">खरेदी सुरू ठेवा</a></div>';
     return;
   }
 
-  var html = '<ul style="list-style: none; padding: 0; margin: 0;">';
+  var html = '<div style="max-width: 700px; margin: 20px auto; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">';
+  html += '<h2 style="margin-bottom: 20px; color: #333;">🛒 तुमची शॉपिंग कार्ट (Shopping Cart)</h2><ul style="list-style: none; padding: 0; margin: 0;">';
   var total = 0;
   
   cart.forEach(function(item) {
     var subtotal = (item.price || 0) * (item.qty || 1);
     total += subtotal;
-    html += '<li style="margin-bottom: 12px; border-bottom: 1px solid #eee; padding-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">' +
-            '<div><b>' + (item.name || 'उत्पादन') + '</b><br>' +
+    html += '<li style="margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">' +
+            '<div><b style="font-size: 16px;">' + (item.name || 'उत्पादन') + '</b><br>' +
             '<small style="color: #666;">किंमत: ₹' + (item.price || 0) + ' x ' + (item.qty || 1) + '</small></div>' +
-            '<div style="font-weight: bold; color: #333;">₹' + subtotal + '</div>' +
+            '<div style="font-weight: bold; color: #28a745; font-size: 16px;">₹' + subtotal + '</div>' +
             '</li>';
   });
   
   html += '</ul>';
-  html += '<div style="margin-top: 15px; border-top: 2px solid #ddd; padding-top: 10px; display: flex; justify-content: space-between;">' +
-          '<h3>एकूण रक्कम:</h3><h3>₹' + total + '</h3>' +
+  html += '<div style="margin-top: 20px; border-top: 2px solid #ddd; padding-top: 15px; display: flex; justify-content: space-between; align-items: center;">' +
+          '<h3 style="margin: 0;">एकूण रक्कम:</h3><h3 style="margin: 0; color: #333;">₹' + total + '</h3>' +
           '</div>';
           
-  html += '<button onclick="processCartCheckout()" style="width: 100%; background: #28a745; color: white; border: none; padding: 12px; font-size: 16px; font-weight: bold; border-radius: 5px; margin-top: 15px; cursor: pointer;">⚡ खरेदी पूर्ण करा (Buy Now)</button>';
+  html += '<button onclick="processCartCheckout()" style="width: 100%; background: #28a745; color: white; border: none; padding: 14px; font-size: 16px; font-weight: bold; border-radius: 5px; margin-top: 20px; cursor: pointer;">⚡ खरेदी पूर्ण करा (Buy Now & Send Order)</button>';
+  html += '</div>';
 
   container.innerHTML = html;
 }
 
-// 6. फायनल चेकआउट आणि वीव्हो ब्रिज
+// 5. फायनल चेकआउट आणि वीव्हो ब्रिज
 window.processCartCheckout = async function() {
   cart = JSON.parse(localStorage.getItem('all_erp_cart')) || JSON.parse(localStorage.getItem('cart')) || [];
   
@@ -176,9 +184,6 @@ window.processCartCheckout = async function() {
   cart = [];
   saveCartState();
   updateCartUI();
-  
-  var modal = document.getElementById('customer-cart-modal');
-  if (modal) modal.style.display = 'none';
 
   alert('🎉 ऑर्डर यशस्वीरीत्या नोंदवली गेली!\n🔐 तुमचा ओटीपी (OTP): ' + orderOtp);
 
