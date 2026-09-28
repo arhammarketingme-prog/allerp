@@ -1,40 +1,19 @@
 // ==========================================
-// ALL ERP — MASTER CART & CHECKOUT ENGINE
+// ALL ERP — DIRECT WEAVO BRIDGE & CART ENGINE
 // ==========================================
 
-// ग्लोबल कार्ट यादी (जी संपूर्ण डॅशबोर्डवर दिसेल)
 let cart = JSON.parse(localStorage.getItem('all_erp_cart')) || [];
 
-// पेज लोड झाल्यावर कार्ट युजर्ससाठी अपडेट करणे
 document.addEventListener("DOMContentLoaded", function() {
   updateCartUI();
 });
 
-// 1. कार्टमध्ये प्रॉडक्ट प्रत्यक्ष साठवणारा आणि बॅज अपडेट करणारा अचूक कोड
+// 1. कार्टमध्ये प्रॉडक्ट ॲड करणे
 function addToCart(productId, productName, productPrice, merchantBusinessId) {
-  var name = productName;
-  var price = productPrice;
-
-  // जर प्रॉडक्टचे नाव किंवा किंमत बटणावरून आली नसेल, तर पेजवरून अचूक शोधणे
-  if (!name || name === 'उत्पादनाचे नाव' || name === 'undefined') {
-    var titleEl = document.querySelector('h1, h2, .product-title, strong');
-    if (titleEl) name = titleEl.textContent.trim();
-    else name = "Lux Soap";
-  }
-
-  if (!price || isNaN(price)) {
-    var priceEl = document.querySelector('.price, span[style*="14px"], div[style*="14px"]');
-    if (priceEl) {
-      var priceText = priceEl.textContent.replace(/[^\d.]/g, '');
-      price = parseFloat(priceText) || 40;
-    } else {
-      price = 40;
-    }
-  }
-
+  var name = productName || 'उत्पादनाचे नाव';
+  var price = productPrice || 40;
   var activeBizId = merchantBusinessId || (typeof currentBusinessId !== 'undefined' ? currentBusinessId : 'b9ea82ab-e398-4ee7-a2c0-8e4052c9188a');
   
-  // कार्टमध्ये आधीच ती वस्तू आहे का तपणे
   var existing = cart.find(function(item) { return item.id === productId || item.name === name; });
   if (existing) {
     existing.qty++;
@@ -48,26 +27,22 @@ function addToCart(productId, productName, productPrice, merchantBusinessId) {
     });
   }
   
-  // लोकलस्टोरेजमध्ये सेव्ह करणे जेणेकरून रिफ्रेश झाल्यावरही डेटा उडणार नाही
   localStorage.setItem('all_erp_cart', JSON.stringify(cart));
-  
   updateCartUI();
   alert('✅ "' + name + '" यशस्वीरीत्या कार्टमध्ये समाविष्ट केले गेले!');
 }
 
-// 2. नेव्हबारमधील कार्ट बझर (Badge Counter) अपडेट करणारे फंक्शन
+// 2. कार्ट बझर अपडेट करणे
 function updateCartUI() {
   var totalQty = cart.reduce(function(sum, item) { return sum + item.qty; }, 0);
-  
-  // सर्व पानांवर जिथे कार्टची संख्या दाखवली जाते तिथे ती अपडेट करणे
   var badges = document.querySelectorAll('#bar-cart-count, .cart-count-badge');
   badges.forEach(function(b) {
     b.textContent = totalQty;
   });
 }
 
-// 3. मर्चंट वाईज स्प्लिटिंग, OTP आणि Weavo ऑटोमॅटिक चॅट ब्रिजिंगसह ऑर्डर सबमिट करणे
-async function submitCustomerOrderWithOTPAndWeavo() {
+// 3. ऑर्डर सबमिट करणे, ऑल ईआरपीच्या orders टेबलमध्ये टाकणे आणि थेट Weavo पोर्टल उघडणे
+async function submitCustomerOrderWithOTPAndWeavo(overrideCartItems) {
   var nameField = document.getElementById('cust-order-name');
   var phoneField = document.getElementById('cust-order-phone');
   var addressField = document.getElementById('cust-order-address');
@@ -80,30 +55,22 @@ async function submitCustomerOrderWithOTPAndWeavo() {
     alert('कृपया पूर्ण नाव, १० अंकी मोबाईल नंबर आणि डिलिव्हरी पत्ता अचूक भरा!'); 
     return; 
   }
-  
-  if (typeof loggedInCustomer === 'undefined' || !loggedInCustomer) { 
-    if (typeof loginCustomerWithGoogle === 'function') {
-      loginCustomerWithGoogle(); 
-    } else {
-      alert('कृपया पहिले लॉगिन करा!');
-    }
-    return; 
-  }
 
-  if (!cart || cart.length === 0) {
+  var activeCart = overrideCartItems && overrideCartItems.length > 0 ? overrideCartItems : cart;
+  if (!activeCart || activeCart.length === 0) {
     alert('तुमची कार्ट रिकामी आहे!');
     return;
   }
 
   try {
     var merchantGroups = {};
-    cart.forEach(function(item) {
+    activeCart.forEach(function(item) {
       var mId = item.business_id || (typeof currentBusinessId !== 'undefined' ? currentBusinessId : 'b9ea82ab-e398-4ee7-a2c0-8e4052c9188a');
       if (!merchantGroups[mId]) merchantGroups[mId] = [];
       merchantGroups[mId].push(item);
     });
 
-    var customerUserId = loggedInCustomer.id;
+    var customerUserId = (typeof loggedInCustomer !== 'undefined' && loggedInCustomer && loggedInCustomer.id) ? loggedInCustomer.id : null;
     var storeSlug = (typeof lockedStoreUsername !== 'undefined' && lockedStoreUsername) ? lockedStoreUsername : ((typeof currentMerchantUsername !== 'undefined' && currentMerchantUsername) ? currentMerchantUsername : 'abhinaygandhi5151');
 
     for (var mId in merchantGroups) {
@@ -113,6 +80,7 @@ async function submitCustomerOrderWithOTPAndWeavo() {
       
       var orderOtp = Math.floor(1000 + Math.random() * 9000).toString();
 
+      // ऑल ERP च्या orders टेबलमध्ये रेकॉर्ड सेव्ह करणे
       var orderRes = await sb.from('orders').insert({
         business_id: mId,
         customer_name: name,
@@ -138,7 +106,8 @@ async function submitCustomerOrderWithOTPAndWeavo() {
         if (profRes.data) targetMerchantId = profRes.data.id;
       }
 
-      if (targetMerchantId && targetMerchantId !== customerUserId) {
+      // Weavo च्या messages टेबलमध्ये थेट मेसेज ढकलणे (जर वापरकर्ता लॉग्ड इन असेल)
+      if (targetMerchantId && customerUserId && targetMerchantId !== customerUserId) {
         var targetConvId = null;
         var myConvsRes = await sb.from('conversation_members').select('conversation_id').eq('user_id', customerUserId);
         var myIds = (myConvsRes.data || []).map(function(r) { return r.conversation_id; });
@@ -179,12 +148,18 @@ async function submitCustomerOrderWithOTPAndWeavo() {
       }
     }
 
-    alert('🎉 ऑर्डर यशस्वीरीत्या नोंदवली गेली, सुरक्षित OTP जनरेट झाला आणि Weavo चॅटमध्ये पाठवला गेला!');
+    // लोकल स्टोरेज आणि कार्ट साफ करणे
     cart = [];
     localStorage.removeItem('all_erp_cart');
     updateCartUI();
     if (typeof closeModal === 'function') closeModal('customer-cart-modal');
-    if (typeof openWeavoChat === 'function') openWeavoChat();
+
+    alert('🎉 ऑर्डर यशस्वीरीत्या नोंदवली गेली!\n🔐 डिलिव्हरी पिन (OTP): ' + (typeof orderOtp !== 'undefined' ? orderOtp : ''));
+
+    // थेट Weavo पोर्टल उघडणे (दुकानदाराच्या युजरनेमसह)
+    var customerEmail = (typeof loggedInCustomer !== 'undefined' && loggedInCustomer && loggedInCustomer.email) ? loggedInCustomer.email : localStorage.getItem('global_unified_email');
+    window.open('https://arhammarketingme-prog.github.io/weavo/?store=' + storeSlug + (customerEmail ? ('&customer_email=' + encodeURIComponent(customerEmail)) : ''), '_blank');
+
   } catch (err) {
     console.error('Order process error:', err);
     alert('ऑर्डर प्रक्रिया करताना त्रुटी आली. कृपया पुन्हा प्रयत्न करा.');
