@@ -54,3 +54,21 @@ function updateCartUI() {
     b.textContent = totalQty;
   });
 }
+// 3. कार्ट बटण किंवा मोडलमधील 'खरेदी सुरू करा' किंवा चेकआउट इव्हेंट वीव्हो ब्रिजला जोडणे
+document.addEventListener("DOMContentLoaded", function() {
+  var checkoutBtns = document.querySelectorAll('.checkout-btn, .cart-checkout-btn, [onclick*="checkout"], [href*="checkout"]');
+  checkoutBtns.forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      
+      var storeSlug = (typeof lockedStoreUsername !== 'undefined' && lockedStoreUsername) ? lockedStoreUsername : 'abhinaygandhi5151';
+      var customerEmail = localStorage.getItem('global_unified_email') || '';
+      
+      // थेट Weavo पोर्टल उघडून सर्व कार्टमधील आयटम पास करणे
+      var weavoUrl = 'https://arhammarketingme-prog.github.io/weavo/?store=' + storeSlug + 
+                     (customerEmail ? ('&customer_email=' + encodeURIComponent(customerEmail)) : '');
+                     
+      window.open(weavoUrl, '_blank');
+    });
+  });
+});
