@@ -1,22 +1,12 @@
-// ==========================================
-// ALL ERP — FINAL INDEPENDENT & FOOLPROOF CART ENGINE
-// ==========================================
-
 let cart = JSON.parse(localStorage.getItem('all_erp_cart')) || JSON.parse(localStorage.getItem('cart')) || [];
-
-document.addEventListener("DOMContentLoaded", function() {
-  updateCartUI();
-});
 
 function saveCartState() {
   localStorage.setItem('all_erp_cart', JSON.stringify(cart));
   localStorage.setItem('cart', JSON.stringify(cart));
 }
 
-// 1. प्रॉडक्ट कार्टमध्ये ॲड करणे
 window.addToCart = function(productId, productName, productPrice, merchantBusinessId) {
   cart = JSON.parse(localStorage.getItem('all_erp_cart')) || JSON.parse(localStorage.getItem('cart')) || [];
-  
   var name = productName || 'उत्पादनाचे नाव';
   var price = productPrice || 40;
   var activeBizId = merchantBusinessId || 'b9ea82ab-e398-4ee7-a2c0-8e4052c9188a';
@@ -35,22 +25,9 @@ window.addToCart = function(productId, productName, productPrice, merchantBusine
   }
   
   saveCartState();
-  updateCartUI();
   alert('✅ "' + name + '" यशस्वीरीत्या कार्टमध्ये समाविष्ट केले गेले!');
 };
 
-// 2. बॅज किंवा काऊंट अपडेट करणे
-function updateCartUI() {
-  cart = JSON.parse(localStorage.getItem('all_erp_cart')) || JSON.parse(localStorage.getItem('cart')) || [];
-  var totalQty = cart.reduce(function(sum, item) { return sum + (item.qty || 1); }, 0);
-  
-  var badges = document.querySelectorAll('#bar-cart-count, .cart-count-badge, [id*="cart-count"]');
-  badges.forEach(function(b) {
-    b.textContent = totalQty;
-  });
-}
-
-// 3. युजर लॉगिन आहे का तपासनारे सोपे फंक्शन
 function checkUserLoginStatus() {
   var userEmail = localStorage.getItem('global_unified_email') || localStorage.getItem('user_email') || localStorage.getItem('email') || localStorage.getItem('supabase_user');
   var userToken = localStorage.getItem('sb-access-token') || localStorage.getItem('supabase.auth.token') || localStorage.getItem('logged_in');
@@ -72,19 +49,9 @@ function checkUserLoginStatus() {
   return false;
 }
 
-function getActualLoggedUserEmail() {
-  return localStorage.getItem('global_unified_email') || 
-         localStorage.getItem('user_email') || 
-         localStorage.getItem('email') || 
-         localStorage.getItem('supabase_user') || 
-         'verified_erp_customer@market.com';
-}
-
-// 4. थेट स्वतंत्र बटनावरून चालणारे मुख्य चेकआउट आणि ऑर्डर फंक्शन
 window.processDirectCheckout = async function() {
-  // सर्वात आधी कडक लॉगिन चेक: लॉगिन नसेल तर थेट लॉगिन पेजवर फेकून देणे
   if (!checkUserLoginStatus()) {
-    alert('⚠️ कृपया ऑर्डर करण्यासाठी आणि खरेदी करण्यासाठी आधी लॉगिन करा!');
+    alert('⚠️ ऑर्डर करण्यासाठी आणि खरेदी करण्यासाठी आधी लॉगिन करणे बंधनकारक आहे!');
     window.location.href = 'login.html';
     return;
   }
@@ -95,8 +62,6 @@ window.processDirectCheckout = async function() {
     alert('🛒 तुमचे कार्ट रिकामी आहे! कृपया पहिले उत्पादन समाविष्ट करा.');
     return;
   }
-
-  var realLoggedInUserEmail = getActualLoggedUserEmail();
 
   var customerName = prompt('🛒 कृपया तुमचे नाव टाका (ऑर्डरसाठी):', '');
   if (!customerName) return;
@@ -117,12 +82,12 @@ window.processDirectCheckout = async function() {
   var totalAmt = cart.reduce(function(sum, i) { return sum + (i.price * i.qty); }, 0);
   var orderOtp = Math.floor(1000 + Math.random() * 9000).toString();
 
-  // डेटाबेसमध्ये सुरक्षित नोंद करणे
+  var realLoggedInUserEmail = localStorage.getItem('global_unified_email') || localStorage.getItem('user_email') || 'customer@allerp.com';
+
   try {
     if (typeof sb !== 'undefined') {
-      var primaryBizId = cart[0].business_id || 'b9ea82ab-e398-4ee7-a2c0-8e4052c9188a';
       await sb.from('orders').insert({
-        business_id: primaryBizId,
+        business_id: 'b9ea82ab-e398-4ee7-a2c0-8e4052c9188a',
         customer_name: customerName + ' (ERP Login: ' + realLoggedInUserEmail + ')',
         customer_phone: customerPhone,
         customer_address: customerAddress,
@@ -145,12 +110,10 @@ window.processDirectCheckout = async function() {
                      '📱 **मोबाईल:** ' + customerPhone + '\n' +
                      '📍 **पत्ता:** ' + customerAddress;
 
-  var storeSlug = (typeof lockedStoreUsername !== 'undefined' && lockedStoreUsername) ? lockedStoreUsername : 'abhinaygandhi5151';
+  var storeSlug = 'abhinaygandhi5151';
 
-  // ऑर्डर यशस्वी झाल्यावर कार्ट कोरी करणे
   cart = [];
   saveCartState();
-  updateCartUI();
 
   alert('🎉 ऑर्डर यशस्वीरीत्या नोंदवली गेली!\n🔐 तुमचा ओटीपी (OTP): ' + orderOtp);
 
