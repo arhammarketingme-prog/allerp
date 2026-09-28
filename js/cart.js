@@ -1,7 +1,3 @@
-// ==========================================
-// ALL ERP — FINAL CLEAN CART ENGINE
-// ==========================================
-
 let cart = JSON.parse(localStorage.getItem('all_erp_cart')) || JSON.parse(localStorage.getItem('cart')) || [];
 
 document.addEventListener("DOMContentLoaded", function() {
@@ -11,13 +7,11 @@ document.addEventListener("DOMContentLoaded", function() {
   cartTriggers.forEach(function(btn) {
     btn.addEventListener('click', function(e) {
       e.preventDefault();
-      
       if (!isCustomerLoggedIn()) {
         alert('⚠️ कृपया कार्ट पाहण्यासाठी आणि खरेदी करण्यासाठी आधी लॉगिन करा!');
         window.location.href = 'login.html';
         return;
       }
-      
       if (window.location.pathname.includes('index.html') || window.location.pathname.endsWith('/allerp/')) {
         window.location.href = 'cart.html';
       }
@@ -38,7 +32,6 @@ function saveCartState() {
 
 window.addToCart = function(productId, productName, productPrice, merchantBusinessId) {
   cart = JSON.parse(localStorage.getItem('all_erp_cart')) || JSON.parse(localStorage.getItem('cart')) || [];
-
   var name = productName || 'उत्पादनाचे नाव';
   var price = productPrice || 40;
   var activeBizId = merchantBusinessId || 'b9ea82ab-e398-4ee7-a2c0-8e4052c9188a';
