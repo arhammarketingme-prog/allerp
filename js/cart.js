@@ -1,5 +1,5 @@
 // ==========================================
-// ALL ERP — FINAL ERROR-FREE SYNTAX CART ENGINE
+// ALL ERP — ROBUST LOGIN & CART ENGINE
 // ==========================================
 
 let cart = JSON.parse(localStorage.getItem('all_erp_cart')) || JSON.parse(localStorage.getItem('cart')) || [];
@@ -40,7 +40,6 @@ function saveCartState() {
   localStorage.setItem('cart', JSON.stringify(cart));
 }
 
-// ग्लोबल 'addToCart' फंक्शन (सिंटॅक्स पूर्णपणे सुरक्षित)
 window.addToCart = function(productId, productName, productPrice, merchantBusinessId) {
   cart = JSON.parse(localStorage.getItem('all_erp_cart')) || JSON.parse(localStorage.getItem('cart')) || [];
 
@@ -76,12 +75,18 @@ function updateCartUI() {
   });
 }
 
+// सर्वसमावेशक आणि खात्रीशीर लॉगिन तपासणारे फंक्शन (सर्व संभाव्य की एकाच वेळी तपासेल)
 function isErpLoggedIn() {
   var unifiedEmail = localStorage.getItem('global_unified_email');
   var supUser = localStorage.getItem('supabase_user');
+  var userEmail = localStorage.getItem('user_email');
+  var loggedIn = localStorage.getItem('logged_in');
+  var user = localStorage.getItem('user');
+  var email = localStorage.getItem('email');
+  var sbToken = localStorage.getItem('sb-access-token') || localStorage.getItem('supabase.auth.token');
   var custObj = (typeof loggedInCustomer !== 'undefined' && loggedInCustomer) ? loggedInCustomer : null;
   
-  return (unifiedEmail || supUser || custObj);
+  return (unifiedEmail || supUser || userEmail || loggedIn === 'true' || loggedIn === true || user || email || sbToken || custObj);
 }
 
 function renderCartPageItems() {
@@ -180,7 +185,7 @@ window.processCartCheckout = async function() {
                      '📍 **पत्ता:** ' + customerAddress;
 
   var storeSlug = (typeof lockedStoreUsername !== 'undefined' && lockedStoreUsername) ? lockedStoreUsername : 'abhinaygandhi5151';
-  var customerEmail = localStorage.getItem('global_unified_email') || localStorage.getItem('supabase_user') || '';
+  var customerEmail = localStorage.getItem('global_unified_email') || localStorage.getItem('supabase_user') || localStorage.getItem('user_email') || '';
 
   cart = [];
   saveCartState();
@@ -194,5 +199,5 @@ window.processCartCheckout = async function() {
 
   window.open(weavoUrl, '_blank');
   
-  window.location.href = 'index.html';
+  window.location.2ref ? (window.location.href = 'index.html') : (window.location.href = 'index.html');
 };
