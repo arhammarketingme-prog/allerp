@@ -1,5 +1,5 @@
 // ==========================================
-// ALL ERP — FINAL UNIFIED & SECURE CART ENGINE
+// ALL ERP — STRICT SECURE LOGIN & CART ENGINE
 // ==========================================
 
 let cart = JSON.parse(localStorage.getItem('all_erp_cart')) || JSON.parse(localStorage.getItem('cart')) || [];
@@ -7,18 +7,17 @@ let cart = JSON.parse(localStorage.getItem('all_erp_cart')) || JSON.parse(localS
 document.addEventListener("DOMContentLoaded", function() {
   updateCartUI();
   
-  // नेव्हबारमधील कार्ट बटनावर क्लिक केल्यावर आधी लॉगिन तपासणे
+  // नेव्हबारमधील कार्ट बटनावर क्लिक केल्यावर कडक लॉगिन तपासणे
   var cartTriggers = document.querySelectorAll('.cart-nav-btn, [data-target="customer-cart-modal"], #nav-cart-btn, .fa-shopping-cart, [onclick*="cart"]');
   cartTriggers.forEach(function(btn) {
     btn.addEventListener('click', function(e) {
       e.preventDefault();
-      checkLoginAndOpenCart();
+      enforceLoginAndOpenCart();
     });
   });
 
-  // जर युजर थेट cart.html पानावर असेल तर वस्तू रेंडर करणे
   if (window.location.pathname.includes('cart.html') || document.querySelector('.shopping-cart-container')) {
-    renderCartPageItems();
+    enforceLoginAndRenderCart();
   }
 });
 
@@ -27,7 +26,7 @@ function saveCartState() {
   localStorage.setItem('cart', JSON.stringify(cart));
 }
 
-// 1. प्रॉडक्ट कार्टमध्ये ॲड करणे
+// 1. कार्टमध्ये उत्पादन ॲड करणे
 window.addToCart = function(productId, productName, productPrice, merchantBusinessId) {
   cart = JSON.parse(localStorage.getItem('all_erp_cart')) || JSON.parse(localStorage.getItem('cart')) || [];
 
@@ -53,7 +52,7 @@ window.addToCart = function(productId, productName, productPrice, merchantBusine
   alert('✅ "' + name + '" यशस्वीरीत्या कार्टमध्ये समाविष्ट केले गेले!');
 };
 
-// 2. बझर/बॅज अपडेट करणे
+// 2. बॅज अपडेट करणे
 function updateCartUI() {
   cart = JSON.parse(localStorage.getItem('all_erp_cart')) || JSON.parse(localStorage.getItem('cart')) || [];
   var totalQty = cart.reduce(function(sum, item) { return sum + (item.qty || 1); }, 0);
@@ -64,33 +63,43 @@ function updateCartUI() {
   });
 }
 
-// 3. कार्ट क्लिक केल्यावर लॉगिन चेक करणे (Force Login)
-function checkLoginAndOpenCart() {
-  var isLogged = localStorage.getItem('global_unified_email') || localStorage.getItem('supabase_user') || (typeof loggedInCustomer !== 'undefined' && loggedInCustomer);
+// 3. युजर लॉगिन चेक करण्याचे कडक फंक्शन
+function isUserLoggedIn() {
+  var unifiedEmail = localStorage.getItem('global_unified_email');
+  var supUser = localStorage.getItem('supabase_user');
+  var custObj = (typeof loggedInCustomer !== 'undefined' && loggedInCustomer) ? loggedInCustomer : null;
   
-  if (!isLogged) {
-    alert('⚠️ कृपया कार्ट पाहण्यासाठी आणि ऑर्डर करण्यासाठी आधी लॉगिन करा!');
-    window.location.href = 'login.html'; // लॉगिन पेजवर पाठवणे
+  return (unifiedEmail || supUser || custObj);
+}
+
+// 4. कार्ट क्लिक केल्यावर लॉगिन तपासणे आणि नसल्यास थेट लॉगिनला पाठवणे
+function enforceLoginAndOpenCart() {
+  if (!isUserLoggedIn()) {
+    alert('⚠️ कृपया खरेदी करण्यासाठी आणि कार्ट पाहण्यासाठी आधी ऑल ईआरपी (All ERP) वर लॉगिन करा!');
+    window.location.href = 'login.html'; // ERP चे स्वतःचे लॉगिन पेज
     return;
   }
   
-  // लॉगिन असेल तर cart.html वर किंवा मोडलवर जाणे
   if (window.location.pathname.includes('index.html') || window.location.pathname.endsWith('/allerp/')) {
     window.location.href = 'cart.html';
   } else {
-    var modal = document.getElementById('customer-cart-modal');
-    if (modal) {
-      modal.style.display = 'block';
-    }
     renderCartPageItems();
   }
 }
 
-// 4. cart.html पानावर किंवा मोडलमध्ये वस्तू अचूक दाखवणे
+function enforceLoginAndRenderCart() {
+  if (!isUserLoggedIn()) {
+    alert('⚠️ कृपया कार्ट पाहण्यासाठी आधी लॉगिन करा!');
+    window.location.href = 'login.html';
+    return;
+  }
+  renderCartPageItems();
+}
+
+// 5. कार्ट पेजवर वस्तू दाखवणे
 function renderCartPageItems() {
   cart = JSON.parse(localStorage.getItem('all_erp_cart')) || JSON.parse(localStorage.getItem('cart')) || [];
   
-  // मूळ डिझाईनचे कन्टेनर शोधणे जेणेकरून "कार्ट रिकामी आहे" ची समस्या येणार नाही
   var container = document.getElementById('cart-items-container') || document.querySelector('.shopping-cart-container, main, .container, article');
   if (!container) return;
 
@@ -118,14 +127,20 @@ function renderCartPageItems() {
           '<h3 style="margin: 0;">एकूण रक्कम:</h3><h3 style="margin: 0; color: #333;">₹' + total + '</h3>' +
           '</div>';
           
-  html += '<button onclick="processCartCheckout()" style="width: 100%; background: #28a745; color: white; border: none; padding: 14px; font-size: 16px; font-weight: bold; border-radius: 5px; margin-top: 20px; cursor: pointer;">⚡ खरेदी पूर्ण करा (Buy Now & Send Order)</button>';
+  html += '<button onclick="processCartCheckout()" style="width: 100%; background: #28a745; color: white; border: none; padding: 14px; font-size: 16px; font-weight: bold; border-radius: 5px; margin-top: 20px; cursor: pointer;">⚡ खरेदी पूर्ण करा (Buy Now)</button>';
   html += '</div>';
 
   container.innerHTML = html;
 }
 
-// 5. फायनल चेकआउट आणि वीव्हो ब्रिज
+// 6. फायनल चेकआउट, ऑर्डर सेव्हिंग आणि वीव्हो ब्रिज
 window.processCartCheckout = async function() {
+  if (!isUserLoggedIn()) {
+    alert('⚠️ ऑर्डर करण्यासाठी कृपया आधी लॉगिन करा!');
+    window.location.href = 'login.html';
+    return;
+  }
+
   cart = JSON.parse(localStorage.getItem('all_erp_cart')) || JSON.parse(localStorage.getItem('cart')) || [];
   
   if (!cart || cart.length === 0) {
@@ -179,8 +194,9 @@ window.processCartCheckout = async function() {
                      '📍 **पत्ता:** ' + customerAddress;
 
   var storeSlug = (typeof lockedStoreUsername !== 'undefined' && lockedStoreUsername) ? lockedStoreUsername : 'abhinaygandhi5151';
-  var customerEmail = localStorage.getItem('global_unified_email') || '';
+  var customerEmail = localStorage.getItem('global_unified_email') || localStorage.getItem('supabase_user') || '';
 
+  // ऑर्डर यशस्वी झाल्यावर कार्ट पूर्णपणे रिकामी आणि क्लिन करणे
   cart = [];
   saveCartState();
   updateCartUI();
@@ -192,4 +208,7 @@ window.processCartCheckout = async function() {
                  (customerEmail ? ('&customer_email=' + encodeURIComponent(customerEmail)) : '');
 
   window.open(weavoUrl, '_blank');
+  
+  // पेज रिफ्रेश करून कार्ट पूर्णपणे कोरी करणे
+  window.location.href = 'index.html';
 };
