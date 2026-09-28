@@ -1,5 +1,5 @@
 // ==========================================
-// ALL ERP — ROBUST LOGIN & CART ENGINE
+// ALL ERP — FINAL ERROR-FREE CART ENGINE
 // ==========================================
 
 let cart = JSON.parse(localStorage.getItem('all_erp_cart')) || JSON.parse(localStorage.getItem('cart')) || [];
@@ -40,6 +40,7 @@ function saveCartState() {
   localStorage.setItem('cart', JSON.stringify(cart));
 }
 
+// ग्लोबल 'addToCart' फंक्शन (पूर्णपणे सुरक्षित आणि एरर-फ्री)
 window.addToCart = function(productId, productName, productPrice, merchantBusinessId) {
   cart = JSON.parse(localStorage.getItem('all_erp_cart')) || JSON.parse(localStorage.getItem('cart')) || [];
 
@@ -75,7 +76,7 @@ function updateCartUI() {
   });
 }
 
-// सर्वसमावेशक आणि खात्रीशीर लॉगिन तपासणारे फंक्शन (सर्व संभाव्य की एकाच वेळी तपासेल)
+// सर्वसमावेशक लॉगिन तपासणारे फंक्शन
 function isErpLoggedIn() {
   var unifiedEmail = localStorage.getItem('global_unified_email');
   var supUser = localStorage.getItem('supabase_user');
@@ -199,5 +200,5 @@ window.processCartCheckout = async function() {
 
   window.open(weavoUrl, '_blank');
   
-  window.location.2ref ? (window.location.href = 'index.html') : (window.location.href = 'index.html');
+  window.location.href = 'index.html';
 };
