@@ -1,5 +1,5 @@
 // ==========================================
-// ALL ERP — FINAL UNIFIED MULTI-MERCHANT CART ENGINE
+// ALL ERP — FORCE GOOGLE LOGIN & CART CHECKOUT ENGINE
 // ==========================================
 
 // 1. युनिव्हर्सल कार्ट लोड करणे
@@ -8,23 +8,23 @@ let cart = JSON.parse(localStorage.getItem('all_erp_cart')) || JSON.parse(localS
 document.addEventListener("DOMContentLoaded", function() {
   updateCartUI();
   
-  // नेव्हबारमधील कार्ट बटनावर क्लिक केल्यावर कार्ट मोडल उघडून सर्व वस्तू दर्शवणे
+  // नेव्हबारमधील कार्ट बटनावर क्लिक केल्यावर आधी लॉगिन तपासणे
   var cartTriggers = document.querySelectorAll('.cart-nav-btn, [data-target="customer-cart-modal"], #nav-cart-btn, .fa-shopping-cart, [onclick*="cart"]');
   cartTriggers.forEach(function(btn) {
     btn.addEventListener('click', function(e) {
       e.preventDefault();
-      openCartModal();
+      checkLoginAndOpenCart();
     });
   });
 });
 
-// 2. दोन्ही स्टोरेज की मध्ये डेटा एकाच वेळी सेव्ह करणारी फंक्शन
+// दोन्ही स्टोरेज की मध्ये डेटा एकाच वेळी सेव्ह करणारी फंक्शन
 function saveCartState() {
   localStorage.setItem('all_erp_cart', JSON.stringify(cart));
   localStorage.setItem('cart', JSON.stringify(cart));
 }
 
-// 3. कार्टमध्ये उत्पादन अचूक ॲड करणे (वेगवेगळ्या दुकानदारांच्या वस्तू गोळा करणे)
+// 2. कार्टमध्ये उत्पादन ॲड करणे (कोणत्याही रहदारीशिवाय विनासायास ॲड होईल)
 window.addToCart = function(productId, productName, productPrice, merchantBusinessId) {
   cart = JSON.parse(localStorage.getItem('all_erp_cart')) || JSON.parse(localStorage.getItem('cart')) || [];
 
@@ -50,7 +50,7 @@ window.addToCart = function(productId, productName, productPrice, merchantBusine
   alert('✅ "' + name + '" यशस्वीरीत्या कार्टमध्ये समाविष्ट केले गेले!');
 };
 
-// 4. नेव्हबार बझर (Badge) अपडेट करणे
+// 3. नेव्हबार बझर (Badge) अपडेट करणे
 function updateCartUI() {
   cart = JSON.parse(localStorage.getItem('all_erp_cart')) || JSON.parse(localStorage.getItem('cart')) || [];
   var totalQty = cart.reduce(function(sum, item) { return sum + (item.qty || 1); }, 0);
@@ -61,8 +61,20 @@ function updateCartUI() {
   });
 }
 
-// 5. कार्ट मोडल उघडून सर्व वस्तू एकत्र दाखवणे
-function openCartModal() {
+// 4. कार्ट क्लिक केल्यावर लॉगिन बंधनकारक करणे (Force Google Login)
+function checkLoginAndOpenCart() {
+  // युजर लॉगिन आहे किंवा नाही हे तपासणे (उदा. localStorage किंवा Supabase सेशन)
+  var isLogged = localStorage.getItem('global_unified_email') || localStorage.getItem('supabase_user') || (typeof loggedInCustomer !== 'undefined' && loggedInCustomer);
+  
+  if (!isLogged) {
+    alert('⚠️ कृपया कार्ट पाहण्यासाठी आणि ऑर्डर करण्यासाठी आधी गुगल (Google) द्वारे लॉगिन करा!');
+    
+    // गुगल लॉगिन पेज किंवा मोडलवर रीडायरेक्ट करणे
+    window.location.href = 'login.html'; // किंवा तुमच्या लॉगिन पेजची योग्य लिंक
+    return;
+  }
+  
+  // युजर लॉगिन असेल तरच कार्ट मोडल उघडणे
   var modal = document.getElementById('customer-cart-modal');
   if (modal) {
     modal.style.display = 'block';
@@ -70,7 +82,7 @@ function openCartModal() {
   renderCartModalItems();
 }
 
-// 6. मोडलमध्ये सर्व ॲड केलेल्या वस्तूंची यादी आणि एकूण रक्कम रेंडर करणे
+// 5. मोडलमध्ये सर्व वस्तू रेंडर करणे
 function renderCartModalItems() {
   cart = JSON.parse(localStorage.getItem('all_erp_cart')) || JSON.parse(localStorage.getItem('cart')) || [];
   var container = document.getElementById('cart-items-container');
@@ -84,7 +96,7 @@ function renderCartModalItems() {
   var html = '<ul style="list-style: none; padding: 0; margin: 0;">';
   var total = 0;
   
-  cart.forEach(function(item, index) {
+  cart.forEach(function(item) {
     var subtotal = (item.price || 0) * (item.qty || 1);
     total += subtotal;
     html += '<li style="margin-bottom: 12px; border-bottom: 1px solid #eee; padding-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">' +
@@ -99,13 +111,12 @@ function renderCartModalItems() {
           '<h3>एकूण रक्कम:</h3><h3>₹' + total + '</h3>' +
           '</div>';
           
-  // चेकआउट किंवा बाय नाऊ बटण जोडणे जर नसेल तर
   html += '<button onclick="processCartCheckout()" style="width: 100%; background: #28a745; color: white; border: none; padding: 12px; font-size: 16px; font-weight: bold; border-radius: 5px; margin-top: 15px; cursor: pointer;">⚡ खरेदी पूर्ण करा (Buy Now)</button>';
 
   container.innerHTML = html;
 }
 
-// 7. फायनल 'Buy Now' / चेकआउट करून Weavo पोर्टलवर सर्व डेटा पाठवणे
+// 6. फायनल चेकआउट आणि वीव्हो ब्रिज
 window.processCartCheckout = async function() {
   cart = JSON.parse(localStorage.getItem('all_erp_cart')) || JSON.parse(localStorage.getItem('cart')) || [];
   
@@ -129,12 +140,10 @@ window.processCartCheckout = async function() {
     return;
   }
 
-  // सर्व वस्तूंची समरी तयार करणे
   var itemsSummaryText = cart.map(function(i) { return i.name + ' (' + i.qty + ' नग - ₹' + (i.price * i.qty) + ')'; }).join(', ');
   var totalAmt = cart.reduce(function(sum, i) { return sum + (i.price * i.qty); }, 0);
   var orderOtp = Math.floor(1000 + Math.random() * 9000).toString();
 
-  // Supabase मध्ये ऑर्डर नोंदवणे (जर क्लायंट उपलब्ध असेल तर)
   try {
     if (typeof sb !== 'undefined') {
       var primaryBizId = cart[0].business_id || 'b9ea82ab-e398-4ee7-a2c0-8e4052c9188a';
@@ -153,7 +162,6 @@ window.processCartCheckout = async function() {
     console.error('Supabase order insert error:', err);
   }
 
-  // वीव्हो पोर्टलसाठी परिपूर्ण मेसेज फॉरमॅट तयार करणे
   var orderMessage = '📦 **AllERP युनिफाइड ऑर्डर**\n\n' +
                      '🛒 **उत्पादने:**\n' + itemsSummaryText + '\n\n' +
                      '💰 **एकूण रक्कम:** ₹' + totalAmt + '\n' +
@@ -165,7 +173,6 @@ window.processCartCheckout = async function() {
   var storeSlug = (typeof lockedStoreUsername !== 'undefined' && lockedStoreUsername) ? lockedStoreUsername : 'abhinaygandhi5151';
   var customerEmail = localStorage.getItem('global_unified_email') || '';
 
-  // कार्ट साफ करणे
   cart = [];
   saveCartState();
   updateCartUI();
@@ -175,35 +182,9 @@ window.processCartCheckout = async function() {
 
   alert('🎉 ऑर्डर यशस्वीरीत्या नोंदवली गेली!\n🔐 तुमचा ओटीपी (OTP): ' + orderOtp);
 
-  // थेट Weavo पोर्टल उघडून मेसेज पास करणे
   var weavoUrl = 'https://arhammarketingme-prog.github.io/weavo/?store=' + storeSlug + 
                  '&prefill_msg=' + encodeURIComponent(orderMessage) + 
                  (customerEmail ? ('&customer_email=' + encodeURIComponent(customerEmail)) : '');
 
   window.open(weavoUrl, '_blank');
 };
-// cart.html पानावर लोकल स्टोरेजमधील वस्तू रेंडर करणारे फायनल फंक्शन
-document.addEventListener("DOMContentLoaded", function() {
-  var cartPageContainer = document.querySelector('.shopping-cart-container, #cart-items-container, main');
-  var currentCart = JSON.parse(localStorage.getItem('all_erp_cart')) || JSON.parse(localStorage.getItem('cart')) || [];
-  
-  if (currentCart.length > 0 && document.body.contains(document.querySelector('h2, h1'))) {
-    // जर युजर cart.html वर असेल तर तिथे वस्तू दर्शवणे
-    var targetBox = document.querySelector('.text-center, .container, article') || cartPageContainer;
-    if (targetBox && !document.getElementById('dynamic-cart-list')) {
-      var html = '<div id="dynamic-cart-list" style="margin-top: 20px;"><ul style="list-style: none; padding: 0;">';
-      var total = 0;
-      currentCart.forEach(function(item) {
-        var sub = (item.price || 0) * (item.qty || 1);
-        total += sub;
-        html += '<li style="padding: 10px; border-bottom: 1px solid #ddd; display: flex; justify-content: space-between;">' +
-                '<span><b>' + item.name + '</b> (x' + item.qty + ')</span>' +
-                '<span>₹' + sub + '</span></li>';
-      });
-      html += '</ul><h3>एकूण: ₹' + total + '</h3>';
-      html += '<button onclick="processCartCheckout()" style="background: #28a745; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin-top: 10px;">ऑर्डर कन्फर्म करा (Buy Now)</button></div>';
-      
-      targetBox.innerHTML = html;
-    }
-  }
-});
