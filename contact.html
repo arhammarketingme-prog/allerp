@@ -29,13 +29,11 @@
 </head>
 <body style="background: #f8fafc; margin: 0; font-family: sans-serif;">
 
-  <!-- नेव्हिगेशन बार -->
   <nav id="app-nav"></nav>
 
   <main style="max-width: 900px; margin: 30px auto; padding: 0 15px;">
     <h1 style="font-size: 24px; color: #1e293b; margin-bottom: 20px; font-weight: 800;">🛒 तुमची शॉपिंग कार्ट (Shopping Cart)</h1>
 
-    <!-- कार्टची यादी इथे दिसेल -->
     <div id="cart-container">
       <div style="background: #fff; padding: 30px; text-align: center; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
         <p style="color: #64748b; font-size: 16px;">कार्ट लोड होत आहे...</p>
@@ -43,7 +41,6 @@
     </div>
   </main>
 
-  <!-- चेकआउट मॉडेल -->
   <div id="cart-checkout-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:1000; justify-content:center; align-items:center;">
     <div class="modal-content-box">
       <h3 style="margin-top:0; font-size:18px; color:#1e293b;">ऑर्डर कन्फर्म करा & पेमेंट (Secure Checkout)</h3>
@@ -102,7 +99,6 @@
     </div>
   </div>
 
-  <!-- जावास्क्रिप्ट फाईल्स -->
   <script src="js/supabase-client.js"></script>
   <script src="js/cart.js"></script>
   <script src="js/nav.js"></script>
@@ -123,7 +119,6 @@
       renderCartItems();
     }
 
-    // 🛡️ चेकआउट उघडण्यापूर्वी लॉगिनची सक्ती करणारे फंक्शन
     async function enforceLoginBeforeCheckout(total) {
       try {
         const { data: { user } } = await sb.auth.getUser();
@@ -296,7 +291,7 @@
       document.getElementById('cart-checkout-modal').style.display = 'none';
     }
 
-    // 🚀 ऑर्डर सबमिट झाल्यावर Supabase मध्ये सेव्ह करून थेट Weavo कडे मेसेजसह पाठवणारे फंक्शन
+    // 🚀 ऑर्डर सबमिट झाल्यावर Supabase मध्ये नोंद करून थेट Weavo पोर्टलकडे मेसेज पाठवणारे अंतिम फंक्शन
     async function submitCartOrder(event) {
       event.preventDefault();
 
@@ -348,7 +343,7 @@
           return;
         }
 
-        // कार्ट रिकामी करणे
+        // मेसेज तयार करणे
         let itemsSummaryText = cart.map(i => `${i.name} (×${i.quantity})`).join(', ');
         let totalAmt = cart.reduce((sum, i) => sum + (Number(i.price) * Number(i.quantity)), 0);
         let orderOtp = orderResult?.delivery_pin || Math.floor(1000 + Math.random() * 9000).toString();
@@ -363,7 +358,6 @@
         closeCartModal();
         alert(`✅ ऑर्डर यशस्वीरीत्या नोंदवली गेली!\n🔐 तुमचा ओटीपी (OTP): ${orderOtp}`);
 
-        // 📱 Weavo कडे मेसेज पाठवण्यासाठी प्रीफिल्ड मजकूर तयार करणे
         var orderMessage = '📦 **AllERP युनिफाइड ऑर्डर**\n\n' +
                            '🛒 **उत्पादने:**\n' + itemsSummaryText + '\n\n' +
                            '💰 **एकूण रक्कम:** ₹' + totalAmt + '\n' +
@@ -373,14 +367,13 @@
                            '📍 **पत्ता:** ' + address + '\n' +
                            '💳 **पेमेंट:** ' + paymentMode;
 
-        // दुकानदाराचे युनिक युजरनेम किंवा डिफाल्ट स्लग (store slug) घेणे
         var storeSlug = 'abhinaygandhi5151';
         
         var weavoUrl = 'https://arhammarketingme-prog.github.io/weavo/?store=' + storeSlug + 
                        '&prefill_msg=' + encodeURIComponent(orderMessage) + 
                        '&customer_email=' + encodeURIComponent(currentUser?.email || '');
 
-        // थेट Weavo वर री-डाइरेक्ट करणे
+        // थेट वीव्हो (Weavo) कडे री-डाइरेक्ट करणे
         window.open(weavoUrl, '_blank');
         window.location.href = 'index.html';
 
