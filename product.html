@@ -10,7 +10,6 @@
 <link rel="stylesheet" href="css/style.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-  /* 🌟 प्रगत कॉर्पोरेट फिनिशिंग व ॲनिमेशन्स */
   .card { transition: transform 0.2s ease, box-shadow 0.2s ease; }
   .card:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.06); }
   .add-cart-btn { transition: background 0.2s, color 0.2s; }
@@ -254,6 +253,7 @@ function closeCheckoutModal() {
   document.getElementById('checkout-modal').style.display = 'none';
 }
 
+// 🚀 Buy Now दाबल्यावर ऑर्डर सेव्ह करून थेट Weavo कडे री-डाइरेक्ट करणारे अपडेटेड फंक्शन
 async function submitDirectOrder(event) {
   event.preventDefault();
   if (!selectedOfferForCheckout) return;
@@ -262,10 +262,12 @@ async function submitDirectOrder(event) {
   const phone = document.getElementById('custPhone').value.trim();
   const address = document.getElementById('custAddress').value.trim();
 
-  // ⚠️ किंमत क्लायंटवर ट्रस्ट करत नाही — place_direct_order() तुमच्या खऱ्या
-  // live orders स्कीमाशी जुळणारं RPC आहे; सर्व्हरवर खरी selling_price वाचतं
-  // व स्टॉक लॉक करून तपासतं.
   const { data: { user: currentUser } } = await sb.auth.getUser();
+  if (!currentUser) {
+    alert('⚠️ कृपया ऑर्डर करण्यासाठी आधी लॉगिन करा!');
+    window.location.href = 'login.html';
+    return;
+  }
 
   const { data, error } = await sb.rpc('place_direct_order', {
     p_business_id: selectedOfferForCheckout.business_id,
@@ -290,10 +292,25 @@ async function submitDirectOrder(event) {
 
   closeCheckoutModal();
 
-  const pinText = data?.delivery_pin ? `\n\n🔑 तुमचा डिलिव्हरी पिन (OTP): ${data.delivery_pin}` : '';
+  const orderOtp = data?.delivery_pin || Math.floor(1000 + Math.random() * 9000).toString();
+  alert(`🎉 तुमची ऑर्डर यशस्वीरीत्या नोंदवली गेली!\n🔐 तुमचा ओटीपी (OTP): ${orderOtp}`);
 
-  alert(`🎉 तुमची ऑर्डर यशस्वीरित्या नोंदवली गेली आहे!${pinText}\n\nआता ही ऑर्डर तुमच्या 'माझ्या ऑर्डर्स' (Orders) पेजवर दिसेल.`);
-  window.location.href = 'orders.html';
+  var orderMessage = '📦 **AllERP युनिफाइड ऑर्डर**\n\n' +
+                     '🛒 **उत्पादने:**\n' + selectedOfferForCheckout.name + ' (1 नग - ₹' + selectedOfferForCheckout.selling_price + ')\n\n' +
+                     '💰 **एकूण रक्कम:** ₹' + selectedOfferForCheckout.selling_price + '\n' +
+                     '🔐 **डिलिव्हरी पिन (OTP):** ' + orderOtp + '\n\n' +
+                     '👤 **ग्राहक:** ' + name + '\n' +
+                     '📱 **मोबाईल:** ' + phone + '\n' +
+                     '📍 **पत्ता:** ' + address;
+
+  var storeSlug = selectedOfferForCheckout.businesses?.slug || 'abhinaygandhi5151';
+  
+  var weavoUrl = 'https://arhammarketingme-prog.github.io/weavo/?store=' + storeSlug + 
+                 '&prefill_msg=' + encodeURIComponent(orderMessage) + 
+                 '&customer_email=' + encodeURIComponent(currentUser?.email || '');
+
+  window.open(weavoUrl, '_blank');
+  window.location.href = 'index.html';
 }
 
 async function loadReviews() {
@@ -360,9 +377,6 @@ async function loadReviews() {
     const errorEl = document.getElementById('review-error');
     const firstOffer = currentOffers[0];
 
-    // 🛡️ एकाच युजरचा एकाच प्रॉडक्टवर एकच रिव्ह्यू राहील — आधीचा असेल तर अपडेट,
-    // नसेल तर नवीन (business_product_id + reviewer_user_id वरच्या unique
-    // constraint शी जुळणारा upsert)
     const { error } = await sb.from('reviews').upsert({
       id: existingReview?.id,
       business_id: firstOffer.business_id,
