@@ -18,9 +18,8 @@ function saveCart(cart) {
   try {
     const cartString = JSON.stringify(cart);
     localStorage.setItem('cart', cartString);
-    localStorage.setItem('marketplace_cart', cartString); // दोन्ही की सेफ ठेवल्या आहेत
+    localStorage.setItem('marketplace_cart', cartString);
     
-    // नेव्हिगेशन बारमधील काऊंट जागेवरच अपडेट करणे
     if (typeof renderNav === 'function') {
       renderNav();
     }
@@ -29,11 +28,10 @@ function saveCart(cart) {
   }
 }
 
-// नवीन प्रॉडक्ट कार्टमध्ये ॲड करणे (किंवा आधीच असल्यास क्वांटिटी वाढवणे)
+// नवीन प्रॉडक्ट कार्टमध्ये ॲड करणे
 function addToCart(product) {
   let cart = getCart();
   
-  // शोधणे की हेच प्रॉडक्ट त्याच दुकानदाराकडून आधीच कार्टमध्ये आहे का
   const existingIndex = cart.findIndex(
     item => String(item.business_product_id) === String(product.business_product_id) && String(item.business_id) === String(product.business_id)
   );
@@ -41,10 +39,8 @@ function addToCart(product) {
   const addQty = Number(product.quantity) || 1;
 
   if (existingIndex > -1) {
-    // असल्यास क्वांटिटी वाढवणे
     cart[existingIndex].quantity = (Number(cart[existingIndex].quantity) || 1) + addQty;
   } else {
-    // नसल्यास नवीन आयटम जोडणे
     cart.push({
       business_product_id: product.business_product_id,
       name: product.name,
@@ -55,18 +51,38 @@ function addToCart(product) {
     });
   }
 
-  // सेव्ह केल्यावर आपोआप नेव्हिगेशन बार अपडेट होईल
   saveCart(cart);
   alert('✅ "' + (product.name || 'प्रॉडक्ट') + '" यशस्वीरीत्या कार्टमध्ये समाविष्ट केले गेले!');
 }
 
-// कार्टमधील एकूण आयटमची संख्या मिळवणे
 function getCartCount() {
   const cart = getCart();
   return cart.reduce((sum, item) => sum + (Number(item.quantity) || 1), 0);
 }
 
-// 🛡️ सुरक्षित इन-ॲप ऑर्डर सबमिट करण्याची पद्धत (WhatsApp नंबर एक्सचेंज पूर्णपणे बंद)
+// 🛡️ चेकआउट उघडण्यापूर्वी कडक लॉगिन तपासणी (Login Enforcement Check)
+async function enforceLoginBeforeCheckout(grandTotal, openModalCallback) {
+  try {
+    // Supabase द्वारे युजर सेशन पक्के तपासणे
+    const { data: { user } } = await sb.auth.getUser();
+    
+    if (!user) {
+      alert('⚠️ सुरक्षा नियम: ऑर्डर करण्यासाठी आणि खरेदी पूर्ण करण्यासाठी ऑल ईआरपीवर लॉगिन करणे बंधनकारक आहे!');
+      window.location.href = 'login.html';
+      return;
+    }
+
+    // लॉगिन असेल तरच पुढील चेकआउट मॉडेल उघडणे
+    if (typeof openModalCallback === 'function') {
+      openModalCallback(grandTotal);
+    }
+  } catch (err) {
+    console.error('Login enforcement error:', err);
+    window.location.href = 'login.html';
+  }
+}
+
+// 🛡️ सुरक्षित इन-ॲप ऑर्डर सबमिट करण्याची पद्धत
 async function submitSecurePlatformOrder(orderDetails) {
   try {
     const cart = getCart();
@@ -75,20 +91,17 @@ async function submitSecurePlatformOrder(orderDetails) {
       return false;
     }
 
-    // सर्वात आधी युजर लॉगिन आहे का तपासणे (स्पॅम व फेक ऑर्डर रोखण्यासाठी)
     const { data: { user } } = await sb.auth.getUser();
     if (!user) {
-      alert('⚠️ कृपया ऑर्डर करण्यासाठी आणि खरेदी करण्यासाठी आधी लॉगिन करा!');
+      alert('⚠️ कृपया ऑर्डर करण्यासाठी आधी लॉगिन करा!');
       window.location.href = 'login.html';
       return false;
     }
 
-    // एका ऑर्डरजवळ सर्व प्रॉडक्ट्सचा समरी मजकूर तयार करणे
     let itemsSummary = cart.map(i => `${i.name} (×${i.quantity})`).join(', ');
     let totalAmount = cart.reduce((sum, i) => sum + (Number(i.price) * Number(i.quantity)), 0);
-    let businessId = cart[0].business_id; // संबंधित दुकानदाराचा ID
+    let businessId = cart[0].business_id;
 
-    // Supabase मधील orders टेबलमध्ये डेटा इन्सर्ट करणे (नंबर मास्किंग आणि प्रायव्हसीसह)
     const orderPayload = {
       business_id: businessId,
       customer_name: orderDetails.customerName || 'Verified Buyer',
@@ -98,7 +111,7 @@ async function submitSecurePlatformOrder(orderDetails) {
       total_amount: totalAmount,
       payment_method: orderDetails.paymentMethod || 'COD',
       status: 'pending',
-      customer_user_id: user ? user.id : null
+      customer_user_id: user.id
     };
 
     const { error } = await sb.from('orders').insert([orderPayload]);
@@ -108,13 +121,12 @@ async function submitSecurePlatformOrder(orderDetails) {
       return false;
     }
 
-    // यशस्वीरित्या ऑर्डर नोंदवल्यावर कार्ट रिकामी करणे
     localStorage.removeItem('cart');
     localStorage.removeItem('marketplace_cart');
     saveCart([]);
 
     alert('✅ ऑर्डर सुरक्षितपणे नोंदवली गेली आहे! दुकानदाराने ती स्वीकारताच तुम्हाला सिस्टीममध्ये अपडेट मिळेल.');
-    window.location.href = 'index.html'; // होमपेजवर री-डाइरेक्ट करणे
+    window.location.href = 'index.html';
     return true;
 
   } catch (err) {
