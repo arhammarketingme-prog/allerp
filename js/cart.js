@@ -1,101 +1,118 @@
 // ==========================================
-// ALL ERP — SIMPLE STABLE CART ENGINE
+// BUSINESS SUPER PLATFORM - CART ENGINE (js/cart.js)
 // ==========================================
 
-let cart = JSON.parse(localStorage.getItem('all_erp_cart')) || JSON.parse(localStorage.getItem('cart')) || [];
-
-function saveCartState() {
-  localStorage.setItem('all_erp_cart', JSON.stringify(cart));
-  localStorage.setItem('cart', JSON.stringify(cart));
+// कार्टमधील सर्व आयटम्स मिळवणे
+function getCart() {
+  try {
+    const cartData = localStorage.getItem('marketplace_cart') || localStorage.getItem('cart');
+    return cartData ? JSON.parse(cartData) : [];
+  } catch (e) {
+    console.error('Error reading cart from localStorage:', e);
+    return [];
+  }
 }
 
-// प्रॉडक्ट कार्टमध्ये ॲड करणे
-window.addToCart = function(productId, productName, productPrice, merchantBusinessId) {
-  cart = JSON.parse(localStorage.getItem('all_erp_cart')) || JSON.parse(localStorage.getItem('cart')) || [];
-  var name = productName || 'उत्पादनाचे नाव';
-  var price = productPrice || 40;
-  var activeBizId = merchantBusinessId || 'b9ea82ab-e398-4ee7-a2c0-8e4052c9188a';
+// कार्ट सेव्ह करणे आणि सर्व पेजेसवर नेव्हिगेशन बारचा काऊंट तात्काळ अपडेट करणे
+function saveCart(cart) {
+  try {
+    const cartString = JSON.stringify(cart);
+    localStorage.setItem('cart', cartString);
+    localStorage.setItem('marketplace_cart', cartString); // दोन्ही की सेफ ठेवल्या आहेत
+    
+    // नेव्हिगेशन बारमधील काऊंट जागेवरच अपडेट करणे
+    if (typeof renderNav === 'function') {
+      renderNav();
+    }
+  } catch (e) {
+    console.error('Error saving cart to localStorage:', e);
+  }
+}
+
+// नवीन प्रॉडक्ट कार्टमध्ये ॲड करणे (किंवा आधीच असल्यास क्वांटिटी वाढवणे)
+function addToCart(product) {
+  let cart = getCart();
   
-  var existing = cart.find(function(item) { return (item.id === productId && item.business_id === activeBizId) || item.name === name; });
-  if (existing) {
-    existing.qty++;
+  // शोधणे की हेच प्रॉडक्ट त्याच दुकानदाराकडून आधीच कार्टमध्ये आहे का
+  const existingIndex = cart.findIndex(
+    item => String(item.business_product_id) === String(product.business_product_id) && String(item.business_id) === String(product.business_id)
+  );
+
+  const addQty = Number(product.quantity) || 1;
+
+  if (existingIndex > -1) {
+    // असल्यास क्वांटिटी वाढवणे
+    cart[existingIndex].quantity = (Number(cart[existingIndex].quantity) || 1) + addQty;
   } else {
+    // नसल्यास नवीन आयटम जोडणे
     cart.push({
-      id: productId || 'prod-' + Date.now(),
-      name: name,
-      price: price,
-      qty: 1,
-      business_id: activeBizId
+      business_product_id: product.business_product_id,
+      name: product.name,
+      business_id: product.business_id,
+      business_name: product.business_name,
+      price: Number(product.price) || 0,
+      quantity: addQty
     });
   }
-  
-  saveCartState();
-  alert('✅ "' + name + '" यशस्वीरीत्या कार्टमध्ये समाविष्ट केले गेले!');
-};
 
-// थेट Buy Now / चेकआउट प्रोसेस
-window.processDirectCheckout = async function() {
-  cart = JSON.parse(localStorage.getItem('all_erp_cart')) || JSON.parse(localStorage.getItem('cart')) || [];
-  
-  if (!cart || cart.length === 0) {
-    alert('🛒 तुमचे कार्ट रिकामी आहे! कृपया पहिले उत्पादन समाविष्ट करा.');
-    return;
-  }
+  // सेव्ह केल्यावर आपोआप नेव्हिगेशन बार अपडेट होईल
+  saveCart(cart);
+}
 
-  var customerName = prompt('🛒 कृपया तुमचे नाव टाका (ऑर्डरसाठी):', '');
-  if (!customerName) return;
+// कार्टमधील एकूण आयटमची संख्या मिळवणे
+function getCartCount() {
+  const cart = getCart();
+  return cart.reduce((sum, item) => sum + (Number(item.quantity) || 1), 0);
+}
 
-  var customerPhone = prompt('📱 कृपया तुमचा १० अंकी मोबाईल नंबर टाका:', '');
-  if (!customerPhone || customerPhone.length < 10) {
-    alert('कृपया वैध मोबाईल नंबर भरा!');
-    return;
-  }
-
-  var customerAddress = prompt('📍 कृपया डिलिव्हरी पत्ता टाका:', '');
-  if (!customerAddress) {
-    alert('पत्ता भरणे आवश्यक आहे!');
-    return;
-  }
-
-  var itemsSummaryText = cart.map(function(i) { return i.name + ' (' + i.qty + ' नग - ₹' + (i.price * i.qty) + ')'; }).join(', ');
-  var totalAmt = cart.reduce(function(sum, i) { return sum + (i.price * i.qty); }, 0);
-  var orderOtp = Math.floor(1000 + Math.random() * 9000).toString();
-
+// 🛡️ सुरक्षित इन-ॲप ऑर्डर सबमिट करण्याची पद्धत (WhatsApp नंबर एक्सचेंज पूर्णपणे बंद)
+async function submitSecurePlatformOrder(orderDetails) {
   try {
-    if (typeof sb !== 'undefined') {
-      await sb.from('orders').insert({
-        business_id: 'b9ea82ab-e398-4ee7-a2c0-8e4052c9188a',
-        customer_name: customerName,
-        customer_phone: customerPhone,
-        customer_address: customerAddress,
-        items_summary: itemsSummaryText,
-        total_amount: totalAmt,
-        otp_code: orderOtp,
-        status: 'pending'
-      });
+    const cart = getCart();
+    if (!cart || cart.length === 0) {
+      alert('तुमची कार्ट रिकामी आहे!');
+      return false;
     }
+
+    // एका ऑर्डरजवळ सर्व प्रॉडक्ट्सचा समरी मजकूर तयार करणे
+    let itemsSummary = cart.map(i => `${i.name} (×${i.quantity})`).join(', ');
+    let totalAmount = cart.reduce((sum, i) => sum + (Number(i.price) * Number(i.quantity)), 0);
+    let businessId = cart[0].business_id; // संबंधित दुकानदाराचा ID
+
+    // Supabase मधील orders टेबलमध्ये डेटा इन्सर्ट करणे (नंबर मास्किंग आणि प्रायव्हसीसह)
+    const { data: { user } } = await sb.auth.getUser();
+    
+    const orderPayload = {
+      business_id: businessId,
+      customer_name: orderDetails.customerName || 'Verified Buyer',
+      customer_phone: orderDetails.customerPhone || 'Masked-Secure-ID',
+      delivery_address: orderDetails.deliveryAddress || 'Local Platform Delivery Hub',
+      items_summary: itemsSummary,
+      total_amount: totalAmount,
+      payment_method: orderDetails.paymentMethod || 'COD',
+      status: 'pending',
+      customer_user_id: user ? user.id : null
+    };
+
+    const { error } = await sb.from('orders').insert([orderPayload]);
+
+    if (error) {
+      alert('ऑर्डर सेव्ह करताना अडचण आली: ' + error.message);
+      return false;
+    }
+
+    // यशस्वीरित्या ऑर्डर नोंदवल्यावर कार्ट रिकामी करणे
+    localStorage.removeItem('cart');
+    localStorage.removeItem('marketplace_cart');
+    saveCart([]);
+
+    alert('✅ ऑर्डर सुरक्षितपणे नोंदवली गेली आहे! दुकानदाराने ती स्वीकारताच तुम्हाला सिस्टीममध्ये अपडेट मिळेल.');
+    window.location.href = 'index.html'; // होमपेजवर री-डाइरेक्ट करणे
+    return true;
+
   } catch (err) {
-    console.warn('Supabase note:', err);
+    console.error('Secure order error:', err);
+    alert('त्रुटी: ' + err.message);
+    return false;
   }
-
-  var orderMessage = '📦 **AllERP युनिफाइड ऑर्डर**\n\n' +
-                     '🛒 **उत्पादने:**\n' + itemsSummaryText + '\n\n' +
-                     '💰 **एकूण रक्कम:** ₹' + totalAmt + '\n' +
-                     '🔐 **डिलिव्हरी पिन (OTP):** ' + orderOtp + '\n\n' +
-                     '👤 **ग्राहक:** ' + customerName + '\n' +
-                     '📱 **मोबाईल:** ' + customerPhone + '\n' +
-                     '📍 **पत्ता:** ' + customerAddress;
-
-  var storeSlug = 'abhinaygandhi5151';
-
-  cart = [];
-  saveCartState();
-
-  alert('🎉 ऑर्डर यशस्वीरीत्या नोंदवली गेली!\n🔐 तुमचा ओटीपी (OTP): ' + orderOtp);
-
-  var weavoUrl = 'https://arhammarketingme-prog.github.io/weavo/?store=' + storeSlug + 
-                 '&prefill_msg=' + encodeURIComponent(orderMessage);
-
-  window.open(weavoUrl, '_blank');
-  window.location.href = 'index.html';
-};
+}
