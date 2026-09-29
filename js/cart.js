@@ -57,6 +57,7 @@ function addToCart(product) {
 
   // सेव्ह केल्यावर आपोआप नेव्हिगेशन बार अपडेट होईल
   saveCart(cart);
+  alert('✅ "' + (product.name || 'प्रॉडक्ट') + '" यशस्वीरीत्या कार्टमध्ये समाविष्ट केले गेले!');
 }
 
 // कार्टमधील एकूण आयटमची संख्या मिळवणे
@@ -74,14 +75,20 @@ async function submitSecurePlatformOrder(orderDetails) {
       return false;
     }
 
+    // सर्वात आधी युजर लॉगिन आहे का तपासणे (स्पॅम व फेक ऑर्डर रोखण्यासाठी)
+    const { data: { user } } = await sb.auth.getUser();
+    if (!user) {
+      alert('⚠️ कृपया ऑर्डर करण्यासाठी आणि खरेदी करण्यासाठी आधी लॉगिन करा!');
+      window.location.href = 'login.html';
+      return false;
+    }
+
     // एका ऑर्डरजवळ सर्व प्रॉडक्ट्सचा समरी मजकूर तयार करणे
     let itemsSummary = cart.map(i => `${i.name} (×${i.quantity})`).join(', ');
     let totalAmount = cart.reduce((sum, i) => sum + (Number(i.price) * Number(i.quantity)), 0);
     let businessId = cart[0].business_id; // संबंधित दुकानदाराचा ID
 
     // Supabase मधील orders टेबलमध्ये डेटा इन्सर्ट करणे (नंबर मास्किंग आणि प्रायव्हसीसह)
-    const { data: { user } } = await sb.auth.getUser();
-    
     const orderPayload = {
       business_id: businessId,
       customer_name: orderDetails.customerName || 'Verified Buyer',
