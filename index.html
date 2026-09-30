@@ -246,7 +246,7 @@ async function loadBusinessTypes() {
 
   const row = document.getElementById('category-row');
   row.innerHTML = (data ?? []).map(t => {
-    const icon = catIcons[t.slug] || '🏷️';
+    const icon = catIcons[t.slug] || '🏷️️';
     return `
       <a href="#" class="meesho-cat-card" data-slug="${t.slug}">
         <div class="meesho-cat-avatar">${icon}</div>
@@ -300,7 +300,7 @@ function startMarketplaceVoiceSearch() {
   recognition.start();
 }
 
-// 🌟 होमपेजवर प्रत्येक प्रॉडक्टच्या खाली दुकानदाराची माहिती आणि थेट वीव्हो चॅट बटण दाखवणारे अचूक फंक्शन
+// 🌟 होमपेजवर प्रत्येक प्रॉडक्टच्या खाली दुकानदाराचे नाव, ईमेल ॲड्रेस, युजरनेम आणि थेट वीव्हो चॅट बटण दाखवणारे अचूक फंक्शन
 async function loadProducts() {
   const container = document.getElementById('products');
   const rawSearchTerm = document.getElementById('search-box').value.trim();
@@ -365,12 +365,12 @@ async function loadProducts() {
     const isWishlisted = wishlistIds.has(repProductId);
     const fallbackImg = `https://placehold.co/400x400/2874f0/FFFFFF?text=${encodeURIComponent(g.name)}`;
     
-    // 🌟 सुरक्षितपणे दुकानाची आणि मालकाची माहिती मिळवणे
+    // 🌟 दुकानाची आणि मालकाची माहिती (ईमेलसह) सुरक्षितपणे मिळवणे
     const shopName = repProduct.businesses?.name || 'Local Store';
     const shopSlug = repProduct.businesses?.slug || 'store';
     const shopCity = repProduct.businesses?.city || 'Nearby';
     const ownerName = 'संचालक';
-    const ownerEmail = 'support@allerp.com';
+    const ownerEmail = repProduct.owner_email || `${shopSlug}@allerp.com`; // दुकानदाराचा ईमेल ॲड्रेस
     const merchantHandle = shopSlug || 'abhinaygandhi5151';
     
     // 💬 वीव्हो चॅटची थेट लिंक
@@ -408,10 +408,11 @@ async function loadProducts() {
             <span class="muted">(Verified Local)</span>
           </div>
 
-          <!-- 🌟 प्रत्येक प्रॉडक्टच्या खाली दुकानदाराची माहिती -->
+          <!-- 🌟 प्रत्येक प्रॉडक्टच्या खाली दुकान, मालक, ईमेल आणि युजरनेम -->
           <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:8px; font-size:12px; color:#334155; line-height:1.6; margin-bottom:10px;">
             🏪 दुकान: <a href="${storeProfileUrl}" style="color:#0284c7; font-weight:bold; text-decoration:none;">${shopName}</a><br>
             👤 मालक: <strong style="color:#0f172a;">${ownerName}</strong><br>
+            📧 ईमेल: <span style="color:#64748b;">${ownerEmail}</span><br>
             💬 युजरनेम: <span style="color:#0d9488; font-weight:bold;">@${merchantHandle}</span>
           </div>
         </div>
