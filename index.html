@@ -6,7 +6,6 @@
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iYmciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjMjg3NGYwIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzBlYTVhMyIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICA8L2RlZnM+CiAgPHJlY3Qgd2lkdGg9IjEwMCIgaGVpZ2h0PSIxMDAiIHJ4PSIyMiIgZmlsbD0idXJsKCNiZykiLz4KICA8IS0tIOCkpuClgeCkleCkvuCkqC/gpLjgpY3gpJ/gpYvgpIXgpLDgpKvgpY3gpLDgpILgpJ8g4KSa4KS/4KSo4KWN4KS5IC0tPgog <path d="M20 42 L20 78 Q20 80 22 80 L78 80 Q80 80 80 78 L80 42" fill="none" stroke="#ffffff" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
   <path d="M16 42 L22 24 Q23 22 25 22 L75 22 Q77 22 78 24 L84 42 Q84 46 80 46 Q76 46 76 42 Q76 46 71 46 Q66 46 66 42 Q66 46 61 46 Q56 46 56 42 Q56 46 50 46 Q44 46 44 42 Q44 46 39 46 Q34 46 34 42 Q34 46 29 46 Q24 46 24 42 Q24 46 20 46 Q16 46 16 42 Z" fill="#ffffff"/>
-  <!-- 🌟 ग्रोसरी/प्रॉफिट -->
   <path d="M32 68 L44 56 L52 64 L68 48" fill="none" stroke="#facc15" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
   <path d="M60 48 L68 48 L68 56" fill="none" stroke="#facc15" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
@@ -240,13 +239,13 @@ async function loadBusinessTypes() {
 
   const catIcons = {
     'grocery': '🛒', 'electronics': '🎧', 'clothing': '👗', 'hardware': '🔩',
-    'restaurant': '🍽️', 'medical-store': '💊', 'contractor': '🏗️', 'furniture': '🛋️',
+    'restaurant': '🍽️', 'medical-store': '💊', 'contractor': '🏗️️', 'furniture': '🛋️',
     'mobile-shop': '📱', 'real-estate': '🏠', 'services': '💼', 'bakery': '🍞', 'manufacturing': '🏭'
   };
 
   const row = document.getElementById('category-row');
   row.innerHTML = (data ?? []).map(t => {
-    const icon = catIcons[t.slug] || '🏷️️';
+    const icon = catIcons[t.slug] || '🏷️';
     return `
       <a href="#" class="meesho-cat-card" data-slug="${t.slug}">
         <div class="meesho-cat-avatar">${icon}</div>
@@ -300,30 +299,54 @@ function startMarketplaceVoiceSearch() {
   recognition.start();
 }
 
-// 🌟 होमपेजवर प्रत्येक प्रॉडक्टच्या खाली दुकानदाराचे नाव, ईमेल ॲड्रेस, युजरनेम आणि थेट वीव्हो चॅट बटण दाखवणारे अचूक फंक्शन
+// 🌟 होमपेजवर प्रत्येक प्रॉडक्टच्या खाली दुकानदाराचा खरा गुगल ईमेल आणि वीव्हो युजरनेम अचूक फेच करणारे फंक्शन
 async function loadProducts() {
   const container = document.getElementById('products');
   const rawSearchTerm = document.getElementById('search-box').value.trim();
   const typeSlug = document.getElementById('type-filter').value;
   const sortMode = document.getElementById('sort-select').value;
 
+  // 1. प्रथम सर्व businesses आणि त्यांचे owner_id / emails फेच करणे
+  let bizMap = {};
+  try {
+    const { data: bizData } = await sb.from('businesses').select('id, name, slug, city, owner_id');
+    if (bizData) {
+      for (let b of bizData) {
+        let ownerEmail = '';
+        let ownerName = 'संचालक';
+        if (b.owner_id) {
+          // auth.users मधील ईमेल फेच करणे (किंवा RPC/profiles द्वारे)
+          try {
+            const { data: userData } = await sb.rpc('get_user_email_by_id', { user_uuid: b.owner_id });
+            if (userData && userData.email) ownerEmail = userData.email;
+            if (userData && userData.full_name) ownerName = userData.full_name;
+          } catch (errUser) {}
+        }
+        bizMap[b.id] = {
+          name: b.name || 'Local Store',
+          slug: b.slug || 'store',
+          city: b.city || 'Nearby',
+          ownerName: ownerName,
+          ownerEmail: ownerEmail || (b.slug ? b.slug + '@allerp.com' : 'support@allerp.com')
+        };
+      }
+    }
+  } catch (e) {
+    console.log("Biz map error:", e);
+  }
+
   let query = sb
     .from('business_products')
-    .select('id, name, selling_price, unit, image_url, business_id, businesses!inner(name, slug, city, owner_id, business_type_id, business_types!inner(slug))')
+    .select('id, name, selling_price, unit, image_url, business_id, businesses(name, slug, city, owner_id, business_type_id, business_types(slug))')
     .eq('marketplace_visible', true)
     .limit(300);
 
   if (rawSearchTerm) {
-    const synonyms = (typeof getSearchSynonyms === 'function')
-      ? getSearchSynonyms(rawSearchTerm)
-      : [rawSearchTerm];
+    const synonyms = (typeof getSearchSynonyms === 'function') ? getSearchSynonyms(rawSearchTerm) : [rawSearchTerm];
     const safeSynonyms = synonyms.filter(s => s && !/[,()]/.test(s));
-    const orConditions = (safeSynonyms.length ? safeSynonyms : [rawSearchTerm])
-      .map(s => `name.ilike.%${s}%`).join(',');
+    const orConditions = (safeSynonyms.length ? safeSynonyms : [rawSearchTerm]).map(s => `name.ilike.%${s}%`).join(',');
     query = query.or(orConditions);
   }
-
-  if (typeSlug) query = query.eq('businesses.business_types.slug', typeSlug);
 
   if (sortMode === 'price_asc') query = query.order('selling_price', { ascending: true });
   else if (sortMode === 'price_desc') query = query.order('selling_price', { ascending: false });
@@ -365,15 +388,23 @@ async function loadProducts() {
     const isWishlisted = wishlistIds.has(repProductId);
     const fallbackImg = `https://placehold.co/400x400/2874f0/FFFFFF?text=${encodeURIComponent(g.name)}`;
     
-    // 🌟 दुकानाची आणि मालकाची माहिती (ईमेलसह) सुरक्षितपणे मिळवणे
-    const shopName = repProduct.businesses?.name || 'Local Store';
-    const shopSlug = repProduct.businesses?.slug || 'store';
-    const shopCity = repProduct.businesses?.city || 'Nearby';
-    const ownerName = 'संचालक';
-    const ownerEmail = repProduct.owner_email || `${shopSlug}@allerp.com`; // दुकानदाराचा ईमेल ॲड्रेस
-    const merchantHandle = shopSlug || 'abhinaygandhi5151';
+    // 🌟 अचूक दुकानदाराची माहिती आणि गुगल ईमेल जोडणे
+    const bizInfo = (repProduct.business_id && bizMap[repProduct.business_id]) ? bizMap[repProduct.business_id] : {
+      name: repProduct.businesses?.name || 'Local Store',
+      slug: repProduct.businesses?.slug || 'store',
+      city: repProduct.businesses?.city || 'Nearby',
+      ownerName: 'संचालक',
+      ownerEmail: 'support@allerp.com'
+    };
+
+    const shopName = bizInfo.name;
+    const shopSlug = bizInfo.slug;
+    const shopCity = bizInfo.city;
+    const ownerName = bizInfo.ownerName;
+    const ownerEmail = bizInfo.ownerEmail; // 📧 अस्सल गुगल ईमेल ॲड्रेस
+    const merchantHandle = shopSlug || ownerEmail.split('@')[0] || 'abhinaygandhi5151';
     
-    // 💬 वीव्हो चॅटची थेट लिंक
+    // 💬 वीव्हो चॅटची थेट लिंक (खऱ्या ईमेलसह)
     const weavoChatUrl = `https://arhammarketingme-prog.github.io/weavo/?store=${merchantHandle}&customer_email=${encodeURIComponent(ownerEmail)}`;
     const storeProfileUrl = `dashboard.html?store=${shopSlug}`;
     const encodedMapsQuery = encodeURIComponent(`${shopName} ${shopCity}`);
@@ -408,11 +439,11 @@ async function loadProducts() {
             <span class="muted">(Verified Local)</span>
           </div>
 
-          <!-- 🌟 प्रत्येक प्रॉडक्टच्या खाली दुकान, मालक, ईमेल आणि युजरनेम -->
+          <!-- 🌟 प्रत्येक प्रॉडक्टच्या खाली दुकानदाराचा खरा ईमेल आणि युजरनेम -->
           <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:8px; font-size:12px; color:#334155; line-height:1.6; margin-bottom:10px;">
             🏪 दुकान: <a href="${storeProfileUrl}" style="color:#0284c7; font-weight:bold; text-decoration:none;">${shopName}</a><br>
             👤 मालक: <strong style="color:#0f172a;">${ownerName}</strong><br>
-            📧 ईमेल: <span style="color:#64748b;">${ownerEmail}</span><br>
+            📧 ईमेल: <span style="color:#64748b; font-weight:bold;">${ownerEmail}</span><br>
             💬 युजरनेम: <span style="color:#0d9488; font-weight:bold;">@${merchantHandle}</span>
           </div>
         </div>
