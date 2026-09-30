@@ -299,7 +299,7 @@ function startMarketplaceVoiceSearch() {
   recognition.start();
 }
 
-// 🌟 होमपेजवर businesses टेबलमधील owner_name आणि owner_username थेट फेच करणारे अचूक फंक्शन
+// 🌟 प्रत्येक प्रॉडक्टनुसार त्याचा अचूक आणि वेगळा owner_username व owner_email डायनॅमिकली फेच करणारे फंक्शन
 async function loadProducts() {
   const container = document.getElementById('products');
   const rawSearchTerm = document.getElementById('search-box').value.trim();
@@ -361,7 +361,7 @@ async function loadProducts() {
     const isWishlisted = wishlistIds.has(repProductId);
     const fallbackImg = `https://placehold.co/400x400/2874f0/FFFFFF?text=${encodeURIComponent(g.name)}`;
     
-    // 🌟 businesses टेबलमधील अस्सल डेटा थेट वापरणे (खरे मालकाचे नाव व युजरनेम)
+    // 🌟 प्रत्येक प्रॉडक्टच्या संबंधित दुकानदाराचा स्वतःचा युजरनेम व ईमेल डायनॅमिकली घेणे (कोणतीही हार्डकोडिंग नाही)
     const shopName = repProduct.businesses?.name || 'Local Store';
     const shopSlug = repProduct.businesses?.slug || 'store';
     const shopCity = repProduct.businesses?.city || 'Nearby';
@@ -369,8 +369,8 @@ async function loadProducts() {
     const ownerName = repProduct.businesses?.owner_name || 'संचालक';
     const merchantHandle = repProduct.businesses?.owner_username || shopSlug;
     
-    // 💬 वीव्हो चॅटची थेट लिंक (खऱ्या युजरनेमसह)
-    const weavoChatUrl = `https://arhammarketingme-prog.github.io/weavo/?store=${merchantHandle}&customer_email=${encodeURIComponent(ownerEmail)}`;
+    // 💬 वीव्हो चॅटची लिंक त्या त्या प्रॉडक्टच्या मालकाच्या खऱ्या युजरनेम आणि ईमेलवर जाणार
+    const weavoChatUrl = `https://arhammarketingme-prog.github.io/weavo/?store=${encodeURIComponent(merchantHandle)}&customer_email=${encodeURIComponent(ownerEmail)}`;
     const storeProfileUrl = `dashboard.html?store=${shopSlug}`;
     const encodedMapsQuery = encodeURIComponent(`${shopName} ${shopCity}`);
 
@@ -404,7 +404,7 @@ async function loadProducts() {
             <span class="muted">(Verified Local)</span>
           </div>
 
-          <!-- 🌟 प्रत्येक प्रॉडक्टच्या खाली मालकाचे मूळ नाव व वीव्होचे खरे युजरनेम -->
+          <!-- 🌟 प्रत्येक प्रॉडक्टच्या संबंधित दुकानदाराची माहिती -->
           <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:8px; font-size:12px; color:#334155; line-height:1.6; margin-bottom:10px;">
             🏪 दुकान: <a href="${storeProfileUrl}" style="color:#0284c7; font-weight:bold; text-decoration:none;">${shopName}</a><br>
             👤 मालक: <strong style="color:#0f172a;">${ownerName}</strong><br>
