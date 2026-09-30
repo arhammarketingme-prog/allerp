@@ -36,6 +36,10 @@ body.store-locked-mode #kpi-grid-section { display: none !important; }
 .erp-header h1 { font-size: 22px !important; margin: 0 !important; color: #fff; font-weight: 900; letter-spacing: 0.5px; }
 .erp-header .muted { color: #94a3b8 !important; font-size: 12.5px !important; }
 
+/* पिवळी प पट्टी (Yellow Alert Banner for Orders) */
+#live-order-alert-banner { display: none; background: #fef08a; border: 2px solid #facc15; color: #713f12; padding: 14px 20px; border-radius: 10px; margin-bottom: 16px; font-weight: 700; align-items: center; justify-content: space-between; box-shadow: 0 4px 12px rgba(250,204,21,0.3); animation: pulseAlert 1.5s infinite; }
+@keyframes pulseAlert { 0% { opacity: 1; } 50% { opacity: 0.8; } 100% { opacity: 1; } }
+
 .weavo-header-btn { background: linear-gradient(135deg, #0d9488, #0f766e); color: #fff; padding: 9px 16px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; box-shadow: 0 2px 6px rgba(0,0,0,0.15); transition: 0.2s; }
 .weavo-header-btn:hover { opacity: 0.9; }
 
@@ -82,10 +86,23 @@ tr:hover { background: #f8fafc; }
 <nav id="app-nav"></nav>
 
 <div class="dashboard-main-frame">
+  <!-- पिवळी प पट्टी अलर्ट बॅनर (नवीन ऑर्डर आल्यावर वाजणारे बीप आणि 'ओके' बटनसह) -->
+  <div id="live-order-alert-banner">
+    <div id="live-order-banner-text" style="display:flex; align-items:center; gap:8px;">
+      🔔 <strong>नवीन ऑनलाईन ऑर्डर आली आहे!</strong> कृपया तपासा.
+    </div>
+    <button type="button" onclick="acknowledgeLiveOrder()" style="background:#713f12; color:#fef08a; border:none; padding:7px 14px; border-radius:6px; font-weight:bold; cursor:pointer; font-size:13px;">
+      ✅ ओके (OK)
+    </button>
+  </div>
+
   <div class="erp-header">
     <div>
       <h1 id="business-display-name">लोड होत आहे...</h1>
-      <span class="muted" id="header-sub-text">Universal Business Operating System & Local Marketplace</span>
+      <!-- दुकानदाराचे नाव आणि ईमेल ॲड्रेस दर्शवणारी ओळ -->
+      <div id="merchant-profile-subtitle" class="muted" style="margin-top:2px; font-weight:600; color:#cbd5e1;">
+        संचालक: <span id="display-merchant-name">तपासत आहे...</span> | 📧 <span id="display-merchant-email">तपासत आहे...</span>
+      </div>
       <div style="margin-top:6px; font-size:13.5px; font-weight:700; color:#34d399;" id="merchant-username-badge">
         👤 वीव्हो चॅट युजरनेम: <span id="display-merchant-handle">@abhinaygandhi5151</span>
       </div>
@@ -315,7 +332,7 @@ function openModal(id) { document.getElementById(id).style.display = 'flex'; }
 function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 function enableAudioContextOnce() {}
 
-// 🔊 नवीन ऑर्डर आल्यावर वाजणारा बीप साऊंड (Web Audio API)
+// 🔊 अस्सल बीप साऊंड फंक्शन (Web Audio API)
 function playOrderAlertBeep() {
     try {
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -325,17 +342,23 @@ function playOrderAlertBeep() {
         oscillator.type = 'sine';
         oscillator.frequency.setValueAtTime(880, audioCtx.currentTime);
         
-        gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
+        gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.6);
 
         oscillator.connect(gainNode);
         gainNode.connect(audioCtx.destination);
 
         oscillator.start();
-        oscillator.stop(audioCtx.currentTime + 0.5);
+        oscillator.stop(audioCtx.currentTime + 0.6);
     } catch (e) {
         console.log("Audio alert note:", e);
     }
+}
+
+// दुकानदार 'ओके' बटन दाबल्यावर बॅनर बंद होईल आणि सिस्टीम सक्रिय होईल
+function acknowledgeLiveOrder() {
+  var banner = document.getElementById('live-order-alert-banner');
+  if (banner) banner.style.display = 'none';
 }
 
 async function initDashboard() {
@@ -363,6 +386,9 @@ async function initDashboard() {
       if (prodSec) prodSec.style.display = 'block';
 
       var storeTitle = "अभिनय स्टोअर्स";
+      var merchantFullName = "अभिनय गांधी";
+      var merchantEmailVal = "abhinay@gmail.com";
+
       try {
         var bizRes = await sb.from('businesses').select('*').or('slug.eq.' + lockedStoreUsername + ',name.ilike.%' + lockedStoreUsername + '%').maybeSingle();
         if (bizRes.data) {
@@ -370,9 +396,11 @@ async function initDashboard() {
           if (bizRes.data.id) currentBusinessId = bizRes.data.id;
           if (bizRes.data.owner_id) currentMerchantUserId = bizRes.data.owner_id;
         } else {
-          var profRes = await sb.from('profiles').select('id, username').ilike('username', lockedStoreUsername).maybeSingle();
+          var profRes = await sb.from('profiles').select('id, username, full_name, email').ilike('username', lockedStoreUsername).maybeSingle();
           if (profRes.data) {
             currentMerchantUserId = profRes.data.id;
+            if (profRes.data.full_name) merchantFullName = profRes.data.full_name;
+            if (profRes.data.email) merchantEmailVal = profRes.data.email;
             storeTitle = "अभिनय गांधी स्टोअर्स";
           }
         }
@@ -381,6 +409,8 @@ async function initDashboard() {
       }
 
       document.getElementById('business-display-name').textContent = storeTitle;
+      document.getElementById('display-merchant-name').textContent = merchantFullName;
+      document.getElementById('display-merchant-email').textContent = merchantEmailVal;
       document.getElementById('header-sub-text').textContent = 'अधिकृत ग्राहक स्टोअर व थेट संवाद मंच';
       document.getElementById('display-merchant-handle').textContent = '@' + lockedStoreUsername;
       currentMerchantUsername = lockedStoreUsername;
@@ -394,12 +424,16 @@ async function initDashboard() {
 
       var merchantHandle = sessionUser.email ? sessionUser.email.split('@')[0] : 'abhinaygandhi5151';
       var merchantStoreName = "अभिनय गांधी स्टोअर्स";
+      var merchantFullName = sessionUser.user_metadata && sessionUser.user_metadata.full_name ? sessionUser.user_metadata.full_name : "अभिनय गांधी";
+      var merchantEmailVal = sessionUser.email || "abhinay@gmail.com";
       currentMerchantUserId = sessionUser.id;
 
       try {
-        var profRes = await sb.from('profiles').select('username').eq('id', sessionUser.id).maybeSingle();
-        if (profRes.data && profRes.data.username) {
-          merchantHandle = profRes.data.username;
+        var profRes = await sb.from('profiles').select('username, full_name, email').eq('id', sessionUser.id).maybeSingle();
+        if (profRes.data) {
+          if (profRes.data.username) merchantHandle = profRes.data.username;
+          if (profRes.data.full_name) merchantFullName = profRes.data.full_name;
+          if (profRes.data.email) merchantEmailVal = profRes.data.email;
         }
 
         var bizRes = await sb.from('businesses').select('*').eq('owner_id', sessionUser.id).maybeSingle();
@@ -410,6 +444,8 @@ async function initDashboard() {
       } catch (e) {}
 
       document.getElementById('business-display-name').textContent = merchantStoreName;
+      document.getElementById('display-merchant-name').textContent = merchantFullName;
+      document.getElementById('display-merchant-email').textContent = merchantEmailVal;
       document.getElementById('display-merchant-handle').textContent = '@' + merchantHandle;
       currentMerchantUsername = merchantHandle;
 
@@ -420,6 +456,7 @@ async function initDashboard() {
 
       await loadProducts();
       await loadSales();
+      await loadOnlineOrders();
     }
   } catch (err) {
     console.error('Init error:', err);
@@ -758,7 +795,7 @@ async function saveBusinessSettings() {
   }
 }
 
-// 🌟 नवीन ऑर्डर आल्यावर बीप साऊंड आणि अचूक पेंडिंग/डिलिव्हर्ड स्टेटस मॅचिंग फंक्शन
+// 🌟 पिवळी प पट्टी अलर्ट, बीप साऊंड आणि अचूक ऑर्डर स्टेटस मॅचिंग फंक्शन
 async function loadOnlineOrders() {
   var tbody = document.getElementById('online-orders-table-body');
   if (!tbody) return;
@@ -770,12 +807,17 @@ async function loadOnlineOrders() {
       return;
     }
     
-    // नवीन पेंडिंग ऑर्डर असल्यास साऊंड बीप प्ले करा
+    // नवीन पेंडिंग ऑर्डर असल्यास पिवळी पट्टी आणि बीप साऊंड सक्रिय करणे
     var hasPendingOrder = data.some(function(o) {
       return (o.status || 'pending').toLowerCase() === 'pending';
     });
+    
+    var banner = document.getElementById('live-order-alert-banner');
     if (hasPendingOrder) {
+      if (banner) banner.style.display = 'flex';
       playOrderAlertBeep();
+    } else {
+      if (banner) banner.style.display = 'none';
     }
 
     tbody.innerHTML = data.map(function(o) {
