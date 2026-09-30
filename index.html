@@ -239,7 +239,7 @@ async function loadBusinessTypes() {
 
   const catIcons = {
     'grocery': '🛒', 'electronics': '🎧', 'clothing': '👗', 'hardware': '🔩',
-    'restaurant': '🍽️', 'medical-store': '💊', 'contractor': '🏗️️', 'furniture': '🛋️',
+    'restaurant': '🍽️', 'medical-store': '💊', 'contractor': '🏗️', 'furniture': '🛋️',
     'mobile-shop': '📱', 'real-estate': '🏠', 'services': '💼', 'bakery': '🍞', 'manufacturing': '🏭'
   };
 
@@ -299,45 +299,16 @@ function startMarketplaceVoiceSearch() {
   recognition.start();
 }
 
-// 🌟 होमपेजवर प्रत्येक प्रॉडक्टच्या खाली दुकानदाराचा खरा गुगल ईमेल आणि वीव्हो युजरनेम अचूक फेच करणारे फंक्शन
+// 🌟 होमपेजवर businesses टेबलमधील owner_email थेट फेच करणारे अचूक फंक्शन
 async function loadProducts() {
   const container = document.getElementById('products');
   const rawSearchTerm = document.getElementById('search-box').value.trim();
   const typeSlug = document.getElementById('type-filter').value;
   const sortMode = document.getElementById('sort-select').value;
 
-  // 1. प्रथम सर्व businesses आणि त्यांचे owner_id / emails फेच करणे
-  let bizMap = {};
-  try {
-    const { data: bizData } = await sb.from('businesses').select('id, name, slug, city, owner_id');
-    if (bizData) {
-      for (let b of bizData) {
-        let ownerEmail = '';
-        let ownerName = 'संचालक';
-        if (b.owner_id) {
-          // auth.users मधील ईमेल फेच करणे (किंवा RPC/profiles द्वारे)
-          try {
-            const { data: userData } = await sb.rpc('get_user_email_by_id', { user_uuid: b.owner_id });
-            if (userData && userData.email) ownerEmail = userData.email;
-            if (userData && userData.full_name) ownerName = userData.full_name;
-          } catch (errUser) {}
-        }
-        bizMap[b.id] = {
-          name: b.name || 'Local Store',
-          slug: b.slug || 'store',
-          city: b.city || 'Nearby',
-          ownerName: ownerName,
-          ownerEmail: ownerEmail || (b.slug ? b.slug + '@allerp.com' : 'support@allerp.com')
-        };
-      }
-    }
-  } catch (e) {
-    console.log("Biz map error:", e);
-  }
-
   let query = sb
     .from('business_products')
-    .select('id, name, selling_price, unit, image_url, business_id, businesses(name, slug, city, owner_id, business_type_id, business_types(slug))')
+    .select('id, name, selling_price, unit, image_url, business_id, businesses!inner(name, slug, city, owner_email, business_type_id, business_types!inner(slug))')
     .eq('marketplace_visible', true)
     .limit(300);
 
@@ -347,6 +318,8 @@ async function loadProducts() {
     const orConditions = (safeSynonyms.length ? safeSynonyms : [rawSearchTerm]).map(s => `name.ilike.%${s}%`).join(',');
     query = query.or(orConditions);
   }
+
+  if (typeSlug) query = query.eq('businesses.business_types.slug', typeSlug);
 
   if (sortMode === 'price_asc') query = query.order('selling_price', { ascending: true });
   else if (sortMode === 'price_desc') query = query.order('selling_price', { ascending: false });
@@ -388,20 +361,12 @@ async function loadProducts() {
     const isWishlisted = wishlistIds.has(repProductId);
     const fallbackImg = `https://placehold.co/400x400/2874f0/FFFFFF?text=${encodeURIComponent(g.name)}`;
     
-    // 🌟 अचूक दुकानदाराची माहिती आणि गुगल ईमेल जोडणे
-    const bizInfo = (repProduct.business_id && bizMap[repProduct.business_id]) ? bizMap[repProduct.business_id] : {
-      name: repProduct.businesses?.name || 'Local Store',
-      slug: repProduct.businesses?.slug || 'store',
-      city: repProduct.businesses?.city || 'Nearby',
-      ownerName: 'संचालक',
-      ownerEmail: 'support@allerp.com'
-    };
-
-    const shopName = bizInfo.name;
-    const shopSlug = bizInfo.slug;
-    const shopCity = bizInfo.city;
-    const ownerName = bizInfo.ownerName;
-    const ownerEmail = bizInfo.ownerEmail; // 📧 अस्सल गुगल ईमेल ॲड्रेस
+    // 🌟 businesses टेबलमधील अस्सल डेटा थेट वापरणे
+    const shopName = repProduct.businesses?.name || 'Local Store';
+    const shopSlug = repProduct.businesses?.slug || 'store';
+    const shopCity = repProduct.businesses?.city || 'Nearby';
+    const ownerEmail = repProduct.businesses?.owner_email || 'support@allerp.com'; // 📧 खरोखरचा गुगल ईमेल!
+    const ownerName = 'संचालक';
     const merchantHandle = shopSlug || ownerEmail.split('@')[0] || 'abhinaygandhi5151';
     
     // 💬 वीव्हो चॅटची थेट लिंक (खऱ्या ईमेलसह)
@@ -439,7 +404,7 @@ async function loadProducts() {
             <span class="muted">(Verified Local)</span>
           </div>
 
-          <!-- 🌟 प्रत्येक प्रॉडक्टच्या खाली दुकानदाराचा खरा ईमेल आणि युजरनेम -->
+          <!-- 🌟 प्रत्येक प्रॉडक्टच्या खाली दुकानदाराचा खरा ईमेल ॲड्रेस -->
           <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:8px; font-size:12px; color:#334155; line-height:1.6; margin-bottom:10px;">
             🏪 दुकान: <a href="${storeProfileUrl}" style="color:#0284c7; font-weight:bold; text-decoration:none;">${shopName}</a><br>
             👤 मालक: <strong style="color:#0f172a;">${ownerName}</strong><br>
