@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="manifest" href="manifest.json">
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iYmciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjMjg3NGYwIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzBlYTVhMyIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICA8L2RlZnM+CiAgPHJlY3Qgd2lkdGg9IjEwMCIgaGVpZ2h0PSIxMDAiIHJ4PSIyMiIgZmlsbD0idXJsKCNiZykiLz4KICA8IS0tIOCkpuClgeCkleCkvuCkqC/gpLjgpY3gpJ/gpYvgpIXgpLDgpKvgpY3gpLDgpILgpJ8g4KSa4KS/4KSo4KWN4KS5IC0tPgog <path d="M20 42 L20 78 Q20 80 22 80 L78 80 Q80 80 80 78 L80 42" fill="none" stroke="#ffffff" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iYmciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjMjg3NGYwIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzBlYTVhMyIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICA8L2RlZnM+CiAg<rect width="100" height="100" rx="22" fill="url(#bg)"/><path d="M20 42 L20 78 Q20 80 22 80 L78 80 Q80 80 80 78 L80 42" fill="none" stroke="#ffffff" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
   <path d="M16 42 L22 24 Q23 22 25 22 L75 22 Q77 22 78 24 L84 42 Q84 46 80 46 Q76 46 76 42 Q76 46 71 46 Q66 46 66 42 Q66 46 61 46 Q56 46 56 42 Q56 46 50 46 Q44 46 44 42 Q44 46 39 46 Q34 46 34 42 Q34 46 29 46 Q24 46 24 42 Q24 46 20 46 Q16 46 16 42 Z" fill="#ffffff"/>
   <path d="M32 68 L44 56 L52 64 L68 48" fill="none" stroke="#facc15" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
   <path d="M60 48 L68 48 L68 56" fill="none" stroke="#facc15" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -299,7 +299,7 @@ function startMarketplaceVoiceSearch() {
   recognition.start();
 }
 
-// 🌟 होमपेजवर businesses टेबलमधील owner_email थेट फेच करणारे अचूक फंक्शन
+// 🌟 होमपेजवर businesses टेबलमधील owner_name आणि owner_username थेट फेच करणारे अचूक फंक्शन
 async function loadProducts() {
   const container = document.getElementById('products');
   const rawSearchTerm = document.getElementById('search-box').value.trim();
@@ -308,7 +308,7 @@ async function loadProducts() {
 
   let query = sb
     .from('business_products')
-    .select('id, name, selling_price, unit, image_url, business_id, businesses!inner(name, slug, city, owner_email, business_type_id, business_types!inner(slug))')
+    .select('id, name, selling_price, unit, image_url, business_id, businesses!inner(name, slug, city, owner_email, owner_username, owner_name, business_type_id, business_types!inner(slug))')
     .eq('marketplace_visible', true)
     .limit(300);
 
@@ -361,15 +361,15 @@ async function loadProducts() {
     const isWishlisted = wishlistIds.has(repProductId);
     const fallbackImg = `https://placehold.co/400x400/2874f0/FFFFFF?text=${encodeURIComponent(g.name)}`;
     
-    // 🌟 businesses टेबलमधील अस्सल डेटा थेट वापरणे
+    // 🌟 businesses टेबलमधील अस्सल डेटा थेट वापरणे (खरे मालकाचे नाव व युजरनेम)
     const shopName = repProduct.businesses?.name || 'Local Store';
     const shopSlug = repProduct.businesses?.slug || 'store';
     const shopCity = repProduct.businesses?.city || 'Nearby';
-    const ownerEmail = repProduct.businesses?.owner_email || 'support@allerp.com'; // 📧 खरोखरचा गुगल ईमेल!
-    const ownerName = 'संचालक';
-    const merchantHandle = shopSlug || ownerEmail.split('@')[0] || 'abhinaygandhi5151';
+    const ownerEmail = repProduct.businesses?.owner_email || 'support@allerp.com';
+    const ownerName = repProduct.businesses?.owner_name || 'संचालक';
+    const merchantHandle = repProduct.businesses?.owner_username || shopSlug;
     
-    // 💬 वीव्हो चॅटची थेट लिंक (खऱ्या ईमेलसह)
+    // 💬 वीव्हो चॅटची थेट लिंक (खऱ्या युजरनेमसह)
     const weavoChatUrl = `https://arhammarketingme-prog.github.io/weavo/?store=${merchantHandle}&customer_email=${encodeURIComponent(ownerEmail)}`;
     const storeProfileUrl = `dashboard.html?store=${shopSlug}`;
     const encodedMapsQuery = encodeURIComponent(`${shopName} ${shopCity}`);
@@ -404,7 +404,7 @@ async function loadProducts() {
             <span class="muted">(Verified Local)</span>
           </div>
 
-          <!-- 🌟 प्रत्येक प्रॉडक्टच्या खाली दुकानदाराचा खरा ईमेल ॲड्रेस -->
+          <!-- 🌟 प्रत्येक प्रॉडक्टच्या खाली मालकाचे मूळ नाव व वीव्होचे खरे युजरनेम -->
           <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:8px; font-size:12px; color:#334155; line-height:1.6; margin-bottom:10px;">
             🏪 दुकान: <a href="${storeProfileUrl}" style="color:#0284c7; font-weight:bold; text-decoration:none;">${shopName}</a><br>
             👤 मालक: <strong style="color:#0f172a;">${ownerName}</strong><br>
