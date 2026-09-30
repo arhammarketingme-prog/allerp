@@ -75,6 +75,7 @@ tr:hover { background: #f8fafc; }
 .badge { padding: 4px 10px; border-radius: 6px; font-size: 11.5px; font-weight: 800; display: inline-block; }
 .badge.live { background: #dcfce7; color: #166534; }
 .badge.pending { background: #fef9c3; color: #854d0e; }
+.badge.danger { background: #fee2e2; color: #991b1b; }
 </style>
 </head>
 <body onclick="enableAudioContextOnce()">
@@ -116,7 +117,7 @@ tr:hover { background: #f8fafc; }
     <button type="button" class="erp-tab-btn" onclick="switchTab('tab-hr')">👔 कर्मचारी</button>
     <button type="button" class="erp-tab-btn" onclick="switchTab('tab-projects')">🏗️ प्रकल्प</button>
     <button type="button" class="erp-tab-btn" onclick="switchTab('tab-pos')">⚡ POS काउंटर</button>
-    <button type="button" class="erp-tab-btn" onclick="switchTab('tab-orders')">🛍️ ऑनलाईन ऑर्डर्स</button>
+    <button type="button" class="erp-tab-btn" onclick="switchTab('tab-orders')">🛍️️ ऑनलाईन ऑर्डर्स</button>
     <button type="button" class="erp-tab-btn" onclick="switchTab('tab-my-orders')">🛍️ माझ्या ऑर्डर्स</button>
     <button type="button" class="erp-tab-btn" onclick="switchTab('tab-reports')">📈 रिपोर्ट्स</button>
     <button type="button" class="erp-tab-btn ai-btn" onclick="switchTab('tab-ai')">✨ AllERP AI</button>
@@ -314,6 +315,29 @@ function openModal(id) { document.getElementById(id).style.display = 'flex'; }
 function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 function enableAudioContextOnce() {}
 
+// 🔊 नवीन ऑर्डर आल्यावर वाजणारा बीप साऊंड (Web Audio API)
+function playOrderAlertBeep() {
+    try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(880, audioCtx.currentTime);
+        
+        gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+
+        oscillator.start();
+        oscillator.stop(audioCtx.currentTime + 0.5);
+    } catch (e) {
+        console.log("Audio alert note:", e);
+    }
+}
+
 async function initDashboard() {
   try {
     var urlParams = new URLSearchParams(window.location.search);
@@ -338,7 +362,6 @@ async function initDashboard() {
       var prodSec = document.getElementById('customer-products-section');
       if (prodSec) prodSec.style.display = 'block';
 
-      // 🌟 URL मधून आलेल्या store स्लगवरून (उदा. abhinaygandhi5151) डेटाबेस मधून अस्सल नाव आणि युजर आयडी फेच करणे
       var storeTitle = "अभिनय स्टोअर्स";
       try {
         var bizRes = await sb.from('businesses').select('*').or('slug.eq.' + lockedStoreUsername + ',name.ilike.%' + lockedStoreUsername + '%').maybeSingle();
@@ -347,7 +370,6 @@ async function initDashboard() {
           if (bizRes.data.id) currentBusinessId = bizRes.data.id;
           if (bizRes.data.owner_id) currentMerchantUserId = bizRes.data.owner_id;
         } else {
-          // profiles टेबलमधून शोधणे
           var profRes = await sb.from('profiles').select('id, username').ilike('username', lockedStoreUsername).maybeSingle();
           if (profRes.data) {
             currentMerchantUserId = profRes.data.id;
@@ -488,7 +510,6 @@ function openCustomerCartModal() {
   openModal('customer-cart-modal');
 }
 
-// 🌟 सुरक्षित आणि एररमुक्त ऑर्डर सबमिट व वीव्हो ब्रिजिंग
 async function submitCustomerOrder() {
   var name = document.getElementById('cust-order-name').value.trim();
   var phone = document.getElementById('cust-order-phone').value.trim();
@@ -737,6 +758,7 @@ async function saveBusinessSettings() {
   }
 }
 
+// 🌟 नवीन ऑर्डर आल्यावर बीप साऊंड आणि अचूक पेंडिंग/डिलिव्हर्ड स्टेटस मॅचिंग फंक्शन
 async function loadOnlineOrders() {
   var tbody = document.getElementById('online-orders-table-body');
   if (!tbody) return;
@@ -747,14 +769,35 @@ async function loadOnlineOrders() {
       tbody.innerHTML = '<tr><td colspan="6" class="muted" style="text-align:center;">कोणतीही ऑनलाईन ऑर्डर आलेली नाही.</td></tr>';
       return;
     }
+    
+    // नवीन पेंडिंग ऑर्डर असल्यास साऊंड बीप प्ले करा
+    var hasPendingOrder = data.some(function(o) {
+      return (o.status || 'pending').toLowerCase() === 'pending';
+    });
+    if (hasPendingOrder) {
+      playOrderAlertBeep();
+    }
+
     tbody.innerHTML = data.map(function(o) {
+      var rawStatus = (o.status || 'pending').toLowerCase();
+      var badgeClass = 'pending';
+      var statusText = 'पेंडिंग (Pending)';
+
+      if (rawStatus === 'delivered' || rawStatus === 'completed') {
+        badgeClass = 'live';
+        statusText = 'डिलिव्हरी झाली (Delivered)';
+      } else if (rawStatus === 'cancelled') {
+        badgeClass = 'danger';
+        statusText = 'रद्द केली (Cancelled)';
+      }
+
       return '<tr>' +
              '<td><strong>#' + o.id.toString().substring(0,8) + '</strong></td>' +
              '<td>' + escapeHtml(o.customer_name || '-') + '</td>' +
              '<td>📱 ' + escapeHtml(o.customer_phone || '-') + '<br><small style="color:var(--text-muted);">🏠 ' + escapeHtml(o.customer_address || '-') + '</small></td>' +
              '<td>' + escapeHtml(o.items_summary || '-') + '</td>' +
              '<td style="font-weight:bold; color:var(--success);">₹' + (o.total_amount || 0) + '</td>' +
-             '<td><span class="badge pending">' + (o.status || 'pending') + '</span></td>' +
+             '<td><span class="badge ' + badgeClass + '">' + statusText + '</span></td>' +
              '</tr>';
     }).join('');
   } catch (e) {
@@ -773,12 +816,16 @@ async function loadCustomerOrderHistory() {
       return;
     }
     tbody.innerHTML = data.map(function(o) {
+      var rawStatus = (o.status || 'pending').toLowerCase();
+      var badgeClass = (rawStatus === 'delivered' || rawStatus === 'completed') ? 'live' : 'pending';
+      var statusText = (rawStatus === 'delivered' || rawStatus === 'completed') ? 'डिलिव्हरी झाली (Delivered)' : 'पेंडिंग (Pending)';
+
       return '<tr>' +
              '<td><strong>#' + o.id.toString().substring(0,8) + '</strong></td>' +
              '<td>' + escapeHtml(o.items_summary || '-') + '</td>' +
              '<td style="font-weight:bold; color:var(--success);">₹' + (o.total_amount || 0) + '</td>' +
              '<td>' + escapeHtml(o.customer_address || '-') + '</td>' +
-             '<td><span class="badge ' + (o.status === 'delivered' ? 'live' : 'pending') + '">' + (o.status || 'pending') + '</span></td>' +
+             '<td><span class="badge ' + badgeClass + '">' + statusText + '</span></td>' +
              '</tr>';
     }).join('');
   } catch (e) {
@@ -796,7 +843,7 @@ async function sendAIPrompt() {
   input.value = '';
 
   setTimeout(function() {
-    var reply = "तुमच्या व्यवसायाच्या आकडेवारीनुसार आजची एकूण विक्री सुरळीत सुरू आहे. इन्व्हेंटरी आणि स्टॉक व्यवस्थित अपडेट केला आहे.";
+    var reply = "तुमच्या व्यवसायाच्या आकडेवारीनुसार आजची एकूण विक्री सुरळीत सुरू आहे.";
     if (q.includes('विक्री') || q.includes('sales')) {
       reply = "चालू महिन्याची एकूण विक्री आणि उलाढाल उत्तम स्वरूपात सुरू आहे.";
     } else if (q.includes('स्टॉक') || q.includes('stock')) {
