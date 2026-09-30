@@ -146,7 +146,7 @@ tr:hover { background: #f8fafc; }
     </div>
     <div id="customer-products-section" style="display:none; margin-bottom:24px;">
       <h2 style="color:var(--primary); margin:0 0 10px 0;">📦 या दुकानातील उपलब्ध वस्तू</h2>
-      <div id="customer-products-grid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap:12px;">
+      <div id="customer-products-grid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap:14px;">
         <p class="muted">प्रॉडक्ट्स लोड होत आहेत...</p>
       </div>
     </div>
@@ -406,6 +406,27 @@ async function initDashboard() {
 
       await loadCustomerStoreProducts();
     } else {
+      // 🌟 जर ?store= युजरनेम URL मध्ये नसेल तर हे कॉमन युजरचे होम पेज / ग्लोबल मार्केटप्लेस आहे (सर्व दुकानांचे प्रॉडक्ट्स दाखवणारे)
+      var globalStoreParam = urlParams.get('global_feed');
+      if (!sessionUser && !globalStoreParam) {
+        // सामान्य कस्टमरसाठी होम पेजवर सर्व दुकानांची उत्पादने आणि दुकानदारांची माहिती लोड करणे
+        document.body.classList.add('store-locked-mode');
+        var custBar = document.getElementById('customer-action-bar');
+        if (custBar) custBar.style.display = 'flex';
+        var googleBtn = document.getElementById('customer-google-login-btn');
+        if (googleBtn) googleBtn.style.display = 'inline-flex';
+        var prodSec = document.getElementById('customer-products-section');
+        if (prodSec) prodSec.style.display = 'block';
+
+        document.getElementById('business-display-name').textContent = "ALL ERP — Universal Marketplace";
+        document.getElementById('display-merchant-name').textContent = "सर्व व्यापारी वर्ग";
+        document.getElementById('display-merchant-email').textContent = "marketplace@allerp.com";
+        document.getElementById('display-merchant-handle').textContent = "@allerp_market";
+
+        await loadAllStoresGlobalProducts();
+        return;
+      }
+
       if (!sessionUser) {
         window.location.href = 'login.html';
         return;
@@ -417,7 +438,6 @@ async function initDashboard() {
       var merchantEmailVal = sessionUser.email || "abhinay@gmail.com";
       currentMerchantUserId = sessionUser.id;
 
-      // 🌟 ऑनबोर्डिंगचे कोणतेही रिडायरेक्शन काढून टाकले आहे, दुकानदार कितीही दिवस आला नाही तरी थेट डॅशबोर्ड उघडेल
       try {
         var bizRes = await sb.from('businesses').select('*').eq('owner_id', sessionUser.id).maybeSingle();
         if (bizRes.data) {
@@ -446,7 +466,69 @@ async function initDashboard() {
   }
 }
 
-// 🌟 गुगल लॉगिन करताना अकाउंट निवडण्याचा पर्याय (`prompt: 'select_account'`) सुरक्षितपणे जोडलेला आहे
+// 🌟 सर्व दुकानांचे प्रॉडक्ट्स आणि त्या त्या दुकानदाराचे नाव, ईमेल, वीव्हो चॅट लिंक होम पेजवर लोड करणारे फंक्शन
+async function loadAllStoresGlobalProducts() {
+  var gridEl = document.getElementById('customer-products-grid');
+  if (!gridEl) return;
+  try {
+    // सर्व व्यवसायांची आणि प्रॉडक्ट्सची माहिती फेच करणे
+    var prodRes = await sb.from('business_products').select('*, businesses(name, owner_id)');
+    var products = prodRes.data;
+
+    if (!products || products.length === 0) {
+      // फॉबॅक: फक्त प्रॉडक्ट टेबल चेक करणे
+      var fallbackRes = await sb.from('business_products').select('*');
+      products = fallbackRes.data;
+    }
+
+    if (!products || products.length === 0) {
+      gridEl.innerHTML = '<p class="muted">सध्या कोणत्याही दुकानात उत्पादने उपलब्ध नाहीत.</p>';
+      return;
+    }
+
+    currentProducts = products;
+
+    gridEl.innerHTML = products.map(function(p) {
+      var storeName = (p.businesses && p.businesses.name) ? p.businesses.name : 'अधिकृत दुकान';
+      var ownerName = p.owner_name || 'संचालक';
+      var ownerEmail = p.owner_email || 'support@allerp.com';
+      var merchantHandle = p.merchant_username || ownerEmail.split('@')[0] || 'abhinaygandhi5151';
+      
+      // वीव्हो चॅटची थेट लिंक तयार करणे
+      var weavoChatLink = 'https://arhammarketingme-prog.github.io/weavo/?store=' + merchantHandle + '&customer_email=' + encodeURIComponent(ownerEmail);
+      var storeLink = window.location.origin + window.location.pathname + '?store=' + merchantHandle;
+
+      return '<div style="background:#fff; border:1px solid #cbd5e1; border-radius:10px; padding:14px; text-align:left; box-shadow:0 2px 6px rgba(0,0,0,0.04); display:flex; flex-direction:column; justify-content:space-between;">' +
+             
+             // प्रॉडक्ट आणि किंमत
+             '<div>' +
+               '<div style="font-weight:900; font-size:16px; margin-bottom:4px; color:#0f172a;">' + escapeHtml(p.name) + '</div>' +
+               '<div style="color:#16a34a; font-weight:900; font-size:15px; margin-bottom:8px;">₹' + p.selling_price + '</div>' +
+               '<hr style="border:none; border-top:1px solid #f1f5f9; margin:8px 0;">' +
+               
+               // दुकानदाराची आणि दुकानाची सर्व माहिती (प्रत्येक प्रॉडक्टच्या खाली)
+               '<div style="font-size:12.5px; color:#334155; line-height:1.6; margin-bottom:12px;">' +
+                 '🏪 दुकान: <a href="' + storeLink + '" style="color:#0284c7; font-weight:bold; text-decoration:none;">' + escapeHtml(storeName) + '</a><br>' +
+                 '👤 मालक: <strong style="color:#0f172a;">' + escapeHtml(ownerName) + '</strong><br>' +
+                 '📧 ईमेल: <span style="color:#64748b;">' + escapeHtml(ownerEmail) + '</span><br>' +
+                 '💬 युजरनेम: <span style="color:#0d9488; font-weight:bold;">@' + escapeHtml(merchantHandle) + '</span>' +
+               '</div>' +
+             '</div>' +
+
+             // बटने (कार्ट व थेट वीव्हो चॅट)
+             '<div style="display:flex; flex-direction:column; gap:6px;">' +
+               '<button onclick="addToCustomerCart(\'' + p.id + '\')" style="background:#16a34a; color:#fff; border:none; padding:7px 12px; border-radius:6px; font-weight:bold; cursor:pointer; font-size:12.5px;">🛒 ॲड टू कार्ट</button>' +
+               '<a href="' + weavoChatLink + '" target="_blank" style="background:#0d9488; color:#fff; text-align:center; padding:7px 12px; border-radius:6px; font-weight:bold; text-decoration:none; font-size:12.5px;">💬 थेट वीव्हो चॅट करा</a>' +
+             '</div>' +
+
+             '</div>';
+    }).join('');
+  } catch (e) {
+    gridEl.innerHTML = '<p class="muted">उत्पादने लोड करताना त्रुटी आली.</p>';
+  }
+}
+
+// 🔊 गुगल लॉगिन करताना अकाउंट निवडण्याचा पर्याय
 function loginCustomerWithGoogle() {
   var currentUrl = window.location.origin + window.location.pathname + (lockedStoreUsername ? ('?store=' + lockedStoreUsername) : '');
   sb.auth.signInWithOAuth({ 
@@ -787,7 +869,6 @@ async function saveBusinessSettings() {
   }
 }
 
-// 🌟 पिवळी प पट्टी अलर्ट, बीप साऊंड आणि अचूक ऑर्डर स्टेटस मॅचिंग फंक्शन
 async function loadOnlineOrders() {
   var tbody = document.getElementById('online-orders-table-body');
   if (!tbody) return;
