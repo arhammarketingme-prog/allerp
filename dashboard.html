@@ -134,7 +134,7 @@ tr:hover { background: #f8fafc; }
     <button type="button" class="erp-tab-btn" onclick="switchTab('tab-hr')">👔 कर्मचारी</button>
     <button type="button" class="erp-tab-btn" onclick="switchTab('tab-projects')">🏗️ प्रकल्प</button>
     <button type="button" class="erp-tab-btn" onclick="switchTab('tab-pos')">⚡ POS काउंटर</button>
-    <button type="button" class="erp-tab-btn" onclick="switchTab('tab-orders')">🛍️️ ऑनलाईन ऑर्डर्स</button>
+    <button type="button" class="erp-tab-btn" onclick="switchTab('tab-orders')">🛍️ ऑनलाईन ऑर्डर्स</button>
     <button type="button" class="erp-tab-btn" onclick="switchTab('tab-my-orders')">🛍️ माझ्या ऑर्डर्स</button>
     <button type="button" class="erp-tab-btn" onclick="switchTab('tab-reports')">📈 रिपोर्ट्स</button>
     <button type="button" class="erp-tab-btn ai-btn" onclick="switchTab('tab-ai')">✨ AllERP AI</button>
@@ -463,9 +463,18 @@ async function initDashboard() {
   }
 }
 
+// 🌟 गुगल लॉगिन करताना अकाउंट निवडण्याचा पर्याय (`prompt: 'select_account'`) जोडलेले फंक्शन
 function loginCustomerWithGoogle() {
   var currentUrl = window.location.origin + window.location.pathname + (lockedStoreUsername ? ('?store=' + lockedStoreUsername) : '');
-  sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: currentUrl } });
+  sb.auth.signInWithOAuth({ 
+    provider: 'google', 
+    options: { 
+      redirectTo: currentUrl,
+      queryParams: {
+        prompt: 'select_account'
+      }
+    } 
+  });
 }
 
 function shareStoreOnWhatsApp() {
