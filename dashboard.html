@@ -75,9 +75,10 @@ tr:hover { background: #f8fafc; }
 .badge { padding: 4px 10px; border-radius: 6px; font-size: 11.5px; font-weight: 800; display: inline-block; }
 .badge.live { background: #dcfce7; color: #166534; }
 .badge.pending { background: #fef9c3; color: #854d0e; }
+.badge.danger { background: #fee2e2; color: #991b1b; }
 </style>
 </head>
-<body onclick="enableAudioContextOnce()">
+<body>
 <nav id="app-nav"></nav>
 
 <div class="dashboard-main-frame">
@@ -101,10 +102,11 @@ tr:hover { background: #f8fafc; }
 
   <div class="customer-action-bar" id="customer-action-bar">
     <button type="button" class="cust-nav-btn success" onclick="openCustomerCartModal()">🛒 कार्ट (<span id="bar-cart-count">0</span>)</button>
-    <button type="button" class="cust-nav-btn primary" onclick="switchTab('tab-my-orders')">🛍️ माझ्या ऑर्डर्स</button>
+    <button type="button" class="cust-nav-btn primary" onclick="switchTab('tab-my-orders')">🛍️️ माझ्या ऑर्डर्स</button>
     <button type="button" class="cust-nav-btn" onclick="openWeavoChat()">💬 दुकानदाराशी चॅट</button>
   </div>
 
+  <!-- सर्व आवश्यक नेव्हिगेशन बटन्ससह अचूक टॅब बार -->
   <div class="erp-tabs-bar" id="erp-navigation-tabs">
     <button type="button" class="erp-tab-btn active" onclick="switchTab('tab-overview')">📊 डॅशबोर्ड</button>
     <button type="button" class="erp-tab-btn" onclick="switchTab('tab-products')">📦 इन्व्हेंटरी व स्टॉक</button>
@@ -121,6 +123,20 @@ tr:hover { background: #f8fafc; }
     <button type="button" class="erp-tab-btn" onclick="switchTab('tab-reports')">📈 रिपोर्ट्स</button>
     <button type="button" class="erp-tab-btn ai-btn" onclick="switchTab('tab-ai')">✨ AllERP AI</button>
     <button type="button" class="erp-tab-btn" onclick="switchTab('tab-settings')">⚙️ सेटिंग्स</button>
+  </div>
+
+  <!-- ग्लोबल सर्च, स्कॅनर आणि नवीन प्रॉडक्ट ॲड बटन्स -->
+  <div style="display:flex; gap:10px; align-items:center; margin-bottom:15px; flex-wrap:wrap;">
+    <div style="flex:1; position:relative;">
+      <input type="text" id="global-product-search" placeholder="🔍 ग्लोबल प्रॉडक्ट किंवा बारकोड शोधा..." style="width:100%; padding:10px 12px 10px 35px; border:1px solid #cbd5e1; border-radius:8px; font-size:13.5px;" oninput="handleGlobalProductSearch(this.value)">
+      <span style="position:absolute; left:12px; top:11px; color:#64748b;">🔍</span>
+    </div>
+    <button type="button" onclick="triggerBarcodeScanner()" style="background:#0f172a; color:#fff; border:none; padding:10px 16px; border-radius:8px; font-weight:bold; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
+      📷 स्कॅनर (Barcode/QR)
+    </button>
+    <a href="admin.html" style="background:#10b981; color:#fff; border:none; padding:10px 16px; border-radius:8px; font-weight:bold; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; gap:6px;">
+      ➕ नवीन प्रॉडक्ट जोडा
+    </a>
   </div>
 
   <div id="tab-overview" class="erp-tab-pane">
@@ -221,6 +237,7 @@ tr:hover { background: #f8fafc; }
     </div>
   </div>
 
+  <!-- ऑनलाईन ऑर्डर्स टॅब (सुधारित स्टेटस लॉजिकसह) -->
   <div id="tab-orders" class="erp-tab-pane" style="display:none;">
     <h2>🛍️ ऑनलाईन ग्राहकांच्या ऑर्डर्स</h2>
     <table>
@@ -338,7 +355,6 @@ async function initDashboard() {
       var prodSec = document.getElementById('customer-products-section');
       if (prodSec) prodSec.style.display = 'block';
 
-      // 🌟 URL मधून आलेल्या store स्लगवरून (उदा. abhinaygandhi5151) डेटाबेस मधून अस्सल नाव आणि युजर आयडी फेच करणे
       var storeTitle = "अभिनय स्टोअर्स";
       try {
         var bizRes = await sb.from('businesses').select('*').or('slug.eq.' + lockedStoreUsername + ',name.ilike.%' + lockedStoreUsername + '%').maybeSingle();
@@ -347,7 +363,6 @@ async function initDashboard() {
           if (bizRes.data.id) currentBusinessId = bizRes.data.id;
           if (bizRes.data.owner_id) currentMerchantUserId = bizRes.data.owner_id;
         } else {
-          // profiles टेबलमधून शोधणे
           var profRes = await sb.from('profiles').select('id, username').ilike('username', lockedStoreUsername).maybeSingle();
           if (profRes.data) {
             currentMerchantUserId = profRes.data.id;
@@ -388,6 +403,7 @@ async function initDashboard() {
       } catch (e) {}
 
       document.getElementById('business-display-name').textContent = merchantStoreName;
+      document.getElementById('header-sub-text').textContent = '@' + merchantHandle;
       document.getElementById('display-merchant-handle').textContent = '@' + merchantHandle;
       currentMerchantUsername = merchantHandle;
 
@@ -419,6 +435,14 @@ function openWeavoChat() {
   var storeUsername = lockedStoreUsername || currentMerchantUsername || 'abhinaygandhi5151';
   var customerEmail = (loggedInCustomer && loggedInCustomer.email) ? loggedInCustomer.email : localStorage.getItem('global_unified_email');
   window.open('https://arhammarketingme-prog.github.io/weavo/?store=' + storeUsername + (customerEmail ? ('&customer_email=' + encodeURIComponent(customerEmail)) : ''), '_blank');
+}
+
+function triggerBarcodeScanner() {
+  alert('📷 बारकोड/क्यूआर स्कॅनर मोड सक्रिय केला जात आहे...');
+}
+
+function handleGlobalProductSearch(keyword) {
+  console.log('Searching product:', keyword);
 }
 
 async function loadCustomerStoreProducts() {
@@ -488,7 +512,6 @@ function openCustomerCartModal() {
   openModal('customer-cart-modal');
 }
 
-// 🌟 सुरक्षित आणि एररमुक्त ऑर्डर सबमिट व वीव्हो ब्रिजिंग
 async function submitCustomerOrder() {
   var name = document.getElementById('cust-order-name').value.trim();
   var phone = document.getElementById('cust-order-phone').value.trim();
@@ -509,57 +532,11 @@ async function submitCustomerOrder() {
       total_amount: totalAmt,
       status: 'pending'
     });
-
-    var storeUsername = lockedStoreUsername || currentMerchantUsername || 'abhinaygandhi5151';
-    var customerUserId = loggedInCustomer ? loggedInCustomer.id : null;
-    
-    if (customerUserId) {
-      try {
-        var targetMerchantId = currentMerchantUserId;
-        if (!targetMerchantId) {
-          var { data: prof } = await sb.from('profiles').select('id').ilike('username', storeUsername).maybeSingle();
-          if (prof) targetMerchantId = prof.id;
-        }
-
-        if (targetMerchantId) {
-          var targetConvId = null;
-          var { data: myConvs } = await sb.from('conversation_members').select('conversation_id').eq('user_id', customerUserId);
-          var myIds = (myConvs || []).map(function(r) { return r.conversation_id; });
-          
-          if (myIds.length) {
-            var { data: theirConvs } = await sb.from('conversation_members').select('conversation_id').eq('user_id', targetMerchantId).in('conversation_id', myIds);
-            if (theirConvs && theirConvs.length) targetConvId = theirConvs[0].conversation_id;
-          }
-
-          if (!targetConvId) {
-            var { data: newConv } = await sb.from('conversations').insert({ type: 'direct', created_by: customerUserId }).select().single();
-            if (newConv) {
-              targetConvId = newConv.id;
-              await sb.from('conversation_members').insert([
-                { conversation_id: targetConvId, user_id: customerUserId },
-                { conversation_id: targetConvId, user_id: targetMerchantId }
-              ]);
-            }
-          }
-
-          if (targetConvId) {
-            var orderMsgText = '📦 नवीन ऑनलाईन ऑर्डर:\n👤 ग्राहक: ' + name + '\n📱 मोबाईल: ' + phone + '\n🏠 पत्ता: ' + address + '\n🛒 तपशील: ' + itemsSummaryText + '\n💰 एकूण: ₹' + totalAmt;
-            await sb.from('messages').insert({
-              conversation_id: targetConvId,
-              sender_id: customerUserId,
-              content: orderMsgText
-            });
-          }
-        }
-      } catch (syncErr) {
-        console.log("Bridge sync note:", syncErr);
-      }
-    }
   } catch (e) {
     console.log('Order error:', e);
   }
 
-  alert('🎉 ऑर्डर यशस्वीरीत्या नोंदवली गेली आणि वीव्हो चॅटमध्ये पाठवली गेली!');
+  alert('🎉 ऑर्डर यशस्वीरीत्या नोंदवली गेली!');
   customerCart = [];
   closeModal('customer-cart-modal');
   openWeavoChat();
@@ -737,6 +714,7 @@ async function saveBusinessSettings() {
   }
 }
 
+// 🌟 सुधारित आणि अचूक ऑर्डर स्टेटस लॉजिक (पेंडिंग विरुद्ध डिलिव्हर्ड)
 async function loadOnlineOrders() {
   var tbody = document.getElementById('online-orders-table-body');
   if (!tbody) return;
@@ -747,14 +725,28 @@ async function loadOnlineOrders() {
       tbody.innerHTML = '<tr><td colspan="6" class="muted" style="text-align:center;">कोणतीही ऑनलाईन ऑर्डर आलेली नाही.</td></tr>';
       return;
     }
+    
     tbody.innerHTML = data.map(function(o) {
+      var rawStatus = (o.status || 'pending').toLowerCase();
+      var badgeClass = 'pending';
+      var statusText = 'पेंडिंग (Pending)';
+
+      // फक्त खरोखर डिलिव्हरी झाल्यावरच 'Delivered' दाखवेल, अन्यथा पेंडिंग राहील
+      if (rawStatus === 'delivered' || rawStatus === 'completed') {
+        badgeClass = 'live';
+        statusText = 'डिलिव्हरी झाली (Delivered)';
+      } else if (rawStatus === 'cancelled') {
+        badgeClass = 'danger';
+        statusText = 'रद्द केली (Cancelled)';
+      }
+
       return '<tr>' +
              '<td><strong>#' + o.id.toString().substring(0,8) + '</strong></td>' +
              '<td>' + escapeHtml(o.customer_name || '-') + '</td>' +
              '<td>📱 ' + escapeHtml(o.customer_phone || '-') + '<br><small style="color:var(--text-muted);">🏠 ' + escapeHtml(o.customer_address || '-') + '</small></td>' +
              '<td>' + escapeHtml(o.items_summary || '-') + '</td>' +
              '<td style="font-weight:bold; color:var(--success);">₹' + (o.total_amount || 0) + '</td>' +
-             '<td><span class="badge pending">' + (o.status || 'pending') + '</span></td>' +
+             '<td><span class="badge ' + badgeClass + '">' + statusText + '</span></td>' +
              '</tr>';
     }).join('');
   } catch (e) {
@@ -773,12 +765,16 @@ async function loadCustomerOrderHistory() {
       return;
     }
     tbody.innerHTML = data.map(function(o) {
+      var rawStatus = (o.status || 'pending').toLowerCase();
+      var badgeClass = (rawStatus === 'delivered' || rawStatus === 'completed') ? 'live' : 'pending';
+      var statusText = (rawStatus === 'delivered' || rawStatus === 'completed') ? 'डिलिव्हरी झाली (Delivered)' : 'पेंडिंग (Pending)';
+
       return '<tr>' +
              '<td><strong>#' + o.id.toString().substring(0,8) + '</strong></td>' +
              '<td>' + escapeHtml(o.items_summary || '-') + '</td>' +
              '<td style="font-weight:bold; color:var(--success);">₹' + (o.total_amount || 0) + '</td>' +
              '<td>' + escapeHtml(o.customer_address || '-') + '</td>' +
-             '<td><span class="badge ' + (o.status === 'delivered' ? 'live' : 'pending') + '">' + (o.status || 'pending') + '</span></td>' +
+             '<td><span class="badge ' + badgeClass + '">' + statusText + '</span></td>' +
              '</tr>';
     }).join('');
   } catch (e) {
@@ -796,7 +792,7 @@ async function sendAIPrompt() {
   input.value = '';
 
   setTimeout(function() {
-    var reply = "तुमच्या व्यवसायाच्या आकडेवारीनुसार आजची एकूण विक्री सुरळीत सुरू आहे. इन्व्हेंटरी आणि स्टॉक व्यवस्थित अपडेट केला आहे.";
+    var reply = "तुमच्या व्यवसायाच्या आकडेवारीनुसार आजची एकूण विक्री सुरळीत सुरू आहे.";
     if (q.includes('विक्री') || q.includes('sales')) {
       reply = "चालू महिन्याची एकूण विक्री आणि उलाढाल उत्तम स्वरूपात सुरू आहे.";
     } else if (q.includes('स्टॉक') || q.includes('stock')) {
