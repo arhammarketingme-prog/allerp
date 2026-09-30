@@ -417,6 +417,7 @@ async function initDashboard() {
       var merchantEmailVal = sessionUser.email || "abhinay@gmail.com";
       currentMerchantUserId = sessionUser.id;
 
+      // 🌟 ऑनबोर्डिंगचे कोणतेही रिडायरेक्शन काढून टाकले आहे, दुकानदार कितीही दिवस आला नाही तरी थेट डॅशबोर्ड उघडेल
       try {
         var bizRes = await sb.from('businesses').select('*').eq('owner_id', sessionUser.id).maybeSingle();
         if (bizRes.data) {
@@ -445,7 +446,7 @@ async function initDashboard() {
   }
 }
 
-// 🌟 गुगल लॉगिन करताना अकाउंट निवडण्याचा पर्याय सुरक्षितपणे जोडलेला आहे
+// 🌟 गुगल लॉगिन करताना अकाउंट निवडण्याचा पर्याय (`prompt: 'select_account'`) सुरक्षितपणे जोडलेला आहे
 function loginCustomerWithGoogle() {
   var currentUrl = window.location.origin + window.location.pathname + (lockedStoreUsername ? ('?store=' + lockedStoreUsername) : '');
   sb.auth.signInWithOAuth({ 
@@ -786,7 +787,7 @@ async function saveBusinessSettings() {
   }
 }
 
-// 🌟 पिवळी प पट्टी अलर्ट, बीप साऊंड आणि अचूक ऑर्डर स्टेटस मॅचिंग फंक्शन (एरर-फ्री)
+// 🌟 पिवळी प पट्टी अलर्ट, बीप साऊंड आणि अचूक ऑर्डर स्टेटस मॅचिंग फंक्शन
 async function loadOnlineOrders() {
   var tbody = document.getElementById('online-orders-table-body');
   if (!tbody) return;
