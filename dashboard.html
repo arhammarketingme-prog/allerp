@@ -86,7 +86,7 @@ tr:hover { background: #f8fafc; }
 <nav id="app-nav"></nav>
 
 <div class="dashboard-main-frame">
-  <!-- पिवळी प पट्टी अलर्ट बॅनर (नवीन ऑर्डर आल्यावर वाजणारे बीप आणि 'ओके' बटनसह) -->
+  <!-- पिवळी प पट्टी अलर्ट बॅनर -->
   <div id="live-order-alert-banner">
     <div id="live-order-banner-text" style="display:flex; align-items:center; gap:8px;">
       🔔 <strong>नवीन ऑनलाईन ऑर्डर आली आहे!</strong> कृपया तपासा.
@@ -99,7 +99,6 @@ tr:hover { background: #f8fafc; }
   <div class="erp-header">
     <div>
       <h1 id="business-display-name">लोड होत आहे...</h1>
-      <!-- दुकानदाराचे नाव आणि ईमेल ॲड्रेस दर्शवणारी ओळ -->
       <div id="merchant-profile-subtitle" class="muted" style="margin-top:2px; font-weight:600; color:#cbd5e1;">
         संचालक: <span id="display-merchant-name">तपासत आहे...</span> | 📧 <span id="display-merchant-email">तपासत आहे...</span>
       </div>
@@ -332,7 +331,7 @@ function openModal(id) { document.getElementById(id).style.display = 'flex'; }
 function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 function enableAudioContextOnce() {}
 
-// 🔊 अस्सल बीप साऊंड फंक्शन (Web Audio API)
+// 🔊 बीप साऊंड फंक्शन (Web Audio API)
 function playOrderAlertBeep() {
     try {
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -355,7 +354,7 @@ function playOrderAlertBeep() {
     }
 }
 
-// दुकानदार 'ओके' बटन दाबल्यावर बॅनर बंद होईल आणि सिस्टीम सक्रिय होईल
+// दुकानदार 'ओके' बटन दाबल्यावर बॅनर बंद होईल
 function acknowledgeLiveOrder() {
   var banner = document.getElementById('live-order-alert-banner');
   if (banner) banner.style.display = 'none';
@@ -395,18 +394,8 @@ async function initDashboard() {
           if (bizRes.data.name) storeTitle = bizRes.data.name;
           if (bizRes.data.id) currentBusinessId = bizRes.data.id;
           if (bizRes.data.owner_id) currentMerchantUserId = bizRes.data.owner_id;
-        } else {
-          var profRes = await sb.from('profiles').select('id, username, full_name, email').ilike('username', lockedStoreUsername).maybeSingle();
-          if (profRes.data) {
-            currentMerchantUserId = profRes.data.id;
-            if (profRes.data.full_name) merchantFullName = profRes.data.full_name;
-            if (profRes.data.email) merchantEmailVal = profRes.data.email;
-            storeTitle = "अभिनय गांधी स्टोअर्स";
-          }
         }
-      } catch (e) {
-        storeTitle = "अभिनय गांधी स्टोअर्स";
-      }
+      } catch (e) {}
 
       document.getElementById('business-display-name').textContent = storeTitle;
       document.getElementById('display-merchant-name').textContent = merchantFullName;
@@ -429,13 +418,6 @@ async function initDashboard() {
       currentMerchantUserId = sessionUser.id;
 
       try {
-        var profRes = await sb.from('profiles').select('username, full_name, email').eq('id', sessionUser.id).maybeSingle();
-        if (profRes.data) {
-          if (profRes.data.username) merchantHandle = profRes.data.username;
-          if (profRes.data.full_name) merchantFullName = profRes.data.full_name;
-          if (profRes.data.email) merchantEmailVal = profRes.data.email;
-        }
-
         var bizRes = await sb.from('businesses').select('*').eq('owner_id', sessionUser.id).maybeSingle();
         if (bizRes.data) {
           if (bizRes.data.name) merchantStoreName = bizRes.data.name;
@@ -463,7 +445,7 @@ async function initDashboard() {
   }
 }
 
-// 🌟 गुगल लॉगिन करताना अकाउंट निवडण्याचा पर्याय (`prompt: 'select_account'`) जोडलेले फंक्शन
+// 🌟 गुगल लॉगिन करताना अकाउंट निवडण्याचा पर्याय सुरक्षितपणे जोडलेला आहे
 function loginCustomerWithGoogle() {
   var currentUrl = window.location.origin + window.location.pathname + (lockedStoreUsername ? ('?store=' + lockedStoreUsername) : '');
   sb.auth.signInWithOAuth({ 
@@ -804,7 +786,7 @@ async function saveBusinessSettings() {
   }
 }
 
-// 🌟 पिवळी प पट्टी अलर्ट, बीप साऊंड आणि अचूक ऑर्डर स्टेटस मॅचिंग फंक्शन
+// 🌟 पिवळी प पट्टी अलर्ट, बीप साऊंड आणि अचूक ऑर्डर स्टेटस मॅचिंग फंक्शन (एरर-फ्री)
 async function loadOnlineOrders() {
   var tbody = document.getElementById('online-orders-table-body');
   if (!tbody) return;
@@ -816,7 +798,6 @@ async function loadOnlineOrders() {
       return;
     }
     
-    // नवीन पेंडिंग ऑर्डर असल्यास पिवळी पट्टी आणि बीप साऊंड सक्रिय करणे
     var hasPendingOrder = data.some(function(o) {
       return (o.status || 'pending').toLowerCase() === 'pending';
     });
