@@ -36,7 +36,6 @@ body.store-locked-mode #kpi-grid-section { display: none !important; }
 .erp-header h1 { font-size: 22px !important; margin: 0 !important; color: #fff; font-weight: 900; letter-spacing: 0.5px; }
 .erp-header .muted { color: #94a3b8 !important; font-size: 12.5px !important; }
 
-/* पिवळी प पट्टी (Yellow Alert Banner for Orders) */
 #live-order-alert-banner { display: none; background: #fef08a; border: 2px solid #facc15; color: #713f12; padding: 14px 20px; border-radius: 10px; margin-bottom: 16px; font-weight: 700; align-items: center; justify-content: space-between; box-shadow: 0 4px 12px rgba(250,204,21,0.3); animation: pulseAlert 1.5s infinite; }
 @keyframes pulseAlert { 0% { opacity: 1; } 50% { opacity: 0.8; } 100% { opacity: 1; } }
 
@@ -86,7 +85,6 @@ tr:hover { background: #f8fafc; }
 <nav id="app-nav"></nav>
 
 <div class="dashboard-main-frame">
-  <!-- पिवळी प पट्टी अलर्ट बॅनर -->
   <div id="live-order-alert-banner">
     <div id="live-order-banner-text" style="display:flex; align-items:center; gap:8px;">
       🔔 <strong>नवीन ऑनलाईन ऑर्डर आली आहे!</strong> कृपया तपासा.
@@ -271,7 +269,7 @@ tr:hover { background: #f8fafc; }
   </div>
 
   <div id="tab-settings" class="erp-tab-pane" style="display:none;">
-    <h2>⚙️️ सेटिंग्स (Business & Profile Settings)</h2>
+    <h2>⚙️ सेटिंग्स (Business & Profile Settings)</h2>
     <div style="background:#f8fafc; padding:20px; border-radius:8px; border:1px solid #e2e8f0; max-width:500px;">
       <h3 style="margin-top:0;">दुकान व प्रोफाईल माहिती</h3>
       <div style="margin-bottom:10px;"><label style="font-size:12px; font-weight:bold;">दुकानचे नाव (Business Name)</label><input id="settings-biz-name" style="width:100%; padding:8px; border:1px solid var(--border-color); border-radius:6px; box-sizing:border-box;"></div>
@@ -307,6 +305,7 @@ let customerCart = [];
 let loggedInCustomer = null;
 let currentMerchantUsername = '';
 let currentMerchantUserId = null;
+let currentProductMerchantMap = {}; // प्रॉडक्टवाईज दुकानदाराचा युजरनेम साठवण्यासाठी
 
 function switchTab(tabId) {
   document.querySelectorAll('.erp-tab-pane').forEach(function(el) { el.style.display = 'none'; });
@@ -331,7 +330,6 @@ function openModal(id) { document.getElementById(id).style.display = 'flex'; }
 function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 function enableAudioContextOnce() {}
 
-// 🔊 बीप साऊंड फंक्शन (Web Audio API)
 function playOrderAlertBeep() {
     try {
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -467,12 +465,12 @@ async function initDashboard() {
   }
 }
 
-// 🌟 सर्व दुकानांचे प्रॉडक्ट्स आणि दुकानदाराचे खरे युजरनेम व ईमेल दर्शवणारे फंक्शन
+// 🌟 प्रत्येक प्रॉडक्टनुसार त्याच्या खऱ्या दुकानदाराचा युजरनेम व ईमेल डायनॅमिकली मॅप करणारे फंक्शन
 async function loadAllStoresGlobalProducts() {
   var gridEl = document.getElementById('customer-products-grid');
   if (!gridEl) return;
   try {
-    var res = await sb.from('business_products').select('*, businesses(name, slug, owner_email, owner_username, owner_name)');
+    var res = await sb.from('business_products').select('*, businesses(name, slug, owner_email, owner_username, owner_name, id, owner_id)');
     var products = res.data;
 
     if (!products || products.length === 0) {
@@ -486,14 +484,24 @@ async function loadAllStoresGlobalProducts() {
     }
 
     currentProducts = products;
+    currentProductMerchantMap = {};
 
     gridEl.innerHTML = products.map(function(p) {
       var storeName = (p.businesses && p.businesses.name) ? p.businesses.name : (p.store_name || 'स्थानिक दुकान');
       var ownerName = (p.businesses && p.businesses.owner_name) ? p.businesses.owner_name : (p.owner_name || 'संचालक');
       var ownerEmail = (p.businesses && p.businesses.owner_email) ? p.businesses.owner_email : (p.owner_email || 'support@allerp.com');
       var merchantHandle = (p.businesses && p.businesses.owner_username) ? p.businesses.owner_username : (p.merchant_username || ownerEmail.split('@')[0]);
+      var businessId = (p.businesses && p.businesses.id) ? p.businesses.id : p.business_id;
+      var merchantUserId = (p.businesses && p.businesses.owner_id) ? p.businesses.owner_id : null;
+
+      // प्रत्येक प्रॉडक्टच्या आयडीसोबत त्याच्या दुकानदाराची माहिती सेव्ह करणे (कार्टमधून योग्य ठिकाणी ऑर्डर जाण्यासाठी)
+      currentProductMerchantMap[p.id] = {
+        businessId: businessId,
+        merchantHandle: merchantHandle,
+        merchantEmail: ownerEmail,
+        merchantUserId: merchantUserId
+      };
       
-      // वीव्हो चॅटची अचूक डायनॅमिक लिंक
       var weavoChatUrl = 'https://arhammarketingme-prog.github.io/weavo/?store=' + encodeURIComponent(merchantHandle) + '&customer_email=' + encodeURIComponent(ownerEmail);
       var storeProfileUrl = window.location.origin + window.location.pathname + '?store=' + encodeURIComponent(merchantHandle);
 
@@ -541,10 +549,10 @@ function shareStoreOnWhatsApp() {
   window.open('https://api.whatsapp.com/send?text=' + encodeURIComponent('आमच्या दुकानाला भेट द्या: ' + shareUrl), '_blank');
 }
 
-function openWeavoChat() {
-  var storeUsername = lockedStoreUsername || currentMerchantUsername || 'store';
+function openWeavoChat(merchantHandle, ownerEmail) {
+  var storeUsername = merchantHandle || lockedStoreUsername || currentMerchantUsername || 'store';
   var customerEmail = (loggedInCustomer && loggedInCustomer.email) ? loggedInCustomer.email : localStorage.getItem('global_unified_email');
-  window.open('https://arhammarketingme-prog.github.io/weavo/?store=' + encodeURIComponent(storeUsername) + (customerEmail ? ('&customer_email=' + encodeURIComponent(customerEmail)) : ''), '_blank');
+  window.open('https://arhammarketingme-prog.github.io/weavo/?store=' + encodeURIComponent(storeUsername) + (ownerEmail ? ('&merchant_email=' + encodeURIComponent(ownerEmail)) : '') + (customerEmail ? ('&customer_email=' + encodeURIComponent(customerEmail)) : ''), '_blank');
 }
 
 async function loadCustomerStoreProducts() {
@@ -585,9 +593,23 @@ async function loadCustomerStoreProducts() {
 function addToCustomerCart(productId) {
   var product = currentProducts.find(function(p) { return p.id === productId; });
   if (!product) return;
+  var merchantInfo = currentProductMerchantMap[productId] || {};
+  
   var existing = customerCart.find(function(i) { return i.id === productId; });
-  if (existing) existing.qty++;
-  else customerCart.push({ id: product.id, name: product.name, price: product.selling_price, qty: 1 });
+  if (existing) {
+    existing.qty++;
+  } else {
+    customerCart.push({ 
+      id: product.id, 
+      name: product.name, 
+      price: product.selling_price, 
+      qty: 1,
+      businessId: merchantInfo.businessId || currentBusinessId,
+      merchantHandle: merchantInfo.merchantHandle || lockedStoreUsername || currentMerchantUsername,
+      merchantEmail: merchantInfo.merchantEmail || '',
+      merchantUserId: merchantInfo.merchantUserId || currentMerchantUserId
+    });
+  }
   
   var totalQty = customerCart.reduce(function(s, i) { return s + i.qty; }, 0);
   var barCount = document.getElementById('bar-cart-count');
@@ -614,6 +636,7 @@ function openCustomerCartModal() {
   openModal('customer-cart-modal');
 }
 
+// 🌟 अचूक प्रॉडक्टच्या दुकानदाराच्या ईमेलवरून व युजरनेमवरून ऑर्डर सिंक करणारे फंक्शन
 async function submitCustomerOrder() {
   var name = document.getElementById('cust-order-name').value.trim();
   var phone = document.getElementById('cust-order-phone').value.trim();
@@ -624,9 +647,16 @@ async function submitCustomerOrder() {
   var totalAmt = customerCart.reduce(function(sum, i) { return sum + (i.price * i.qty); }, 0);
   var itemsSummaryText = customerCart.map(function(i) { return i.name + ' (' + i.qty + ' नग)'; }).join(', ');
 
+  // कार्टमधील पहिल्या वस्तूचा दुकानदार मुख्य धरून किंवा प्रॉडक्टवाईज ऑर्डर पाठवणे
+  var primaryItem = customerCart[0] || {};
+  var targetBizId = primaryItem.businessId || currentBusinessId;
+  var targetStoreHandle = primaryItem.merchantHandle || lockedStoreUsername || currentMerchantUsername || 'store';
+  var targetStoreEmail = primaryItem.merchantEmail || '';
+  var targetMerchantId = primaryItem.merchantUserId || currentMerchantUserId;
+
   try {
     await sb.from('orders').insert({
-      business_id: currentBusinessId,
+      business_id: targetBizId,
       customer_name: name,
       customer_phone: phone,
       customer_address: address,
@@ -635,15 +665,19 @@ async function submitCustomerOrder() {
       status: 'pending'
     });
 
-    var storeUsername = lockedStoreUsername || currentMerchantUsername || 'store';
     var customerUserId = loggedInCustomer ? loggedInCustomer.id : null;
     
     if (customerUserId) {
       try {
-        var targetMerchantId = currentMerchantUserId;
-        if (!targetMerchantId) {
-          var { data: prof } = await sb.from('profiles').select('id').ilike('username', storeUsername).maybeSingle();
-          if (prof) targetMerchantId = prof.id;
+        // जर merchantUserId नसेल, तर व्यवसायाच्या डेटाबेसवरून किंवा ईमेलवरून अचूक शोधणे
+        if (!targetMerchantId && targetStoreEmail) {
+          var { data: profByEmail } = await sb.from('profiles').select('id').eq('email', targetStoreEmail).maybeSingle();
+          if (profByEmail) targetMerchantId = profByEmail.id;
+        }
+
+        if (!targetMerchantId && targetStoreHandle) {
+          var { data: profByUsername } = await sb.from('profiles').select('id').ilike('username', targetStoreHandle).maybeSingle();
+          if (profByUsername) targetMerchantId = profByUsername.id;
         }
 
         if (targetMerchantId) {
@@ -684,10 +718,10 @@ async function submitCustomerOrder() {
     console.log('Order error:', e);
   }
 
-  alert('🎉 ऑर्डर यशस्वीरीत्या नोंदवली गेली आणि वीव्हो चॅटमध्ये पाठवली गेली!');
+  alert('🎉 ऑर्डर यशस्वीरीत्या नोंदवली गेली आणि अचूक दुकानदाराच्या वीव्हो चॅटमध्ये पाठवली गेली!');
   customerCart = [];
   closeModal('customer-cart-modal');
-  openWeavoChat();
+  openWeavoChat(targetStoreHandle, targetStoreEmail);
 }
 
 async function loadProducts() {
