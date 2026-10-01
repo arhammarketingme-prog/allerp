@@ -4,28 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="manifest" href="manifest.json">
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iYmciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjMjg3NGYwIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzBlYTVhMyIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICA8L2RlZnM+CiAgPHJlY3Qgd2lkdGg9IjEwMCIgaGVpZ2h0PSIxMDAiIHJ4PSIyMiIgZmlsbD0idXJsKCNiZykiLz4KICA8IS0tIOCkpuClgeCkleCkvuCkqC/gpLjgpY3gpJ/gpYvgpIXgpLDgpKvgpY3gpLDgpILgpJ8g4KSa4KS/4KSo4KWN4KS5IC0tPgogIDxwYXRoIGQ9Ik0yMCA0MiBMMjAgNzggUTIwIDgwIDIyIDgwIEw3OCA4MCBRODAgODAgODAgNzggTDgwIDQyIiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmZmZmYiIHN0cm9rZS13aWR0aD0iNC41IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KICA8cGF0aCBkPSJNMTYgNDIgTDIyIDI0IFEyMyAyMiAyNSAyMiBMNzUgMjIgUTc3IDIyIDc4IDI0IEw4NCA0MiBRODQgNDYgODAgNDYgUTc2IDQ2IDc2IDQyIFE3NiA0NiA3MSA0NiBRNjYgNDYgNjYgNDIgUTY2IDQ2IDYxIDQ2IFE1NiA0NiA1NiA0MiBRNTYgNDYgNTAgNDYgUTQ0IDQ2IDQ0IDQyIFE0NCA0NiAzOSA0NiBRMzQgNDYgMzQgNDIgUTM0IDQ2IDI5IDQ2IFEyNCA0NiAyNCA0MiBRMjQgNDYgMjAgNDYgUTE2IDQ2IDE2IDQyIFoiIGZpbGw9IiNmZmZmZmYiLz4KICA8IS0tIOCkteCkvuCkoiDgpKbgpL7gpJbgpLXgpKPgpL7gpLDgpL4g4KSs4KS+4KSjIChncm93dGgvcHJvZml0KSAtLT4KICA8cGF0aCBkPSJNMzIgNjggTDQ0IDU2IEw1MiA2NCBMNjggNDgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZhY2MxNSIgc3Ryb2tlLXdpZHRoPSI1IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KICA8cGF0aCBkPSJNNjAgNDggTDY4IDQ4IEw2OCA1NiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmFjYzE1IiBzdHJva2Utd2lkdGg9IjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K">
-  <meta name="theme-color" content="#1D4E89">
-  <title>शॉपिंग कार्ट - Business Super Marketplace</title>
-  <link rel="stylesheet" href="css/style.css">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <style>
-    .cart-item-card { background: #fff; padding: 18px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.04); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; transition: transform 0.2s ease, box-shadow 0.2s ease; }
-    .cart-item-card:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.06); }
-    .qty-btn { padding: 6px 12px; background: #e2e8f0; border: none; cursor: pointer; font-weight: bold; color: #334155; transition: background 0.2s; }
-    .qty-btn:hover { background: #cbd5e1; }
-    .checkout-proceed-btn { padding: 12px 24px; background: #E8952F; color: #fff; border: none; border-radius: 6px; font-weight: 800; font-size: 15px; cursor: pointer; box-shadow: 0 3px 6px rgba(30,36,48,0.15); transition: opacity 0.2s, transform 0.1s; }
-    .checkout-proceed-btn:hover { opacity: 0.95; transform: translateY(-1px); }
-    .modal-content-box { background:#fff; padding:26px; border-radius:12px; width:90%; max-width:440px; box-shadow:0 15px 30px rgba(0,0,0,0.2); position:relative; animation: scaleIn 0.2s ease; max-height: 90vh; overflow-y: auto; }
-    @keyframes scaleIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-    .payment-option-box { display: flex; gap: 10px; margin-bottom: 12px; }
-    .payment-card { flex: 1; border: 2px solid #cbd5e1; border-radius: 6px; padding: 10px; text-align: center; cursor: pointer; font-size: 13px; font-weight: 700; color: #334155; background: #f8fafc; transition: all 0.2s; }
-    .payment-card.active { border-color: #1D4E89; background: #eff6ff; color: #143A66; }
-    .copy-upi-btn { background: #1D4E89; color: #fff; border: none; padding: 5px 12px; border-radius: 4px; font-size: 11.5px; font-weight: bold; cursor: pointer; margin-top: 6px; display: inline-block; }
-    .copy-upi-btn:hover { background: #143A66; }
-    .direct-upi-intent-btn { background: #16a34a; color: #fff; border: none; padding: 10px 14px; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 10px; text-decoration: none; display: inline-block; box-sizing: border-box; text-align: center; }
-    .direct-upi-intent-btn:hover { background: #15803d; }
-  </style>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iYmciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjMjg3NGYwIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzBlYTVhMyIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICA8L2RlZnM+CiAgPHJlY3Qgd2lkdGg9IjEwMCIgaGVpZ2h0PSIxMDAiIHJ4PSIyMiIgZmlsbD0idXJsKCNiZykiLz4KICA8IS0tIOCkpuClgeCkleCkvuCkqC/gpLjgpY3gpJ/gpYvgpIXgpLDgpKvgpY3gpLDgpILgpJ8g4KSa4KS/4KSo4KWN4KS5IC0tPgogIDxwYXRoIGQ9Ik0yMCA0MiBMMjAgNzggUTIwIDgwIDIyIDgwIEw3OCA4MCBRODAgODAgODAgNzggTDgwIDQyIiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmZmZmYiIHN0cm9rZS13aWR0aD0iNC41IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KICA8cGF0aCBkPSJNMTYgNDIgTDIyIDI0IFEyMyAyMiAyNSAyMiBMNzUgMjIgUTc3IDIyIDc4IDI0IEw4NCA0MIBRODQgNDYgODAgNDYgUTc2IDQ2IDc2IDQyIFE3NiA0NiA3MSA0NicgNjYgNDYgNjYgNDIgUTY2IDQ2IDYxIDQ2IFE1NiA0NiA1NiA0MiBRNTYgNDYgNTAgNDYgUTQ0IDQ2IDQ0IDQyIFE0NCA0NiAzOSA0NicgMzQgNDYgMzQgNDIgUTM0IDQ2IDI5IDQ2IFEyNCA0NiAyNCA0MiBRMjQgNDYgMjAgNDYgUTE2IDQ2IDE2IDQyIFoiIGZpbGw9IiNmZmZmZmYiLz4KICA8IS0tIOCkteCkvuCkoiDgpKbgpL7gpJbgpLXgpKPgpL7gpLDgpL4g4KSs4KS+4KSjIChncm93dGgvcHJvZml0KSAtLT4KICA8cGF0aCBkPSJNMzIgLCBsaW5l..." />
 </head>
 <body style="background: #f8fafc; margin: 0; font-family: sans-serif;">
 
@@ -42,7 +21,7 @@
   </main>
 
   <div id="cart-checkout-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:1000; justify-content:center; align-items:center;">
-    <div class="modal-content-box">
+    <div style="background:#fff; padding:26px; border-radius:12px; width:90%; max-width:440px; box-shadow:0 15px 30px rgba(0,0,0,0.2); position:relative; max-height: 90vh; overflow-y: auto;">
       <h3 style="margin-top:0; font-size:18px; color:#1e293b;">ऑर्डर कन्फर्म करा & पेमेंट (Secure Checkout)</h3>
       <p id="cart-modal-info" style="font-size:13px; color:#64748b; margin-bottom:12px; line-height: 1.4;"></p>
       
@@ -62,33 +41,15 @@
 
         <div style="margin-bottom:12px;">
           <label style="display:block; font-size:13px; font-weight:700; margin-bottom:6px; color:#334155;">पेमेंट पद्धत निवडा:</label>
-          <div class="payment-option-box">
-            <div id="pay-mode-cod" class="payment-card active" onclick="selectPaymentMode('COD')">
+          <div style="display: flex; gap: 10px; margin-bottom: 12px;">
+            <div id="pay-mode-cod" style="flex:1; border:2px solid #1D4E89; border-radius:6px; padding:10px; text-align:center; cursor:pointer; font-size:13px; font-weight:700; color:#143A66; background:#eff6ff;" onclick="selectPaymentMode('COD')">
               💵 कॅश ऑन डिलिव्हरी (COD)
             </div>
-            <div id="pay-mode-online" class="payment-card" onclick="selectPaymentMode('Online')">
+            <div id="pay-mode-online" style="flex:1; border:2px solid #cbd5e1; border-radius:6px; padding:10px; text-align:center; cursor:pointer; font-size:13px; font-weight:700; color:#334155; background:#f8fafc;" onclick="selectPaymentMode('Online')">
               📱 ऑनलाइन पेमेंट (UPI / QR)
             </div>
           </div>
           <input type="hidden" id="selectedPaymentMode" value="COD">
-        </div>
-
-        <div id="store-qr-container" style="display:none; text-align:center; background:#f1f5f9; padding:14px; border-radius:8px; margin-bottom:14px; border:1px dashed #94a3b8;">
-          <div style="font-size:12px; font-weight:700; color:#1e293b; margin-bottom:6px;">🏪 दुकानदाराचे थेट पेमेंट तपशील:</div>
-          <div id="qr-image-wrapper">
-            <img id="store-qr-img" src="https://placehold.co/180x180/2563eb/FFFFFF?text=Store+QR" alt="Store QR" style="width:130px; height:130px; object-fit:contain; border-radius:6px; background:#fff; padding:4px; border:1px solid #e2e8f0;">
-          </div>
-          <div style="margin-top:6px;">
-            <span id="store-upi-text" style="font-size:12px; color:#1e293b; font-weight:800;">UPI ID: loading...</span>
-            <br>
-            <button type="button" class="copy-upi-btn" onclick="copyStoreUpiId()">📋 UPI ID कॉपी करा</button>
-          </div>
-          
-          <div style="margin-top:8px;">
-            <a id="direct-upi-link" href="#" class="direct-upi-intent-btn" target="_blank">📱 थेट ॲप उघडून पैसे पाठवा (GPay/PhonePe)</a>
-          </div>
-
-          <div style="font-size:11px; color:#16a34a; margin-top:4px; font-weight:bold;">(पैसे थेट दुकानदाराच्या खात्यात जमा होतील)</div>
         </div>
 
         <div style="display:flex; gap:10px;">
@@ -99,15 +60,13 @@
     </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase-client.js"></script>
   <script src="js/cart.js"></script>
   <script src="js/nav.js"></script>
   
   <script>
     let currentUser = null;
-    let currentStoreUpiId = "";
-    let currentCartGrandTotal = 0;
-    let currentStoreName = "";
 
     async function initCartPage() {
       try {
@@ -119,86 +78,12 @@
       renderCartItems();
     }
 
-    async function enforceLoginBeforeCheckout(total) {
-      try {
-        const { data: { user } } = await sb.auth.getUser();
-        if (!user) {
-          alert('⚠️ सुरक्षा नियम: ऑर्डर करण्यासाठी आणि खरेदी पूर्ण करण्यासाठी ऑल ईआरपीवर लॉगिन करणे बंधनकारक आहे!');
-          window.location.href = 'login.html';
-          return;
-        }
-        openCartModal(total);
-      } catch (err) {
-        console.error('Login check error:', err);
-        window.location.href = 'login.html';
-      }
-    }
-
     function selectPaymentMode(mode) {
       document.getElementById('selectedPaymentMode').value = mode;
-      const codCard = document.getElementById('pay-mode-cod');
-      const onlineCard = document.getElementById('pay-mode-online');
-      const qrContainer = document.getElementById('store-qr-container');
-
-      if (mode === 'COD') {
-        codCard.classList.add('active');
-        onlineCard.classList.remove('active');
-        qrContainer.style.display = 'none';
-      } else {
-        onlineCard.classList.add('active');
-        codCard.classList.remove('active');
-        qrContainer.style.display = 'block';
-        fetchStoreQRAndDetails();
-      }
-    }
-
-    async function fetchStoreQRAndDetails() {
-      const cart = typeof getCart === 'function' ? getCart() : [];
-      if (cart.length === 0) return;
-
-      const firstItemBusinessId = cart[0].business_id;
-      if (!firstItemBusinessId) return;
-
-      try {
-        const { data: storeData } = await sb
-          .from('businesses')
-          .select('name, upi_qr_url, upi_id')
-          .eq('id', firstItemBusinessId)
-          .single();
-
-        if (storeData) {
-          const qrImg = document.getElementById('store-qr-img');
-          const upiText = document.getElementById('store-upi-text');
-          const upiLinkBtn = document.getElementById('direct-upi-link');
-
-          currentStoreUpiId = storeData.upi_id || 'merchant@upi';
-          currentStoreName = storeData.name || 'Local Store';
-
-          if (storeData.upi_qr_url) {
-            qrImg.src = storeData.upi_qr_url;
-          } else {
-            qrImg.src = `https://placehold.co/180x180/2563eb/FFFFFF?text=${encodeURIComponent(currentStoreName)}`;
-          }
-          upiText.textContent = `UPI ID: ${currentStoreUpiId}`;
-
-          const upiIntentUrl = `upi://pay?pa=${encodeURIComponent(currentStoreUpiId)}&pn=${encodeURIComponent(currentStoreName)}&am=${currentCartGrandTotal}&cu=INR`;
-          upiLinkBtn.href = upiIntentUrl;
-        }
-      } catch (err) {
-        console.log('Store QR fetch error:', err);
-      }
-    }
-
-    function copyStoreUpiId() {
-      if (!currentStoreUpiId) {
-        alert('UPI ID उपलब्ध नाही.');
-        return;
-      }
-      navigator.clipboard.writeText(currentStoreUpiId).then(() => {
-        alert('✅ UPI ID यशस्वीरित्या कॉपी झाला! तुम्ही Google Pay / PhonePe मध्ये पेस्ट करून थेट पेमेंट करू शकता.');
-      }).catch(err => {
-        alert('कॉपी करण्यात अडचण आली: ' + err);
-      });
+      document.getElementById('pay-mode-cod').style.borderColor = mode === 'COD' ? '#1D4E89' : '#cbd5e1';
+      document.getElementById('pay-mode-cod').style.background = mode === 'COD' ? '#eff6ff' : '#f8fafc';
+      document.getElementById('pay-mode-online').style.borderColor = mode === 'Online' ? '#1D4E89' : '#cbd5e1';
+      document.getElementById('pay-mode-online').style.background = mode === 'Online' ? '#eff6ff' : '#f8fafc';
     }
 
     function renderCartItems() {
@@ -223,18 +108,18 @@
             const itemTotal = (Number(item.price) || 0) * (Number(item.quantity) || 1);
             grandTotal += itemTotal;
             return `
-              <div class="cart-item-card">
+              <div style="background: #fff; padding: 18px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.04); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
                 <div style="flex: 1; min-width: 200px;">
                   <h3 style="margin: 0 0 4px; font-size: 16px; color: #1e293b;">${item.name || 'प्रॉडक्ट'}</h3>
-                  <div style="font-size: 13px; color: #64748b;">🏪 दुकान: <strong>${item.business_name || 'स्थानिक सेलर'}</strong></div>
+                  <div style="font-size: 13px; color: #64748b;">🏪 दुकान: <strong>${item.business_name || item.merchant_handle || 'स्थानिक सेलर'}</strong></div>
                   <div style="font-size: 14px; font-weight: 700; color: #0f172a; margin-top: 4px;">₹${item.price} प्रति नग</div>
                 </div>
 
                 <div style="display: flex; align-items: center; gap: 16px;">
                   <div style="display: flex; align-items: center; border: 1px solid #cbd5e1; border-radius: 6px; background: #f8fafc; overflow: hidden;">
-                    <button type="button" class="qty-btn" onclick="changeItemQty(${index}, -1)">-</button>
+                    <button type="button" style="padding: 6px 12px; background: #e2e8f0; border: none; cursor: pointer; font-weight: bold;" onclick="changeItemQty(${index}, -1)">-</button>
                     <span style="padding: 0 14px; font-weight: 700; font-size: 14px; color: #1e293b;">${item.quantity || 1}</span>
-                    <button type="button" class="qty-btn" onclick="changeItemQty(${index}, 1)">+</button>
+                    <button type="button" style="padding: 6px 12px; background: #e2e8f0; border: none; cursor: pointer; font-weight: bold;" onclick="changeItemQty(${index}, 1)">+</button>
                   </div>
 
                   <div style="text-align: right; min-width: 80px;">
@@ -252,7 +137,7 @@
               <div style="font-size: 12px; color: #94a3b8; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">एकूण देय रक्कम (Grand Total):</div>
               <div style="font-size: 26px; font-weight: 800; color: #f8fafc; margin-top: 2px;">₹${grandTotal}</div>
             </div>
-            <button class="checkout-proceed-btn" onclick="enforceLoginBeforeCheckout(${grandTotal})">
+            <button style="padding: 12px 24px; background: #E8952F; color: #fff; border: none; border-radius: 6px; font-weight: 800; font-size: 15px; cursor: pointer;" onclick="enforceLoginBeforeCheckout(${grandTotal})">
               Proceed to Checkout ➔
             </button>
           </div>
@@ -267,7 +152,6 @@
         if (cart[index].quantity < 1) cart[index].quantity = 1;
         if (typeof saveCart === 'function') saveCart(cart);
         renderCartItems();
-        if (typeof renderNav === 'function') renderNav();
       }
     }
 
@@ -276,13 +160,10 @@
       cart.splice(index, 1);
       if (typeof saveCart === 'function') saveCart(cart);
       renderCartItems();
-      if (typeof renderNav === 'function') renderNav();
     }
 
     function openCartModal(total) {
-      currentCartGrandTotal = total;
-      const modalInfo = document.getElementById('cart-modal-info');
-      modalInfo.innerHTML = `तुमच्या कार्टमधील एकूण वस्तूंची किंमत: <strong>₹${total}</strong> आहे. माहिती भरून आणि पेमेंट पद्धत निवडून ऑर्डर कन्फर्म करा.`;
+      document.getElementById('cart-modal-info').innerHTML = `तुमच्या कार्टमधील एकूण वस्तूंची किंमत: <strong>₹${total}</strong> आहे. माहिती भरून ऑर्डर कन्फर्म करा.`;
       document.getElementById('cart-checkout-modal').style.display = 'flex';
       selectPaymentMode('COD');
     }
@@ -291,13 +172,27 @@
       document.getElementById('cart-checkout-modal').style.display = 'none';
     }
 
-    // 🚀 मल्टि-वेंडर स्प्लिट ऑर्डर सबमिट फंक्शन (Weavo थेट सुरक्षित री-डाइरेक्टसह)
+    async function enforceLoginBeforeCheckout(total) {
+      try {
+        const { data: { user } } = await sb.auth.getUser();
+        if (!user) {
+          alert('⚠️ कृपया ऑर्डर करण्यासाठी आधी लॉगिन करा!');
+          window.location.href = 'login.html';
+          return;
+        }
+        openCartModal(total);
+      } catch (err) {
+        window.location.href = 'login.html';
+      }
+    }
+
+    // 🚀 मल्टि-वेंडर स्प्लिट ऑर्डर लॉजिक (प्रत्येक दुकानदाराची स्वतंत्र ऑर्डर आणि अचूक मेसेज)
     async function submitCartOrder(event) {
       event.preventDefault();
 
       const submitBtn = document.getElementById('cart-submit-order-btn');
       if (submitBtn && submitBtn.disabled) return;
-      if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = '⏳ ऑर्डर पाठवत आहे...'; }
+      if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = '⏳ ऑर्डर्स स्प्लिट करून पाठवत आहे...'; }
 
       const name = document.getElementById('cartCustName').value.trim();
       const phone = document.getElementById('cartCustPhone').value.trim();
@@ -314,21 +209,17 @@
       try {
         const { data: { user: currentUser } } = await sb.auth.getUser();
         if (!currentUser) {
-          alert('⚠️ तुमचे सत्र संपले आहे किंवा तुम्ही लॉग-इन नाही. कृपया पुन्हा लॉगिन करा.');
+          alert('⚠️ तुमचे सत्र संपले आहे, कृपया पुन्हा लॉगिन करा.');
           window.location.href = 'login.html';
           return;
         }
 
-        // १. वेगवेगळ्या दुकानांनुसार प्रॉडक्ट्सचे ग्रुप्स पाडणे (Split Orders by Business ID)
         let merchantGroups = {};
         cart.forEach(item => {
           let bId = item.business_id;
           if (!bId) return;
           if (!merchantGroups[bId]) {
-            merchantGroups[bId] = {
-              business_id: bId,
-              items: []
-            };
+            merchantGroups[bId] = { business_id: bId, items: [] };
           }
           merchantGroups[bId].items.push(item);
         });
@@ -343,21 +234,21 @@
         let firstMerchantHandle = 'store';
         let firstMerchantEmail = '';
 
-        // २. प्रत्येक दुकानदारासाठी स्वतंत्र ऑर्डर रेकॉर्ड सेव्ह करणे
         for (let bId of groupKeys) {
           let group = merchantGroups[bId];
           let itemsSummaryText = group.items.map(i => `${i.name} (×${i.quantity})`).join(', ');
           let totalAmt = group.items.reduce((sum, i) => sum + (Number(i.price) * Number(i.quantity)), 0);
           let orderOtp = Math.floor(1000 + Math.random() * 9000).toString();
 
-          let { data: bizData } = await sb.from('businesses')
-            .select('id, owner_id, owner_username, owner_email, name, slug')
+          let { data: bizData } = await sb.from('business_profiles')
+            .select('id, owner_id, name, slug, location, email')
             .eq('id', bId)
             .maybeSingle();
 
           let targetMerchantUserId = bizData ? bizData.owner_id : null;
-          let targetHandle = bizData ? (bizData.owner_username || bizData.slug) : 'store';
-          let targetEmail = bizData ? bizData.owner_email : '';
+          // दुकान आणि लोकेशनवरून युनिक स्लग वापरणे
+          let targetHandle = bizData ? (bizData.slug || bizData.name) : 'store';
+          let targetEmail = bizData ? bizData.email : '';
 
           if (groupKeys.indexOf(bId) === 0) {
             firstMerchantHandle = targetHandle;
@@ -377,13 +268,9 @@
             delivery_pin: orderOtp
           };
 
-          const { error: insertErr } = await sb.from('orders').insert([orderPayload]);
-          if (insertErr) {
-            console.error('Order save error:', insertErr.message);
-            throw new Error(insertErr.message);
-          }
+          const { data: insertedOrder, error: insertErr } = await sb.from('orders').insert([orderPayload]).select().single();
+          if (insertErr) throw new Error(insertErr.message);
 
-          // ३. संबंधित दुकानदाराच्या वीव्हो चॅटमध्ये मेसेज सिंक करणे (सुरक्षित पद्धतीने)
           if (targetMerchantUserId) {
             try {
               let targetConvId = null;
@@ -395,9 +282,20 @@
                 if (theirConvs && theirConvs.length) targetConvId = theirConvs[0].conversation_id;
               }
 
+              if (!targetConvId) {
+                let { data: newConv } = await sb.from('conversations').insert({ type: 'direct', created_by: currentUser.id }).select().single();
+                if (newConv) {
+                  targetConvId = newConv.id;
+                  await sb.from('conversation_members').insert([
+                    { conversation_id: targetConvId, user_id: currentUser.id },
+                    { conversation_id: targetConvId, user_id: targetMerchantUserId }
+                  ]);
+                }
+              }
+
               if (targetConvId) {
                 let shopNameTitle = bizData ? bizData.name : 'Store';
-                let orderMsgText = `📦 नवीन ऑनलाईन ऑर्डर (दुकान: ${shopNameTitle}):\n👤 ग्राहक: ${name}\n📱 मोबाईल: ${phone}\n🏠 पत्ता: ${address}\n🛒 तपशील: ${itemsSummaryText}\n💰 एकूण: ₹${totalAmt}\n🔐 OTP: ${orderOtp}`;
+                let orderMsgText = `📦 **AllERP युनिफाइड ऑर्डर**\n🛒 **उत्पादने:** ${itemsSummaryText}\n💰 **एकूण रक्कम:** ₹${totalAmt}\n📌 **डिलिव्हरी पिन (OTP):** ${orderOtp}\n👤 **ग्राहक:** ${name}\n📱 **मोबाईल:** ${phone}\n🏠 **पत्ता:** ${address}\n💳 **पेमेंट:** ${paymentMode}`;
                 await sb.from('messages').insert({
                   conversation_id: targetConvId,
                   sender_id: currentUser.id,
@@ -405,7 +303,7 @@
                 });
               }
             } catch (bridgeErr) {
-              console.log("Weavo sync skipped safely:", bridgeErr.message);
+              console.log("Weavo sync note:", bridgeErr.message);
             }
           }
         }
@@ -419,12 +317,11 @@
 
         closeCartModal();
 
-        // 🌟 अचूक आणि खात्रीशीर वीव्हो री-डाइरेक्ट (थेट उघडणे)
         var weavoUrl = 'https://arhammarketingme-prog.github.io/weavo/?store=' + encodeURIComponent(firstMerchantHandle) + 
                        (firstMerchantEmail ? ('&merchant_email=' + encodeURIComponent(firstMerchantEmail)) : '') +
                        '&customer_email=' + encodeURIComponent(currentUser?.email || '');
 
-        if (window.confirm('✅ सर्व दुकानांच्या ऑर्डर्स यशस्वीरीत्या नोंदवल्या गेल्या!\n\nदुकानदाराशी संवाद साधण्यासाठी आणि वीव्हो चॅट उघडण्यासाठी "OK" वर क्लिक करा.')) {
+        if (window.confirm('✅ सर्व दुकानांच्या ऑर्डर्स यशस्वीरीत्या स्प्लिट होऊन नोंदवल्या गेल्या!\n\nदुकानदाराशी चॅट उघडण्यासाठी "OK" वर क्लिक करा.')) {
             var newWindow = window.open(weavoUrl, '_blank');
             if (!newWindow) {
                 window.location.href = weavoUrl;
@@ -441,12 +338,7 @@
       }
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
-      initCartPage();
-    });
-    if (document.readyState === 'complete' || document.readyState === 'interactive') {
-      initCartPage();
-    }
+    document.addEventListener('DOMContentLoaded', () => { initCartPage(); });
   </script>
 </body>
 </html>
