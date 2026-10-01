@@ -127,7 +127,7 @@
                   <div style="text-align: right; min-width: 80px;">
                     <div style="font-weight: 800; font-size: 16px; color: #0f172a;">₹${itemTotal}</div>
                   </div>
-                  <button onclick="removeCartItem(${index})" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 18px; padding: 4px;" title="काढून टाका">🗑️️</button>
+                  <button onclick="removeCartItem(${index})" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 18px; padding: 4px;" title="काढून टाका">🗑</button>
                 </div>
               </div>
             `;
@@ -175,7 +175,7 @@
       try {
         const { data: { user } } = await sb.auth.getUser();
         if (!user) {
-          alert('⚠️️ कृपया ऑर्डर करण्यासाठी आधी लॉगिन करा!');
+          alert('⚠ कृपया ऑर्डर करण्यासाठी आधी लॉगिन करा!');
           window.location.href = 'login.html';
           return;
         }
@@ -239,24 +239,24 @@
           let orderOtp = Math.floor(1000 + Math.random() * 9000).toString();
 
           let { data: bizData } = await sb.from('business_profiles')
-            .select('id, owner_id, name, slug, email')
+            .select('id, owner_id, name, email')
             .eq('id', bId)
             .maybeSingle();
 
           let targetMerchantUserId = bizData ? bizData.owner_id : null;
-          let storeSlugOrName = bizData ? (bizData.slug || bizData.name || '') : '';
-          if (!storeSlugOrName && group.items[0]) {
-            storeSlugOrName = group.items[0].business_name || group.items[0].merchant_handle || '';
+          let storeName = bizData ? (bizData.name || '') : '';
+          if (!storeName && group.items[0]) {
+            storeName = group.items[0].business_name || group.items[0].merchant_handle || '';
           }
-          storeSlugOrName = storeSlugOrName.trim().toLowerCase().replace(/\s+/g, '_');
-          if (!storeSlugOrName || storeSlugOrName === 'store') {
-            storeSlugOrName = 'abhinay_kirana';
+          storeName = storeName.trim();
+          if (!storeName) {
+            storeName = 'abhinay_kirana';
           }
 
           let targetEmail = bizData ? bizData.email : '';
 
           if (groupKeys.indexOf(bId) === 0) {
-            firstMerchantHandle = storeSlugOrName;
+            firstMerchantHandle = storeName;
             firstMerchantEmail = targetEmail;
           }
 
@@ -321,7 +321,7 @@
 
         closeCartModal();
 
-        if (!firstMerchantHandle || firstMerchantHandle === 'store') {
+        if (!firstMerchantHandle) {
           firstMerchantHandle = 'abhinay_kirana';
         }
 
