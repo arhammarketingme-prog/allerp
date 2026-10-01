@@ -43,6 +43,7 @@ body.store-locked-mode #kpi-grid-section { display: none !important; }
 .weavo-header-btn:hover { opacity: 0.9; }
 
 .whatsapp-share-btn { background: #10b981; color: #fff; padding: 9px 16px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; box-shadow: 0 2px 6px rgba(0,0,0,0.15); }
+.global-market-btn { background: #3b82f6; color: #fff; padding: 9px 16px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; box-shadow: 0 2px 6px rgba(0,0,0,0.15); }
 
 .google-login-customer-btn { background: #ffffff; color: #1e293b; border: 1px solid #cbd5e1; padding: 9px 16px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 13px; display: inline-flex; align-items: center; gap: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); transition: 0.2s; }
 .google-login-customer-btn:hover { background: #f8fafc; }
@@ -85,6 +86,7 @@ tr:hover { background: #f8fafc; }
 <nav id="app-nav"></nav>
 
 <div class="dashboard-main-frame">
+  <!-- पिवळी प पट्टी अलर्ट बॅनर -->
   <div id="live-order-alert-banner">
     <div id="live-order-banner-text" style="display:flex; align-items:center; gap:8px;">
       🔔 <strong>नवीन ऑनलाईन ऑर्डर आली आहे!</strong> कृपया तपासा.
@@ -109,6 +111,7 @@ tr:hover { background: #f8fafc; }
         <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
         <span>Google ने लॉगिन करा</span>
       </button>
+      <button type="button" onclick="window.location.href='index.html'" class="global-market-btn">🌐 ग्लोबल मार्केट</button>
       <button type="button" id="whatsapp-share-btn" onclick="shareStoreOnWhatsApp()" class="whatsapp-share-btn">📢 WhatsApp शेअर</button>
       <button type="button" id="weavo-chat-btn" onclick="openWeavoChat()" class="weavo-header-btn">💬 Weavo चॅट</button>
     </div>
@@ -135,7 +138,7 @@ tr:hover { background: #f8fafc; }
     <button type="button" class="erp-tab-btn" onclick="switchTab('tab-my-orders')">🛍️ माझ्या ऑर्डर्स</button>
     <button type="button" class="erp-tab-btn" onclick="switchTab('tab-reports')">📈 रिपोर्ट्स</button>
     <button type="button" class="erp-tab-btn ai-btn" onclick="switchTab('tab-ai')">✨ AllERP AI</button>
-    <button type="button" class="erp-tab-btn" onclick="switchTab('tab-settings')">⚙️ सेटिंग्स</button>
+    <button type="button" class="erp-tab-btn" onclick="switchTab('tab-settings')">⚙️️ सेटिंग्स</button>
   </div>
 
   <div id="tab-overview" class="erp-tab-pane">
@@ -159,9 +162,36 @@ tr:hover { background: #f8fafc; }
 
   <div id="tab-products" class="erp-tab-pane" style="display:none;">
     <h2>📦 इन्व्हेंटरी व उत्पादने</h2>
+    
+    <!-- प्रॉडक्ट ॲड करण्याचा फॉर्म व स्कॅनर ऑप्शन -->
+    <div style="background:#fef9c3; border:2px solid #facc15; padding:16px; border-radius:10px; margin-bottom:20px;">
+      <h3 style="margin-top:0; color:#713f12; font-size:16px;">➕ नवीन प्रॉडक्ट ॲड करा (होलसेल/किरकोळ दर व स्टॉक)</h3>
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:10px; align-items:end;">
+        <div>
+          <label style="font-size:12px; font-weight:bold; color:#713f12;">उत्पादनाचे नाव</label>
+          <input id="new-prod-name" placeholder="उदा. Surf Excel / Sugar" style="width:100%; padding:8px; border:1px solid var(--border-color); border-radius:6px; box-sizing:border-box; background:#fff;">
+        </div>
+        <div>
+          <label style="font-size:12px; font-weight:bold; color:#713f12;">विक्री दर (₹)</label>
+          <input id="new-prod-price" type="number" placeholder="0.00" style="width:100%; padding:8px; border:1px solid var(--border-color); border-radius:6px; box-sizing:border-box; background:#fff;">
+        </div>
+        <div>
+          <label style="font-size:12px; font-weight:bold; color:#713f12;">होलसेल दर (₹)</label>
+          <input id="new-prod-wholesale" type="number" placeholder="0.00" style="width:100%; padding:8px; border:1px solid var(--border-color); border-radius:6px; box-sizing:border-box; background:#fff;">
+        </div>
+        <div>
+          <label style="font-size:12px; font-weight:bold; color:#713f12;">स्टॉक / नग</label>
+          <input id="new-prod-stock" type="number" placeholder="100" value="100" style="width:100%; padding:8px; border:1px solid var(--border-color); border-radius:6px; box-sizing:border-box; background:#fff;">
+        </div>
+        <div>
+          <button type="button" onclick="addNewProductToInventory()" style="width:100%; background:#16a34a; color:#fff; border:none; padding:10px; border-radius:6px; font-weight:bold; cursor:pointer;">💾 प्रॉडक्ट सेव्ह करा</button>
+        </div>
+      </div>
+    </div>
+
     <table>
-      <thead><tr><th>उत्पादनाचे नाव</th><th>विक्री दर</th><th>स्टॉक</th><th>स्थिती</th></tr></thead>
-      <tbody id="products-table-body"><tr><td colspan="4" class="muted" style="text-align:center;">उत्पादने लोड होत आहेत...</td></tr></tbody>
+      <thead><tr><th>उत्पादनाचे नाव</th><th>विक्री दर</th><th>होलसेल दर</th><th>स्टॉक / नग</th><th>कृती (Quantity Update)</th><th>स्थिती</th></tr></thead>
+      <tbody id="products-table-body"><tr><td colspan="6" class="muted" style="text-align:center;">उत्पादने लोड होत आहेत...</td></tr></tbody>
     </table>
   </div>
 
@@ -305,7 +335,7 @@ let customerCart = [];
 let loggedInCustomer = null;
 let currentMerchantUsername = '';
 let currentMerchantUserId = null;
-let currentProductMerchantMap = {}; // प्रॉडक्टवाईज दुकानदाराचा युजरनेम साठवण्यासाठी
+let currentProductMerchantMap = {};
 
 function switchTab(tabId) {
   document.querySelectorAll('.erp-tab-pane').forEach(function(el) { el.style.display = 'none'; });
@@ -465,7 +495,6 @@ async function initDashboard() {
   }
 }
 
-// 🌟 प्रत्येक प्रॉडक्टनुसार त्याच्या खऱ्या दुकानदाराचा युजरनेम व ईमेल डायनॅमिकली मॅप करणारे फंक्शन
 async function loadAllStoresGlobalProducts() {
   var gridEl = document.getElementById('customer-products-grid');
   if (!gridEl) return;
@@ -494,7 +523,6 @@ async function loadAllStoresGlobalProducts() {
       var businessId = (p.businesses && p.businesses.id) ? p.businesses.id : p.business_id;
       var merchantUserId = (p.businesses && p.businesses.owner_id) ? p.businesses.owner_id : null;
 
-      // प्रत्येक प्रॉडक्टच्या आयडीसोबत त्याच्या दुकानदाराची माहिती सेव्ह करणे (कार्टमधून योग्य ठिकाणी ऑर्डर जाण्यासाठी)
       currentProductMerchantMap[p.id] = {
         businessId: businessId,
         merchantHandle: merchantHandle,
@@ -636,7 +664,6 @@ function openCustomerCartModal() {
   openModal('customer-cart-modal');
 }
 
-// 🌟 अचूक प्रॉडक्टच्या दुकानदाराच्या ईमेलवरून व युजरनेमवरून ऑर्डर सिंक करणारे फंक्शन
 async function submitCustomerOrder() {
   var name = document.getElementById('cust-order-name').value.trim();
   var phone = document.getElementById('cust-order-phone').value.trim();
@@ -647,7 +674,6 @@ async function submitCustomerOrder() {
   var totalAmt = customerCart.reduce(function(sum, i) { return sum + (i.price * i.qty); }, 0);
   var itemsSummaryText = customerCart.map(function(i) { return i.name + ' (' + i.qty + ' नग)'; }).join(', ');
 
-  // कार्टमधील पहिल्या वस्तूचा दुकानदार मुख्य धरून किंवा प्रॉडक्टवाईज ऑर्डर पाठवणे
   var primaryItem = customerCart[0] || {};
   var targetBizId = primaryItem.businessId || currentBusinessId;
   var targetStoreHandle = primaryItem.merchantHandle || lockedStoreUsername || currentMerchantUsername || 'store';
@@ -669,7 +695,6 @@ async function submitCustomerOrder() {
     
     if (customerUserId) {
       try {
-        // जर merchantUserId नसेल, तर व्यवसायाच्या डेटाबेसवरून किंवा ईमेलवरून अचूक शोधणे
         if (!targetMerchantId && targetStoreEmail) {
           var { data: profByEmail } = await sb.from('profiles').select('id').eq('email', targetStoreEmail).maybeSingle();
           if (profByEmail) targetMerchantId = profByEmail.id;
@@ -724,6 +749,61 @@ async function submitCustomerOrder() {
   openWeavoChat(targetStoreHandle, targetStoreEmail);
 }
 
+// 🌟 इन्व्हेंटरी टॅबमध्ये नवीन प्रॉडक्ट ॲड करण्याचे फंक्शन
+async function addNewProductToInventory() {
+  var name = document.getElementById('new-prod-name').value.trim();
+  var price = parseFloat(document.getElementById('new-prod-price').value) || 0;
+  var wholesale = parseFloat(document.getElementById('new-prod-wholesale').value) || price;
+  var stock = parseInt(document.getElementById('new-prod-stock').value) || 100;
+
+  if (!name || price <= 0) {
+    alert('कृपया उत्पादनाचे नाव आणि वैध विक्री दर टाка!');
+    return;
+  }
+
+  try {
+    var userRes = await sb.auth.getUser();
+    var user = userRes.data.user;
+
+    var insertObj = {
+      business_id: currentBusinessId,
+      name: name,
+      selling_price: price,
+      wholesale_price: wholesale,
+      stock: stock,
+      marketplace_visible: true
+    };
+
+    var { error } = await sb.from('business_products').insert([insertObj]);
+    if (error) throw error;
+
+    alert('✅ नवीन प्रॉडक्ट यशस्वीरीत्या ॲड झाले!');
+    document.getElementById('new-prod-name').value = '';
+    document.getElementById('new-prod-price').value = '';
+    document.getElementById('new-prod-wholesale').value = '';
+    loadProducts();
+  } catch (e) {
+    alert('प्रॉडक्ट सेव्ह करताना त्रुटी: ' + e.message);
+  }
+}
+
+// 🌟 इन्व्हेंटरी मधील प्रॉडक्टची क्वांटिटी / स्टॉक थेट अपडेट करण्याचे फंक्शन
+async function updateProductStock(productId, currentStock) {
+  var newStock = prompt('सध्याचा स्टॉक: ' + currentStock + '\nनवीन स्टॉक किंवा क्वांटिटी संख्या टाка:', currentStock);
+  if (newStock === null) return;
+  var parsed = parseInt(newStock);
+  if (isNaN(parsed)) { alert('कृपया वैध संख्या टाका!'); return; }
+
+  try {
+    var { error } = await sb.from('business_products').update({ stock: parsed }).eq('id', productId);
+    if (error) throw error;
+    alert('✅ स्टॉक यशस्वीरीत्या अपडेट झाला!');
+    loadProducts();
+  } catch (e) {
+    alert('त्रुटी: ' + e.message);
+  }
+}
+
 async function loadProducts() {
   var tbody = document.getElementById('products-table-body');
   if (!tbody) return;
@@ -734,29 +814,26 @@ async function loadProducts() {
     }
     var data = res.data;
     if (!data || data.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="4" class="muted" style="text-align:center;">कोणतीही उत्पादने नाहीत.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="6" class="muted" style="text-align:center;">कोणतीही उत्पादने नाहीत. वर दिलेल्या फॉर्ममधून नवीन प्रॉडक्ट ॲड करा.</td></tr>';
       return;
     }
     
-    var uniqueMap = new Map();
-    data.forEach(function(p) {
-      if (p && p.name && !uniqueMap.has(p.name.trim().toLowerCase())) {
-        uniqueMap.set(p.name.trim().toLowerCase(), p);
-      }
-    });
-    var cleanData = Array.from(uniqueMap.values());
-    currentProducts = cleanData;
+    currentProducts = data;
 
-    tbody.innerHTML = cleanData.map(function(p) {
+    tbody.innerHTML = data.map(function(p) {
+      var stockVal = (p.stock !== null && p.stock !== undefined) ? p.stock : 0;
+      var wholesaleVal = (p.wholesale_price !== null && p.wholesale_price !== undefined) ? p.wholesale_price : p.selling_price;
       return '<tr>' +
              '<td><strong>' + escapeHtml(p.name) + '</strong></td>' +
              '<td style="font-weight:bold; color:#16a34a;">₹' + p.selling_price + '</td>' +
-             '<td>' + (p.stock !== null ? p.stock : 0) + '</td>' +
-             '<td><span class="badge ' + (p.stock > 0 ? 'live' : 'pending') + '">' + (p.stock > 0 ? 'LIVE' : 'INACTIVE') + '</span></td>' +
+             '<td style="color:#2563eb;">₹' + wholesaleVal + '</td>' +
+             '<td><strong>' + stockVal + '</strong></td>' +
+             '<td><button onclick="updateProductStock(\'' + p.id + '\', ' + stockVal + ')" style="background:#0284c7; color:#fff; border:none; padding:5px 10px; border-radius:4px; font-weight:bold; cursor:pointer; font-size:12px;">✏️ क्वांटिटी बदला</button></td>' +
+             '<td><span class="badge ' + (stockVal > 0 ? 'live' : 'pending') + '">' + (stockVal > 0 ? 'LIVE' : 'OUT OF STOCK') + '</span></td>' +
              '</tr>';
     }).join('');
   } catch (e) {
-    tbody.innerHTML = '<tr><td colspan="4" class="muted" style="text-align:center;">उत्पादने लोड करताना त्रुटी आली.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" class="muted" style="text-align:center;">उत्पादने लोड करताना त्रुटी आली.</td></tr>';
   }
 }
 
