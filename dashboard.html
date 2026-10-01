@@ -103,7 +103,7 @@ tr:hover { background: #f8fafc; }
         संचालक: <span id="display-merchant-name">तपासत आहे...</span> | 📧 <span id="display-merchant-email">तपासत आहे...</span>
       </div>
       <div style="margin-top:6px; font-size:13.5px; font-weight:700; color:#34d399;" id="merchant-username-badge">
-        👤 वीव्हो चॅट युजरनेम: <span id="display-merchant-handle">@abhinaygandhi5151</span>
+        👤 वीव्हो चॅट युजरनेम: <span id="display-merchant-handle">@...</span>
       </div>
     </div>
     <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
@@ -239,7 +239,7 @@ tr:hover { background: #f8fafc; }
   </div>
 
   <div id="tab-orders" class="erp-tab-pane" style="display:none;">
-    <h2>🛍️️ ऑनलाईन ग्राहकांच्या ऑर्डर्स</h2>
+    <h2>🛍 ऑनलाईन ग्राहकांच्या ऑर्डर्स</h2>
     <table>
       <thead><tr><th>ऑर्डर #</th><th>ग्राहक नाव</th><th>संपर्क व पत्ता</th><th>तपशील (Items)</th><th>रक्कम</th><th>स्थिती</th></tr></thead>
       <tbody id="online-orders-table-body"><tr><td colspan="6" class="muted" style="text-align:center;">कोणतीही ऑनलाईन ऑर्डर आलेली नाही.</td></tr></tbody>
@@ -271,7 +271,7 @@ tr:hover { background: #f8fafc; }
   </div>
 
   <div id="tab-settings" class="erp-tab-pane" style="display:none;">
-    <h2>⚙️ सेटिंग्स (Business & Profile Settings)</h2>
+    <h2>⚙️️ सेटिंग्स (Business & Profile Settings)</h2>
     <div style="background:#f8fafc; padding:20px; border-radius:8px; border:1px solid #e2e8f0; max-width:500px;">
       <h3 style="margin-top:0;">दुकान व प्रोफाईल माहिती</h3>
       <div style="margin-bottom:10px;"><label style="font-size:12px; font-weight:bold;">दुकानचे नाव (Business Name)</label><input id="settings-biz-name" style="width:100%; padding:8px; border:1px solid var(--border-color); border-radius:6px; box-sizing:border-box;"></div>
@@ -305,7 +305,7 @@ let currentProducts = [];
 let lockedStoreUsername = null;
 let customerCart = [];
 let loggedInCustomer = null;
-let currentMerchantUsername = 'abhinaygandhi5151';
+let currentMerchantUsername = '';
 let currentMerchantUserId = null;
 
 function switchTab(tabId) {
@@ -354,7 +354,6 @@ function playOrderAlertBeep() {
     }
 }
 
-// दुकानदार 'ओके' बटन दाबल्यावर बॅनर बंद होईल
 function acknowledgeLiveOrder() {
   var banner = document.getElementById('live-order-alert-banner');
   if (banner) banner.style.display = 'none';
@@ -384,29 +383,30 @@ async function initDashboard() {
       var prodSec = document.getElementById('customer-products-section');
       if (prodSec) prodSec.style.display = 'block';
 
-      var storeTitle = "अभिनय स्टोअर्स";
-      var merchantFullName = "अभिनय गांधी";
-      var merchantEmailVal = "abhinay@gmail.com";
+      var storeTitle = "स्थानिक स्टोअर";
+      var merchantFullName = "संचालक";
+      var merchantEmailVal = "";
 
       try {
-        var bizRes = await sb.from('businesses').select('*').or('slug.eq.' + lockedStoreUsername + ',name.ilike.%' + lockedStoreUsername + '%').maybeSingle();
+        var bizRes = await sb.from('businesses').select('*').or('slug.eq.' + lockedStoreUsername + ',owner_username.eq.' + lockedStoreUsername + ',name.ilike.%' + lockedStoreUsername + '%').maybeSingle();
         if (bizRes.data) {
           if (bizRes.data.name) storeTitle = bizRes.data.name;
+          if (bizRes.data.owner_name) merchantFullName = bizRes.data.owner_name;
+          if (bizRes.data.owner_email) merchantEmailVal = bizRes.data.owner_email;
           if (bizRes.data.id) currentBusinessId = bizRes.data.id;
           if (bizRes.data.owner_id) currentMerchantUserId = bizRes.data.owner_id;
+          if (bizRes.data.owner_username) lockedStoreUsername = bizRes.data.owner_username;
         }
       } catch (e) {}
 
       document.getElementById('business-display-name').textContent = storeTitle;
       document.getElementById('display-merchant-name').textContent = merchantFullName;
       document.getElementById('display-merchant-email').textContent = merchantEmailVal;
-      document.getElementById('header-sub-text').textContent = 'अधिकृत ग्राहक स्टोअर व थेट संवाद मंच';
       document.getElementById('display-merchant-handle').textContent = '@' + lockedStoreUsername;
       currentMerchantUsername = lockedStoreUsername;
 
       await loadCustomerStoreProducts();
     } else {
-      // 🌟 कॉमन कस्टमरसाठी होम पेज / ग्लोबल मार्केटप्लेस (सर्व दुकानांचे प्रॉडक्ट्स आणि दुकानदारांची माहिती दाखवणारे)
       var globalStoreParam = urlParams.get('global_feed');
       if (!sessionUser && !globalStoreParam) {
         document.body.classList.add('store-locked-mode');
@@ -431,16 +431,18 @@ async function initDashboard() {
         return;
       }
 
-      var merchantHandle = sessionUser.email ? sessionUser.email.split('@')[0] : 'abhinaygandhi5151';
-      var merchantStoreName = "अभिनय गांधी स्टोअर्स";
-      var merchantFullName = sessionUser.user_metadata && sessionUser.user_metadata.full_name ? sessionUser.user_metadata.full_name : "अभिनय गांधी";
-      var merchantEmailVal = sessionUser.email || "abhinay@gmail.com";
+      var merchantStoreName = "माझे स्टोअर";
+      var merchantFullName = sessionUser.user_metadata && sessionUser.user_metadata.full_name ? sessionUser.user_metadata.full_name : "संचालक";
+      var merchantEmailVal = sessionUser.email || "";
+      var merchantHandle = merchantEmailVal ? merchantEmailVal.split('@')[0] : 'store';
       currentMerchantUserId = sessionUser.id;
 
       try {
         var bizRes = await sb.from('businesses').select('*').eq('owner_id', sessionUser.id).maybeSingle();
         if (bizRes.data) {
           if (bizRes.data.name) merchantStoreName = bizRes.data.name;
+          if (bizRes.data.owner_name) merchantFullName = bizRes.data.owner_name;
+          if (bizRes.data.owner_username) merchantHandle = bizRes.data.owner_username;
           if (bizRes.data.id) currentBusinessId = bizRes.data.id;
         }
       } catch (e) {}
@@ -465,13 +467,12 @@ async function initDashboard() {
   }
 }
 
-// 🌟 सर्व दुकानांचे प्रॉडक्ट्स आणि प्रत्येक प्रॉडक्टच्या खाली दुकानदाराचे नाव, दुकानचे नाव, ईमेल, वीव्हो युजरनेम आणि थेट चॅट बटण दर्शवणारे फंक्शन
+// 🌟 सर्व दुकानांचे प्रॉडक्ट्स आणि दुकानदाराचे खरे युजरनेम व ईमेल दर्शवणारे फंक्शन
 async function loadAllStoresGlobalProducts() {
   var gridEl = document.getElementById('customer-products-grid');
   if (!gridEl) return;
   try {
-    // व्यवसायाची माहिती आणि प्रॉडक्ट्स डेटाफेच करणे (सपोर्टेड जॉईन किंवा डायरेक्ट फॉबॅकसह)
-    var res = await sb.from('business_products').select('*, businesses(name, slug, owner_id)');
+    var res = await sb.from('business_products').select('*, businesses(name, slug, owner_email, owner_username, owner_name)');
     var products = res.data;
 
     if (!products || products.length === 0) {
@@ -487,24 +488,22 @@ async function loadAllStoresGlobalProducts() {
     currentProducts = products;
 
     gridEl.innerHTML = products.map(function(p) {
-      var storeName = (p.businesses && p.businesses.name) ? p.businesses.name : (p.store_name || 'अभिनव किराणा');
-      var ownerName = p.owner_name || 'अभिनय गांधी';
-      var ownerEmail = p.owner_email || 'abhinaygandhi5151@gmail.com';
-      var merchantHandle = p.merchant_username || (p.businesses && p.businesses.slug) || ownerEmail.split('@')[0] || 'abhinaygandhi5151';
+      var storeName = (p.businesses && p.businesses.name) ? p.businesses.name : (p.store_name || 'स्थानिक दुकान');
+      var ownerName = (p.businesses && p.businesses.owner_name) ? p.businesses.owner_name : (p.owner_name || 'संचालक');
+      var ownerEmail = (p.businesses && p.businesses.owner_email) ? p.businesses.owner_email : (p.owner_email || 'support@allerp.com');
+      var merchantHandle = (p.businesses && p.businesses.owner_username) ? p.businesses.owner_username : (p.merchant_username || ownerEmail.split('@')[0]);
       
-      // वीव्हो चॅटची थेट लिंक तयार करणे
-      var weavoChatUrl = 'https://arhammarketingme-prog.github.io/weavo/?store=' + merchantHandle + '&customer_email=' + encodeURIComponent(ownerEmail);
-      var storeProfileUrl = window.location.origin + window.location.pathname + '?store=' + merchantHandle;
+      // वीव्हो चॅटची अचूक डायनॅमिक लिंक
+      var weavoChatUrl = 'https://arhammarketingme-prog.github.io/weavo/?store=' + encodeURIComponent(merchantHandle) + '&customer_email=' + encodeURIComponent(ownerEmail);
+      var storeProfileUrl = window.location.origin + window.location.pathname + '?store=' + encodeURIComponent(merchantHandle);
 
       return '<div style="background:#ffffff; border:1px solid #cbd5e1; border-radius:12px; padding:16px; text-align:left; box-shadow:0 4px 10px rgba(0,0,0,0.05); display:flex; flex-direction:column; justify-content:space-between; transition: 0.2s;">' +
              
-             // प्रॉडक्ट नाव आणि किंमत
              '<div>' +
                '<div style="font-weight:900; font-size:16px; margin-bottom:4px; color:#0f172a;">' + escapeHtml(p.name) + '</div>' +
                '<div style="color:#16a34a; font-weight:900; font-size:16px; margin-bottom:10px;">₹' + p.selling_price + '</div>' +
                '<hr style="border:none; border-top:1px solid #f1f5f9; margin:10px 0;">' +
                
-               // दुकान आणि दुकानदाराची संपूर्ण माहिती (प्रत्येक प्रॉडक्टच्या खाली स्पष्टपणे)
                '<div style="font-size:13px; color:#334155; line-height:1.7; margin-bottom:14px;">' +
                  '🏪 दुकान: <a href="' + storeProfileUrl + '" style="color:#0284c7; font-weight:bold; text-decoration:none;">' + escapeHtml(storeName) + '</a><br>' +
                  '👤 मालक: <strong style="color:#0f172a;">' + escapeHtml(ownerName) + '</strong><br>' +
@@ -513,7 +512,6 @@ async function loadAllStoresGlobalProducts() {
                '</div>' +
              '</div>' +
 
-             // ॲड टू कार्ट आणि थेट वीव्हो चॅट बटण
              '<div style="display:flex; flex-direction:column; gap:8px;">' +
                '<button onclick="addToCustomerCart(\'' + p.id + '\')" style="background:#16a34a; color:#fff; border:none; padding:8px 12px; border-radius:6px; font-weight:bold; cursor:pointer; font-size:13px;">🛒 ॲड टू कार्ट</button>' +
                '<a href="' + weavoChatUrl + '" target="_blank" style="background:#0d9488; color:#fff; text-align:center; padding:8px 12px; border-radius:6px; font-weight:bold; text-decoration:none; font-size:13px;">💬 थेट वीव्हो चॅट करा</a>' +
@@ -526,30 +524,27 @@ async function loadAllStoresGlobalProducts() {
   }
 }
 
-// 🔊 गुगल लॉगिन करताना अकाउंट निवडण्याचा पर्याय
 function loginCustomerWithGoogle() {
   var currentUrl = window.location.origin + window.location.pathname + (lockedStoreUsername ? ('?store=' + lockedStoreUsername) : '');
   sb.auth.signInWithOAuth({ 
     provider: 'google', 
     options: { 
       redirectTo: currentUrl,
-      queryParams: {
-        prompt: 'select_account'
-      }
+      queryParams: { prompt: 'select_account' }
     } 
   });
 }
 
 function shareStoreOnWhatsApp() {
-  var storeSlug = lockedStoreUsername || currentMerchantUsername || 'abhinaygandhi5151';
+  var storeSlug = lockedStoreUsername || currentMerchantUsername || 'store';
   var shareUrl = window.location.origin + window.location.pathname + '?store=' + storeSlug;
   window.open('https://api.whatsapp.com/send?text=' + encodeURIComponent('आमच्या दुकानाला भेट द्या: ' + shareUrl), '_blank');
 }
 
 function openWeavoChat() {
-  var storeUsername = lockedStoreUsername || currentMerchantUsername || 'abhinaygandhi5151';
+  var storeUsername = lockedStoreUsername || currentMerchantUsername || 'store';
   var customerEmail = (loggedInCustomer && loggedInCustomer.email) ? loggedInCustomer.email : localStorage.getItem('global_unified_email');
-  window.open('https://arhammarketingme-prog.github.io/weavo/?store=' + storeUsername + (customerEmail ? ('&customer_email=' + encodeURIComponent(customerEmail)) : ''), '_blank');
+  window.open('https://arhammarketingme-prog.github.io/weavo/?store=' + encodeURIComponent(storeUsername) + (customerEmail ? ('&customer_email=' + encodeURIComponent(customerEmail)) : ''), '_blank');
 }
 
 async function loadCustomerStoreProducts() {
@@ -640,7 +635,7 @@ async function submitCustomerOrder() {
       status: 'pending'
     });
 
-    var storeUsername = lockedStoreUsername || currentMerchantUsername || 'abhinaygandhi5151';
+    var storeUsername = lockedStoreUsername || currentMerchantUsername || 'store';
     var customerUserId = loggedInCustomer ? loggedInCustomer.id : null;
     
     if (customerUserId) {
@@ -857,7 +852,8 @@ async function saveBusinessSettings() {
     await sb.from('businesses').upsert({
       owner_id: user.id,
       name: newName,
-      slug: newSlug || 'store'
+      slug: newSlug || 'store',
+      owner_username: newSlug || 'store'
     }, { onConflict: 'owner_id' });
 
     alert('✅ सेटिंग्ज यशस्वीरीत्या जतन केल्या गेल्या!');
