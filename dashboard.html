@@ -163,13 +163,17 @@ tr:hover { background: #f8fafc; }
   <div id="tab-products" class="erp-tab-pane" style="display:none;">
     <h2>📦 इन्व्हेंटरी व उत्पादने</h2>
     
-    <!-- प्रॉडक्ट ॲड करण्याचा फॉर्म व स्कॅनर ऑप्शन -->
+    <!-- प्रॉडक्ट ॲड व बारकोड स्कॅनर सेक्शन -->
     <div style="background:#fef9c3; border:2px solid #facc15; padding:16px; border-radius:10px; margin-bottom:20px;">
-      <h3 style="margin-top:0; color:#713f12; font-size:16px;">➕ नवीन प्रॉडक्ट ॲड करा (होलसेल/किरकोळ दर व स्टॉक)</h3>
-      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:10px; align-items:end;">
+      <h3 style="margin-top:0; color:#713f12; font-size:16px;">➕ नवीन प्रॉडक्ट ॲड करा किंवा बारकोड स्कॅन करा</h3>
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:10px; align-items:end;">
+        <div>
+          <label style="font-size:12px; font-weight:bold; color:#713f12;">बारकोड (Barcode)</label>
+          <input id="new-prod-barcode" placeholder="स्कॅन किंवा टाइप करा..." style="width:100%; padding:8px; border:1px solid var(--border-color); border-radius:6px; box-sizing:border-box; background:#fff;">
+        </div>
         <div>
           <label style="font-size:12px; font-weight:bold; color:#713f12;">उत्पादनाचे नाव</label>
-          <input id="new-prod-name" placeholder="उदा. Surf Excel / Sugar" style="width:100%; padding:8px; border:1px solid var(--border-color); border-radius:6px; box-sizing:border-box; background:#fff;">
+          <input id="new-prod-name" placeholder="उदा. Surf Excel" style="width:100%; padding:8px; border:1px solid var(--border-color); border-radius:6px; box-sizing:border-box; background:#fff;">
         </div>
         <div>
           <label style="font-size:12px; font-weight:bold; color:#713f12;">विक्री दर (₹)</label>
@@ -183,15 +187,16 @@ tr:hover { background: #f8fafc; }
           <label style="font-size:12px; font-weight:bold; color:#713f12;">स्टॉक / नग</label>
           <input id="new-prod-stock" type="number" placeholder="100" value="100" style="width:100%; padding:8px; border:1px solid var(--border-color); border-radius:6px; box-sizing:border-box; background:#fff;">
         </div>
-        <div>
-          <button type="button" onclick="addNewProductToInventory()" style="width:100%; background:#16a34a; color:#fff; border:none; padding:10px; border-radius:6px; font-weight:bold; cursor:pointer;">💾 प्रॉडक्ट सेव्ह करा</button>
+        <div style="display:flex; gap:6px;">
+          <button type="button" onclick="addNewProductToInventory()" style="flex:1; background:#16a34a; color:#fff; border:none; padding:10px; border-radius:6px; font-weight:bold; cursor:pointer;">💾 सेव्ह करा</button>
+          <button type="button" onclick="openBarcodeScannerModal()" style="background:#0284c7; color:#fff; border:none; padding:10px 14px; border-radius:6px; font-weight:bold; cursor:pointer;" title="कॅमेरा स्कॅनर">📷</button>
         </div>
       </div>
     </div>
 
     <table>
-      <thead><tr><th>उत्पादनाचे नाव</th><th>विक्री दर</th><th>होलसेल दर</th><th>स्टॉक / नग</th><th>कृती (Quantity Update)</th><th>स्थिती</th></tr></thead>
-      <tbody id="products-table-body"><tr><td colspan="6" class="muted" style="text-align:center;">उत्पादने लोड होत आहेत...</td></tr></tbody>
+      <thead><tr><th>उत्पादनाचे नाव</th><th>बारकोड</th><th>विक्री दर</th><th>होलसेल दर</th><th>स्टॉक</th><th>स्टॉक बदला</th><th>स्थिती</th></tr></thead>
+      <tbody id="products-table-body"><tr><td colspan="7" class="muted" style="text-align:center;">उत्पादने लोड होत आहेत...</td></tr></tbody>
     </table>
   </div>
 
@@ -309,6 +314,15 @@ tr:hover { background: #f8fafc; }
   </div>
 </div>
 
+<!-- बारकोड स्कॅनर मॉडेल -->
+<div id="barcode-scanner-modal" class="modal-overlay">
+  <div class="modal-content" style="text-align:center;">
+    <h3 style="margin-top:0; color:var(--primary);">📷 बारकोड स्कॅन करा</h3>
+    <div id="reader" style="width:100%; max-width:400px; margin:0 auto;"></div>
+    <button type="button" onclick="closeBarcodeScannerModal()" style="width:100%; background:var(--danger); color:#fff; padding:10px; border:none; border-radius:6px; font-weight:bold; margin-top:15px; cursor:pointer;">✕ स्कॅनर बंद करा</button>
+  </div>
+</div>
+
 <div id="customer-cart-modal" class="modal-overlay">
   <div class="modal-content">
     <h3 style="margin-top:0; color:var(--primary);">🛒 तुमची चालू ऑर्डर (Cart & Checkout)</h3>
@@ -336,6 +350,7 @@ let loggedInCustomer = null;
 let currentMerchantUsername = '';
 let currentMerchantUserId = null;
 let currentProductMerchantMap = {};
+let html5QrCode = null;
 
 function switchTab(tabId) {
   document.querySelectorAll('.erp-tab-pane').forEach(function(el) { el.style.display = 'none'; });
@@ -530,7 +545,7 @@ async function loadAllStoresGlobalProducts() {
         merchantUserId: merchantUserId
       };
       
-      var weavoChatUrl = 'https://arhammarketingme-prog.github.io/weavo/?store=' + encodeURIComponent(merchantHandle) + '&customer_email=' + encodeURIComponent(ownerEmail);
+      var weavoChatUrl = 'https://arhammarketingme-prog.github.io/weavo/?store=' + encodeURIComponent(merchantHandle) + '&merchant_email=' + encodeURIComponent(ownerEmail);
       var storeProfileUrl = window.location.origin + window.location.pathname + '?store=' + encodeURIComponent(merchantHandle);
 
       return '<div style="background:#ffffff; border:1px solid #cbd5e1; border-radius:12px; padding:16px; text-align:left; box-shadow:0 4px 10px rgba(0,0,0,0.05); display:flex; flex-direction:column; justify-content:space-between; transition: 0.2s;">' +
@@ -749,24 +764,23 @@ async function submitCustomerOrder() {
   openWeavoChat(targetStoreHandle, targetStoreEmail);
 }
 
-// 🌟 इन्व्हेंटरी टॅबमध्ये नवीन प्रॉडक्ट ॲड करण्याचे फंक्शन
+// 🌟 इन्व्हेंटरी टॅबमध्ये बारकोड आणि होलसेल रेटसह नवीन प्रॉडक्ट ॲड करण्याचे फंक्शन
 async function addNewProductToInventory() {
+  var barcode = document.getElementById('new-prod-barcode').value.trim();
   var name = document.getElementById('new-prod-name').value.trim();
   var price = parseFloat(document.getElementById('new-prod-price').value) || 0;
   var wholesale = parseFloat(document.getElementById('new-prod-wholesale').value) || price;
   var stock = parseInt(document.getElementById('new-prod-stock').value) || 100;
 
   if (!name || price <= 0) {
-    alert('कृपया उत्पादनाचे नाव आणि वैध विक्री दर टाка!');
+    alert('कृपया उत्पादनाचे नाव आणि वैध विक्री दर टाका!');
     return;
   }
 
   try {
-    var userRes = await sb.auth.getUser();
-    var user = userRes.data.user;
-
     var insertObj = {
       business_id: currentBusinessId,
+      barcode: barcode || null,
       name: name,
       selling_price: price,
       wholesale_price: wholesale,
@@ -778,6 +792,7 @@ async function addNewProductToInventory() {
     if (error) throw error;
 
     alert('✅ नवीन प्रॉडक्ट यशस्वीरीत्या ॲड झाले!');
+    document.getElementById('new-prod-barcode').value = '';
     document.getElementById('new-prod-name').value = '';
     document.getElementById('new-prod-price').value = '';
     document.getElementById('new-prod-wholesale').value = '';
@@ -787,9 +802,42 @@ async function addNewProductToInventory() {
   }
 }
 
-// 🌟 इन्व्हेंटरी मधील प्रॉडक्टची क्वांटिटी / स्टॉक थेट अपडेट करण्याचे फंक्शन
+// 🌟 बारकोड स्कॅनर कॅमेरा सुरू करण्यासाठी
+function openBarcodeScannerModal() {
+  openModal('barcode-scanner-modal');
+  setTimeout(function() {
+    if (!html5QrCode) {
+      html5QrCode = new Html5Qrcode("reader");
+    }
+    html5QrCode.start(
+      { facingMode: "environment" },
+      { fps: 10, qrbox: { width: 250, height: 150 } },
+      function(decodedText) {
+        document.getElementById('new-prod-barcode').value = decodedText;
+        closeBarcodeScannerModal();
+        alert('✅ बारकोड स्कॅन झाला: ' + decodedText);
+      },
+      function(errorMessage) {}
+    ).catch(err => {
+      console.error("Scanner start error:", err);
+    });
+  }, 300);
+}
+
+function closeBarcodeScannerModal() {
+  if (html5QrCode) {
+    html5QrCode.stop().then(() => {
+      closeModal('barcode-scanner-modal');
+    }).catch(err => {
+      closeModal('barcode-scanner-modal');
+    });
+  } else {
+    closeModal('barcode-scanner-modal');
+  }
+}
+
 async function updateProductStock(productId, currentStock) {
-  var newStock = prompt('सध्याचा स्टॉक: ' + currentStock + '\nनवीन स्टॉक किंवा क्वांटिटी संख्या टाка:', currentStock);
+  var newStock = prompt('सध्याचा स्टॉक: ' + currentStock + '\nनवीन स्टॉक संख्या टाका:', currentStock);
   if (newStock === null) return;
   var parsed = parseInt(newStock);
   if (isNaN(parsed)) { alert('कृपया वैध संख्या टाका!'); return; }
@@ -814,7 +862,7 @@ async function loadProducts() {
     }
     var data = res.data;
     if (!data || data.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="6" class="muted" style="text-align:center;">कोणतीही उत्पादने नाहीत. वर दिलेल्या फॉर्ममधून नवीन प्रॉडक्ट ॲड करा.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="7" class="muted" style="text-align:center;">कोणतीही उत्पादने नाहीत. वर दिलेल्या फॉर्ममधून नवीन प्रॉडक्ट ॲड करा.</td></tr>';
       return;
     }
     
@@ -823,17 +871,19 @@ async function loadProducts() {
     tbody.innerHTML = data.map(function(p) {
       var stockVal = (p.stock !== null && p.stock !== undefined) ? p.stock : 0;
       var wholesaleVal = (p.wholesale_price !== null && p.wholesale_price !== undefined) ? p.wholesale_price : p.selling_price;
+      var barcodeVal = p.barcode ? p.barcode : '-';
       return '<tr>' +
              '<td><strong>' + escapeHtml(p.name) + '</strong></td>' +
+             '<td style="color:#64748b; font-family:monospace;">' + escapeHtml(barcodeVal) + '</td>' +
              '<td style="font-weight:bold; color:#16a34a;">₹' + p.selling_price + '</td>' +
              '<td style="color:#2563eb;">₹' + wholesaleVal + '</td>' +
              '<td><strong>' + stockVal + '</strong></td>' +
-             '<td><button onclick="updateProductStock(\'' + p.id + '\', ' + stockVal + ')" style="background:#0284c7; color:#fff; border:none; padding:5px 10px; border-radius:4px; font-weight:bold; cursor:pointer; font-size:12px;">✏️ क्वांटिटी बदला</button></td>' +
+             '<td><button onclick="updateProductStock(\'' + p.id + '\', ' + stockVal + ')" style="background:#0284c7; color:#fff; border:none; padding:5px 10px; border-radius:4px; font-weight:bold; cursor:pointer; font-size:12px;">✏️ बदल करा</button></td>' +
              '<td><span class="badge ' + (stockVal > 0 ? 'live' : 'pending') + '">' + (stockVal > 0 ? 'LIVE' : 'OUT OF STOCK') + '</span></td>' +
              '</tr>';
     }).join('');
   } catch (e) {
-    tbody.innerHTML = '<tr><td colspan="6" class="muted" style="text-align:center;">उत्पादने लोड करताना त्रुटी आली.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" class="muted" style="text-align:center;">उत्पादने लोड करताना त्रुटी आली.</td></tr>';
   }
 }
 
