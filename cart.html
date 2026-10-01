@@ -4,21 +4,17 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="manifest" href="manifest.json">
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iYmciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjMjg3NGYwIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzBlYTVhMyIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICA8L2RlZnM+CiAgPHJlY3Qgd2lkdGg9IjEwMCIgaGVpZ2h0PSIxMDAiIHJ4PSIyMiIgZmlsbD0idXJsKCNiZykiLz4KICA8aW1nIHNyYz0iIiBhbHQ9IiI+Cjwvc3ZnPg==">
   <meta name="theme-color" content="#1D4E89">
   <title>शॉपिंग कार्ट - Business Super Marketplace</title>
   <link rel="stylesheet" href="css/style.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    .cart-item-card { background: #fff; padding: 18px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.04); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; transition: transform 0.2s ease, box-shadow 0.2s ease; }
-    .cart-item-card:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.06); }
-    .qty-btn { padding: 6px 12px; background: #e2e8f0; border: none; cursor: pointer; font-weight: bold; color: #334155; transition: background 0.2s; }
-    .qty-btn:hover { background: #cbd5e1; }
-    .checkout-proceed-btn { padding: 12px 24px; background: #E8952F; color: #fff; border: none; border-radius: 6px; font-weight: 800; font-size: 15px; cursor: pointer; box-shadow: 0 3px 6px rgba(30,36,48,0.15); transition: opacity 0.2s, transform 0.1s; }
-    .checkout-proceed-btn:hover { opacity: 0.95; transform: translateY(-1px); }
+    .cart-item-card { background: #fff; padding: 18px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.04); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+    .qty-btn { padding: 6px 12px; background: #e2e8f0; border: none; cursor: pointer; font-weight: bold; color: #334155; }
+    .checkout-proceed-btn { padding: 12px 24px; background: #E8952F; color: #fff; border: none; border-radius: 6px; font-weight: 800; font-size: 15px; cursor: pointer; }
     .modal-content-box { background:#fff; padding:26px; border-radius:12px; width:90%; max-width:440px; box-shadow:0 15px 30px rgba(0,0,0,0.2); position:relative; max-height: 90vh; overflow-y: auto; }
     .payment-option-box { display: flex; gap: 10px; margin-bottom: 12px; }
-    .payment-card { flex: 1; border: 2px solid #cbd5e1; border-radius: 6px; padding: 10px; text-align: center; cursor: pointer; font-size: 13px; font-weight: 700; color: #334155; background: #f8fafc; transition: all 0.2s; }
+    .payment-card { flex: 1; border: 2px solid #cbd5e1; border-radius: 6px; padding: 10px; text-align: center; cursor: pointer; font-size: 13px; font-weight: 700; color: #334155; background: #f8fafc; }
     .payment-card.active { border-color: #1D4E89; background: #eff6ff; color: #143A66; }
   </style>
 </head>
@@ -30,7 +26,7 @@
     <h1 style="font-size: 24px; color: #1e293b; margin-bottom: 20px; font-weight: 800;">🛒 तुमची शॉपिंग कार्ट (Shopping Cart)</h1>
 
     <div id="cart-container">
-      <div style="background: #fff; padding: 30px; text-align: center; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+      <div style="background: #fff; padding: 30px; text-align: center; border-radius: 8px;">
         <p style="color: #64748b; font-size: 16px;">कार्ट लोड होत आहे...</p>
       </div>
     </div>
@@ -101,7 +97,7 @@
 
       if (!cart || cart.length === 0) {
         container.innerHTML = `
-          <div style="background: #fff; padding: 40px; text-align: center; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+          <div style="background: #fff; padding: 40px; text-align: center; border-radius: 8px;">
             <p style="font-size: 16px; color: #64748b; margin-bottom: 16px;">तुमची कार्ट सध्या रिकामी आहे.</p>
             <a href="index.html" style="background: #1D4E89; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 6px; font-weight: 700; display: inline-block;">खरेदी सुरू ठेवा</a>
           </div>
@@ -131,7 +127,7 @@
                   <div style="text-align: right; min-width: 80px;">
                     <div style="font-weight: 800; font-size: 16px; color: #0f172a;">₹${itemTotal}</div>
                   </div>
-                  <button onclick="removeCartItem(${index})" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 18px; padding: 4px;" title="काढून टाका">🗑️</button>
+                  <button onclick="removeCartItem(${index})" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 18px; padding: 4px;" title="काढून टाका">🗑️️</button>
                 </div>
               </div>
             `;
@@ -179,7 +175,7 @@
       try {
         const { data: { user } } = await sb.auth.getUser();
         if (!user) {
-          alert('⚠️ कृपया ऑर्डर करण्यासाठी आधी लॉगिन करा!');
+          alert('⚠️️ कृपया ऑर्डर करण्यासाठी आधी लॉगिन करा!');
           window.location.href = 'login.html';
           return;
         }
@@ -189,7 +185,6 @@
       }
     }
 
-    // 🚀 अचूक मल्टि-वेंडर स्प्लिट ऑर्डर लॉजिक (ज्यामुळे कधीही store=store जाणार नाही)
     async function submitCartOrder(event) {
       event.preventDefault();
 
@@ -249,18 +244,13 @@
             .maybeSingle();
 
           let targetMerchantUserId = bizData ? bizData.owner_id : null;
-          
-          // 🌟 अत्यंत महत्त्वाची सुधारणा: नेहमी अचूक दुकानचे नाव किंवा slug शोधणे (कधीही 'store' रिकामा जाणार नाही)
-          let storeSlugOrName = '';
-          if (bizData) {
-            storeSlugOrName = bizData.slug || bizData.name || '';
-          }
+          let storeSlugOrName = bizData ? (bizData.slug || bizData.name || '') : '';
           if (!storeSlugOrName && group.items[0]) {
             storeSlugOrName = group.items[0].business_name || group.items[0].merchant_handle || '';
           }
           storeSlugOrName = storeSlugOrName.trim().toLowerCase().replace(/\s+/g, '_');
           if (!storeSlugOrName || storeSlugOrName === 'store') {
-            storeSlugOrName = 'abhinay_kirana'; // डीफॉल्ट सेफ हँडल
+            storeSlugOrName = 'abhinay_kirana';
           }
 
           let targetEmail = bizData ? bizData.email : '';
@@ -309,7 +299,6 @@
               }
 
               if (targetConvId) {
-                let shopNameTitle = bizData ? bizData.name : 'Store';
                 let orderMsgText = `📦 **AllERP युनिफाइड ऑर्डर**\n🛒 **उत्पादने:** ${itemsSummaryText}\n💰 **एकूण रक्कम:** ₹${totalAmt}\n📌 **डिलिव्हरी पिन (OTP):** ${orderOtp}\n👤 **ग्राहक:** ${name}\n📱 **मोबाईल:** ${phone}\n🏠 **पत्ता:** ${address}\n💳 **पेमेंट:** ${paymentMode}`;
                 await sb.from('messages').insert({
                   conversation_id: targetConvId,
@@ -332,7 +321,6 @@
 
         closeCartModal();
 
-        // 🌟 युआरएल तयार करताना नेहमी अचूक मर्चंट हँडल जाईल (कधीही 'store=store' जाणार नाही)
         if (!firstMerchantHandle || firstMerchantHandle === 'store') {
           firstMerchantHandle = 'abhinay_kirana';
         }
