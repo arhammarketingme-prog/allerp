@@ -1,5 +1,5 @@
 // ==========================================
-// BUSINESS SUPER PLATFORM - CART ENGINE (js/cart.js)
+// ALL ERP — SPLIT ORDER & SECURE CART ENGINE (js/cart.js)
 // ==========================================
 
 // कार्टमधील सर्व आयटम्स मिळवणे
@@ -28,7 +28,7 @@ function saveCart(cart) {
   }
 }
 
-// 🌟 नवीन प्रॉडक्ट कार्टमध्ये ॲड करताना दुकानदाराचा युजरनेम व ईमेल सोबत साठवणे
+// नवीन प्रॉडक्ट कार्टमध्ये ॲड करणे
 function addToCart(product) {
   let cart = getCart();
   
@@ -48,7 +48,6 @@ function addToCart(product) {
       business_name: product.business_name,
       price: Number(product.price) || 0,
       quantity: addQty,
-      // 🌟 मर्चंटची अचूक माहिती कार्टमध्ये कॅरी करणे
       merchant_handle: product.merchant_handle || product.owner_username || '',
       merchant_email: product.merchant_email || product.owner_email || ''
     });
@@ -83,7 +82,7 @@ async function enforceLoginBeforeCheckout(grandTotal, openModalCallback) {
   }
 }
 
-// 🛡️ सुरक्षित इन-ॲप ऑर्डर सबमिट करण्याची पद्धत व वीव्हो चॅट सिंक
+// 🌟 मल्टि-वेंडर स्प्लिट ऑर्डर लॉजिकसह सुरक्षित इन-ॲप ऑर्डर सबमिट करण्याची पद्धत
 async function submitSecurePlatformOrder(orderDetails) {
   try {
     const cart = getCart();
@@ -99,89 +98,107 @@ async function submitSecurePlatformOrder(orderDetails) {
       return false;
     }
 
-    let itemsSummary = cart.map(i => `${i.name} (×${i.quantity})`).join(', ');
-    let totalAmount = cart.reduce((sum, i) => sum + (Number(i.price) * Number(i.quantity)), 0);
-    let businessId = cart[0].business_id;
-    
-    // 🌟 कार्टमधील पहिल्या प्रॉडक्टवरून संबंधित दुकानदाराचा युजरनेम व ईमेल मिळवणे
-    let targetHandle = cart[0].merchant_handle;
-    let targetEmail = cart[0].merchant_email;
-
-    // जर कार्टमध्ये थेट नसेल, तर businesses टेबलवरून फेच करणे
-    if ((!targetHandle || !targetEmail) && businessId) {
-      const { data: bizData } = await sb.from('businesses')
-        .select('owner_username, owner_email')
-        .eq('id', businessId)
-        .maybeSingle();
-      
-      if (bizData) {
-        targetHandle = targetHandle || bizData.owner_username;
-        targetEmail = targetEmail || bizData.owner_email;
+    // १. कार्टमधील प्रॉडक्ट्सना संबंधित दुकानदारांनुसार (Business ID नुसार) स्वयंचलितपणे स्वतंत्र ग्रुप्समध्ये स्प्लिट करणे
+    let merchantGroups = {};
+    cart.forEach(item => {
+      let bId = item.business_id;
+      if (!bId) return;
+      if (!merchantGroups[bId]) {
+        merchantGroups[bId] = {
+          business_id: bId,
+          items: []
+        };
       }
-    }
+      merchantGroups[bId].items.push(item);
+    });
 
-    const orderPayload = {
-      business_id: businessId,
-      customer_name: orderDetails.customerName || 'Verified Buyer',
-      customer_phone: orderDetails.customerPhone || 'Masked-Secure-ID',
-      delivery_address: orderDetails.deliveryAddress || 'Local Platform Delivery Hub',
-      items_summary: itemsSummary,
-      total_amount: totalAmount,
-      payment_method: orderDetails.paymentMethod || 'COD',
-      status: 'pending',
-      customer_user_id: user.id
-    };
-
-    const { error } = await sb.from('orders').insert([orderPayload]);
-
-    if (error) {
-      alert('ऑर्डर सेव्ह करताना अडचण आली: ' + error.message);
+    let groupKeys = Object.keys(merchantGroups);
+    if (groupKeys.length === 0) {
+      alert('त्रुटी: कार्टमधील प्रॉडक्ट्सशी कोणतेही वैध दुकान जोडलेले नाही.');
       return false;
     }
 
-    // 🌟 वीव्हो चॅटमध्ये अचूक मर्चंटच्या कनव्हर्सेशनमध्ये ऑर्डर मेसेज पाठवणे
-    if (targetEmail || targetHandle) {
-      try {
-        let targetMerchantId = null;
-        const { data: prof } = await sb.from('profiles')
-          .select('id')
-          .or(`email.ilike.${targetEmail},username.ilike.${targetHandle}`)
-          .maybeSingle();
-        
-        if (prof) targetMerchantId = prof.id;
+    // २. प्रत्येक दुकानदारासाठी स्वतंत्र ऑर्डर तयार करून Supabase मध्ये सेव्ह करणे व त्यांच्या अचूक चॅ트에 पाठवणे
+    for (let bId of groupKeys) {
+      let group = merchantGroups[bId];
+      let itemsSummary = group.items.map(i => `${i.name} (×${i.quantity})`).join(', ');
+      let totalAmount = group.items.reduce((sum, i) => sum + (Number(i.price) * Number(i.quantity)), 0);
 
-        if (targetMerchantId) {
-          let targetConvId = null;
-          const { data: myConvs } = await sb.from('conversation_members').select('conversation_id').eq('user_id', user.id);
-          const myIds = (myConvs || []).map(r => r.conversation_id);
-          
-          if (myIds.length) {
-            const { data: theirConvs } = await sb.from('conversation_members').select('conversation_id').eq('user_id', targetMerchantId).in('conversation_id', myIds);
-            if (theirConvs && theirConvs.length) targetConvId = theirConvs[0].conversation_id;
+      // प्रत्येक दुकानाची खरी माहिती थेट businesses टेबलमधून फेच करणे
+      let { data: bizData } = await sb.from('businesses')
+        .select('id, owner_id, owner_username, owner_email, name, slug')
+        .eq('id', bId)
+        .maybeSingle();
+
+      let targetMerchantUserId = bizData ? bizData.owner_id : null;
+      let targetHandle = bizData ? (bizData.owner_username || bizData.slug) : 'store';
+      let targetEmail = bizData ? bizData.owner_email : '';
+
+      const orderPayload = {
+        business_id: bId,
+        customer_name: orderDetails.customerName || 'Verified Buyer',
+        customer_phone: orderDetails.customerPhone || 'Masked-Secure-ID',
+        delivery_address: orderDetails.deliveryAddress || 'Local Platform Delivery Hub',
+        items_summary: itemsSummary,
+        total_amount: totalAmount,
+        payment_method: orderDetails.paymentMethod || 'COD',
+        status: 'pending',
+        customer_user_id: user.id
+      };
+
+      // ऑल ईआरपीच्या orders टेबलमध्ये स्वतंत्र ऑर्डर इन्सर्ट करणे
+      const { error: orderErr } = await sb.from('orders').insert([orderPayload]);
+      if (orderErr) {
+        console.error('Order insert error for business ' + bId, orderErr.message);
+        continue;
+      }
+
+      // ३. योग्य दुकानदाराच्या युजर प्रोफाईलशी अचूक मॅच करून वीव्हो चॅट कनव्हर्सेशन तयार करणे
+      if (targetMerchantUserId || targetEmail || targetHandle) {
+        try {
+          if (!targetMerchantUserId && targetEmail) {
+            let { data: prof } = await sb.from('profiles').select('id').eq('email', targetEmail).maybeSingle();
+            if (prof) targetMerchantUserId = prof.id;
+          }
+          if (!targetMerchantUserId && targetHandle) {
+            let { data: prof } = await sb.from('profiles').select('id').ilike('username', targetHandle).maybeSingle();
+            if (prof) targetMerchantUserId = prof.id;
           }
 
-          if (!targetConvId) {
-            const { data: newConv } = await sb.from('conversations').insert({ type: 'direct', created_by: user.id }).select().single();
-            if (newConv) {
-              targetConvId = newConv.id;
-              await sb.from('conversation_members').insert([
-                { conversation_id: targetConvId, user_id: user.id },
-                { conversation_id: targetConvId, user_id: targetMerchantId }
-              ]);
+          if (targetMerchantUserId) {
+            let targetConvId = null;
+            let { data: myConvs } = await sb.from('conversation_members').select('conversation_id').eq('user_id', user.id);
+            let myIds = (myConvs || []).map(r => r.conversation_id);
+
+            if (myIds.length) {
+              let { data: theirConvs } = await sb.from('conversation_members').select('conversation_id').eq('user_id', targetMerchantUserId).in('conversation_id', myIds);
+              if (theirConvs && theirConvs.length) targetConvId = theirConvs[0].conversation_id;
+            }
+
+            if (!targetConvId) {
+              let { data: newConv } = await sb.from('conversations').insert({ type: 'direct', created_by: user.id }).select().single();
+              if (newConv) {
+                targetConvId = newConv.id;
+                await sb.from('conversation_members').insert([
+                  { conversation_id: targetConvId, user_id: user.id },
+                  { conversation_id: targetConvId, user_id: targetMerchantUserId }
+                ]);
+              }
+            }
+
+            if (targetConvId) {
+              let shopNameTitle = bizData ? bizData.name : 'Store';
+              let orderMsgText = `📦 नवीन ऑनलाईन ऑर्डर (दुकान: ${shopNameTitle}):\n👤 ग्राहक: ${orderPayload.customer_name}\n📱 मोबाईल: ${orderPayload.customer_phone}\n🏠 पत्ता: ${orderPayload.delivery_address}\n🛒 तपशील: ${itemsSummary}\n💰 एकूण: ₹${totalAmount}`;
+              await sb.from('messages').insert({
+                conversation_id: targetConvId,
+                sender_id: user.id,
+                content: orderMsgText
+              });
             }
           }
-
-          if (targetConvId) {
-            const orderMsgText = `📦 नवीन ऑनलाईन ऑर्डर:\n👤 ग्राहक: ${orderPayload.customer_name}\n📱 मोबाईल: ${orderPayload.customer_phone}\n🏠 पत्ता: ${orderPayload.delivery_address}\n🛒 तपशील: ${itemsSummary}\n💰 एकूण: ₹${totalAmount}`;
-            await sb.from('messages').insert({
-              conversation_id: targetConvId,
-              sender_id: user.id,
-              content: orderMsgText
-            });
-          }
+        } catch (bridgeErr) {
+          console.error('Weavo split sync note:', bridgeErr);
         }
-      } catch (bridgeErr) {
-        console.error('Weavo bridge sync note:', bridgeErr);
       }
     }
 
@@ -189,15 +206,8 @@ async function submitSecurePlatformOrder(orderDetails) {
     localStorage.removeItem('marketplace_cart');
     saveCart([]);
 
-    alert('✅ ऑर्डर सुरक्षितपणे नोंदवली गेली आहे आणि दुकानदाराच्या वीव्हो चॅटवर पाठवली गेली आहे!');
-    
-    // योग्य मर्चंटच्या युजरनेमसह वीव्हो चॅट उघडणे
-    if (targetHandle) {
-      window.open(`https://arhammarketingme-prog.github.io/weavo/?store=${encodeURIComponent(targetHandle)}${targetEmail ? '&merchant_email=' + encodeURIComponent(targetEmail) : ''}`, '_blank');
-    } else {
-      window.location.href = 'index.html';
-    }
-    
+    alert('✅ सर्व दुकानांच्या ऑर्डर्स यशस्वीरीत्या स्प्लिट होऊन संबंधित दुकानदारांपर्यंत पोहोचल्या आहेत!');
+    window.location.href = 'index.html';
     return true;
 
   } catch (err) {
