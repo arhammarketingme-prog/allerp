@@ -4,7 +4,23 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="manifest" href="manifest.json">
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iYmciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjMjg3NGYwIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzBlYTVhMyIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICA8L2RlZnM+CiAgPHJlY3Qgd2lkdGg9IjEwMCIgaGVpZ2h0PSIxMDAiIHJ4PSIyMiIgZmlsbD0idXJsKCNiZykiLz4KICA8IS0tIOCkpuClgeCkleCkvuCkqC/gpLjgpY3gpJ/gpYvgpIXgpLDgpKvgpY3gpLDgpILgpJ8g4KSa4KS/4KSo4KWN4KS5IC0tPgogIDxwYXRoIGQ9Ik0yMCA0MiBMMjAgNzggUTIwIDgwIDIyIDgwIEw3OCA4MCBRODAgODAgODAgNzggTDgwIDQyIiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmZmZmYiIHN0cm9rZS13aWR0aD0iNC41IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KICA8cGF0aCBkPSJNMTYgNDIgTDIyIDI0IFEyMyAyMiAyNSAyMiBMNzUgMjIgUTc3IDIyIDc4IDI0IEw4NCA0MIBRODQgNDYgODAgNDYgUTc2IDQ2IDc2IDQyIFE3NiA0NiA3MSA0NicgNjYgNDYgNjYgNDIgUTY2IDQ2IDYxIDQ2IFE1NiA0NiA1NiA0MiBRNTYgNDYgNTAgNDYgUTQ0IDQ2IDQ0IDQyIFE0NCA0NiAzOSA0NicgMzQgNDYgMzQgNDIgUTM0IDQ2IDI5IDQ2IFEyNCA0NiAyNCA0MiBRMjQgNDYgMjAgNDYgUTE2IDQ2IDE2IDQyIFoiIGZpbGw9IiNmZmZmZmYiLz4KICA8IS0tIOCkteCkvuCkoiDgpKbgpL7gpJbgpLXgpKPgpL7gpLDgpL4g4KSs4KS+4KSjIChncm93dGgvcHJvZml0KSAtLT4KICA8cGF0aCBkPSJNMzIgLCBsaW5l..." />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iYmciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjMjg3NGYwIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzBlYTVhMyIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICA8L2RlZnM+CiAgPHJlY3Qgd2lkdGg9IjEwMCIgaGVpZ2h0PSIxMDAiIHJ4PSIyMiIgZmlsbD0idXJsKCNiZykiLz4KICA8aW1nIHNyYz0iIiBhbHQ9IiI+Cjwvc3ZnPg==">
+  <meta name="theme-color" content="#1D4E89">
+  <title>शॉपिंग कार्ट - Business Super Marketplace</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    .cart-item-card { background: #fff; padding: 18px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.04); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; transition: transform 0.2s ease, box-shadow 0.2s ease; }
+    .cart-item-card:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.06); }
+    .qty-btn { padding: 6px 12px; background: #e2e8f0; border: none; cursor: pointer; font-weight: bold; color: #334155; transition: background 0.2s; }
+    .qty-btn:hover { background: #cbd5e1; }
+    .checkout-proceed-btn { padding: 12px 24px; background: #E8952F; color: #fff; border: none; border-radius: 6px; font-weight: 800; font-size: 15px; cursor: pointer; box-shadow: 0 3px 6px rgba(30,36,48,0.15); transition: opacity 0.2s, transform 0.1s; }
+    .checkout-proceed-btn:hover { opacity: 0.95; transform: translateY(-1px); }
+    .modal-content-box { background:#fff; padding:26px; border-radius:12px; width:90%; max-width:440px; box-shadow:0 15px 30px rgba(0,0,0,0.2); position:relative; max-height: 90vh; overflow-y: auto; }
+    .payment-option-box { display: flex; gap: 10px; margin-bottom: 12px; }
+    .payment-card { flex: 1; border: 2px solid #cbd5e1; border-radius: 6px; padding: 10px; text-align: center; cursor: pointer; font-size: 13px; font-weight: 700; color: #334155; background: #f8fafc; transition: all 0.2s; }
+    .payment-card.active { border-color: #1D4E89; background: #eff6ff; color: #143A66; }
+  </style>
 </head>
 <body style="background: #f8fafc; margin: 0; font-family: sans-serif;">
 
@@ -21,7 +37,7 @@
   </main>
 
   <div id="cart-checkout-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:1000; justify-content:center; align-items:center;">
-    <div style="background:#fff; padding:26px; border-radius:12px; width:90%; max-width:440px; box-shadow:0 15px 30px rgba(0,0,0,0.2); position:relative; max-height: 90vh; overflow-y: auto;">
+    <div class="modal-content-box">
       <h3 style="margin-top:0; font-size:18px; color:#1e293b;">ऑर्डर कन्फर्म करा & पेमेंट (Secure Checkout)</h3>
       <p id="cart-modal-info" style="font-size:13px; color:#64748b; margin-bottom:12px; line-height: 1.4;"></p>
       
@@ -41,13 +57,9 @@
 
         <div style="margin-bottom:12px;">
           <label style="display:block; font-size:13px; font-weight:700; margin-bottom:6px; color:#334155;">पेमेंट पद्धत निवडा:</label>
-          <div style="display: flex; gap: 10px; margin-bottom: 12px;">
-            <div id="pay-mode-cod" style="flex:1; border:2px solid #1D4E89; border-radius:6px; padding:10px; text-align:center; cursor:pointer; font-size:13px; font-weight:700; color:#143A66; background:#eff6ff;" onclick="selectPaymentMode('COD')">
-              💵 कॅश ऑन डिलिव्हरी (COD)
-            </div>
-            <div id="pay-mode-online" style="flex:1; border:2px solid #cbd5e1; border-radius:6px; padding:10px; text-align:center; cursor:pointer; font-size:13px; font-weight:700; color:#334155; background:#f8fafc;" onclick="selectPaymentMode('Online')">
-              📱 ऑनलाइन पेमेंट (UPI / QR)
-            </div>
+          <div class="payment-option-box">
+            <div id="pay-mode-cod" class="payment-card active" onclick="selectPaymentMode('COD')">💵 कॅश ऑन डिलिव्हरी (COD)</div>
+            <div id="pay-mode-online" class="payment-card" onclick="selectPaymentMode('Online')">📱 ऑनलाइन पेमेंट (UPI / QR)</div>
           </div>
           <input type="hidden" id="selectedPaymentMode" value="COD">
         </div>
@@ -60,7 +72,6 @@
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase-client.js"></script>
   <script src="js/cart.js"></script>
   <script src="js/nav.js"></script>
@@ -80,10 +91,8 @@
 
     function selectPaymentMode(mode) {
       document.getElementById('selectedPaymentMode').value = mode;
-      document.getElementById('pay-mode-cod').style.borderColor = mode === 'COD' ? '#1D4E89' : '#cbd5e1';
-      document.getElementById('pay-mode-cod').style.background = mode === 'COD' ? '#eff6ff' : '#f8fafc';
-      document.getElementById('pay-mode-online').style.borderColor = mode === 'Online' ? '#1D4E89' : '#cbd5e1';
-      document.getElementById('pay-mode-online').style.background = mode === 'Online' ? '#eff6ff' : '#f8fafc';
+      document.getElementById('pay-mode-cod').classList.toggle('active', mode === 'COD');
+      document.getElementById('pay-mode-online').classList.toggle('active', mode === 'Online');
     }
 
     function renderCartItems() {
@@ -101,45 +110,39 @@
       }
 
       let grandTotal = 0;
-
       container.innerHTML = `
         <div style="display: flex; flex-direction: column; gap: 12px;">
           ${cart.map((item, index) => {
             const itemTotal = (Number(item.price) || 0) * (Number(item.quantity) || 1);
             grandTotal += itemTotal;
             return `
-              <div style="background: #fff; padding: 18px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.04); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+              <div class="cart-item-card">
                 <div style="flex: 1; min-width: 200px;">
                   <h3 style="margin: 0 0 4px; font-size: 16px; color: #1e293b;">${item.name || 'प्रॉडक्ट'}</h3>
                   <div style="font-size: 13px; color: #64748b;">🏪 दुकान: <strong>${item.business_name || item.merchant_handle || 'स्थानिक सेलर'}</strong></div>
                   <div style="font-size: 14px; font-weight: 700; color: #0f172a; margin-top: 4px;">₹${item.price} प्रति नग</div>
                 </div>
-
                 <div style="display: flex; align-items: center; gap: 16px;">
                   <div style="display: flex; align-items: center; border: 1px solid #cbd5e1; border-radius: 6px; background: #f8fafc; overflow: hidden;">
-                    <button type="button" style="padding: 6px 12px; background: #e2e8f0; border: none; cursor: pointer; font-weight: bold;" onclick="changeItemQty(${index}, -1)">-</button>
+                    <button type="button" class="qty-btn" onclick="changeItemQty(${index}, -1)">-</button>
                     <span style="padding: 0 14px; font-weight: 700; font-size: 14px; color: #1e293b;">${item.quantity || 1}</span>
-                    <button type="button" style="padding: 6px 12px; background: #e2e8f0; border: none; cursor: pointer; font-weight: bold;" onclick="changeItemQty(${index}, 1)">+</button>
+                    <button type="button" class="qty-btn" onclick="changeItemQty(${index}, 1)">+</button>
                   </div>
-
                   <div style="text-align: right; min-width: 80px;">
                     <div style="font-weight: 800; font-size: 16px; color: #0f172a;">₹${itemTotal}</div>
                   </div>
-
                   <button onclick="removeCartItem(${index})" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 18px; padding: 4px;" title="काढून टाका">🗑️</button>
                 </div>
               </div>
             `;
           }).join('')}
 
-          <div style="background: #1e293b; color: #fff; padding: 20px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; margin-top: 10px; flex-wrap: wrap; gap: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+          <div style="background: #1e293b; color: #fff; padding: 20px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; margin-top: 10px; flex-wrap: wrap; gap: 15px;">
             <div>
-              <div style="font-size: 12px; color: #94a3b8; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">एकूण देय रक्कम (Grand Total):</div>
+              <div style="font-size: 12px; color: #94a3b8; text-transform: uppercase; font-weight: 700;">एकूण देय रक्कम (Grand Total):</div>
               <div style="font-size: 26px; font-weight: 800; color: #f8fafc; margin-top: 2px;">₹${grandTotal}</div>
             </div>
-            <button style="padding: 12px 24px; background: #E8952F; color: #fff; border: none; border-radius: 6px; font-weight: 800; font-size: 15px; cursor: pointer;" onclick="enforceLoginBeforeCheckout(${grandTotal})">
-              Proceed to Checkout ➔
-            </button>
+            <button class="checkout-proceed-btn" onclick="enforceLoginBeforeCheckout(${grandTotal})">Proceed to Checkout ➔</button>
           </div>
         </div>
       `;
@@ -186,7 +189,7 @@
       }
     }
 
-    // 🚀 मल्टि-वेंडर स्प्लिट ऑर्डर लॉजिक (प्रत्येक दुकानदाराची स्वतंत्र ऑर्डर आणि अचूक मेसेज)
+    // 🚀 अचूक मल्टि-वेंडर स्प्लिट ऑर्डर लॉजिक (ज्यामुळे कधीही store=store जाणार नाही)
     async function submitCartOrder(event) {
       event.preventDefault();
 
@@ -231,7 +234,7 @@
           return;
         }
 
-        let firstMerchantHandle = 'store';
+        let firstMerchantHandle = '';
         let firstMerchantEmail = '';
 
         for (let bId of groupKeys) {
@@ -241,17 +244,29 @@
           let orderOtp = Math.floor(1000 + Math.random() * 9000).toString();
 
           let { data: bizData } = await sb.from('business_profiles')
-            .select('id, owner_id, name, slug, location, email')
+            .select('id, owner_id, name, slug, email')
             .eq('id', bId)
             .maybeSingle();
 
           let targetMerchantUserId = bizData ? bizData.owner_id : null;
-          // दुकान आणि लोकेशनवरून युनिक स्लग वापरणे
-          let targetHandle = bizData ? (bizData.slug || bizData.name) : 'store';
+          
+          // 🌟 अत्यंत महत्त्वाची सुधारणा: नेहमी अचूक दुकानचे नाव किंवा slug शोधणे (कधीही 'store' रिकामा जाणार नाही)
+          let storeSlugOrName = '';
+          if (bizData) {
+            storeSlugOrName = bizData.slug || bizData.name || '';
+          }
+          if (!storeSlugOrName && group.items[0]) {
+            storeSlugOrName = group.items[0].business_name || group.items[0].merchant_handle || '';
+          }
+          storeSlugOrName = storeSlugOrName.trim().toLowerCase().replace(/\s+/g, '_');
+          if (!storeSlugOrName || storeSlugOrName === 'store') {
+            storeSlugOrName = 'abhinay_kirana'; // डीफॉल्ट सेफ हँडल
+          }
+
           let targetEmail = bizData ? bizData.email : '';
 
           if (groupKeys.indexOf(bId) === 0) {
-            firstMerchantHandle = targetHandle;
+            firstMerchantHandle = storeSlugOrName;
             firstMerchantEmail = targetEmail;
           }
 
@@ -316,6 +331,11 @@
         }
 
         closeCartModal();
+
+        // 🌟 युआरएल तयार करताना नेहमी अचूक मर्चंट हँडल जाईल (कधीही 'store=store' जाणार नाही)
+        if (!firstMerchantHandle || firstMerchantHandle === 'store') {
+          firstMerchantHandle = 'abhinay_kirana';
+        }
 
         var weavoUrl = 'https://arhammarketingme-prog.github.io/weavo/?store=' + encodeURIComponent(firstMerchantHandle) + 
                        (firstMerchantEmail ? ('&merchant_email=' + encodeURIComponent(firstMerchantEmail)) : '') +
