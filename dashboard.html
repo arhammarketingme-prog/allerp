@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#E8952F">
-<title>ALL ERP — Universal Business Operating System (Locked V2.1)</title>
+<title>ALL ERP — Universal Business Operating System (Locked V2.3 - Full Restored)</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
 <link rel="stylesheet" href="css/style.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -41,8 +41,8 @@
 <div class="dashboard-main-frame">
   <div class="erp-header">
     <div>
-      <h1 id="business-display-name">ALL ERP Dashboard (Locked V2.1 - Unlocked Flow)</h1>
-      <span class="muted">Universal Multi-Business Operating System & Local Marketplace</span>
+      <h1 id="business-display-name">ALL ERP Dashboard (Locked V2.3)</h1>
+      <span class="muted">Universal Business Operating System & Local Marketplace</span>
       <div style="margin-top:4px;">
         <label style="font-size:12.5px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:5px;">
           <input type="checkbox" id="is-wholesaler-toggle" style="width:auto; margin:0;" onchange="toggleWholesalerMode(this.checked)">
@@ -104,6 +104,16 @@
 </div>
 
 <!-- MODALS -->
+<div id="global-catalog-modal" class="modal-overlay">
+  <div class="modal-content" style="max-width:700px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+      <h3 style="margin:0;">🌐 ग्लोबल मार्केटप्लेस कॅटलॉग</h3>
+      <button type="button" class="secondary" onclick="closeModal('global-catalog-modal')" style="padding:4px 10px; font-size:12px; cursor:pointer; font-weight:bold;">✕ बंद करा</button>
+    </div>
+    <div id="global-catalog-results"><p class="muted">कॅटलॉग लोड होत आहे...</p></div>
+  </div>
+</div>
+
 <div id="add-product-modal" class="modal-overlay">
   <div class="modal-content">
     <h3>नवीन प्रॉडक्ट जोडा</h3>
@@ -113,7 +123,7 @@
 
 <script>
 const SUPABASE_URL = "https://xpsxbvmziibbrjnadrlm.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhwc3hidm16aWliYnJqbmFkcmxtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2OTY0NTcsImV4cCI6MjEwNDI3MjQ1N30.d-kDYwqFfxP_xfNHQHEYYYZQHr31-75u-UHxYznRP-A";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhwc3hidm16aWliYnJqbmFkcmxtIiwicm9sZSI6Inhwc3hidm16aWliYnJqbmFkcmxtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2OTY0NTcsImV4cCI6MjEwNDI3MjQ1N30.d-kDYwqFfxP_xfNHQHEYYYZQHr31-75u-UHxYznRP-A";
 
 let sb = null;
 try {
@@ -121,7 +131,7 @@ try {
     auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
   });
 } catch(e) {
-  console.error("Supabase client init error:", e);
+  console.error("Supabase init error:", e);
 }
 
 let currentBusinessId = null;
@@ -137,18 +147,27 @@ function switchTab(tabId) {
   });
 }
 
-function openModal(id) { const el = document.getElementById(id); if (el) el.style.display = 'flex'; }
-function closeModal(id) { const el = document.getElementById(id); if (el) el.style.display = 'none'; }
+function openModal(id) { 
+  const el = document.getElementById(id); 
+  if (el) el.style.display = 'flex'; 
+}
+
+function closeModal(id) { 
+  const el = document.getElementById(id); 
+  if (el) el.style.display = 'none'; 
+}
+
+function openGlobalCatalogModal() {
+  openModal('global-catalog-modal');
+}
 
 async function triggerWeavoBridgeSync() {
   alert('🔗 वीव्हो ब्रिज सह डेटा यशस्वीरित्या सिंक झाला!');
 }
 
-// 🌟 कोणत्याही लॉगिन चेकिंगविना थेट डॅशबोर्ड लोड करणारे सुरक्षित फंक्शन (बाइपास केले)
 async function initDashboard() {
   try {
-    console.log("Dashboard initialized without forced login redirect.");
-    // इथे कोणतेही जबरदस्तीचे लॉगिन रीडायरेक्ट नाही — युजर विनासायास डॅशबोर्ड ऑपरेट करू शकतो.
+    console.log("Dashboard initialized successfully.");
   } catch (err) { console.error('Init error:', err); }
 }
 
