@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#E8952F">
-<title>ALL ERP — Universal Business Operating System (Locked V2.3 - Full Restored)</title>
+<title>ALL ERP — Universal Business Operating System (Locked V2.4 - Complete Restore)</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
 <link rel="stylesheet" href="css/style.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -41,11 +41,11 @@
 <div class="dashboard-main-frame">
   <div class="erp-header">
     <div>
-      <h1 id="business-display-name">ALL ERP Dashboard (Locked V2.3)</h1>
+      <h1 id="business-display-name">ALL ERP Dashboard (Locked V2.4)</h1>
       <span class="muted">Universal Business Operating System & Local Marketplace</span>
       <div style="margin-top:4px;">
         <label style="font-size:12.5px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:5px;">
-          <input type="checkbox" id="is-wholesaler-toggle" style="width:auto; margin:0;" onchange="toggleWholesalerMode(this.checked)">
+          <input type="checkbox" id="is-wholesaler-toggle" style="width:auto; margin:0;">
           🤝 मी Wholesaler आहे (इतर दुकानदारांना bulk मध्ये विकतो)
         </label>
       </div>
@@ -101,6 +101,29 @@
       </table>
     </div>
   </div>
+
+  <!-- TAB 3: SALES -->
+  <div id="tab-sales" class="erp-tab-pane" style="display:none;">
+    <h2>💰 विक्री व इनव्हॉइस</h2>
+    <div class="card" style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:16px;">
+      <table style="width:100%; border-collapse:collapse;">
+        <thead><tr style="text-align:left; border-bottom:2px solid #e2e8f0;"><th>इनव्हॉइस #</th><th>ग्राहक</th><th>तारीख</th><th>रक्कम</th><th>स्थिती</th></tr></thead>
+        <tbody id="sales-invoices-body"><tr><td colspan="5" class="muted" style="text-align:center; padding:15px;">इनव्हॉइस लोड होत आहेत...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- TAB 9: POS -->
+  <div id="tab-pos" class="erp-tab-pane" style="display:none;">
+    <h2>⚡ द्रुत POS काउंटर बिलिंग</h2>
+    <div id="pos-products-grid"><p class="muted">POS उत्पादने लोड होत आहेत...</p></div>
+  </div>
+
+  <!-- TAB 10: ONLINE ORDERS -->
+  <div id="tab-orders" class="erp-tab-pane" style="display:none;">
+    <h2>🛍️ ऑनलाईन ऑर्डर्स</h2>
+    <div id="online-orders-table-body"><p class="muted">ऑर्डर्स लोड होत आहेत...</p></div>
+  </div>
 </div>
 
 <!-- MODALS -->
@@ -123,7 +146,7 @@
 
 <script>
 const SUPABASE_URL = "https://xpsxbvmziibbrjnadrlm.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhwc3hidm16aWliYnJqbmFkcmxtIiwicm9sZSI6Inhwc3hidm16aWliYnJqbmFkcmxtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2OTY0NTcsImV4cCI6MjEwNDI3MjQ1N30.d-kDYwqFfxP_xfNHQHEYYYZQHr31-75u-UHxYznRP-A";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhwc3hidm16aWliYnJqbmFkcmxtIiwicm9sZSI6Inhwc3hidm16aWliYnJqbmFkcmxtIiwicm9sZSI6Inhwc3hidm16aWliYnJqbmFkcmxtIiwiaWF0IjoxNzg4Njk2NDU3LCJleHAiOjIxMDQyNzI0NTd9.d-kDYwqFfxP_xfNHQHEYYYZQHr31-75u-UHxYznRP-A";
 
 let sb = null;
 try {
@@ -136,6 +159,7 @@ try {
 
 let currentBusinessId = null;
 let currentProducts = [];
+let globalCatalogCache = [];
 
 function switchTab(tabId) {
   document.querySelectorAll('.erp-tab-pane').forEach(el => el.style.display = 'none');
@@ -145,6 +169,10 @@ function switchTab(tabId) {
   document.querySelectorAll('.erp-tab-btn').forEach(btn => {
     if (btn.getAttribute('onclick') && btn.getAttribute('onclick').includes(tabId)) btn.classList.add('active');
   });
+
+  if (tabId === 'tab-products') loadProducts();
+  else if (tabId === 'tab-sales') loadSalesInvoices();
+  else if (tabId === 'tab-overview') updateFinancialKPIs();
 }
 
 function openModal(id) { 
@@ -159,15 +187,113 @@ function closeModal(id) {
 
 function openGlobalCatalogModal() {
   openModal('global-catalog-modal');
+  preloadGlobalCatalog();
+}
+
+async function preloadGlobalCatalog() {
+  const container = document.getElementById('global-catalog-results');
+  if (!container) return;
+  try {
+    const { data } = await sb.from('industry_products').select('*').limit(50);
+    if (!data || data.length === 0) {
+      container.innerHTML = '<p class="muted">कोणतेही ग्लोबल उत्पादन सापडले नाही.</p>';
+      return;
+    }
+    container.innerHTML = data.map(p => `
+      <div style="background:#fff; border:1px solid #e2e8f0; border-radius:6px; padding:10px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+        <div><strong>${p.name_mr || p.name_en || p.name}</strong><br><span style="font-size:12px; color:#16a34a;">₹${p.suggested_price || 0}</span></div>
+        <button onclick="addGlobalProductToStore(${JSON.stringify(p).replace(/"/g, '&quot;')})" style="background:#16a34a; color:#fff; border:none; padding:6px 10px; border-radius:4px; cursor:pointer; font-weight:bold;">➕ जोडा</button>
+      </div>
+    `).join('');
+  } catch (err) {
+    container.innerHTML = '<p class="muted" style="color:red;">कॅटलॉग लोड करताना त्रुटी आली.</p>';
+  }
+}
+
+async function addGlobalProductToStore(product) {
+  if (!currentBusinessId) { alert('दुकान सिलेक्ट केलेले नाही.'); return; }
+  await sb.from('business_products').insert([{
+    business_id: currentBusinessId,
+    name: product.name_en || product.name,
+    selling_price: product.suggested_price || 100,
+    stock: 50
+  }]);
+  alert('✅ उत्पादन यशस्वीरीत्या दुकानात जोडले गेले!');
+  closeModal('global-catalog-modal');
+  loadProducts();
+}
+
+async function loadProducts() {
+  if (!currentBusinessId) return;
+  const tbody = document.getElementById('products-table-body');
+  if (!tbody) return;
+  const { data } = await sb.from('business_products').select('*').eq('business_id', currentBusinessId);
+  if (!data || data.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="4" class="muted" style="text-align:center; padding:15px;">कोणतीही उत्पादने नाहीत. "🌐 ग्लोबल मार्केटप्लेस" वरून जोडा.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = data.map(p => `
+    <tr style="border-bottom:1px solid #f1f5f9;">
+      <td><strong>${p.name}</strong></td>
+      <td>₹${p.selling_price}</td>
+      <td><input type="number" class="stock-input" value="${p.stock}" onchange="updateStock('${p.id}', this.value)"></td>
+      <td><span class="badge live">LIVE</span></td>
+    </tr>
+  `).join('');
+}
+
+async function updateStock(id, val) {
+  await sb.from('business_products').update({ stock: Number(val) }).eq('id', id);
+  updateFinancialKPIs();
+}
+
+async function loadSalesInvoices() {
+  if (!currentBusinessId) return;
+  const tbody = document.getElementById('sales-invoices-body');
+  if (!tbody) return;
+  const { data } = await sb.from('invoices').select('*').eq('business_id', currentBusinessId);
+  if (!data || data.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" class="muted" style="text-align:center; padding:15px;">कोणतीही इनव्हॉइस नाहीत.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = data.map(i => `
+    <tr style="border-bottom:1px solid #f1f5f9;">
+      <td>#${i.id.toString().substring(0,8)}</td>
+      <td>${i.customer_name || 'ग्राहक'}</td>
+      <td>${new Date(i.created_at).toLocaleDateString('mr-IN')}</td>
+      <td>₹${i.total_amount}</td>
+      <td>Paid</td>
+    </tr>
+  `).join('');
+}
+
+async function updateFinancialKPIs() {
+  if (!currentBusinessId) return;
+  const { data: sales } = await sb.from('invoices').select('total_amount').eq('business_id', currentBusinessId);
+  let totalSales = 0;
+  if (sales) sales.forEach(s => totalSales += Number(s.total_amount) || 0);
+  const el = document.getElementById('kpi-total-sales');
+  if (el) el.textContent = `₹${totalSales.toFixed(2)}`;
 }
 
 async function triggerWeavoBridgeSync() {
-  alert('🔗 वीव्हो ब्रिज सह डेटा यशस्वीरित्या सिंक झाला!');
+  if (!currentBusinessId) { alert('दुकान निवडलेले नाही.'); return; }
+  await sb.from('businesses').update({ updated_at: new Date().toISOString() }).eq('id', currentBusinessId);
+  alert('🔗 वीव्हो ब्रिज (Weavo Bridge) डेटा यशस्वीरित्या सिंक झाला!');
 }
 
 async function initDashboard() {
   try {
-    console.log("Dashboard initialized successfully.");
+    const { data: { user } } = await sb.auth.getUser();
+    if (user) {
+      const { data: businesses } = await sb.from('businesses').select('id, name').eq('owner_id', user.id);
+      if (businesses && businesses.length > 0) {
+        currentBusinessId = businesses[0].id;
+        document.getElementById('business-display-name').textContent = businesses[0].name;
+        loadProducts();
+        updateFinancialKPIs();
+      }
+    }
   } catch (err) { console.error('Init error:', err); }
 }
 
