@@ -63,7 +63,6 @@ body.store-locked-mode #app-nav { display: none !important; }
     <div>
       <h1 id="business-display-name">ALL ERP Dashboard</h1>
       <span class="muted" id="header-sub-text">Universal Multi-Business Operating System & Local Marketplace</span>
-      <!-- दुकानदार स्वतःची ओळख (युझरनेम) इथे पाहू शकेल -->
       <div style="margin-top:4px; font-size:13px; font-weight:700; color:#0b8f87;" id="merchant-username-badge">
         👤 वीव्हो युझरनेम: <span id="display-merchant-handle">लोड होत आहे...</span>
       </div>
@@ -166,6 +165,20 @@ body.store-locked-mode #app-nav { display: none !important; }
   </div>
 </div>
 
+<!-- 🌐 ग्लोबल मार्केटप्लेस मोडल (Error fix करण्यासाठी जोडलेले फंक्शन) -->
+<div id="global-catalog-modal" class="modal-overlay">
+  <div class="modal-content">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+      <h3 style="margin:0;">🌐 ग्लोबल मार्केटप्लेस कॅटलॉग</h3>
+      <button type="button" class="secondary" onclick="closeModal('global-catalog-modal')" style="padding:4px 10px; font-size:12px; cursor:pointer; font-weight:bold;">✕ बंद करा</button>
+    </div>
+    <p class="muted">इथून तुम्ही ग्लोबल प्रॉडक्ट्स तुमच्या इन्व्हेंटरीमध्ये ॲड करू शकता.</p>
+    <div id="global-catalog-list" style="max-height:300px; overflow-y:auto; margin-top:10px;">
+      <p class="muted">ग्लोबल प्रॉडक्ट्स लोड होत आहेत...</p>
+    </div>
+  </div>
+</div>
+
 <!-- 🛒 ग्राहकाचे कार्ट व ऑर्डर मोडल -->
 <div id="customer-cart-modal" class="modal-overlay">
   <div class="modal-content">
@@ -236,6 +249,15 @@ function switchTab(tabId) {
 
 function openModal(id) { const el = document.getElementById(id); if (el) el.style.display = 'flex'; }
 function closeModal(id) { const el = document.getElementById(id); if (el) el.style.display = 'none'; }
+
+// 🌐 ग्लोबल मार्केटप्लेस मोडल उघडणारे सुरक्षित फंक्शन (एरर दुरुस्त करण्यासाठी)
+function openGlobalCatalogModal() {
+  openModal('global-catalog-modal');
+  const listEl = document.getElementById('global-catalog-list');
+  if (listEl) {
+    listEl.innerHTML = '<p class="muted">सध्या कोणतेही ग्लोबल प्रॉडक्ट्स उपलब्ध नाहीत.</p>';
+  }
+}
 
 function playOrderAlertSound() {
   try {
@@ -317,7 +339,6 @@ async function initDashboard() {
         return; 
       }
 
-      // मर्चंटचे युझरनेम profiles मधून शोधून दाखवणे
       const { data: profile } = await sb.from('profiles').select('username').eq('id', user.id).maybeSingle();
       if (profile && profile.username) {
         currentMerchantUsername = profile.username;
@@ -351,7 +372,6 @@ function shareStoreOnWhatsApp() {
   window.open(`https://api.whatsapp.com/send?text=${message}`, '_blank');
 }
 
-// 💬 Weavo चॅट उघडणारे अचूक मर्चंट व कस्टमर ब्रिज फंक्शन
 async function openWeavoChat() {
   let storeUsername = lockedStoreUsername;
   if (!storeUsername) {
@@ -457,7 +477,6 @@ function openCustomerCartModal() {
   openModal('customer-cart-modal');
 }
 
-// 🛍️ ग्राहकाने ऑर्डर सबमिट केल्यावर ती AllERP मध्ये सेव्ह होऊन थेट Weavo चॅटमध्ये मेसेज म्हणून पाठवणारे मुख्य फंक्शन
 async function submitCustomerOrder() {
   if (customerCart.length === 0) { alert('कार्ट रिकामी आहे!'); return; }
   const name = document.getElementById('cust-order-name').value.trim();
@@ -469,7 +488,6 @@ async function submitCustomerOrder() {
     let totalAmt = customerCart.reduce((sum, i) => sum + (i.price * i.qty), 0);
     let itemsSummaryText = customerCart.map(i => `${i.name} (${i.qty} नग)`).join(', ');
 
-    // १. AllERP च्या orders टेबलमध्ये ऑर्डर सेव्ह करणे
     const { data: orderData, error: orderErr } = await sb.from('orders').insert({
       business_id: currentBusinessId,
       customer_name: name,
@@ -481,7 +499,6 @@ async function submitCustomerOrder() {
 
     if (orderErr) throw orderErr;
 
-    // २. Weavo च्या चॅट डेटाबेसमध्ये स्वयंचलितपणे ऑर्डरचा मेसेज पाठवणे
     try {
       const { data: bizInfo } = await sb.from('businesses').select('owner_id, name').eq('id', currentBusinessId).single();
       if (bizInfo && bizInfo.owner_id) {
