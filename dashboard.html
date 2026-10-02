@@ -5,11 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#1D4E89">
-<title>ALL ERP — Universal Business Operating System (Stable & Locked)</title>
+<title>ALL ERP — Universal Business Operating System</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
 <link rel="stylesheet" href="css/style.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<!-- Robust HTML5-Qrcode Scanner Library -->
 <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 <style>
 .dashboard-main-frame { width: 98%; max-width: 1450px; margin: 10px auto; padding: 0 6px; }
@@ -30,7 +29,11 @@
 .badge { padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; }
 .badge.live { background: #16a34a; color: #fff; }
 .badge.pending { background: #f59e0b; color: #fff; }
-.stock-input { border: 1px solid #cbd5e1; border-radius: 6px; padding: 6px 10px; width: 90px; text-align: center; font-weight: 700; color: #1e293b; }
+.badge.packed { background: #1D4E89; color: #fff; }
+.badge.dispatched { background: #1D4E89; color: #fff; }
+.badge.delivered { background: #059669; color: #fff; }
+.badge.rejected { background: #dc2626; color: #fff; }
+.stock-input { border: 1px solid #cbd5e1; border-radius: 6px; padding: 6px 10px; width: 90px; text-align: center; font-weight: 700; color: #1e293b; transition: all 0.2s; }
 .pos-layout { display: flex; gap: 16px; flex-wrap: wrap; }
 .pos-catalog { flex: 2; min-width: 280px; }
 .pos-cart { flex: 1.2; min-width: 280px; background: var(--card, #ffffff); border: 1px solid var(--border, #e2e8f0); border-radius: 10px; padding: 14px; }
@@ -52,22 +55,15 @@
       </div>
     </div>
     <div>
-      <!-- 🌐 ग्लोबल मार्केटप्लेस बटण -->
       <button type="button" onclick="openGlobalCatalogModal()" style="background:#16a34a; color:#fff; padding:6px 12px; border:none; border-radius:6px; cursor:pointer; font-weight:bold; font-size:12.5px;">
         🌐 ग्लोबल मार्केटप्लेस
       </button>
-      <!-- 🔗 वेव्ह लॉगिन बटण -->
-      <a href="weavo.html" target="_blank" style="text-decoration:none; background:#0284c7; color:#fff; padding:6px 10px; border-radius:6px; font-size:12px; font-weight:bold; display:inline-flex; align-items:center; gap:4px;">
-        🔗 वेव्ह लॉगिन
-      </a>
-      <!-- 🤖 AI ॲसिस्टेंट बटण -->
-      <a href="ai-assistant.html" class="btn" style="text-decoration:none; font-size:12px; background:#1D4E89; color:#fff; padding:6px 10px; border-radius:6px; font-weight:bold;">
-        🤖 AI
-      </a>
+      <select id="business-select" style="max-width:180px; margin-bottom:0; display:none;"></select>
       <select id="lang-select" style="max-width:95px; margin-bottom:0; font-size:12px;" onchange="ALL_ERP.setLanguage(this.value)">
         <option value="mr">मराठी</option>
         <option value="en">English</option>
       </select>
+      <a href="ai-assistant.html" class="btn" style="text-decoration:none; font-size:12px; background:#1D4E89; color:#fff; padding:6px 10px; border-radius:6px;">🤖 AI</a>
     </div>
   </div>
 
@@ -116,9 +112,9 @@
     </div>
 
     <div class="card" style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:16px;">
-      <p class="muted" style="font-size:12.5px; margin-bottom:10px;">💡 टिप: खालील स्टॉक आकडा बदलून बाहेर क्लिक केल्यास स्टॉक थेट डेटाबेसमध्ये सेव्ह होईल.</p>
+      <p class="muted" style="font-size:12.5px; margin-bottom:10px;">💡 टिप: खालील स्टॉक आकडा बदलून बाहेर क्लिक केल्यास (किंवा Enter दाबल्यास) स्टॉक थेट डेटाबेसमध्ये सेव्ह होईल.</p>
       <table style="width:100%; border-collapse:collapse;">
-        <thead><tr style="text-align:left; border-bottom:2px solid #e2e8f0; padding-bottom:8px;"><th>उत्पादन</th><th>विक्री दर</th><th>स्टॉक</th><th>स्थिती</th></tr></thead>
+        <thead><tr style="text-align:left; border-bottom:2px solid #e2e8f0; padding-bottom:8px;"><th>उत्पादन</th><th>विक्री दर</th><th>स्टॉक (थेट एडिट करा)</th><th>स्थिती</th></tr></thead>
         <tbody id="products-table-body"></tbody>
       </table>
     </div>
@@ -132,16 +128,81 @@
     </div>
     <div class="card" style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:16px;">
       <table style="width:100%; border-collapse:collapse;">
-        <thead><tr style="text-align:left; border-bottom:2px solid #e2e8f0;"><th>इनव्हॉइस #</th><th>ग्राहक</th><th>तारीख</th><th>रक्कम</th><th>स्थिती</th><th>कृती</th></tr></thead>
+        <thead>
+          <tr style="text-align:left; border-bottom:2px solid #e2e8f0;">
+            <th>इनव्हॉइस #</th><th>ग्राहक</th><th>तारीख</th><th>रक्कम</th><th>स्थिती</th><th>कृती (Action)</th>
+          </tr>
+        </thead>
         <tbody id="sales-invoices-body"><tr><td colspan="6" class="muted" style="text-align:center; padding:20px;">इनव्हॉइस लोड होत आहेत...</td></tr></tbody>
       </table>
     </div>
   </div>
+
+  <!-- TAB 4: PURCHASES -->
+  <div id="tab-purchase" class="erp-tab-pane" style="display:none;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+      <h2>🛒 खरेदी नोंदी</h2>
+      <button type="button" onclick="openModal('purchase-order-modal')" style="background:#1D4E89; color:#fff; padding:8px 14px; border:none; border-radius:6px; cursor:pointer;">+ नवीन खरेदी नोंदवा</button>
+    </div>
+    <div class="card" style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:16px;">
+      <table style="width:100%; border-collapse:collapse;">
+        <thead><tr style="text-align:left; border-bottom:2px solid #e2e8f0;"><th>PO #</th><th>सप्लायर</th><th>तारीख</th><th>रक्कम</th><th>स्थिती</th></tr></thead>
+        <tbody id="purchases-table-body"><tr><td colspan="5" class="muted" style="text-align:center; padding:20px;">खरेदी नोंदी लोड होत आहेत...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- TAB 5: CRM -->
+  <div id="tab-crm" class="erp-tab-pane" style="display:none;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+      <h2>👥 CRM व ग्राहक पाईपलाईन</h2>
+      <button type="button" onclick="openModal('lead-modal')" style="background:#1D4E89; color:#fff; padding:8px 14px; border:none; border-radius:6px; cursor:pointer;">+ नवीन लीड</button>
+    </div>
+    <div class="card" style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:16px;">
+      <table style="width:100%; border-collapse:collapse;">
+        <thead><tr style="text-align:left; border-bottom:2px solid #e2e8f0;"><th>नाव</th><th>कंपनी</th><th>फोन</th><th>स्टेज</th></tr></thead>
+        <tbody id="crm-leads-table-body"><tr><td colspan="4" class="muted" style="text-align:center; padding:20px;">लीड्स लोड होत आहेत...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- TAB 5.5: KHATA -->
+  <div id="tab-khata" class="erp-tab-pane" style="display:none;">
+    <h2>🧾 उधार खाता (Customer Khata)</h2>
+    <div class="card" style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:16px; margin-bottom:14px;">
+      <label style="font-weight:700; font-size:13px;">ग्राहकाचा फोन नंबर टाका</label>
+      <div style="display:flex; gap:8px; margin-top:6px; flex-wrap:wrap;">
+        <input id="khata-phone-input" placeholder="9822XXXXXX" style="flex:1; min-width:160px; padding:8px; border:1px solid #cbd5e1; border-radius:6px;">
+        <button type="button" onclick="loadKhataForPhone()" style="background:#1D4E89; color:#fff; border:none; padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:700;">शोध / उघड</button>
+      </div>
+    </div>
+    <div id="khata-customer-box" style="display:none;">
+      <div class="card" style="background:#fff; border:2px solid #059669; border-radius:8px; padding:16px; margin-bottom:14px; text-align:center;">
+        <div class="muted" style="font-size:13px;">सध्याची शिल्लक (Outstanding Balance)</div>
+        <div id="khata-balance-display" style="font-size:28px; font-weight:900; color:#dc2626;">₹0.00</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 9: POS COUNTER -->
+  <div id="tab-pos" class="erp-tab-pane" style="display:none;">
+    <h2>⚡ द्रुत POS काउंटर बिलिंग</h2>
+    <div class="pos-layout">
+      <div class="pos-catalog">
+        <div style="display:flex; gap:6px; margin-bottom:12px;">
+          <input type="text" id="pos-search-box" placeholder="بارकोड स्कॅन करा..." style="flex:1; padding:8px; border:1px solid #cbd5e1; border-radius:6px;">
+          <button type="button" onclick="startHtml5Scanner('pos')" style="background:#1D4E89; color:#fff; border:none; padding:8px 12px; border-radius:6px; cursor:pointer; font-weight:bold;">📷 स्कॅनर</button>
+        </div>
+        <div id="pos-reader" style="width:100%; max-width:400px; margin-bottom:12px; display:none;"></div>
+        <div id="pos-products-grid" class="grid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap:10px;">
+          <p class="muted">उत्पादने लोड होत आहेत...</p>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
-<!-- ==================== MODALS SECTION ==================== -->
-
-<!-- 1. ग्लोबल मार्केटप्लेस मोडल -->
+<!-- MODALS -->
 <div id="global-catalog-modal" class="modal-overlay">
   <div class="modal-content" style="max-width:700px;">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
@@ -155,41 +216,24 @@
   </div>
 </div>
 
-<!-- 2. नवीन प्रॉडक्ट जोडा मोडल (स्कॅनरसह) -->
 <div id="add-product-modal" class="modal-overlay">
   <div class="modal-content" style="max-width:580px;">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-      <h3 style="margin:0;">📦 नवीन प्रॉडक्ट जोडा व स्कॅनर</h3>
-      <button type="button" class="secondary" onclick="closeModal('add-product-modal')" style="padding:4px 10px; font-size:12px; cursor:pointer; font-weight:bold;">✕ बंद करा</button>
+      <h3 style="margin:0;">📦 नवीन प्रॉडक्ट जोडा</h3>
+      <button type="button" class="secondary" onclick="closeModal('add-product-modal')">✕ बंद करा</button>
     </div>
-
-    <div style="margin-top:12px;">
-      <label style="font-weight:700;">उत्पादनाचे नाव *</label>
-      <div style="display:flex; gap:6px;">
-        <input id="np-name" placeholder="उत्पादनाचे नाव टाईप करा..." style="margin-bottom:0; flex:1; padding:8px; border:1px solid #cbd5e1; border-radius:4px;">
-        <button type="button" onclick="startHtml5Scanner('product')" class="secondary" style="padding:8px 10px; font-size:12px; cursor:pointer; background:#1D4E89; color:#fff; border:none; border-radius:4px;">📷 स्कॅनर</button>
-      </div>
-      <div id="reader" style="width:100%; max-width:400px; margin-top:8px; display:none;"></div>
+    <label style="font-weight:700;">उत्पादनाचे नाव *</label>
+    <div style="display:flex; gap:6px;">
+      <input id="np-name" placeholder="नाव टाईप करा..." style="flex:1; padding:8px; border:1px solid #cbd5e1; border-radius:4px;">
+      <button type="button" onclick="startHtml5Scanner('product')" style="background:#1D4E89; color:#fff; border:none; padding:8px; border-radius:4px;">📷 स्कॅनर</button>
     </div>
-
-    <div style="margin-top:10px;">
-      <label style="font-weight:700;">बारकोड (Barcode)</label>
-      <input id="np-barcode" placeholder="स्कॅन करा किंवा टाईप करा..." style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:4px;">
-    </div>
-
-    <div style="display:flex; gap:10px; margin-top:10px;">
-      <div style="flex:1;"><label style="font-weight:700;">विक्री दर (₹) *</label><input id="np-price" type="number" min="0" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:4px;"></div>
-      <div style="flex:1;"><label style="font-weight:700;">स्टॉक</label><input id="np-stock" type="number" min="0" value="10" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:4px;"></div>
-    </div>
-
-    <div style="display:flex; gap:8px; margin-top:12px;">
-      <button id="np-save-btn" type="button" style="flex:1; background:#16a34a; color:#fff; padding:10px; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">सेव्ह करा</button>
-      <button type="button" class="secondary" onclick="closeModal('add-product-modal')" style="cursor:pointer; padding:10px;">रद्द करा</button>
-    </div>
+    <div id="reader" style="width:100%; max-width:400px; margin-top:8px; display:none;"></div>
+    <label style="font-weight:700; margin-top:8px;">विक्री दर (₹) *</label>
+    <input id="np-price" type="number" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:4px; margin-bottom:8px;">
+    <button id="np-save-btn" type="button" style="width:100%; background:#16a34a; color:#fff; padding:10px; border:none; border-radius:6px; font-weight:bold; cursor:pointer;">सेव्ह करा</button>
   </div>
 </div>
 
-<!-- SCRIPTS SECTION -->
 <script src="js/supabase-client.js"></script>
 <script src="js/cart.js"></script>
 <script src="js/nav.js"></script>
@@ -200,6 +244,7 @@
 let currentBusinessId = null;
 let currentProducts = [];
 let globalCatalogCache = [];
+let posCart = [];
 let activeHtmlScanner = null;
 
 function switchTab(tabId) {
@@ -210,8 +255,6 @@ function switchTab(tabId) {
   document.querySelectorAll('.erp-tab-btn').forEach(btn => {
     if (btn.getAttribute('onclick') && btn.getAttribute('onclick').includes(tabId)) btn.classList.add('active');
   });
-  if (tabId === 'tab-products') loadProducts();
-  else if (tabId === 'tab-sales') loadSalesInvoices();
 }
 
 function openModal(id) { const el = document.getElementById(id); if (el) el.style.display = 'flex'; }
@@ -223,38 +266,17 @@ function closeModal(id) {
   }
 }
 
-// 📷 कॅमेरा बारकोड स्कॅनर फंक्शन
 function startHtml5Scanner(mode) {
-  const readerEl = document.getElementById('reader');
+  const readerId = mode === 'pos' ? 'pos-reader' : 'reader';
+  const readerEl = document.getElementById(readerId);
   if (!readerEl) return;
-
-  if (activeHtmlScanner) {
-    activeHtmlScanner.stop().catch(() => {});
-    activeHtmlScanner = null;
-    readerEl.style.display = 'none';
-    return;
-  }
-
+  if (activeHtmlScanner) { activeHtmlScanner.stop().catch(()=>{}); activeHtmlScanner = null; readerEl.style.display = 'none'; return; }
   readerEl.style.display = 'block';
-  activeHtmlScanner = new Html5Qrcode('reader');
-  activeHtmlScanner.start(
-    { facingMode: 'environment' },
-    { fps: 10, qrbox: 220 },
-    async (decodedText) => {
-      await activeHtmlScanner.stop().catch(() => {});
-      activeHtmlScanner = null;
-      readerEl.style.display = 'none';
-      if (mode === 'product') {
-        document.getElementById('np-barcode').value = decodedText;
-        alert('✅ बारकोड स्कॅन झाला: ' + decodedText);
-      }
-    },
-    () => {}
-  ).catch((err) => {
-    alert('कॅमेरा सुरू होऊ शकला नाही.');
-    readerEl.style.display = 'none';
-    activeHtmlScanner = null;
-  });
+  activeHtmlScanner = new Html5Qrcode(readerId);
+  activeHtmlScanner.start({ facingMode: 'environment' }, { fps: 10, qrbox: 220 }, async (text) => {
+    await activeHtmlScanner.stop().catch(()=>{}); activeHtmlScanner = null; readerEl.style.display = 'none';
+    if (mode === 'product') document.getElementById('np-barcode').value = text;
+  }, ()=>{});
 }
 
 async function initDashboard() {
@@ -265,45 +287,12 @@ async function initDashboard() {
     if (businesses && businesses.length > 0) {
       currentBusinessId = businesses[0].id;
       document.getElementById('business-display-name').textContent = businesses[0].name;
-      loadProducts();
     }
   } catch (err) { console.error('Init error:', err); }
 }
 
-async function loadProducts() {
-  if (!currentBusinessId) return;
-  const tbody = document.getElementById('products-table-body');
-  if (!tbody) return;
-  const { data } = await sb.from('business_products').select('*').eq('business_id', currentBusinessId);
-  if (!data || data.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="4" class="muted" style="text-align:center; padding:15px;">कोणतीही उत्पादने नाहीत.</td></tr>';
-    return;
-  }
-  tbody.innerHTML = data.map(p => `
-    <tr><td><strong>${p.name}</strong></td><td>₹${p.selling_price}</td><td>${p.stock}</td><td><span class="badge live">LIVE</span></td></tr>
-  `).join('');
-}
-
-async function loadSalesInvoices() {
-  if (!currentBusinessId) return;
-  const tbody = document.getElementById('sales-invoices-body');
-  if (!tbody) return;
-  const { data } = await sb.from('invoices').select('*').eq('business_id', currentBusinessId);
-  if (!data || data.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="6" class="muted" style="text-align:center; padding:15px;">कोणतीही इनव्हॉइस नाहीत.</td></tr>';
-    return;
-  }
-  tbody.innerHTML = data.map(i => `
-    <tr><td>#${i.id.toString().substring(0,8)}</td><td>${i.customer_name || 'ग्राहक'}</td><td>${new Date(i.created_at).toLocaleDateString('mr-IN')}</td><td>₹${i.total_amount}</td><td>Paid</td><td>-</td></tr>
-  `).join('');
-}
-
-function openGlobalCatalogModal() {
-  openModal('global-catalog-modal');
-  const container = document.getElementById('global-catalog-results');
-  if (container) container.innerHTML = '<p class="muted">कॅटलॉग तयार आहे.</p>';
-}
-
+function openGlobalCatalogModal() { openModal('global-catalog-modal'); }
+function loadKhataForPhone() {}
 initDashboard();
 </script>
 </body>
