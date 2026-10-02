@@ -279,6 +279,7 @@
           if (targetMerchantUserId) {
             try {
               let targetConvId = null;
+              // 🌟 डुप्लिकेट चॅट्स टाळण्यासाठी: आधीपासून अस्तित्वात असलेला युनिक डायरेक्ट चॅट शोधणे
               let { data: myConvs } = await sb.from('conversation_members').select('conversation_id').eq('user_id', currentUser.id);
               let myIds = (myConvs || []).map(r => r.conversation_id);
 
@@ -287,6 +288,7 @@
                 if (theirConvs && theirConvs.length) targetConvId = theirConvs[0].conversation_id;
               }
 
+              // जर चॅट अस्तित्वात नसेल तरच नवीन तयार करणे
               if (!targetConvId) {
                 let { data: newConv } = await sb.from('conversations').insert({ type: 'direct', created_by: currentUser.id }).select().single();
                 if (newConv) {
