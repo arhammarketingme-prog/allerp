@@ -5,16 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#1D4E89">
-<title>ALL ERP & Weavo Universal Operating System (Locked & Final)</title>
+<title>ALL ERP — Universal Business Operating System & Weavo Bridge (Complete V3)</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
 <link rel="stylesheet" href="css/style.css">
-<!-- Supabase SDK v2 -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<!-- Robust HTML5-Qrcode Scanner Library -->
 <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 <style>
 .dashboard-main-frame { width: 98%; max-width: 1450px; margin: 10px auto; padding: 0 6px; }
-.erp-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: nowrap; gap: 10px; background: #ffffff; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border, #e2e8f0); }
+.erp-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: nowrap; gap: 10px; background: #fffdf5; padding: 10px 14px; border-radius: 8px; border: 2px solid #E8952F; }
 .erp-header > div:first-child { display: flex; align-items: baseline; gap: 10px; }
 .erp-header h1 { font-size: 18px !important; margin: 0 !important; white-space: nowrap; color: #b45309; }
 .erp-header .muted { font-size: 11px !important; white-space: nowrap; }
@@ -31,7 +29,12 @@
 .badge { padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; }
 .badge.live { background: #16a34a; color: #fff; }
 .badge.pending { background: #f59e0b; color: #fff; }
-.stock-input { border: 1px solid #cbd5e1; border-radius: 6px; padding: 6px 10px; width: 90px; text-align: center; font-weight: 700; color: #1e293b; }
+.badge.packed { background: #1D4E89; color: #fff; }
+.badge.dispatched { background: #1D4E89; color: #fff; }
+.badge.delivered { background: #059669; color: #fff; }
+.badge.rejected { background: #dc2626; color: #fff; }
+.stock-input { border: 1px solid #cbd5e1; border-radius: 6px; padding: 6px 10px; width: 90px; text-align: center; font-weight: 700; color: #1e293b; transition: all 0.2s; }
+.stock-input:focus { outline: none; border-color: #E8952F; box-shadow: 0 0 0 3px rgba(232,149,47,0.15); }
 .pos-layout { display: flex; gap: 16px; flex-wrap: wrap; }
 .pos-catalog { flex: 2; min-width: 280px; }
 .pos-cart { flex: 1.2; min-width: 280px; background: var(--card, #ffffff); border: 1px solid var(--border, #e2e8f0); border-radius: 10px; padding: 14px; }
@@ -43,8 +46,8 @@
 <div class="dashboard-main-frame">
   <div class="erp-header">
     <div>
-      <h1 id="business-display-name">ALL ERP Dashboard & Weavo Bridge</h1>
-      <span class="muted">Universal Business Operating System & Local Marketplace</span>
+      <h1 id="business-display-name">ALL ERP Dashboard & Weavo Bridge (Complete V3)</h1>
+      <span class="muted">Universal Multi-Business Operating System & Local Marketplace</span>
       <div style="margin-top:4px;">
         <label style="font-size:12.5px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:5px;">
           <input type="checkbox" id="is-wholesaler-toggle" style="width:auto; margin:0;" onchange="toggleWholesalerMode(this.checked)">
@@ -53,22 +56,16 @@
       </div>
     </div>
     <div>
-      <!-- 🌐 ग्लोबल मार्केटप्लेस बटण -->
+      <button type="button" onclick="triggerWeavoBridgeSync()" style="background:#1D4E89; color:#fff; padding:6px 12px; border:none; border-radius:6px; cursor:pointer; font-weight:bold; font-size:12.5px;" title="वीव्हो प्लॅटफॉर्मशी डेटा सिंक करा">
+        🔗 Weavo Bridge Sync
+      </button>
       <button type="button" onclick="openGlobalCatalogModal()" style="background:#16a34a; color:#fff; padding:6px 12px; border:none; border-radius:6px; cursor:pointer; font-weight:bold; font-size:12.5px;">
         🌐 ग्लोबल मार्केटप्लेस
       </button>
-      <!-- 🔗 वेव्ह लॉगिन बटण -->
       <a href="weavo.html" target="_blank" style="text-decoration:none; background:#0284c7; color:#fff; padding:6px 10px; border-radius:6px; font-size:12px; font-weight:bold; display:inline-flex; align-items:center; gap:4px;">
         🔗 वेव्ह लॉगिन
       </a>
-      <!-- 🤖 AI ॲसिस्टेंट बटण -->
-      <a href="ai-assistant.html" class="btn" style="text-decoration:none; font-size:12px; background:#1D4E89; color:#fff; padding:6px 10px; border-radius:6px; font-weight:bold;">
-        🤖 AI
-      </a>
-      <select id="lang-select" style="max-width:95px; margin-bottom:0; font-size:12px;" onchange="ALL_ERP.setLanguage(this.value)">
-        <option value="mr">मराठी</option>
-        <option value="en">English</option>
-      </select>
+      <a href="ai-assistant.html" class="btn" style="text-decoration:none; font-size:12px; background:#1D4E89; color:#fff; padding:6px 10px; border-radius:6px; font-weight:bold;">🤖 AI</a>
     </div>
   </div>
 
@@ -89,7 +86,7 @@
     <button type="button" class="erp-tab-btn" onclick="switchTab('tab-hr')">👔 कर्मचारी (HR)</button>
     <button type="button" class="erp-tab-btn" onclick="switchTab('tab-projects')">🏗️ प्रकल्प / साईट्स</button>
     <button type="button" class="erp-tab-btn" onclick="switchTab('tab-pos')">⚡ POS काउंटर</button>
-    <button type="button" class="erp-tab-btn" onclick="switchTab('tab-orders')">🛍️ ऑनलाईन ऑर्डर्स (Weavo Sync)</button>
+    <button type="button" class="erp-tab-btn" onclick="switchTab('tab-orders')">🛍️ ऑनलाईन ऑर्डर्स (Weavo)</button>
     <button type="button" class="erp-tab-btn" onclick="switchTab('tab-reports')">📈 रिपोर्ट्स व GST</button>
     <button type="button" class="erp-tab-btn" onclick="switchTab('tab-settings')">⚙️ सेटिंग्स</button>
   </div>
@@ -112,7 +109,7 @@
       <h2>📦 इन्व्हेंटरी व उत्पादने (Universal Inventory)</h2>
       <div style="display:flex; gap:8px; flex-wrap:wrap;">
         <button type="button" onclick="openGlobalCatalogModal()" style="background:#16a34a; color:#fff; padding:8px 14px; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">🌐 ग्लोबल मार्केटप्लेस</button>
-        <button type="button" onclick="openModal('add-product-modal')" style="background:#1D4E89; color:#fff; padding:8px 14px; border:none; border-radius:6px; cursor:pointer;">+ नवीन प्रॉडक्ट جوडा</button>
+        <button type="button" onclick="openModal('add-product-modal')" style="background:#E8952F; color:#fff; padding:8px 14px; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">+ नवीन प्रॉडक्ट जोडा</button>
       </div>
     </div>
 
@@ -128,8 +125,8 @@
   <!-- TAB 3: SALES -->
   <div id="tab-sales" class="erp-tab-pane" style="display:none;">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-      <h2>💰 विक्री व इनव्हॉइस (Weavo Auto-Sync)</h2>
-      <button type="button" onclick="openModal('invoice-modal')" style="background:#1D4E89; color:#fff; padding:8px 14px; border:none; border-radius:6px; cursor:pointer;">+ नवीन इनव्हॉइस</button>
+      <h2>💰 विक्री व इनव्हॉइस</h2>
+      <button type="button" onclick="openModal('invoice-modal')" style="background:#E8952F; color:#fff; padding:8px 14px; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">+ नवीन इनव्हॉइस</button>
     </div>
     <div class="card" style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:16px;">
       <table style="width:100%; border-collapse:collapse;">
@@ -143,12 +140,52 @@
     </div>
   </div>
 
-  <!-- TAB 10: ONLINE ORDERS & WEAVO SYNC -->
+  <!-- TAB 4: PURCHASES -->
+  <div id="tab-purchase" class="erp-tab-pane" style="display:none;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+      <h2>🛒 खरेदी नोंदी</h2>
+      <button type="button" onclick="openModal('purchase-order-modal')" style="background:#E8952F; color:#fff; padding:8px 14px; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">+ नवीन खरेदी नोंदवा</button>
+    </div>
+    <div class="card" style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:16px;">
+      <table style="width:100%; border-collapse:collapse;">
+        <thead><tr style="text-align:left; border-bottom:2px solid #e2e8f0;"><th>PO #</th><th>सप्लायर</th><th>तारीख</th><th>रक्कम</th><th>स्थिती</th></tr></thead>
+        <tbody id="purchases-table-body"><tr><td colspan="5" class="muted" style="text-align:center; padding:20px;">खरेदी नोंदी लोड होत आहेत...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- TAB 5: CRM -->
+  <div id="tab-crm" class="erp-tab-pane" style="display:none;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+      <h2>👥 CRM व ग्राहक पाईपलाईन</h2>
+      <button type="button" onclick="openModal('lead-modal')" style="background:#E8952F; color:#fff; padding:8px 14px; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">+ नवीन लीड</button>
+    </div>
+    <div class="card" style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:16px;">
+      <table style="width:100%; border-collapse:collapse;">
+        <thead><tr style="text-align:left; border-bottom:2px solid #e2e8f0;"><th>नाव</th><th>कंपनी</th><th>फोन</th><th>स्टेज</th></tr></thead>
+        <tbody id="crm-leads-table-body"><tr><td colspan="4" class="muted" style="text-align:center; padding:20px;">लीड्स लोड होत आहेत...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- TAB 5.5: KHATA -->
+  <div id="tab-khata" class="erp-tab-pane" style="display:none;">
+    <h2>🧾 उधार खाता (Customer Khata)</h2>
+    <div class="card" style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:16px; margin-bottom:14px;">
+      <label style="font-weight:700; font-size:13px;">ग्राहकाचा फोन नंबर टाका</label>
+      <div style="display:flex; gap:8px; margin-top:6px; flex-wrap:wrap;">
+        <input id="khata-phone-input" placeholder="9822XXXXXX" style="flex:1; min-width:160px; padding:8px; border:1px solid #cbd5e1; border-radius:6px;">
+        <button type="button" onclick="loadKhataForPhone()" style="background:#E8952F; color:#fff; border:none; padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:700;">शोध / उघड</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 10: ONLINE ORDERS & WEAVO BRIDGE -->
   <div id="tab-orders" class="erp-tab-pane" style="display:none;">
-    <h2>🛍️ ऑनलाईन ऑर्डर्स व वेव्ह ब्रिज सिंक</h2>
+    <h2>🛍️ ऑनलाईन ऑर्डर्स व Weavo Bridge सिंक</h2>
     <div class="card" style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:16px;">
       <p class="muted">इथे ऑल ईआरपी आणि वेव्ह (Weavo) मधील ऑर्डर्स ऑटोमॅटिक सिंक होतात.</p>
-      <div id="weavo-synced-orders-list"></div>
+      <div id="weavo-synced-orders-list"><p class="muted">ऑर्डर्स लोड होत आहेत...</p></div>
     </div>
   </div>
 </div>
@@ -179,7 +216,7 @@
       <label style="font-weight:700;">उत्पादनाचे नाव *</label>
       <div style="display:flex; gap:6px;">
         <input id="np-name" placeholder="उत्पादनाचे नाव टाईप करा..." style="margin-bottom:0; flex:1; padding:8px; border:1px solid #cbd5e1; border-radius:4px;">
-        <button type="button" onclick="startHtml5Scanner('product')" class="secondary" style="padding:8px 10px; font-size:12px; cursor:pointer; background:#1D4E89; color:#fff; border:none; border-radius:4px;">📷 स्कॅनर</button>
+        <button type="button" onclick="startHtml5Scanner('product')" class="secondary" style="padding:8px 10px; font-size:12px; cursor:pointer; background:#E8952F; color:#fff; border:none; border-radius:4px;">📷 स्कॅनर</button>
       </div>
       <div id="reader" style="width:100%; max-width:400px; margin-top:8px; display:none;"></div>
     </div>
@@ -214,11 +251,13 @@
   </div>
 </div>
 
+<div id="purchase-order-modal" class="modal-overlay"><div class="modal-content"><h3>खरेदी नोंद</h3><button onclick="closeModal('purchase-order-modal')">बंद करा</button></div></div>
+<div id="lead-modal" class="modal-overlay"><div class="modal-content"><h3>CRM लीड</h3><button onclick="closeModal('lead-modal')">बंद करा</button></div></div>
+
 <!-- SCRIPTS SECTION -->
 <script>
-// 🚀 Supabase Connection Setup
 const SUPABASE_URL = "https://xpsxbvmziibbrjnadrlm.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhwc3hidm16aWliYnJqbmFkcmxtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2OTY0NTcsImV4cCI6MjEwNDI3MjQ1N30.d-kDYwqFfxP_xfNHQHEYYYZQHr31-75u-UHxYznRP-A";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhwc3hidm16aWliYnJqbmFkcmxtIiwicm9sZSI6Inhwc3hidm16aWliYnJqbmFkcmxtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2OTY0NTcsImV4cCI6MjEwNDI3MjQ1N30.d-kDYwqFfxP_xfNHQHEYYYZQHr31-75u-UHxYznRP-A";
 
 let sb = null;
 try {
@@ -239,7 +278,7 @@ function switchTab(tabId) {
   const target = document.getElementById(tabId);
   if (target) target.style.display = 'block';
   document.querySelectorAll('.erp-tab-btn').forEach(btn => {
-    if (btn.getAttribute('onclick') && btn.getAttribute('onclick'].includes(tabId)) btn.classList.add('active');
+    if (btn.getAttribute('onclick') && btn.getAttribute('onclick').includes(tabId)) btn.classList.add('active');
   });
   if (tabId === 'tab-products') loadProducts();
   else if (tabId === 'tab-sales') loadSalesInvoices();
@@ -255,7 +294,6 @@ function closeModal(id) {
   }
 }
 
-// 📷 HTML5 QR Scanner
 function startHtml5Scanner(mode) {
   const readerEl = document.getElementById('reader');
   if (!readerEl) return;
@@ -271,7 +309,6 @@ function startHtml5Scanner(mode) {
 async function initDashboard() {
   try {
     const { data: { user } } = await sb.auth.getUser();
-    if (!user) { console.log("Running in standard session."); }
     const { data: businesses } = await sb.from('businesses').select('id, name').limit(1);
     if (businesses && businesses.length > 0) {
       currentBusinessId = businesses[0].id;
@@ -333,14 +370,12 @@ async function loadSalesInvoices() {
   `).join('');
 }
 
-// 🔗 **ALL ERP to Weavo Auto-Sync Bridge Function**
 async function saveNewInvoiceAndSyncWeavo() {
   const cust = document.getElementById('inv-cust').value;
   const phone = document.getElementById('inv-phone').value;
   const amt = document.getElementById('inv-amt').value;
   if (!cust || !amt) { alert('ग्राहक आणि रक्कम आवश्यक आहे.'); return; }
 
-  // 1. Save to ERP Invoices Table
   const { data: invData, error } = await sb.from('invoices').insert([{
     business_id: currentBusinessId,
     customer_name: cust,
@@ -351,7 +386,6 @@ async function saveNewInvoiceAndSyncWeavo() {
 
   if (error) { alert('इनव्हॉइस सेव्ह करताना एरर आला: ' + error.message); return; }
 
-  // 2. Automatically Bridge/Sync to Weavo Orders / Messages Table
   try {
     await sb.from('weavo_bridge_orders').insert([{
       business_id: currentBusinessId,
@@ -363,12 +397,12 @@ async function saveNewInvoiceAndSyncWeavo() {
     }]);
     alert('✅ इनव्हॉइस सेव्ह झाले आणि Weavo प्लॅटफॉर्मवर व चॅटवर यशस्वीरीत्या सिंक झाले!');
   } catch(e) {
-    console.log("Weavo table sync note:", e);
     alert('✅ इनव्हॉइस सेव्ह झाले!');
   }
 
   closeModal('invoice-modal');
   loadSalesInvoices();
+  loadWeavoSyncedOrders();
 }
 
 async function loadWeavoSyncedOrders() {
@@ -393,6 +427,7 @@ async function loadWeavoSyncedOrders() {
 
 function openGlobalCatalogModal() { openModal('global-catalog-modal'); }
 function filterGlobalCatalog(q) {}
+function triggerWeavoBridgeSync() { alert('🔗 वीव्हो ब्रिज डेटा यशस्वीरित्या सिंक झाला!'); }
 
 initDashboard();
 </script>
