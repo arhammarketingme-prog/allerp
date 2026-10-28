@@ -1,0 +1,27 @@
+{
+  "id": "/allerp-business-os",
+  "name": "ALL ERP — Smart Business Platform",
+  "short_name": "AllERP",
+  "description": "Universal Business Operating System & Local Marketplace",
+  "start_url": "./dashboard.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#ffffff",
+  "theme_color": "#1D4E89",
+  "categories": ["business", "productivity", "shopping"],
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
